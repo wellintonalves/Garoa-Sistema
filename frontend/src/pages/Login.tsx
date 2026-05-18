@@ -77,7 +77,7 @@ export function Login() {
         <div className="bg-neutral-900/80 backdrop-blur-xl border border-neutral-800 rounded-2xl p-8 shadow-2xl">
           {/* Logo */}
           <div className="flex flex-col items-center mb-8">
-            <img src="/logo-garoa.jpg" alt="Garoa Logo" className="w-20 h-20 rounded-full object-cover mb-4 shadow-lg shadow-cyan-500/20 border border-cyan-500/20" />
+            <img src="/logo-garoa.png" alt="Garoa Logo" className="w-20 h-20 rounded-full object-cover mb-4 shadow-lg shadow-cyan-500/20 border border-cyan-500/20" />
             <h1 className="text-2xl font-bold text-white">{nomeBarbearia}</h1>
             <p className="text-neutral-500 text-sm mt-1">Sistema de Gestão</p>
           </div>

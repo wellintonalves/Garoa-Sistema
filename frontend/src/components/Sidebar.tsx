@@ -29,7 +29,7 @@ export function Sidebar() {
     >
       {/* Logo / Título */}
       <div className="flex items-center h-16 px-4 border-b border-neutral-800">
-        <img src="/logo-garoa.jpg" alt="Garoa Logo" className="w-8 h-8 rounded-full object-cover flex-shrink-0 border border-cyan-500/20" />
+        <img src="/logo-garoa.png" alt="Garoa Logo" className="w-8 h-8 rounded-full object-cover flex-shrink-0 border border-cyan-500/20" />
         {!recolhido && (
           <span className="ml-3 text-sm font-bold text-white truncate animate-fade-in">
             {import.meta.env.VITE_BARBEARIA_NOME || 'Garoa Barbearia'}
