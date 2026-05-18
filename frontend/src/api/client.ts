@@ -1,8 +1,19 @@
 // Cliente HTTP configurado para a API
 import axios from 'axios';
 
+// Garante que a baseURL sempre tenha protocolo (https://)
+function resolveApiUrl(): string {
+  const envUrl = import.meta.env.VITE_API_URL;
+  if (!envUrl) return 'http://localhost:3001';
+  // Se não começa com http:// ou https://, adiciona https://
+  if (!envUrl.startsWith('http://') && !envUrl.startsWith('https://')) {
+    return `https://${envUrl}`;
+  }
+  return envUrl;
+}
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3001',
+  baseURL: resolveApiUrl(),
   timeout: 15000,
   headers: { 'Content-Type': 'application/json' },
 });
