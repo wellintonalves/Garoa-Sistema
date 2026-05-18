@@ -56,9 +56,11 @@ export class AuthService {
       papel: usuario.papel,
     };
 
-    const token = jwt.sign({ ...payload }, authConfig.secret, {
-      expiresIn: authConfig.expiresIn as string,
-    });
+    const token = jwt.sign(
+      { ...payload },
+      authConfig.secret as jwt.Secret,
+      { expiresIn: authConfig.expiresIn } as jwt.SignOptions
+    );
 
     return { token, usuario: payload };
   }
@@ -89,9 +91,11 @@ export class AuthService {
       papel: usuario.papel,
     };
 
-    const token = jwt.sign({ ...payload }, authConfig.secret, {
-      expiresIn: authConfig.expiresIn as string,
-    });
+    const token = jwt.sign(
+      { ...payload },
+      authConfig.secret as jwt.Secret,
+      { expiresIn: authConfig.expiresIn } as jwt.SignOptions
+    );
 
     return { token, usuario: payload };
   }
