@@ -11,7 +11,8 @@ export interface UsuarioJWT {
 }
 
 /** Request com dados do usuário autenticado */
-export interface AuthRequest extends Request {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export interface AuthRequest extends Request<Record<string, string>, any, any> {
   usuario?: UsuarioJWT;
 }
 
@@ -25,3 +26,4 @@ export interface RespostaSucesso<T> {
   dados: T;
   mensagem?: string;
 }
+
