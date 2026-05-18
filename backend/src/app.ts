@@ -6,9 +6,23 @@ import { errorMiddleware } from './middlewares/error.middleware';
 
 const app = express();
 
-// CORS — aceita apenas a URL do frontend
+// CORS — aceita frontend local e Railway
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  'http://localhost:5173',
+  'http://localhost:4173',
+].filter(Boolean) as string[];
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  origin: (origin, callback) => {
+    // Permite requisições sem origin (Postman, curl, health checks)
+    if (!origin) return callback(null, true);
+    // Permite origens configuradas
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    // Permite qualquer subdomínio do Railway
+    if (origin.endsWith('.up.railway.app')) return callback(null, true);
+    callback(new Error('Bloqueado pelo CORS'));
+  },
   credentials: true,
 }));
 
