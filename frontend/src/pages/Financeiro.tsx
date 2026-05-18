@@ -61,7 +61,7 @@ export function Financeiro() {
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-white">Financeiro</h1>
-        <button onClick={() => setModalAberto(true)} className="flex items-center gap-2 px-4 py-2 bg-amber-500 hover:bg-amber-400 text-neutral-900 text-sm font-semibold rounded-lg transition-colors">
+        <button onClick={() => setModalAberto(true)} className="flex items-center gap-2 px-4 py-2 bg-cyan-500 hover:bg-cyan-400 text-neutral-900 text-sm font-semibold rounded-lg transition-colors">
           <Plus className="w-4 h-4" /> Lançamento
         </button>
       </div>
@@ -76,8 +76,8 @@ export function Financeiro() {
           <div className="flex items-center gap-2 text-red-400 mb-1"><TrendingDown className="w-4 h-4" /><span className="text-xs font-medium">Saídas</span></div>
           <p className="text-xl font-bold text-white">{fmt(resumo?.totalSaidas || 0)}</p>
         </div>
-        <div className="bg-neutral-900 border border-amber-500/20 rounded-xl p-4">
-          <p className="text-xs font-medium text-amber-400 mb-1">Saldo</p>
+        <div className="bg-neutral-900 border border-cyan-500/20 rounded-xl p-4">
+          <p className="text-xs font-medium text-cyan-400 mb-1">Saldo</p>
           <p className="text-xl font-bold text-white">{fmt(resumo?.saldo || 0)}</p>
           {resumo?.porFormaPagamento && (
             <div className="mt-2 space-y-1">
@@ -140,16 +140,16 @@ export function Financeiro() {
             ))}
           </div>
           <div><label className="block text-xs font-medium text-neutral-400 mb-1">Categoria</label>
-          <input value={form.categoria} onChange={e => setForm({...form, categoria: e.target.value})} placeholder="Ex: Serviço, Produto, Despesa" className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:border-amber-500" /></div>
+          <input value={form.categoria} onChange={e => setForm({...form, categoria: e.target.value})} placeholder="Ex: Serviço, Produto, Despesa" className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:border-cyan-500" /></div>
           <div><label className="block text-xs font-medium text-neutral-400 mb-1">Valor (R$)</label>
-          <input type="number" step="0.01" value={form.valor} onChange={e => setForm({...form, valor: e.target.value})} className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:border-amber-500" /></div>
+          <input type="number" step="0.01" value={form.valor} onChange={e => setForm({...form, valor: e.target.value})} className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:border-cyan-500" /></div>
           <div><label className="block text-xs font-medium text-neutral-400 mb-1">Forma de Pagamento</label>
-          <select value={form.formaPagamento} onChange={e => setForm({...form, formaPagamento: e.target.value})} className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:border-amber-500">
+          <select value={form.formaPagamento} onChange={e => setForm({...form, formaPagamento: e.target.value})} className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:border-cyan-500">
             {formasPagamento.map(f => <option key={f} value={f}>{labelsForma[f]}</option>)}
           </select></div>
           <div><label className="block text-xs font-medium text-neutral-400 mb-1">Data</label>
-          <input type="date" value={form.data} onChange={e => setForm({...form, data: e.target.value})} className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:border-amber-500" /></div>
-          <button onClick={criarLancamento} className="w-full py-2.5 bg-amber-500 hover:bg-amber-400 text-neutral-900 font-semibold text-sm rounded-lg transition-colors">Registrar</button>
+          <input type="date" value={form.data} onChange={e => setForm({...form, data: e.target.value})} className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:border-cyan-500" /></div>
+          <button onClick={criarLancamento} className="w-full py-2.5 bg-cyan-500 hover:bg-cyan-400 text-neutral-900 font-semibold text-sm rounded-lg transition-colors">Registrar</button>
         </div>
       </Modal>
     </div>

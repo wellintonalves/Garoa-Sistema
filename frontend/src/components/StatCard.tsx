@@ -5,12 +5,12 @@ interface StatCardProps {
   titulo: string;
   valor: string;
   icone: LucideIcon;
-  cor: 'amber' | 'green' | 'blue' | 'red';
+  cor: 'cyan' | 'green' | 'blue' | 'red';
   subtexto?: string;
 }
 
 const cores = {
-  amber: { bg: 'bg-amber-500/10', icon: 'text-amber-400', border: 'border-amber-500/20' },
+  cyan: { bg: 'bg-cyan-500/10', icon: 'text-cyan-400', border: 'border-cyan-500/20' },
   green: { bg: 'bg-green-500/10', icon: 'text-green-400', border: 'border-green-500/20' },
   blue: { bg: 'bg-blue-500/10', icon: 'text-blue-400', border: 'border-blue-500/20' },
   red: { bg: 'bg-red-500/10', icon: 'text-red-400', border: 'border-red-500/20' },

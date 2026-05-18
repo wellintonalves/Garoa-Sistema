@@ -20,7 +20,7 @@ export function Login() {
   const [regCarregando, setRegCarregando] = useState(false);
   const [adminCriado, setAdminCriado] = useState(false);
 
-  const nomeBarbearia = import.meta.env.VITE_BARBEARIA_NOME || 'Barbearia';
+  const nomeBarbearia = import.meta.env.VITE_BARBEARIA_NOME || 'Garoa Barbearia';
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -68,8 +68,8 @@ export function Login() {
     <div className="min-h-screen flex items-center justify-center bg-[#0c0c0e] p-4">
       {/* Gradiente de fundo decorativo */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-amber-500/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-amber-600/5 rounded-full blur-3xl" />
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-cyan-500/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-cyan-600/5 rounded-full blur-3xl" />
       </div>
 
       {/* Card de login */}
@@ -77,9 +77,7 @@ export function Login() {
         <div className="bg-neutral-900/80 backdrop-blur-xl border border-neutral-800 rounded-2xl p-8 shadow-2xl">
           {/* Logo */}
           <div className="flex flex-col items-center mb-8">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center mb-4 shadow-lg shadow-amber-500/20">
-              <Scissors className="w-8 h-8 text-neutral-900" />
-            </div>
+            <img src="/logo-garoa.jpg" alt="Garoa Logo" className="w-20 h-20 rounded-full object-cover mb-4 shadow-lg shadow-cyan-500/20 border border-cyan-500/20" />
             <h1 className="text-2xl font-bold text-white">{nomeBarbearia}</h1>
             <p className="text-neutral-500 text-sm mt-1">Sistema de Gestão</p>
           </div>
@@ -119,7 +117,7 @@ export function Login() {
                       onChange={(e) => setRegNome(e.target.value)}
                       placeholder="Nome do administrador"
                       required
-                      className="w-full pl-10 pr-4 py-2.5 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm placeholder-neutral-600 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500/50 transition-all"
+                      className="w-full pl-10 pr-4 py-2.5 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm placeholder-neutral-600 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/50 transition-all"
                     />
                   </div>
                 </div>
@@ -136,7 +134,7 @@ export function Login() {
                       onChange={(e) => setRegEmail(e.target.value)}
                       placeholder="admin@email.com"
                       required
-                      className="w-full pl-10 pr-4 py-2.5 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm placeholder-neutral-600 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500/50 transition-all"
+                      className="w-full pl-10 pr-4 py-2.5 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm placeholder-neutral-600 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/50 transition-all"
                     />
                   </div>
                 </div>
@@ -154,7 +152,7 @@ export function Login() {
                       placeholder="••••••••"
                       required
                       minLength={6}
-                      className="w-full pl-10 pr-4 py-2.5 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm placeholder-neutral-600 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500/50 transition-all"
+                      className="w-full pl-10 pr-4 py-2.5 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm placeholder-neutral-600 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/50 transition-all"
                     />
                   </div>
                 </div>
@@ -172,7 +170,7 @@ export function Login() {
                   id="registro-submit"
                   type="submit"
                   disabled={regCarregando}
-                  className="w-full py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-neutral-900 font-semibold text-sm rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-amber-500/20"
+                  className="w-full py-2.5 bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-400 hover:to-cyan-500 text-neutral-900 font-semibold text-sm rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-cyan-500/20"
                 >
                   {regCarregando ? 'Criando...' : 'Criar Administrador'}
                 </button>
@@ -194,7 +192,7 @@ export function Login() {
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="seu@email.com"
                       required
-                      className="w-full pl-10 pr-4 py-2.5 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm placeholder-neutral-600 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500/50 transition-all"
+                      className="w-full pl-10 pr-4 py-2.5 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm placeholder-neutral-600 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/50 transition-all"
                     />
                   </div>
                 </div>
@@ -211,7 +209,7 @@ export function Login() {
                       onChange={(e) => setSenha(e.target.value)}
                       placeholder="••••••••"
                       required
-                      className="w-full pl-10 pr-4 py-2.5 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm placeholder-neutral-600 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500/50 transition-all"
+                      className="w-full pl-10 pr-4 py-2.5 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm placeholder-neutral-600 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/50 transition-all"
                     />
                   </div>
                 </div>
@@ -229,7 +227,7 @@ export function Login() {
                   id="login-submit"
                   type="submit"
                   disabled={carregando}
-                  className="w-full py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-neutral-900 font-semibold text-sm rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-amber-500/20"
+                  className="w-full py-2.5 bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-400 hover:to-cyan-500 text-neutral-900 font-semibold text-sm rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-cyan-500/20"
                 >
                   {carregando ? 'Entrando...' : 'Entrar'}
                 </button>

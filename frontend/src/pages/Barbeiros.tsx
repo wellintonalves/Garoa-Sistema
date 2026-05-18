@@ -49,7 +49,7 @@ export function Barbeiros() {
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-white">Barbeiros</h1>
-        <button onClick={() => setModalAberto(true)} className="flex items-center gap-2 px-4 py-2 bg-amber-500 hover:bg-amber-400 text-neutral-900 text-sm font-semibold rounded-lg transition-colors">
+        <button onClick={() => setModalAberto(true)} className="flex items-center gap-2 px-4 py-2 bg-cyan-500 hover:bg-cyan-400 text-neutral-900 text-sm font-semibold rounded-lg transition-colors">
           <Plus className="w-4 h-4" /> Novo
         </button>
       </div>
@@ -58,7 +58,7 @@ export function Barbeiros() {
         {barbeiros.map(b => (
           <div key={b.id} className="bg-neutral-900 border border-neutral-800 rounded-xl p-5 hover:border-neutral-700 transition-colors">
             <div className="flex items-center gap-4 mb-4">
-              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center flex-shrink-0">
+              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-cyan-400 to-cyan-600 flex items-center justify-center flex-shrink-0">
                 <User className="w-6 h-6 text-neutral-900" />
               </div>
               <div className="min-w-0">
@@ -72,7 +72,7 @@ export function Barbeiros() {
                 <span key={i} className="px-2 py-0.5 bg-neutral-800 text-neutral-400 text-xs rounded-full">{e}</span>
               ))}
             </div>
-            <div className="flex items-center gap-1.5 text-amber-400 text-sm">
+            <div className="flex items-center gap-1.5 text-cyan-400 text-sm">
               <Star className="w-3.5 h-3.5" /> <span>Comissão: {b.comissaoPercent}%</span>
             </div>
           </div>
@@ -82,16 +82,16 @@ export function Barbeiros() {
       <Modal aberto={modalAberto} onFechar={() => setModalAberto(false)} titulo="Novo Barbeiro">
         <div className="space-y-4">
           <div><label className="block text-xs font-medium text-neutral-400 mb-1">Nome</label>
-          <input value={form.nome} onChange={e => setForm({...form, nome: e.target.value})} className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:border-amber-500" /></div>
+          <input value={form.nome} onChange={e => setForm({...form, nome: e.target.value})} className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:border-cyan-500" /></div>
           <div><label className="block text-xs font-medium text-neutral-400 mb-1">Email</label>
-          <input type="email" value={form.email} onChange={e => setForm({...form, email: e.target.value})} className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:border-amber-500" /></div>
+          <input type="email" value={form.email} onChange={e => setForm({...form, email: e.target.value})} className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:border-cyan-500" /></div>
           <div><label className="block text-xs font-medium text-neutral-400 mb-1">Senha</label>
-          <input type="password" value={form.senha} onChange={e => setForm({...form, senha: e.target.value})} className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:border-amber-500" /></div>
+          <input type="password" value={form.senha} onChange={e => setForm({...form, senha: e.target.value})} className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:border-cyan-500" /></div>
           <div><label className="block text-xs font-medium text-neutral-400 mb-1">Especialidades (vírgula)</label>
-          <input value={form.especialidades} onChange={e => setForm({...form, especialidades: e.target.value})} placeholder="Corte, Barba" className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:border-amber-500" /></div>
+          <input value={form.especialidades} onChange={e => setForm({...form, especialidades: e.target.value})} placeholder="Corte, Barba" className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:border-cyan-500" /></div>
           <div><label className="block text-xs font-medium text-neutral-400 mb-1">Comissão (%)</label>
-          <input type="number" value={form.comissaoPercent} onChange={e => setForm({...form, comissaoPercent: e.target.value})} className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:border-amber-500" /></div>
-          <button onClick={criarBarbeiro} className="w-full py-2.5 bg-amber-500 hover:bg-amber-400 text-neutral-900 font-semibold text-sm rounded-lg transition-colors">Cadastrar</button>
+          <input type="number" value={form.comissaoPercent} onChange={e => setForm({...form, comissaoPercent: e.target.value})} className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:border-cyan-500" /></div>
+          <button onClick={criarBarbeiro} className="w-full py-2.5 bg-cyan-500 hover:bg-cyan-400 text-neutral-900 font-semibold text-sm rounded-lg transition-colors">Cadastrar</button>
         </div>
       </Modal>
     </div>

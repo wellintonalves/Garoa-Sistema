@@ -4,7 +4,7 @@ export function LoadingSpinner({ tamanho = 'md' }: { tamanho?: 'sm' | 'md' | 'lg
 
   return (
     <div className="flex items-center justify-center p-8">
-      <div className={`${tamanhos[tamanho]} border-2 border-neutral-700 border-t-amber-400 rounded-full animate-spin`} />
+      <div className={`${tamanhos[tamanho]} border-2 border-neutral-700 border-t-cyan-400 rounded-full animate-spin`} />
     </div>
   );
 }

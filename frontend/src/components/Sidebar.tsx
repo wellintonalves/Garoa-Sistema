@@ -29,12 +29,10 @@ export function Sidebar() {
     >
       {/* Logo / Título */}
       <div className="flex items-center h-16 px-4 border-b border-neutral-800">
-        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center flex-shrink-0">
-          <Scissors className="w-4 h-4 text-neutral-900" />
-        </div>
+        <img src="/logo-garoa.jpg" alt="Garoa Logo" className="w-8 h-8 rounded-full object-cover flex-shrink-0 border border-cyan-500/20" />
         {!recolhido && (
           <span className="ml-3 text-sm font-bold text-white truncate animate-fade-in">
-            {import.meta.env.VITE_BARBEARIA_NOME || 'Barbearia'}
+            {import.meta.env.VITE_BARBEARIA_NOME || 'Garoa Barbearia'}
           </span>
         )}
       </div>
@@ -49,7 +47,7 @@ export function Sidebar() {
             className={({ isActive }) =>
               `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 group ${
                 isActive
-                  ? 'bg-amber-500/15 text-amber-400'
+                  ? 'bg-cyan-500/15 text-cyan-400'
                   : 'text-neutral-400 hover:text-white hover:bg-neutral-800'
               }`
             }

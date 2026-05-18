@@ -58,7 +58,7 @@ export function Clientes() {
           <input value={busca} onChange={e => setBusca(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && handleBusca()}
             placeholder="Buscar por nome ou telefone..."
-            className="w-full pl-10 pr-4 py-2.5 bg-neutral-900 border border-neutral-800 rounded-lg text-white text-sm placeholder-neutral-600 focus:outline-none focus:border-amber-500 transition-colors" />
+            className="w-full pl-10 pr-4 py-2.5 bg-neutral-900 border border-neutral-800 rounded-lg text-white text-sm placeholder-neutral-600 focus:outline-none focus:border-cyan-500 transition-colors" />
         </div>
         <button onClick={handleBusca} className="px-4 py-2 bg-neutral-800 hover:bg-neutral-700 text-white text-sm rounded-lg transition-colors">Buscar</button>
       </div>
@@ -82,7 +82,7 @@ export function Clientes() {
                 <td className="p-4 text-neutral-400">{c.usuario.email}</td>
                 <td className="p-4 text-neutral-400">{c.telefone || '—'}</td>
                 <td className="p-4 text-right">
-                  <button onClick={() => verHistorico(c.id)} className="px-3 py-1 text-amber-400 hover:bg-amber-500/10 rounded text-xs font-medium transition-colors">
+                  <button onClick={() => verHistorico(c.id)} className="px-3 py-1 text-cyan-400 hover:bg-cyan-500/10 rounded text-xs font-medium transition-colors">
                     Ver Histórico
                   </button>
                 </td>

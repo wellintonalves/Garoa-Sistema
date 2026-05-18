@@ -118,7 +118,7 @@ export function Agenda() {
               <ChevronRight className="w-4 h-4" />
             </button>
           </div>
-          <button onClick={abrirModal} className="flex items-center gap-2 px-4 py-2 bg-amber-500 hover:bg-amber-400 text-neutral-900 text-sm font-semibold rounded-lg transition-colors">
+          <button onClick={abrirModal} className="flex items-center gap-2 px-4 py-2 bg-cyan-500 hover:bg-cyan-400 text-neutral-900 text-sm font-semibold rounded-lg transition-colors">
             <Plus className="w-4 h-4" /> Novo
           </button>
         </div>
@@ -133,9 +133,9 @@ export function Agenda() {
             {diasDaSemana.map((dia, i) => {
               const isHoje = dia.toDateString() === new Date().toDateString();
               return (
-                <div key={i} className={`p-3 text-center border-l border-neutral-800 ${isHoje ? 'bg-amber-500/5' : ''}`}>
+                <div key={i} className={`p-3 text-center border-l border-neutral-800 ${isHoje ? 'bg-cyan-500/5' : ''}`}>
                   <p className="text-xs text-neutral-500">{diasSemana[dia.getDay()]}</p>
-                  <p className={`text-lg font-bold ${isHoje ? 'text-amber-400' : 'text-white'}`}>{dia.getDate()}</p>
+                  <p className={`text-lg font-bold ${isHoje ? 'text-cyan-400' : 'text-white'}`}>{dia.getDate()}</p>
                 </div>
               );
             })}
@@ -183,34 +183,34 @@ export function Agenda() {
         <div className="space-y-4">
           <div>
             <label className="block text-xs font-medium text-neutral-400 mb-1">Cliente</label>
-            <select value={form.clienteId} onChange={(e) => setForm({ ...form, clienteId: e.target.value })} className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:border-amber-500">
+            <select value={form.clienteId} onChange={(e) => setForm({ ...form, clienteId: e.target.value })} className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:border-cyan-500">
               <option value="">Selecione...</option>
               {clientes.map((c) => <option key={c.id} value={c.id}>{c.usuario.nome}</option>)}
             </select>
           </div>
           <div>
             <label className="block text-xs font-medium text-neutral-400 mb-1">Barbeiro</label>
-            <select value={form.barbeiroId} onChange={(e) => setForm({ ...form, barbeiroId: e.target.value })} className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:border-amber-500">
+            <select value={form.barbeiroId} onChange={(e) => setForm({ ...form, barbeiroId: e.target.value })} className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:border-cyan-500">
               <option value="">Selecione...</option>
               {barbeiros.map((b) => <option key={b.id} value={b.id}>{b.usuario.nome}</option>)}
             </select>
           </div>
           <div>
             <label className="block text-xs font-medium text-neutral-400 mb-1">Serviço</label>
-            <select value={form.servicoId} onChange={(e) => setForm({ ...form, servicoId: e.target.value })} className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:border-amber-500">
+            <select value={form.servicoId} onChange={(e) => setForm({ ...form, servicoId: e.target.value })} className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:border-cyan-500">
               <option value="">Selecione...</option>
               {servicos.map((s) => <option key={s.id} value={s.id}>{s.nome} — R$ {Number(s.preco).toFixed(2)}</option>)}
             </select>
           </div>
           <div>
             <label className="block text-xs font-medium text-neutral-400 mb-1">Data e Horário</label>
-            <input type="datetime-local" value={form.dataHora} onChange={(e) => setForm({ ...form, dataHora: e.target.value })} className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:border-amber-500" />
+            <input type="datetime-local" value={form.dataHora} onChange={(e) => setForm({ ...form, dataHora: e.target.value })} className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:border-cyan-500" />
           </div>
           <div>
             <label className="block text-xs font-medium text-neutral-400 mb-1">Observações</label>
-            <textarea value={form.observacoes} onChange={(e) => setForm({ ...form, observacoes: e.target.value })} rows={2} className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:border-amber-500 resize-none" />
+            <textarea value={form.observacoes} onChange={(e) => setForm({ ...form, observacoes: e.target.value })} rows={2} className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:border-cyan-500 resize-none" />
           </div>
-          <button onClick={criarAgendamento} className="w-full py-2.5 bg-amber-500 hover:bg-amber-400 text-neutral-900 font-semibold text-sm rounded-lg transition-colors">
+          <button onClick={criarAgendamento} className="w-full py-2.5 bg-cyan-500 hover:bg-cyan-400 text-neutral-900 font-semibold text-sm rounded-lg transition-colors">
             Criar Agendamento
           </button>
         </div>

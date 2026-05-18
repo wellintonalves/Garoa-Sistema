@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-/* Tema customizado da barbearia — escuro com acentos dourados */
+/* Tema customizado da barbearia — escuro com acentos ciano */
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --color-gold-50: #fdf8ef;

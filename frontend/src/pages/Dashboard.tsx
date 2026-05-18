@@ -74,7 +74,7 @@ export function Dashboard() {
           titulo="Faturamento Hoje"
           valor={formatarMoeda(dados?.faturamentoDia || 0)}
           icone={DollarSign}
-          cor="amber"
+          cor="cyan"
           subtexto="Entradas do dia"
         />
         <StatCard

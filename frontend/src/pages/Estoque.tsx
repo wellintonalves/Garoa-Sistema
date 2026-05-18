@@ -44,7 +44,7 @@ export function Estoque() {
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-white">Estoque</h1>
-        <button onClick={() => setModalAberto(true)} className="flex items-center gap-2 px-4 py-2 bg-amber-500 hover:bg-amber-400 text-neutral-900 text-sm font-semibold rounded-lg transition-colors">
+        <button onClick={() => setModalAberto(true)} className="flex items-center gap-2 px-4 py-2 bg-cyan-500 hover:bg-cyan-400 text-neutral-900 text-sm font-semibold rounded-lg transition-colors">
           <Plus className="w-4 h-4" /> Novo Item
         </button>
       </div>
@@ -67,7 +67,7 @@ export function Estoque() {
                   <td className="p-4 text-white font-medium">{item.nome}</td>
                   <td className="p-4">
                     {editandoId === item.id ? (
-                      <input type="number" value={editQtd} onChange={e => setEditQtd(e.target.value)} className="w-20 px-2 py-1 bg-neutral-800 border border-amber-500 rounded text-white text-sm focus:outline-none" />
+                      <input type="number" value={editQtd} onChange={e => setEditQtd(e.target.value)} className="w-20 px-2 py-1 bg-neutral-800 border border-cyan-500 rounded text-white text-sm focus:outline-none" />
                     ) : (
                       <span className="text-neutral-300">{item.quantidade} {item.unidade}</span>
                     )}
@@ -90,7 +90,7 @@ export function Estoque() {
                         <button onClick={() => setEditandoId(null)} className="p-1.5 text-red-400 hover:bg-red-500/10 rounded"><X className="w-4 h-4" /></button>
                       </div>
                     ) : (
-                      <button onClick={() => { setEditandoId(item.id); setEditQtd(String(item.quantidade)); }} className="p-1.5 text-neutral-500 hover:text-amber-400 hover:bg-neutral-800 rounded"><Pencil className="w-4 h-4" /></button>
+                      <button onClick={() => { setEditandoId(item.id); setEditQtd(String(item.quantidade)); }} className="p-1.5 text-neutral-500 hover:text-cyan-400 hover:bg-neutral-800 rounded"><Pencil className="w-4 h-4" /></button>
                     )}
                   </td>
                 </tr>
@@ -103,20 +103,20 @@ export function Estoque() {
       <Modal aberto={modalAberto} onFechar={() => setModalAberto(false)} titulo="Novo Item">
         <div className="space-y-4">
           <div><label className="block text-xs font-medium text-neutral-400 mb-1">Nome</label>
-          <input value={form.nome} onChange={e => setForm({...form, nome: e.target.value})} className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:border-amber-500" /></div>
+          <input value={form.nome} onChange={e => setForm({...form, nome: e.target.value})} className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:border-cyan-500" /></div>
           <div className="grid grid-cols-2 gap-4">
             <div><label className="block text-xs font-medium text-neutral-400 mb-1">Quantidade</label>
-            <input type="number" value={form.quantidade} onChange={e => setForm({...form, quantidade: e.target.value})} className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:border-amber-500" /></div>
+            <input type="number" value={form.quantidade} onChange={e => setForm({...form, quantidade: e.target.value})} className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:border-cyan-500" /></div>
             <div><label className="block text-xs font-medium text-neutral-400 mb-1">Unidade</label>
-            <input value={form.unidade} onChange={e => setForm({...form, unidade: e.target.value})} className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:border-amber-500" /></div>
+            <input value={form.unidade} onChange={e => setForm({...form, unidade: e.target.value})} className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:border-cyan-500" /></div>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div><label className="block text-xs font-medium text-neutral-400 mb-1">Qtd. Mínima</label>
-            <input type="number" value={form.quantidadeMinima} onChange={e => setForm({...form, quantidadeMinima: e.target.value})} className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:border-amber-500" /></div>
+            <input type="number" value={form.quantidadeMinima} onChange={e => setForm({...form, quantidadeMinima: e.target.value})} className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:border-cyan-500" /></div>
             <div><label className="block text-xs font-medium text-neutral-400 mb-1">Custo (R$)</label>
-            <input type="number" step="0.01" value={form.custo} onChange={e => setForm({...form, custo: e.target.value})} className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:border-amber-500" /></div>
+            <input type="number" step="0.01" value={form.custo} onChange={e => setForm({...form, custo: e.target.value})} className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:border-cyan-500" /></div>
           </div>
-          <button onClick={criarItem} className="w-full py-2.5 bg-amber-500 hover:bg-amber-400 text-neutral-900 font-semibold text-sm rounded-lg transition-colors">Cadastrar</button>
+          <button onClick={criarItem} className="w-full py-2.5 bg-cyan-500 hover:bg-cyan-400 text-neutral-900 font-semibold text-sm rounded-lg transition-colors">Cadastrar</button>
         </div>
       </Modal>
     </div>
