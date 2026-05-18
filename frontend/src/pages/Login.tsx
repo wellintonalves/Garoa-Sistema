@@ -1,7 +1,7 @@
 // Página de Login — tela cheia com tema escuro e dourado
 import { useState, type FormEvent } from 'react';
 import { useAuth } from '../hooks/useAuth';
-import { Scissors, Mail, Lock, AlertCircle, UserPlus, User, CheckCircle2, ChevronLeft } from 'lucide-react';
+import { Mail, Lock, AlertCircle, UserPlus, User, CheckCircle2, ChevronLeft } from 'lucide-react';
 import api from '../api/client';
 
 export function Login() {
