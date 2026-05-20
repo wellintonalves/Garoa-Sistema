@@ -10,6 +10,7 @@ router.use(authMiddleware);
 router.use(roleMiddleware('ADMIN'));
 
 router.get('/', FinanceiroController.listar);
+router.get('/relatorio', FinanceiroController.relatorio); // Nova rota de relatório
 router.get('/resumo-dia', FinanceiroController.resumoDia);
 router.get('/ultimos-7-dias', FinanceiroController.ultimos7Dias);
 router.post('/', FinanceiroController.criar);

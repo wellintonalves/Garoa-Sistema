@@ -1,8 +1,9 @@
 // Página de Barbeiros — listagem com cards
 import { useEffect, useState } from 'react';
-import { User, Star, Plus } from 'lucide-react';
+import { User, Star, Plus, DollarSign } from 'lucide-react';
 import { Modal } from '../components/Modal';
 import { LoadingSpinner } from '../components/LoadingSpinner';
+import { useNavigate } from 'react-router-dom';
 import api from '../api/client';
 
 interface Barbeiro {
@@ -19,6 +20,7 @@ export function Barbeiros() {
   const [carregando, setCarregando] = useState(true);
   const [modalAberto, setModalAberto] = useState(false);
   const [form, setForm] = useState({ nome: '', email: '', senha: '', especialidades: '', comissaoPercent: '50' });
+  const navigate = useNavigate();
 
   async function carregar() {
     try {
@@ -72,8 +74,17 @@ export function Barbeiros() {
                 <span key={i} className="px-2 py-0.5 bg-neutral-800 text-neutral-400 text-xs rounded-full">{e}</span>
               ))}
             </div>
-            <div className="flex items-center gap-1.5 text-cyan-400 text-sm">
-              <Star className="w-3.5 h-3.5" /> <span>Comissão: {b.comissaoPercent}%</span>
+            <div className="flex items-center justify-between mt-4 border-t border-neutral-800 pt-3">
+              <div className="flex items-center gap-1.5 text-cyan-400 text-sm">
+                <Star className="w-3.5 h-3.5" /> <span>Comissão: {b.comissaoPercent}%</span>
+              </div>
+              <button 
+                onClick={() => navigate(`/relatorios?barbeiroId=${b.id}`)}
+                className="flex items-center gap-1 text-xs text-neutral-400 hover:text-cyan-400 transition-colors"
+                title="Ver comissões"
+              >
+                <DollarSign className="w-3.5 h-3.5" /> Comissões
+              </button>
             </div>
           </div>
         ))}

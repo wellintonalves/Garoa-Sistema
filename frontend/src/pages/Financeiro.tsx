@@ -5,9 +5,15 @@ import { Modal } from '../components/Modal';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import api from '../api/client';
 
+interface Barbeiro { id: string; usuario: { nome: string }; comissaoPercent: number; }
+interface Servico { id: string; nome: string; preco: string; }
 interface Lancamento {
   id: string; tipo: string; categoria: string; descricao: string | null;
   valor: string; formaPagamento: string; data: string;
+  barbeiro?: { usuario: { nome: string } };
+  servico?: { nome: string };
+  valorComissao?: string;
+  valorLiquido?: string;
 }
 interface ResumoDia {
   totalEntradas: number; totalSaidas: number; saldo: number;
@@ -25,35 +31,73 @@ export function Financeiro() {
   const [lancamentos, setLancamentos] = useState<Lancamento[]>([]);
   const [resumo, setResumo] = useState<ResumoDia | null>(null);
   const [grafico, setGrafico] = useState<DadoGrafico[]>([]);
+  
+  // Dependências do modal
+  const [barbeiros, setBarbeiros] = useState<Barbeiro[]>([]);
+  const [servicos, setServicos] = useState<Servico[]>([]);
+  
   const [carregando, setCarregando] = useState(true);
   const [modalAberto, setModalAberto] = useState(false);
-  const [form, setForm] = useState({ tipo: 'ENTRADA', categoria: '', descricao: '', valor: '', formaPagamento: 'PIX', data: new Date().toISOString().split('T')[0] });
+  
+  const formPadrao = { tipo: 'ENTRADA', categoria: '', descricao: '', valor: '', formaPagamento: 'PIX', data: new Date().toISOString().split('T')[0], servicoId: '', barbeiroId: '' };
+  const [form, setForm] = useState(formPadrao);
 
   async function carregar() {
     try {
       const hoje = new Date().toISOString().split('T')[0];
-      const [l, r, g] = await Promise.all([
+      const [l, r, g, b, s] = await Promise.all([
         api.get<Lancamento[]>('/financeiro', { params: { inicio: hoje, fim: hoje } }),
         api.get<ResumoDia>('/financeiro/resumo-dia', { params: { data: hoje } }),
         api.get<DadoGrafico[]>('/financeiro/ultimos-7-dias'),
+        api.get<Barbeiro[]>('/barbeiros'),
+        api.get<Servico[]>('/servicos')
       ]);
       setLancamentos(l.data); setResumo(r.data); setGrafico(g.data);
+      setBarbeiros(b.data.filter((bar: any) => bar.ativo)); 
+      setServicos(s.data.filter((srv: any) => srv.ativo));
     } catch (e) { console.error(e); }
     finally { setCarregando(false); }
   }
 
   useEffect(() => { carregar(); }, []);
 
+  // Preencher valor automaticamente e definir categoria
+  useEffect(() => {
+    if (form.servicoId) {
+      const servico = servicos.find(s => s.id === form.servicoId);
+      if (servico) {
+        setForm(prev => ({ ...prev, valor: servico.preco, categoria: 'Serviço Prestado', tipo: 'ENTRADA' }));
+      }
+    }
+  }, [form.servicoId, servicos]);
+
   async function criarLancamento() {
     try {
-      await api.post('/financeiro', { ...form, valor: Number(form.valor) });
-      setModalAberto(false); setForm({ tipo: 'ENTRADA', categoria: '', descricao: '', valor: '', formaPagamento: 'PIX', data: new Date().toISOString().split('T')[0] });
+      const payload = { 
+        ...form, 
+        valor: Number(form.valor),
+        servicoId: form.servicoId || undefined,
+        barbeiroId: form.barbeiroId || undefined
+      };
+      await api.post('/financeiro', payload);
+      setModalAberto(false); setForm(formPadrao);
       carregar();
     } catch (e) { console.error(e); }
   }
 
   const fmt = (v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   const maxGrafico = Math.max(...grafico.map(d => Math.max(d.entradas, d.saidas)), 1);
+
+  // Cálculo de prévia de comissão no form
+  let previaComissao = 0;
+  let previaLiquido = 0;
+  if (form.tipo === 'ENTRADA' && form.barbeiroId && form.valor) {
+    const barbeiroSelecionado = barbeiros.find(b => b.id === form.barbeiroId);
+    if (barbeiroSelecionado) {
+      previaComissao = (Number(form.valor) * barbeiroSelecionado.comissaoPercent) / 100;
+      previaLiquido = Number(form.valor) - previaComissao;
+    }
+  }
 
   if (carregando) return <LoadingSpinner />;
 
@@ -117,7 +161,13 @@ export function Financeiro() {
             <div key={l.id} className="flex items-center justify-between p-4 hover:bg-neutral-800/30 transition-colors">
               <div className="flex items-center gap-3">
                 <div className={`w-2 h-2 rounded-full ${l.tipo === 'ENTRADA' ? 'bg-green-400' : 'bg-red-400'}`} />
-                <div><p className="text-sm text-white">{l.categoria}</p>{l.descricao && <p className="text-xs text-neutral-500">{l.descricao}</p>}</div>
+                <div>
+                  <p className="text-sm text-white">{l.categoria}</p>
+                  <p className="text-xs text-neutral-500">
+                    {l.servico ? `${l.servico.nome}` : l.descricao} 
+                    {l.barbeiro && ` • Barbeiro: ${l.barbeiro.usuario.nome}`}
+                  </p>
+                </div>
               </div>
               <div className="text-right">
                 <p className={`text-sm font-medium ${l.tipo === 'ENTRADA' ? 'text-green-400' : 'text-red-400'}`}>{l.tipo === 'ENTRADA' ? '+' : '-'} {fmt(Number(l.valor))}</p>
@@ -139,16 +189,60 @@ export function Financeiro() {
               </button>
             ))}
           </div>
-          <div><label className="block text-xs font-medium text-neutral-400 mb-1">Categoria</label>
-          <input value={form.categoria} onChange={e => setForm({...form, categoria: e.target.value})} placeholder="Ex: Serviço, Produto, Despesa" className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:border-cyan-500" /></div>
-          <div><label className="block text-xs font-medium text-neutral-400 mb-1">Valor (R$)</label>
-          <input type="number" step="0.01" value={form.valor} onChange={e => setForm({...form, valor: e.target.value})} className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:border-cyan-500" /></div>
-          <div><label className="block text-xs font-medium text-neutral-400 mb-1">Forma de Pagamento</label>
-          <select value={form.formaPagamento} onChange={e => setForm({...form, formaPagamento: e.target.value})} className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:border-cyan-500">
-            {formasPagamento.map(f => <option key={f} value={f}>{labelsForma[f]}</option>)}
-          </select></div>
-          <div><label className="block text-xs font-medium text-neutral-400 mb-1">Data</label>
-          <input type="date" value={form.data} onChange={e => setForm({...form, data: e.target.value})} className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:border-cyan-500" /></div>
+
+          {form.tipo === 'ENTRADA' && (
+            <>
+              <div>
+                <label className="block text-xs font-medium text-neutral-400 mb-1">Serviço (Opcional)</label>
+                <select value={form.servicoId} onChange={e => setForm({...form, servicoId: e.target.value})} className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:border-cyan-500">
+                  <option value="">Selecione um serviço...</option>
+                  {servicos.map(s => <option key={s.id} value={s.id}>{s.nome}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-neutral-400 mb-1">Barbeiro (Opcional)</label>
+                <select value={form.barbeiroId} onChange={e => setForm({...form, barbeiroId: e.target.value})} className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:border-cyan-500">
+                  <option value="">Selecione um barbeiro...</option>
+                  {barbeiros.map(b => <option key={b.id} value={b.id}>{b.usuario.nome}</option>)}
+                </select>
+              </div>
+            </>
+          )}
+
+          <div>
+            <label className="block text-xs font-medium text-neutral-400 mb-1">Categoria</label>
+            <input value={form.categoria} onChange={e => setForm({...form, categoria: e.target.value})} placeholder="Ex: Serviço Prestado, Produto, Conta de Luz" className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:border-cyan-500" />
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-neutral-400 mb-1">Descrição / Observação</label>
+            <input value={form.descricao} onChange={e => setForm({...form, descricao: e.target.value})} placeholder="Opcional" className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:border-cyan-500" />
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-neutral-400 mb-1">Valor (R$)</label>
+            <input type="number" step="0.01" value={form.valor} onChange={e => setForm({...form, valor: e.target.value})} className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:border-cyan-500" />
+          </div>
+
+          {form.tipo === 'ENTRADA' && form.barbeiroId && form.valor && (
+            <div className="p-3 bg-neutral-900 border border-cyan-500/30 rounded-lg text-sm text-cyan-300">
+              <p>Comissão do Barbeiro: <strong>{fmt(previaComissao)}</strong></p>
+              <p>Líquido Barbearia: <strong>{fmt(previaLiquido)}</strong></p>
+            </div>
+          )}
+
+          <div>
+            <label className="block text-xs font-medium text-neutral-400 mb-1">Forma de Pagamento</label>
+            <select value={form.formaPagamento} onChange={e => setForm({...form, formaPagamento: e.target.value})} className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:border-cyan-500">
+              {formasPagamento.map(f => <option key={f} value={f}>{labelsForma[f]}</option>)}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-neutral-400 mb-1">Data</label>
+            <input type="date" value={form.data} onChange={e => setForm({...form, data: e.target.value})} className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:border-cyan-500" />
+          </div>
+
           <button onClick={criarLancamento} className="w-full py-2.5 bg-cyan-500 hover:bg-cyan-400 text-neutral-900 font-semibold text-sm rounded-lg transition-colors">Registrar</button>
         </div>
       </Modal>

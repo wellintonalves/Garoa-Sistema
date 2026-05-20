@@ -82,4 +82,27 @@ export class FinanceiroController {
       res.status(500).json({ erro: msg });
     }
   }
+
+  /** GET /financeiro/relatorio */
+  static async relatorio(req: AuthRequest, res: Response): Promise<void> {
+    try {
+      const { inicio, fim, barbeiroId } = req.query;
+      
+      if (!inicio || !fim) {
+        res.status(400).json({ erro: 'Filtros de data (inicio e fim) são obrigatórios' });
+        return;
+      }
+      
+      const dados = await FinanceiroService.relatorio({
+        inicio: inicio as string,
+        fim: fim as string,
+        barbeiroId: barbeiroId as string
+      });
+      
+      res.json(dados);
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : 'Erro ao gerar relatório financeiro';
+      res.status(500).json({ erro: msg });
+    }
+  }
 }

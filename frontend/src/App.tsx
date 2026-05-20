@@ -10,6 +10,7 @@ import { Barbeiros } from './pages/Barbeiros';
 import { Servicos } from './pages/Servicos';
 import { Clientes } from './pages/Clientes';
 import { Financeiro } from './pages/Financeiro';
+import { Relatorios } from './pages/Relatorios';
 import { Estoque } from './pages/Estoque';
 import { LoadingSpinner } from './components/LoadingSpinner';
 import { type ReactNode } from 'react';
@@ -46,6 +47,7 @@ export function App() {
             <Route path="servicos" element={<Servicos />} />
             <Route path="clientes" element={<Clientes />} />
             <Route path="financeiro" element={<Financeiro />} />
+            <Route path="relatorios" element={<Relatorios />} />
             <Route path="estoque" element={<Estoque />} />
           </Route>
 

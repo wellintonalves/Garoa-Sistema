@@ -64,6 +64,7 @@ model Barbeiro {
 
   usuario      Usuario       @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
   agendamentos Agendamento[]
+  lancamentos  LancamentoFinanceiro[]
 
   @@map("barbeiros")
 }
@@ -91,6 +92,7 @@ model Servico {
   ativo           Boolean @default(true)
 
   agendamentos Agendamento[]
+  lancamentos  LancamentoFinanceiro[]
 
   @@map("servicos")
 }
@@ -123,10 +125,18 @@ model LancamentoFinanceiro {
   valor          Decimal        @db.Decimal(10, 2)
   formaPagamento FormaPagamento
   agendamentoId  String?
+  
+  barbeiroId     String?
+  servicoId      String?
+  valorComissao  Decimal?       @db.Decimal(10, 2)
+  valorLiquido   Decimal?       @db.Decimal(10, 2)
+  
   data           DateTime
   createdAt      DateTime       @default(now())
 
   agendamento Agendamento? @relation(fields: [agendamentoId], references: [id], onDelete: SetNull)
+  barbeiro    Barbeiro?    @relation(fields: [barbeiroId], references: [id], onDelete: SetNull)
+  servico     Servico?     @relation(fields: [servicoId], references: [id], onDelete: SetNull)
 
   @@map("lancamentos_financeiros")
 }
