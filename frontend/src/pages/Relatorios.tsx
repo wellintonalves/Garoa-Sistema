@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Filter, DollarSign, Users, Scissors } from 'lucide-react';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import api from '../api/client';
 
 export function Relatorios() {
+  const [searchParams] = useSearchParams();
   const [carregando, setCarregando] = useState(false);
   const [barbeiros, setBarbeiros] = useState<any[]>([]);
   
@@ -11,7 +13,8 @@ export function Relatorios() {
   const dataPrimeiroDia = new Date(dataAtual.getFullYear(), dataAtual.getMonth(), 1).toISOString().split('T')[0];
   const dataHoje = dataAtual.toISOString().split('T')[0];
 
-  const [filtros, setFiltros] = useState({ inicio: dataPrimeiroDia, fim: dataHoje, barbeiroId: 'todos' });
+  const barbeiroIdUrl = searchParams.get('barbeiroId') || 'todos';
+  const [filtros, setFiltros] = useState({ inicio: dataPrimeiroDia, fim: dataHoje, barbeiroId: barbeiroIdUrl });
   const [relatorio, setRelatorio] = useState<any>(null);
 
   useEffect(() => {
