@@ -25,7 +25,7 @@ export class RelatorioService {
 
     // Faturamento total
     const faturamento = agendamentos.reduce(
-      (total, ag) => total + Number(ag.valorCobrado),
+      (total: any, ag: any) => total + Number(ag.valorCobrado),
       0
     );
 
@@ -45,7 +45,7 @@ export class RelatorioService {
     }> = [];
 
     const agrupado = new Map<string, typeof agendamentos>();
-    agendamentos.forEach((ag) => {
+    agendamentos.forEach((ag: any) => {
       const lista = agrupado.get(ag.barbeiroId) || [];
       lista.push(ag);
       agrupado.set(ag.barbeiroId, lista);
@@ -58,7 +58,7 @@ export class RelatorioService {
       });
 
       const faturamentoBarbeiro = ags.reduce(
-        (total, ag) => total + Number(ag.valorCobrado),
+        (total: any, ag: any) => total + Number(ag.valorCobrado),
         0
       );
 

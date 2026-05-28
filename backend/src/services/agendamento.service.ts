@@ -143,7 +143,7 @@ export class AgendamentoService {
         const slotInicio = new Date(inicio);
         slotInicio.setHours(hora, minuto, 0, 0);
 
-        const agendamentoNoSlot = agendamentos.find((ag) => {
+        const agendamentoNoSlot = agendamentos.find((ag: any) => {
           const agInicio = new Date(ag.dataHora);
           const agFim = new Date(agInicio.getTime() + ag.servico.duracaoMinutos * 60000);
           return slotInicio >= agInicio && slotInicio < agFim;

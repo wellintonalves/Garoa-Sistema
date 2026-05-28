@@ -27,7 +27,7 @@ export class EstoqueService {
   /** Lista itens com estoque baixo (abaixo do mínimo) */
   static async estoqueBaixo() {
     const itens = await prisma.estoque.findMany();
-    return itens.filter((item) => item.quantidade <= item.quantidadeMinima);
+    return itens.filter((item: any) => item.quantidade <= item.quantidadeMinima);
   }
 
   /** Cria novo item no estoque */

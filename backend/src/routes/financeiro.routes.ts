@@ -11,6 +11,7 @@ router.use(roleMiddleware('ADMIN'));
 
 router.get('/', FinanceiroController.listar);
 router.get('/relatorio', FinanceiroController.relatorio);
+router.get('/dashboard', FinanceiroController.dashboardResumo);
 router.get('/resumo-dia', FinanceiroController.resumoDia);
 router.get('/ultimos-7-dias', FinanceiroController.ultimos7Dias);
 router.post('/', FinanceiroController.criar);

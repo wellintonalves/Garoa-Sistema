@@ -107,7 +107,7 @@ export class FinanceiroService {
     let totalEntradas = 0;
     let totalSaidas = 0;
 
-    lancamentos.forEach((l) => {
+    lancamentos.forEach((l: any) => {
       const valor = Number(l.valor);
       const forma = l.formaPagamento;
 
@@ -151,7 +151,7 @@ export class FinanceiroService {
       let entradas = 0;
       let saidas = 0;
 
-      lancamentos.forEach((l) => {
+      lancamentos.forEach((l: any) => {
         const valor = Number(l.valor);
         if (l.tipo === 'ENTRADA') entradas += valor;
         else saidas += valor;
@@ -202,7 +202,7 @@ export class FinanceiroService {
       porBarbeiro: {} as Record<string, { nome: string; bruto: number; comissao: number; liquido: number }>
     };
 
-    lancamentos.forEach((l) => {
+    lancamentos.forEach((l: any) => {
       const valor = Number(l.valor);
       
       if (l.tipo === 'ENTRADA') {
@@ -231,5 +231,95 @@ export class FinanceiroService {
     });
 
     return { consolidado, lancamentos };
+  }
+
+  /** Resumo para o Dashboard — aceita período customizável */
+  static async dashboardResumo(inicio: string, fim: string) {
+    const dataInicio = new Date(inicio);
+    const dataFim = new Date(fim);
+    dataFim.setDate(dataFim.getDate() + 1); // inclui o dia final
+
+    // --- Lançamentos financeiros do período ---
+    const lancamentos = await prisma.lancamentoFinanceiro.findMany({
+      where: { data: { gte: dataInicio, lt: dataFim } },
+      include: { servico: { select: { nome: true } } },
+      orderBy: { data: 'asc' },
+    });
+
+    let totalEntradas = 0;
+    let totalSaidas = 0;
+    let totalAtendimentos = 0;
+    const porDia: Record<string, { entradas: number; saidas: number }> = {};
+    const servicoContagem: Record<string, { nome: string; count: number; total: number }> = {};
+
+    lancamentos.forEach((l: any) => {
+      const valor = Number(l.valor);
+      const diaKey = new Date(l.data).toISOString().split('T')[0];
+
+      if (!porDia[diaKey]) porDia[diaKey] = { entradas: 0, saidas: 0 };
+
+      if (l.tipo === 'ENTRADA') {
+        totalEntradas += valor;
+        porDia[diaKey].entradas += valor;
+        if (l.barbeiroId) totalAtendimentos++;
+
+        // Contagem de serviços
+        if (l.servicoId && l.servico) {
+          if (!servicoContagem[l.servicoId]) {
+            servicoContagem[l.servicoId] = { nome: l.servico.nome, count: 0, total: 0 };
+          }
+          servicoContagem[l.servicoId].count++;
+          servicoContagem[l.servicoId].total += valor;
+        }
+      } else {
+        totalSaidas += valor;
+        porDia[diaKey].saidas += valor;
+      }
+    });
+
+    // Preencher dias sem lançamento no range
+    const porDiaCompleto: Array<{ data: string; entradas: number; saidas: number }> = [];
+    const cursor = new Date(inicio);
+    const fimLoop = new Date(fim);
+    while (cursor <= fimLoop) {
+      const key = cursor.toISOString().split('T')[0];
+      porDiaCompleto.push({
+        data: key,
+        entradas: porDia[key]?.entradas || 0,
+        saidas: porDia[key]?.saidas || 0,
+      });
+      cursor.setDate(cursor.getDate() + 1);
+    }
+
+    // Ticket médio
+    const ticketMedio = totalAtendimentos > 0 ? totalEntradas / totalAtendimentos : 0;
+
+    // Serviço mais realizado
+    const servicoMaisRealizado = Object.values(servicoContagem).sort((a, b) => b.count - a.count)[0] || null;
+
+    // --- Agendamentos no período ---
+    const agendamentos = await prisma.agendamento.findMany({
+      where: { dataHora: { gte: dataInicio, lt: dataFim } },
+      select: { status: true },
+    });
+
+    const concluidos = agendamentos.filter((a: any) => a.status === 'CONCLUIDO').length;
+    const pendentes = agendamentos.filter((a: any) => a.status === 'AGUARDANDO' || a.status === 'CONFIRMADO').length;
+
+    // --- Estoque baixo (snapshot atual, não depende de período) ---
+    const todosEstoque = await prisma.estoque.findMany();
+    const estoqueBaixo = todosEstoque.filter((i: any) => i.quantidade <= i.quantidadeMinima).length;
+
+    return {
+      totalEntradas,
+      totalSaidas,
+      saldo: totalEntradas - totalSaidas,
+      totalAtendimentos: concluidos,
+      pendentes,
+      estoqueBaixo,
+      ticketMedio,
+      servicoMaisRealizado,
+      porDia: porDiaCompleto,
+    };
   }
 }
