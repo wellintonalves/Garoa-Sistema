@@ -89,7 +89,16 @@ export function Relatorios() {
       }
     } catch (e: any) {
       console.error('Erro ao buscar relatório:', e);
-      const mensagem = e?.response?.data?.erro || e?.message || 'Erro desconhecido ao buscar relatório.';
+      let mensagem: string;
+      if (e?.response?.status === 404) {
+        mensagem = 'Endpoint de relatório não encontrado no servidor. O backend pode estar desatualizado — aguarde o redeploy ou entre em contato com o administrador.';
+      } else if (e?.response?.data?.erro) {
+        mensagem = e.response.data.erro;
+      } else if (e?.code === 'ERR_NETWORK') {
+        mensagem = 'Não foi possível conectar ao servidor. Verifique se o backend está rodando.';
+      } else {
+        mensagem = e?.message || 'Erro desconhecido ao buscar relatório.';
+      }
       setErro(mensagem);
       setRelatorio(null);
     } finally {
