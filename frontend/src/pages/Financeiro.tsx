@@ -100,7 +100,7 @@ export function Financeiro() {
 
   return (
     <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-4">
         <h1
           style={{
             fontFamily: 'var(--font-display)',

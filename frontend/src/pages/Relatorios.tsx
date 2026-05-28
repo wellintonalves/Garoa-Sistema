@@ -134,7 +134,7 @@ export function Relatorios() {
             <h3 style={{ fontFamily: 'var(--font-body)', fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)', padding: '1.25rem', borderBottom: '1px solid var(--border)' }}>
               Detalhamento dos Lançamentos
             </h3>
-            <div style={{ overflowX: 'auto' }}>
+            <div className="table-wrapper">
               <table className="ds-table">
                 <thead>
                   <tr>

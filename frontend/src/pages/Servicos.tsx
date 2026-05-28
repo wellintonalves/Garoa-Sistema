@@ -47,7 +47,7 @@ export function Servicos() {
 
   return (
     <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-4">
         <h1
           style={{
             fontFamily: 'var(--font-display)',
@@ -64,7 +64,8 @@ export function Servicos() {
       </div>
 
       <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-        <table className="ds-table">
+        <div className="table-wrapper">
+          <table className="ds-table">
           <thead><tr>
             <th>Serviço</th>
             <th>Preço</th>
@@ -131,7 +132,8 @@ export function Servicos() {
               </tr>
             ))}
           </tbody>
-        </table>
+          </table>
+        </div>
       </div>
 
       <Modal aberto={modalAberto} onFechar={() => setModalAberto(false)} titulo="Novo Serviço">

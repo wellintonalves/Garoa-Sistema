@@ -66,9 +66,8 @@ export function Clientes() {
         Clientes
       </h1>
 
-      {/* Busca */}
-      <div className="flex gap-2">
-        <div className="relative flex-1 max-w-md">
+      <div className="flex flex-col sm:flex-row gap-2">
+        <div className="relative w-full sm:max-w-md">
           <Search size={14} strokeWidth={1.5} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }} />
           <input
             value={busca}
@@ -86,8 +85,9 @@ export function Clientes() {
 
       {/* Tabela */}
       <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-        <table className="ds-table">
-          <thead>
+        <div className="table-wrapper">
+          <table className="ds-table">
+            <thead>
             <tr>
               <th>Nome</th>
               <th>Email</th>
@@ -146,6 +146,7 @@ export function Clientes() {
             )}
           </tbody>
         </table>
+        </div>
       </div>
 
       {/* Modal de histórico */}

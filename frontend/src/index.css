@@ -78,6 +78,7 @@
 /* === SCROLLBAR CUSTOMIZADA === */
 ::-webkit-scrollbar {
   width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -267,6 +268,7 @@ body {
   padding: 3px 8px;
   border-radius: 0;
   display: inline-block;
+  white-space: nowrap;
 }
 
 .badge-confirmed {
@@ -286,10 +288,17 @@ body {
   color: var(--text-muted);
 }
 
-/* === TABELAS === */
+/* === TABELAS RESPONSIVAS === */
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 .ds-table {
   width: 100%;
   border-collapse: collapse;
+  min-width: 600px; /* Garante que a tabela não fique espremida */
 }
 .ds-table thead tr {
   border-bottom: 1px solid var(--border);
@@ -303,6 +312,7 @@ body {
   padding: 10px 12px;
   text-align: left;
   font-weight: 500;
+  white-space: nowrap;
 }
 .ds-table td {
   font-family: var(--font-body);
