@@ -1,4 +1,4 @@
-// Dashboard — painel principal com 4 cards + resumo
+// Dashboard — painel principal com metric cards + resumo
 import { useEffect, useState } from 'react';
 import { DollarSign, CalendarCheck, Clock, AlertTriangle } from 'lucide-react';
 import { StatCard } from '../components/StatCard';
@@ -57,45 +57,58 @@ export function Dashboard() {
     valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-white">
-          Olá, {usuario?.nome?.split(' ')[0]}! 👋
+        <h1
+          style={{
+            fontFamily: 'var(--font-display)',
+            fontSize: '32px',
+            color: 'var(--text-primary)',
+            letterSpacing: '0.04em',
+            lineHeight: 1.1,
+          }}
+        >
+          Olá, {usuario?.nome?.split(' ')[0]}
         </h1>
-        <p className="text-neutral-500 text-sm mt-1">
-          Aqui está o resumo do seu dia — {new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}
+        <p
+          style={{
+            fontFamily: 'var(--font-mono)',
+            fontSize: '11px',
+            color: 'var(--text-muted)',
+            marginTop: '8px',
+            letterSpacing: '0.06em',
+          }}
+        >
+          {new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' }).toUpperCase()}
         </p>
       </div>
 
       {/* Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="dashboard-grid">
         <StatCard
           titulo="Faturamento Hoje"
           valor={formatarMoeda(dados?.faturamentoDia || 0)}
           icone={DollarSign}
-          cor="cyan"
           subtexto="Entradas do dia"
+          destaque
         />
         <StatCard
           titulo="Atendimentos"
           valor={String(dados?.atendimentosDia || 0)}
           icone={CalendarCheck}
-          cor="green"
           subtexto="Concluídos hoje"
         />
         <StatCard
           titulo="Pendentes"
           valor={String(dados?.pendentes || 0)}
           icone={Clock}
-          cor="blue"
           subtexto="Aguardando / Confirmados"
         />
         <StatCard
           titulo="Estoque Baixo"
           valor={String(dados?.estoqueBaixo || 0)}
           icone={AlertTriangle}
-          cor="red"
           subtexto="Itens abaixo do mínimo"
         />
       </div>

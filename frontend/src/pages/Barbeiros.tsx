@@ -1,6 +1,6 @@
 // Página de Barbeiros — listagem com cards + seção de comissões por período
 import { useEffect, useState } from 'react';
-import { User, Star, Plus, DollarSign, TrendingUp, Calendar } from 'lucide-react';
+import { Star, Plus, DollarSign, TrendingUp, Calendar } from 'lucide-react';
 import { Modal } from '../components/Modal';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { useNavigate } from 'react-router-dom';
@@ -75,45 +75,124 @@ export function Barbeiros() {
 
   const fmt = (v: number) => Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
+  // Pega iniciais do nome para avatar
+  function getIniciais(nome: string) {
+    return nome.split(' ').slice(0, 2).map(p => p[0]).join('').toUpperCase();
+  }
+
   if (carregando) return <LoadingSpinner />;
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-white">Barbeiros</h1>
-        <button onClick={() => setModalAberto(true)} className="flex items-center gap-2 px-4 py-2 bg-cyan-500 hover:bg-cyan-400 text-neutral-900 text-sm font-semibold rounded-lg transition-colors">
-          <Plus className="w-4 h-4" /> Novo
+        <h1
+          style={{
+            fontFamily: 'var(--font-display)',
+            fontSize: '32px',
+            color: 'var(--text-primary)',
+            letterSpacing: '0.04em',
+          }}
+        >
+          Barbeiros
+        </h1>
+        <button onClick={() => setModalAberto(true)} className="btn-primary">
+          <Plus size={14} strokeWidth={1.5} /> Novo
         </button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '12px' }}>
         {barbeiros.map(b => (
-          <div key={b.id} className="bg-neutral-900 border border-neutral-800 rounded-xl p-5 hover:border-neutral-700 transition-colors">
+          <div
+            key={b.id}
+            className="card"
+            style={{ borderLeft: b.ativo ? '2px solid var(--amber)' : '2px solid var(--border)' }}
+          >
             <div className="flex items-center gap-4 mb-4">
-              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-cyan-400 to-cyan-600 flex items-center justify-center flex-shrink-0">
-                <User className="w-6 h-6 text-neutral-900" />
+              {/* Avatar com iniciais */}
+              <div
+                className="flex items-center justify-center flex-shrink-0"
+                style={{
+                  width: '48px',
+                  height: '48px',
+                  background: 'var(--amber-dim)',
+                  fontFamily: 'var(--font-display)',
+                  fontSize: '20px',
+                  color: 'var(--amber-light)',
+                  letterSpacing: '0.04em',
+                }}
+              >
+                {getIniciais(b.usuario.nome)}
               </div>
               <div className="min-w-0">
-                <h3 className="text-white font-semibold truncate">{b.usuario.nome}</h3>
-                <p className="text-neutral-500 text-sm truncate">{b.usuario.email}</p>
+                <h3
+                  className="truncate"
+                  style={{
+                    fontFamily: 'var(--font-body)',
+                    fontSize: '14px',
+                    fontWeight: 700,
+                    color: 'var(--text-primary)',
+                  }}
+                >
+                  {b.usuario.nome}
+                </h3>
+                <p
+                  className="truncate"
+                  style={{
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: '10px',
+                    color: 'var(--text-muted)',
+                    letterSpacing: '0.04em',
+                  }}
+                >
+                  {b.usuario.email}
+                </p>
               </div>
-              <div className={`ml-auto w-3 h-3 rounded-full flex-shrink-0 ${b.ativo ? 'bg-green-400' : 'bg-neutral-600'}`} />
+              {/* Indicador ativo */}
+              <div
+                className="ml-auto flex-shrink-0 badge"
+                style={b.ativo
+                  ? { background: '#1A3D2A', color: 'var(--success-text)' }
+                  : { background: 'var(--bg-surface2)', color: 'var(--text-disabled)' }
+                }
+              >
+                {b.ativo ? 'Ativo' : 'Inativo'}
+              </div>
             </div>
             <div className="flex flex-wrap gap-1.5 mb-3">
               {b.especialidades.map((e, i) => (
-                <span key={i} className="px-2 py-0.5 bg-neutral-800 text-neutral-400 text-xs rounded-full">{e}</span>
+                <span
+                  key={i}
+                  className="badge badge-info"
+                >
+                  {e}
+                </span>
               ))}
             </div>
-            <div className="flex items-center justify-between mt-4 border-t border-neutral-800 pt-3">
-              <div className="flex items-center gap-1.5 text-cyan-400 text-sm">
-                <Star className="w-3.5 h-3.5" /> <span>Comissão: {b.comissaoPercent}%</span>
+            <div
+              className="flex items-center justify-between mt-4 pt-3"
+              style={{ borderTop: '1px solid var(--border)' }}
+            >
+              <div className="flex items-center gap-1.5" style={{ color: 'var(--amber)', fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.04em' }}>
+                <Star size={14} strokeWidth={1.5} /> <span>Comissão: {b.comissaoPercent}%</span>
               </div>
-              <button 
+              <button
                 onClick={() => navigate(`/relatorios?barbeiroId=${b.id}`)}
-                className="flex items-center gap-1 text-xs text-neutral-400 hover:text-cyan-400 transition-colors"
+                className="flex items-center gap-1 transition-colors"
+                style={{
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: '9px',
+                  letterSpacing: '0.12em',
+                  textTransform: 'uppercase',
+                  color: 'var(--text-muted)',
+                  background: 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--amber)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-muted)'; }}
                 title="Ver comissões"
               >
-                <DollarSign className="w-3.5 h-3.5" /> Comissões
+                <DollarSign size={12} strokeWidth={1.5} /> Comissões
               </button>
             </div>
           </div>
@@ -121,78 +200,99 @@ export function Barbeiros() {
       </div>
 
       {/* Seção de Comissões por Período */}
-      <div className="bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden">
-        <div className="p-5 border-b border-neutral-800">
+      <div className="card">
+        <div style={{ paddingBottom: '1.25rem', borderBottom: '1px solid var(--border)', marginBottom: '1.25rem' }}>
           <div className="flex flex-wrap items-end gap-4">
             <div className="flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-cyan-400" />
-              <h2 className="text-lg font-semibold text-white">Comissões por Barbeiro</h2>
+              <TrendingUp size={16} strokeWidth={1.5} style={{ color: 'var(--amber)' }} />
+              <h2
+                style={{
+                  fontFamily: 'var(--font-body)',
+                  fontSize: '16px',
+                  fontWeight: 700,
+                  color: 'var(--text-primary)',
+                }}
+              >
+                Comissões por Barbeiro
+              </h2>
             </div>
             <div className="flex flex-wrap items-end gap-3 ml-auto">
               <div>
-                <label className="block text-xs font-medium text-neutral-400 mb-1">De</label>
-                <input type="date" value={comissaoInicio} onChange={e => setComissaoInicio(e.target.value)} className="px-3 py-1.5 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:border-cyan-500" />
+                <label className="input-label">De</label>
+                <input type="date" value={comissaoInicio} onChange={e => setComissaoInicio(e.target.value)} className="ds-input" />
               </div>
               <div>
-                <label className="block text-xs font-medium text-neutral-400 mb-1">Até</label>
-                <input type="date" value={comissaoFim} onChange={e => setComissaoFim(e.target.value)} className="px-3 py-1.5 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:border-cyan-500" />
+                <label className="input-label">Até</label>
+                <input type="date" value={comissaoFim} onChange={e => setComissaoFim(e.target.value)} className="ds-input" />
               </div>
-              <button onClick={carregarComissoes} className="flex items-center gap-1.5 px-3 py-1.5 bg-cyan-500 hover:bg-cyan-400 text-neutral-900 text-sm font-semibold rounded-lg transition-colors">
-                <Calendar className="w-3.5 h-3.5" /> Buscar
+              <button onClick={carregarComissoes} className="btn-primary">
+                <Calendar size={14} strokeWidth={1.5} /> Buscar
               </button>
             </div>
           </div>
         </div>
 
-        <div className="p-5">
+        <div>
           {carregandoComissoes ? (
             <LoadingSpinner />
           ) : Object.keys(comissoes).length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '12px' }}>
               {Object.entries(comissoes).map(([id, b]) => (
-                <div key={id} className="p-4 bg-neutral-800/50 border border-neutral-700/50 rounded-xl">
+                <div key={id} className="card-featured">
                   <div className="flex items-center gap-3 mb-3">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500/30 to-cyan-600/30 flex items-center justify-center">
-                      <User className="w-4 h-4 text-cyan-400" />
+                    <div
+                      className="flex items-center justify-center"
+                      style={{
+                        width: '36px',
+                        height: '36px',
+                        background: 'var(--amber-dim)',
+                        fontFamily: 'var(--font-display)',
+                        fontSize: '16px',
+                        color: 'var(--amber-light)',
+                      }}
+                    >
+                      {getIniciais(b.nome)}
                     </div>
-                    <p className="text-white font-semibold">{b.nome}</p>
+                    <p style={{ fontFamily: 'var(--font-body)', fontWeight: 700, color: 'var(--text-primary)', fontSize: '13px' }}>{b.nome}</p>
                   </div>
-                  <div className="space-y-2 text-sm">
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '13px' }}>
                     <div className="flex justify-between items-center">
-                      <span className="text-neutral-500">Produzido</span>
-                      <span className="text-white font-medium">{fmt(b.bruto)}</span>
+                      <span style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Produzido</span>
+                      <span style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-mono)', fontSize: '12px' }}>{fmt(b.bruto)}</span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-neutral-500">Comissão</span>
-                      <span className="text-amber-400 font-medium">{fmt(b.comissao)}</span>
+                      <span style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Comissão</span>
+                      <span style={{ color: 'var(--amber)', fontFamily: 'var(--font-mono)', fontSize: '12px', fontWeight: 500 }}>{fmt(b.comissao)}</span>
                     </div>
-                    <div className="flex justify-between items-center border-t border-neutral-700 pt-2 mt-2">
-                      <span className="text-neutral-500">Líquido Barbearia</span>
-                      <span className="text-green-400 font-semibold">{fmt(b.liquido)}</span>
+                    <div className="flex justify-between items-center" style={{ borderTop: '1px solid var(--border)', paddingTop: '8px', marginTop: '4px' }}>
+                      <span style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Líquido</span>
+                      <span style={{ color: 'var(--success-text)', fontFamily: 'var(--font-mono)', fontSize: '12px', fontWeight: 500 }}>{fmt(b.liquido)}</span>
                     </div>
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            <p className="text-center text-neutral-500 text-sm py-6">Nenhuma comissão encontrada para o período selecionado.</p>
+            <p style={{ textAlign: 'center', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', fontSize: '11px', padding: '2rem 0' }}>
+              Nenhuma comissão encontrada para o período selecionado.
+            </p>
           )}
         </div>
       </div>
 
       <Modal aberto={modalAberto} onFechar={() => setModalAberto(false)} titulo="Novo Barbeiro">
-        <div className="space-y-4">
-          <div><label className="block text-xs font-medium text-neutral-400 mb-1">Nome</label>
-          <input value={form.nome} onChange={e => setForm({...form, nome: e.target.value})} className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:border-cyan-500" /></div>
-          <div><label className="block text-xs font-medium text-neutral-400 mb-1">Email</label>
-          <input type="email" value={form.email} onChange={e => setForm({...form, email: e.target.value})} className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:border-cyan-500" /></div>
-          <div><label className="block text-xs font-medium text-neutral-400 mb-1">Senha</label>
-          <input type="password" value={form.senha} onChange={e => setForm({...form, senha: e.target.value})} className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:border-cyan-500" /></div>
-          <div><label className="block text-xs font-medium text-neutral-400 mb-1">Especialidades (vírgula)</label>
-          <input value={form.especialidades} onChange={e => setForm({...form, especialidades: e.target.value})} placeholder="Corte, Barba" className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:border-cyan-500" /></div>
-          <div><label className="block text-xs font-medium text-neutral-400 mb-1">Comissão (%)</label>
-          <input type="number" value={form.comissaoPercent} onChange={e => setForm({...form, comissaoPercent: e.target.value})} className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:border-cyan-500" /></div>
-          <button onClick={criarBarbeiro} className="w-full py-2.5 bg-cyan-500 hover:bg-cyan-400 text-neutral-900 font-semibold text-sm rounded-lg transition-colors">Cadastrar</button>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div><label className="input-label">Nome</label>
+          <input value={form.nome} onChange={e => setForm({...form, nome: e.target.value})} className="ds-input" /></div>
+          <div><label className="input-label">Email</label>
+          <input type="email" value={form.email} onChange={e => setForm({...form, email: e.target.value})} className="ds-input" /></div>
+          <div><label className="input-label">Senha</label>
+          <input type="password" value={form.senha} onChange={e => setForm({...form, senha: e.target.value})} className="ds-input" /></div>
+          <div><label className="input-label">Especialidades (vírgula)</label>
+          <input value={form.especialidades} onChange={e => setForm({...form, especialidades: e.target.value})} placeholder="Corte, Barba" className="ds-input" /></div>
+          <div><label className="input-label">Comissão (%)</label>
+          <input type="number" value={form.comissaoPercent} onChange={e => setForm({...form, comissaoPercent: e.target.value})} className="ds-input" /></div>
+          <button onClick={criarBarbeiro} className="btn-primary w-full justify-center">Cadastrar</button>
         </div>
       </Modal>
     </div>

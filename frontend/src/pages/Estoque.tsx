@@ -1,6 +1,6 @@
-// Página de Estoque — tabela com indicador de baixo estoque
+// Página de Estoque — estética industrial
 import { useEffect, useState } from 'react';
-import { Plus, AlertTriangle, Pencil, Check, X } from 'lucide-react';
+import { Plus, Pencil, Check, X } from 'lucide-react';
 import { Modal } from '../components/Modal';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import api from '../api/client';
@@ -41,56 +41,87 @@ export function Estoque() {
   if (carregando) return <LoadingSpinner />;
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-white">Estoque</h1>
-        <button onClick={() => setModalAberto(true)} className="flex items-center gap-2 px-4 py-2 bg-cyan-500 hover:bg-cyan-400 text-neutral-900 text-sm font-semibold rounded-lg transition-colors">
-          <Plus className="w-4 h-4" /> Novo Item
+        <h1
+          style={{
+            fontFamily: 'var(--font-display)',
+            fontSize: '32px',
+            color: 'var(--text-primary)',
+            letterSpacing: '0.04em',
+          }}
+        >
+          Estoque
+        </h1>
+        <button onClick={() => setModalAberto(true)} className="btn-primary">
+          <Plus size={14} strokeWidth={1.5} /> Novo Item
         </button>
       </div>
 
-      <div className="bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden">
-        <table className="w-full text-sm">
-          <thead><tr className="border-b border-neutral-800">
-            <th className="text-left p-4 text-neutral-500 font-medium">Produto</th>
-            <th className="text-left p-4 text-neutral-500 font-medium">Quantidade</th>
-            <th className="text-left p-4 text-neutral-500 font-medium">Mínimo</th>
-            <th className="text-left p-4 text-neutral-500 font-medium">Custo Unit.</th>
-            <th className="text-left p-4 text-neutral-500 font-medium">Status</th>
-            <th className="text-right p-4 text-neutral-500 font-medium">Ações</th>
-          </tr></thead>
+      <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+        <table className="ds-table">
+          <thead>
+            <tr>
+              <th>Produto</th>
+              <th>Quantidade</th>
+              <th>Mínimo</th>
+              <th>Custo Unit.</th>
+              <th>Status</th>
+              <th style={{ textAlign: 'right' }}>Ações</th>
+            </tr>
+          </thead>
           <tbody>
             {itens.map(item => {
               const baixo = item.quantidade <= item.quantidadeMinima;
               return (
-                <tr key={item.id} className={`border-b border-neutral-800/50 hover:bg-neutral-800/30 transition-colors ${baixo ? 'bg-red-500/5' : ''}`}>
-                  <td className="p-4 text-white font-medium">{item.nome}</td>
-                  <td className="p-4">
+                <tr key={item.id} style={{ background: baixo ? 'rgba(226, 75, 74, 0.05)' : 'transparent' }}>
+                  <td style={{ fontWeight: 500, color: 'var(--text-primary)' }}>{item.nome}</td>
+                  <td>
                     {editandoId === item.id ? (
-                      <input type="number" value={editQtd} onChange={e => setEditQtd(e.target.value)} className="w-20 px-2 py-1 bg-neutral-800 border border-cyan-500 rounded text-white text-sm focus:outline-none" />
+                      <input type="number" value={editQtd} onChange={e => setEditQtd(e.target.value)} className="ds-input" style={{ width: '80px', minHeight: '32px', padding: '6px 8px' }} />
                     ) : (
-                      <span className="text-neutral-300">{item.quantidade} {item.unidade}</span>
-                    )}
-                  </td>
-                  <td className="p-4 text-neutral-500">{item.quantidadeMinima}</td>
-                  <td className="p-4 text-neutral-300">R$ {Number(item.custo).toFixed(2)}</td>
-                  <td className="p-4">
-                    {baixo ? (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-red-500/10 text-red-400 text-xs rounded-full">
-                        <AlertTriangle className="w-3 h-3" /> Baixo
+                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: baixo ? 'var(--error-text)' : 'var(--text-primary)' }}>
+                        {item.quantidade} <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>{item.unidade}</span>
                       </span>
-                    ) : (
-                      <span className="px-2 py-0.5 bg-green-500/10 text-green-400 text-xs rounded-full">OK</span>
                     )}
                   </td>
-                  <td className="p-4 text-right">
+                  <td style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--text-muted)' }}>{item.quantidadeMinima}</td>
+                  <td style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--text-muted)' }}>R$ {Number(item.custo).toFixed(2)}</td>
+                  <td>
+                    {baixo ? (
+                      <span className="badge badge-cancelled">Baixo</span>
+                    ) : (
+                      <span className="badge badge-confirmed">OK</span>
+                    )}
+                  </td>
+                  <td style={{ textAlign: 'right' }}>
                     {editandoId === item.id ? (
                       <div className="flex items-center justify-end gap-1">
-                        <button onClick={() => salvarQtd(item.id)} className="p-1.5 text-green-400 hover:bg-green-500/10 rounded"><Check className="w-4 h-4" /></button>
-                        <button onClick={() => setEditandoId(null)} className="p-1.5 text-red-400 hover:bg-red-500/10 rounded"><X className="w-4 h-4" /></button>
+                        <button
+                          onClick={() => salvarQtd(item.id)}
+                          className="flex items-center justify-center transition-colors"
+                          style={{ width: '28px', height: '28px', color: 'var(--success-text)', background: 'transparent', border: 'none', cursor: 'pointer' }}
+                        >
+                          <Check size={14} strokeWidth={1.5} />
+                        </button>
+                        <button
+                          onClick={() => setEditandoId(null)}
+                          className="flex items-center justify-center transition-colors"
+                          style={{ width: '28px', height: '28px', color: 'var(--error-text)', background: 'transparent', border: 'none', cursor: 'pointer' }}
+                        >
+                          <X size={14} strokeWidth={1.5} />
+                        </button>
                       </div>
                     ) : (
-                      <button onClick={() => { setEditandoId(item.id); setEditQtd(String(item.quantidade)); }} className="p-1.5 text-neutral-500 hover:text-cyan-400 hover:bg-neutral-800 rounded"><Pencil className="w-4 h-4" /></button>
+                      <button
+                        onClick={() => { setEditandoId(item.id); setEditQtd(String(item.quantidade)); }}
+                        className="flex items-center justify-center transition-colors"
+                        style={{ width: '28px', height: '28px', color: 'var(--text-muted)', background: 'transparent', border: 'none', cursor: 'pointer' }}
+                        onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--amber)'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-muted)'; }}
+                      >
+                        <Pencil size={14} strokeWidth={1.5} />
+                      </button>
                     )}
                   </td>
                 </tr>
@@ -101,22 +132,22 @@ export function Estoque() {
       </div>
 
       <Modal aberto={modalAberto} onFechar={() => setModalAberto(false)} titulo="Novo Item">
-        <div className="space-y-4">
-          <div><label className="block text-xs font-medium text-neutral-400 mb-1">Nome</label>
-          <input value={form.nome} onChange={e => setForm({...form, nome: e.target.value})} className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:border-cyan-500" /></div>
-          <div className="grid grid-cols-2 gap-4">
-            <div><label className="block text-xs font-medium text-neutral-400 mb-1">Quantidade</label>
-            <input type="number" value={form.quantidade} onChange={e => setForm({...form, quantidade: e.target.value})} className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:border-cyan-500" /></div>
-            <div><label className="block text-xs font-medium text-neutral-400 mb-1">Unidade</label>
-            <input value={form.unidade} onChange={e => setForm({...form, unidade: e.target.value})} className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:border-cyan-500" /></div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div><label className="input-label">Nome</label>
+          <input value={form.nome} onChange={e => setForm({...form, nome: e.target.value})} className="ds-input" /></div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+            <div><label className="input-label">Quantidade</label>
+            <input type="number" value={form.quantidade} onChange={e => setForm({...form, quantidade: e.target.value})} className="ds-input" /></div>
+            <div><label className="input-label">Unidade</label>
+            <input value={form.unidade} onChange={e => setForm({...form, unidade: e.target.value})} className="ds-input" /></div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div><label className="block text-xs font-medium text-neutral-400 mb-1">Qtd. Mínima</label>
-            <input type="number" value={form.quantidadeMinima} onChange={e => setForm({...form, quantidadeMinima: e.target.value})} className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:border-cyan-500" /></div>
-            <div><label className="block text-xs font-medium text-neutral-400 mb-1">Custo (R$)</label>
-            <input type="number" step="0.01" value={form.custo} onChange={e => setForm({...form, custo: e.target.value})} className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:border-cyan-500" /></div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+            <div><label className="input-label">Qtd. Mínima</label>
+            <input type="number" value={form.quantidadeMinima} onChange={e => setForm({...form, quantidadeMinima: e.target.value})} className="ds-input" /></div>
+            <div><label className="input-label">Custo (R$)</label>
+            <input type="number" step="0.01" value={form.custo} onChange={e => setForm({...form, custo: e.target.value})} className="ds-input" /></div>
           </div>
-          <button onClick={criarItem} className="w-full py-2.5 bg-cyan-500 hover:bg-cyan-400 text-neutral-900 font-semibold text-sm rounded-lg transition-colors">Cadastrar</button>
+          <button onClick={criarItem} className="btn-primary w-full justify-center">Cadastrar</button>
         </div>
       </Modal>
     </div>

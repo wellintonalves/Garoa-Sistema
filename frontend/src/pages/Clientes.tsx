@@ -1,6 +1,6 @@
-// Página de Clientes — busca + histórico
+// Página de Clientes — estética industrial
 import { useEffect, useState } from 'react';
-import { Search, User, Calendar } from 'lucide-react';
+import { Search, Calendar } from 'lucide-react';
 import { Modal } from '../components/Modal';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import api from '../api/client';
@@ -13,6 +13,13 @@ interface Cliente {
     servico: { nome: string }; barbeiro: { usuario: { nome: string } };
   }>;
 }
+
+const statusStyles: Record<string, string> = {
+  CONCLUIDO: 'var(--success-text)',
+  CONFIRMADO: 'var(--text-primary)',
+  AGUARDANDO: 'var(--amber-light)',
+  CANCELADO: 'var(--error-text)',
+};
 
 export function Clientes() {
   const [clientes, setClientes] = useState<Cliente[]>([]);
@@ -40,56 +47,102 @@ export function Clientes() {
 
   function handleBusca() { carregar(busca || undefined); }
 
-  const statusCores: Record<string, string> = {
-    CONCLUIDO: 'text-green-400', CONFIRMADO: 'text-blue-400',
-    AGUARDANDO: 'text-yellow-400', CANCELADO: 'text-red-400',
-  };
+  function getIniciais(nome: string) {
+    return nome.split(' ').slice(0, 2).map(p => p[0]).join('').toUpperCase();
+  }
 
   if (carregando) return <LoadingSpinner />;
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      <h1 className="text-2xl font-bold text-white">Clientes</h1>
+    <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+      <h1
+        style={{
+          fontFamily: 'var(--font-display)',
+          fontSize: '32px',
+          color: 'var(--text-primary)',
+          letterSpacing: '0.04em',
+        }}
+      >
+        Clientes
+      </h1>
 
       {/* Busca */}
       <div className="flex gap-2">
         <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-600" />
-          <input value={busca} onChange={e => setBusca(e.target.value)}
+          <Search size={14} strokeWidth={1.5} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }} />
+          <input
+            value={busca}
+            onChange={e => setBusca(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && handleBusca()}
             placeholder="Buscar por nome ou telefone..."
-            className="w-full pl-10 pr-4 py-2.5 bg-neutral-900 border border-neutral-800 rounded-lg text-white text-sm placeholder-neutral-600 focus:outline-none focus:border-cyan-500 transition-colors" />
+            className="ds-input"
+            style={{ paddingLeft: '36px' }}
+          />
         </div>
-        <button onClick={handleBusca} className="px-4 py-2 bg-neutral-800 hover:bg-neutral-700 text-white text-sm rounded-lg transition-colors">Buscar</button>
+        <button onClick={handleBusca} className="btn-secondary">
+          Buscar
+        </button>
       </div>
 
       {/* Tabela */}
-      <div className="bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden">
-        <table className="w-full text-sm">
-          <thead><tr className="border-b border-neutral-800">
-            <th className="text-left p-4 text-neutral-500 font-medium">Nome</th>
-            <th className="text-left p-4 text-neutral-500 font-medium">Email</th>
-            <th className="text-left p-4 text-neutral-500 font-medium">Telefone</th>
-            <th className="text-right p-4 text-neutral-500 font-medium">Ações</th>
-          </tr></thead>
+      <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+        <table className="ds-table">
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>Email</th>
+              <th>Telefone</th>
+              <th style={{ textAlign: 'right' }}>Ações</th>
+            </tr>
+          </thead>
           <tbody>
             {clientes.map(c => (
-              <tr key={c.id} className="border-b border-neutral-800/50 hover:bg-neutral-800/30 transition-colors">
-                <td className="p-4"><div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-neutral-800 flex items-center justify-center"><User className="w-4 h-4 text-neutral-500" /></div>
-                  <span className="text-white">{c.usuario.nome}</span>
-                </div></td>
-                <td className="p-4 text-neutral-400">{c.usuario.email}</td>
-                <td className="p-4 text-neutral-400">{c.telefone || '—'}</td>
-                <td className="p-4 text-right">
-                  <button onClick={() => verHistorico(c.id)} className="px-3 py-1 text-cyan-400 hover:bg-cyan-500/10 rounded text-xs font-medium transition-colors">
+              <tr key={c.id}>
+                <td>
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="flex items-center justify-center flex-shrink-0"
+                      style={{
+                        width: '32px',
+                        height: '32px',
+                        background: 'var(--amber-dim)',
+                        fontFamily: 'var(--font-display)',
+                        fontSize: '14px',
+                        color: 'var(--amber-light)',
+                        letterSpacing: '0.04em',
+                      }}
+                    >
+                      {getIniciais(c.usuario.nome)}
+                    </div>
+                    <span style={{ fontWeight: 500, color: 'var(--text-primary)' }}>{c.usuario.nome}</span>
+                  </div>
+                </td>
+                <td style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--text-muted)' }}>{c.usuario.email}</td>
+                <td style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--text-muted)' }}>{c.telefone || '—'}</td>
+                <td style={{ textAlign: 'right' }}>
+                  <button
+                    onClick={() => verHistorico(c.id)}
+                    className="transition-colors"
+                    style={{
+                      fontFamily: 'var(--font-mono)',
+                      fontSize: '9px',
+                      letterSpacing: '0.12em',
+                      textTransform: 'uppercase',
+                      color: 'var(--text-muted)',
+                      background: 'transparent',
+                      border: 'none',
+                      cursor: 'pointer',
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--amber)'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-muted)'; }}
+                  >
                     Ver Histórico
                   </button>
                 </td>
               </tr>
             ))}
             {clientes.length === 0 && (
-              <tr><td colSpan={4} className="p-8 text-center text-neutral-600">Nenhum cliente encontrado</td></tr>
+              <tr><td colSpan={4} style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', fontSize: '11px' }}>Nenhum cliente encontrado</td></tr>
             )}
           </tbody>
         </table>
@@ -98,26 +151,51 @@ export function Clientes() {
       {/* Modal de histórico */}
       <Modal aberto={!!clienteSelecionado} onFechar={() => setClienteSelecionado(null)} titulo={`Histórico — ${clienteSelecionado?.usuario.nome || ''}`}>
         {clienteSelecionado?.observacoes && (
-          <p className="text-sm text-neutral-400 mb-4 p-3 bg-neutral-800 rounded-lg">{clienteSelecionado.observacoes}</p>
+          <p style={{
+            fontFamily: 'var(--font-mono)',
+            fontSize: '11px',
+            color: 'var(--text-muted)',
+            marginBottom: '1rem',
+            padding: '12px',
+            background: 'var(--bg-surface2)',
+            border: '1px solid var(--border)'
+          }}>
+            {clienteSelecionado.observacoes}
+          </p>
         )}
-        <div className="space-y-2 max-h-80 overflow-y-auto">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '320px', overflowY: 'auto' }}>
           {clienteSelecionado?.agendamentos?.map(ag => (
-            <div key={ag.id} className="flex items-center justify-between p-3 bg-neutral-800/50 rounded-lg">
+            <div
+              key={ag.id}
+              className="flex items-center justify-between"
+              style={{
+                padding: '12px',
+                background: 'var(--bg-surface2)',
+                border: '1px solid var(--border)',
+                borderLeft: `2px solid ${statusStyles[ag.status] || 'var(--border)'}`
+              }}
+            >
               <div className="flex items-center gap-3">
-                <Calendar className="w-4 h-4 text-neutral-600" />
+                <Calendar size={14} strokeWidth={1.5} style={{ color: 'var(--text-muted)' }} />
                 <div>
-                  <p className="text-sm text-white">{ag.servico.nome}</p>
-                  <p className="text-xs text-neutral-500">{new Date(ag.dataHora).toLocaleDateString('pt-BR')} — {ag.barbeiro.usuario.nome}</p>
+                  <p style={{ fontFamily: 'var(--font-body)', fontSize: '13px', fontWeight: 700, color: 'var(--text-primary)' }}>{ag.servico.nome}</p>
+                  <p style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                    {new Date(ag.dataHora).toLocaleDateString('pt-BR')} — {ag.barbeiro.usuario.nome}
+                  </p>
                 </div>
               </div>
-              <div className="text-right">
-                <p className="text-sm text-white">R$ {Number(ag.valorCobrado).toFixed(2)}</p>
-                <p className={`text-xs ${statusCores[ag.status] || 'text-neutral-500'}`}>{ag.status}</p>
+              <div style={{ textAlign: 'right' }}>
+                <p style={{ fontFamily: 'var(--font-display)', fontSize: '16px', color: 'var(--amber)' }}>R$ {Number(ag.valorCobrado).toFixed(2)}</p>
+                <p style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', letterSpacing: '0.1em', textTransform: 'uppercase', color: statusStyles[ag.status] || 'var(--text-muted)', marginTop: '2px' }}>
+                  {ag.status}
+                </p>
               </div>
             </div>
           ))}
           {(!clienteSelecionado?.agendamentos || clienteSelecionado.agendamentos.length === 0) && (
-            <p className="text-sm text-neutral-600 text-center py-4">Nenhum agendamento encontrado</p>
+            <p style={{ textAlign: 'center', padding: '1rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', fontSize: '11px' }}>
+              Nenhum agendamento encontrado
+            </p>
           )}
         </div>
       </Modal>

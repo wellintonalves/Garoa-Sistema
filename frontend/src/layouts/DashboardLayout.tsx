@@ -1,14 +1,14 @@
-// Layout principal com sidebar
+// Layout principal com sidebar — design system industrial
 import { Outlet } from 'react-router-dom';
 import { Sidebar } from '../components/Sidebar';
 
 export function DashboardLayout() {
   return (
-    <div className="min-h-screen bg-[#0c0c0e]">
+    <div className="min-h-screen" style={{ background: 'var(--bg-primary)' }}>
       <Sidebar />
-      {/* Conteúdo principal — margem para a sidebar */}
-      <main className="ml-16 lg:ml-60 min-h-screen transition-all duration-300">
-        <div className="p-4 md:p-6 lg:p-8 max-w-7xl mx-auto">
+      {/* Conteúdo principal — margem fixa de 220px (largura da sidebar) */}
+      <main className="min-h-screen transition-all duration-300" style={{ marginLeft: '220px' }}>
+        <div style={{ padding: '1.5rem', maxWidth: '1280px', margin: '0 auto' }}>
           <Outlet />
         </div>
       </main>

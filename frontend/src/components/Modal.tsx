@@ -1,4 +1,4 @@
-// Modal reutilizável
+// Modal reutilizável — design system industrial
 import { useEffect, type ReactNode } from 'react';
 import { X } from 'lucide-react';
 
@@ -23,25 +23,36 @@ export function Modal({ aberto, onFechar, titulo, children, largura = 'max-w-lg'
   if (!aberto) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+    <div className="modal-overlay">
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onFechar} />
+      <div className="modal-backdrop" onClick={onFechar} />
 
       {/* Conteúdo */}
-      <div className={`relative ${largura} w-full bg-neutral-900 border border-neutral-800 rounded-2xl shadow-2xl animate-fade-in max-h-[90vh] overflow-y-auto`}>
+      <div className={`modal-content ${largura}`}>
         {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-neutral-800">
-          <h2 className="text-lg font-semibold text-white">{titulo}</h2>
+        <div className="modal-header">
+          <h2>{titulo}</h2>
           <button
             onClick={onFechar}
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-neutral-500 hover:text-white hover:bg-neutral-800 transition-colors"
+            className="flex items-center justify-center transition-colors"
+            style={{
+              width: '32px',
+              height: '32px',
+              background: 'transparent',
+              border: '1px solid var(--border)',
+              borderRadius: 0,
+              color: 'var(--text-muted)',
+              cursor: 'pointer',
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--text-primary)'; e.currentTarget.style.borderColor = 'var(--border-hover)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.borderColor = 'var(--border)'; }}
           >
-            <X className="w-4 h-4" />
+            <X size={14} strokeWidth={1.5} />
           </button>
         </div>
 
         {/* Body */}
-        <div className="p-5">
+        <div className="modal-body">
           {children}
         </div>
       </div>

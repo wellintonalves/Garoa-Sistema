@@ -1,4 +1,4 @@
-// Sidebar — menu lateral recolhível com ícones e labels
+// Sidebar — menu lateral com estética industrial (âmbar + DM Mono)
 import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import {
@@ -23,56 +23,110 @@ export function Sidebar() {
   const [recolhido, setRecolhido] = useState(false);
   const { usuario, logout } = useAuth();
 
+  const nomeBarbearia = import.meta.env.VITE_BARBEARIA_NOME || 'GAROA';
+
   return (
     <aside
-      className={`fixed left-0 top-0 h-screen bg-neutral-900 border-r border-neutral-800 flex flex-col transition-all duration-300 z-50 ${
-        recolhido ? 'w-16' : 'w-60'
-      }`}
+      className="fixed left-0 top-0 h-screen flex flex-col z-50 transition-all duration-300"
+      style={{
+        background: 'var(--bg-surface)',
+        borderRight: '1px solid var(--border)',
+        width: recolhido ? '64px' : '220px',
+      }}
     >
       {/* Logo / Título */}
-      <div className="flex items-center h-16 px-4 border-b border-neutral-800">
-        <img src="/logo-garoa.png" alt="Garoa Logo" className="w-8 h-8 rounded-full object-cover flex-shrink-0 border border-cyan-500/20" />
-        {!recolhido && (
-          <span className="ml-3 text-sm font-bold text-white truncate animate-fade-in">
-            {import.meta.env.VITE_BARBEARIA_NOME || 'Garoa Barbearia'}
+      <div
+        className="flex items-center h-16 px-5"
+        style={{ borderBottom: '1px solid var(--border)' }}
+      >
+        {!recolhido ? (
+          <span
+            className="animate-fade-in truncate"
+            style={{
+              fontFamily: "var(--font-display)",
+              fontSize: '24px',
+              letterSpacing: '0.06em',
+              color: 'var(--text-primary)',
+            }}
+          >
+            {nomeBarbearia}
+          </span>
+        ) : (
+          <span
+            style={{
+              fontFamily: "var(--font-display)",
+              fontSize: '20px',
+              color: 'var(--amber)',
+            }}
+          >
+            G
           </span>
         )}
       </div>
 
       {/* Menu */}
-      <nav className="flex-1 py-4 px-2 space-y-1 overflow-y-auto">
+      <nav className="flex-1 py-4 overflow-y-auto">
         {menuItems.map(({ path, label, icon: Icon }) => (
           <NavLink
             key={path}
             to={path}
             end={path === '/'}
             className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 group ${
-                isActive
-                  ? 'bg-cyan-500/15 text-cyan-400'
-                  : 'text-neutral-400 hover:text-white hover:bg-neutral-800'
-              }`
+              `nav-item ${isActive ? 'active' : ''}`
             }
           >
-            <Icon className="w-5 h-5 flex-shrink-0" />
+            <Icon size={16} strokeWidth={1.5} className="flex-shrink-0" />
             {!recolhido && <span className="truncate">{label}</span>}
           </NavLink>
         ))}
       </nav>
 
       {/* Usuário + Logout */}
-      <div className="border-t border-neutral-800 p-3">
+      <div style={{ borderTop: '1px solid var(--border)', padding: '12px' }}>
         {!recolhido && usuario && (
-          <div className="mb-2 px-2">
-            <p className="text-xs font-medium text-white truncate">{usuario.nome}</p>
-            <p className="text-xs text-neutral-500 truncate">{usuario.email}</p>
+          <div className="mb-2 px-3">
+            <p
+              className="truncate"
+              style={{
+                fontFamily: 'var(--font-body)',
+                fontSize: '12px',
+                fontWeight: 500,
+                color: 'var(--text-primary)',
+              }}
+            >
+              {usuario.nome}
+            </p>
+            <p
+              className="truncate"
+              style={{
+                fontFamily: 'var(--font-mono)',
+                fontSize: '10px',
+                color: 'var(--text-muted)',
+                letterSpacing: '0.04em',
+              }}
+            >
+              {usuario.email}
+            </p>
           </div>
         )}
         <button
           onClick={logout}
-          className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm text-neutral-400 hover:text-red-400 hover:bg-neutral-800 transition-colors"
+          className="flex items-center gap-3 w-full px-3 py-2 transition-colors"
+          style={{
+            fontFamily: 'var(--font-mono)',
+            fontSize: '10px',
+            letterSpacing: '0.14em',
+            textTransform: 'uppercase',
+            color: 'var(--text-muted)',
+            background: 'transparent',
+            border: 'none',
+            cursor: 'pointer',
+            borderRadius: 0,
+          }}
+          onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--error-text)'; }}
+          onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-muted)'; }}
         >
-          <LogOut className="w-5 h-5 flex-shrink-0" />
+          <LogOut size={16} strokeWidth={1.5} className="flex-shrink-0" />
           {!recolhido && <span>Sair</span>}
         </button>
       </div>
@@ -80,9 +134,18 @@ export function Sidebar() {
       {/* Botão recolher */}
       <button
         onClick={() => setRecolhido(!recolhido)}
-        className="absolute -right-3 top-20 w-6 h-6 rounded-full bg-neutral-800 border border-neutral-700 flex items-center justify-center text-neutral-400 hover:text-white hover:bg-neutral-700 transition-colors"
+        className="absolute -right-3 top-20 w-6 h-6 flex items-center justify-center transition-colors"
+        style={{
+          background: 'var(--bg-surface)',
+          border: '1px solid var(--border)',
+          color: 'var(--text-muted)',
+          borderRadius: 0,
+          cursor: 'pointer',
+        }}
+        onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--text-primary)'; e.currentTarget.style.borderColor = 'var(--border-hover)'; }}
+        onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.borderColor = 'var(--border)'; }}
       >
-        {recolhido ? <ChevronRight className="w-3 h-3" /> : <ChevronLeft className="w-3 h-3" />}
+        {recolhido ? <ChevronRight size={12} strokeWidth={1.5} /> : <ChevronLeft size={12} strokeWidth={1.5} />}
       </button>
     </aside>
   );

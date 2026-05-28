@@ -1,4 +1,4 @@
-// Página Financeiro — lançamentos, resumo do dia, gráfico 7 dias
+// Página Financeiro — industrial
 import { useEffect, useState } from 'react';
 import { Plus, TrendingUp, TrendingDown } from 'lucide-react';
 import { Modal } from '../components/Modal';
@@ -32,7 +32,6 @@ export function Financeiro() {
   const [resumo, setResumo] = useState<ResumoDia | null>(null);
   const [grafico, setGrafico] = useState<DadoGrafico[]>([]);
   
-  // Dependências do modal
   const [barbeiros, setBarbeiros] = useState<Barbeiro[]>([]);
   const [servicos, setServicos] = useState<Servico[]>([]);
   
@@ -61,7 +60,6 @@ export function Financeiro() {
 
   useEffect(() => { carregar(); }, []);
 
-  // Preencher valor automaticamente e definir categoria
   useEffect(() => {
     if (form.servicoId) {
       const servico = servicos.find(s => s.id === form.servicoId);
@@ -88,7 +86,6 @@ export function Financeiro() {
   const fmt = (v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   const maxGrafico = Math.max(...grafico.map(d => Math.max(d.entradas, d.saidas)), 1);
 
-  // Cálculo de prévia de comissão no form
   let previaComissao = 0;
   let previaLiquido = 0;
   if (form.tipo === 'ENTRADA' && form.barbeiroId && form.valor) {
@@ -102,31 +99,49 @@ export function Financeiro() {
   if (carregando) return <LoadingSpinner />;
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-white">Financeiro</h1>
-        <button onClick={() => setModalAberto(true)} className="flex items-center gap-2 px-4 py-2 bg-cyan-500 hover:bg-cyan-400 text-neutral-900 text-sm font-semibold rounded-lg transition-colors">
-          <Plus className="w-4 h-4" /> Lançamento
+        <h1
+          style={{
+            fontFamily: 'var(--font-display)',
+            fontSize: '32px',
+            color: 'var(--text-primary)',
+            letterSpacing: '0.04em',
+          }}
+        >
+          Financeiro
+        </h1>
+        <button onClick={() => setModalAberto(true)} className="btn-primary">
+          <Plus size={14} strokeWidth={1.5} /> Lançamento
         </button>
       </div>
 
       {/* Resumo do dia */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-neutral-900 border border-green-500/20 rounded-xl p-4">
-          <div className="flex items-center gap-2 text-green-400 mb-1"><TrendingUp className="w-4 h-4" /><span className="text-xs font-medium">Entradas</span></div>
-          <p className="text-xl font-bold text-white">{fmt(resumo?.totalEntradas || 0)}</p>
+      <div className="dashboard-grid">
+        <div className="metric-card" style={{ borderLeft: '2px solid var(--success-text)' }}>
+          <div className="flex items-center gap-2 mb-2" style={{ color: 'var(--success-text)' }}>
+            <TrendingUp size={14} strokeWidth={1.5} />
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Entradas</span>
+          </div>
+          <p className="metric-value">{fmt(resumo?.totalEntradas || 0)}</p>
         </div>
-        <div className="bg-neutral-900 border border-red-500/20 rounded-xl p-4">
-          <div className="flex items-center gap-2 text-red-400 mb-1"><TrendingDown className="w-4 h-4" /><span className="text-xs font-medium">Saídas</span></div>
-          <p className="text-xl font-bold text-white">{fmt(resumo?.totalSaidas || 0)}</p>
+        <div className="metric-card" style={{ borderLeft: '2px solid var(--error-text)' }}>
+          <div className="flex items-center gap-2 mb-2" style={{ color: 'var(--error-text)' }}>
+            <TrendingDown size={14} strokeWidth={1.5} />
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Saídas</span>
+          </div>
+          <p className="metric-value">{fmt(resumo?.totalSaidas || 0)}</p>
         </div>
-        <div className="bg-neutral-900 border border-cyan-500/20 rounded-xl p-4">
-          <p className="text-xs font-medium text-cyan-400 mb-1">Saldo</p>
-          <p className="text-xl font-bold text-white">{fmt(resumo?.saldo || 0)}</p>
+        <div className="metric-card" style={{ borderLeft: '2px solid var(--amber)' }}>
+          <p className="metric-label" style={{ color: 'var(--amber)', marginBottom: '8px' }}>Saldo</p>
+          <p className="metric-value">{fmt(resumo?.saldo || 0)}</p>
           {resumo?.porFormaPagamento && (
-            <div className="mt-2 space-y-1">
+            <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
               {Object.entries(resumo.porFormaPagamento).map(([k, v]) => (
-                <div key={k} className="flex justify-between text-xs"><span className="text-neutral-500">{labelsForma[k] || k}</span><span className="text-neutral-300">{fmt(v)}</span></div>
+                <div key={k} className="flex justify-between" style={{ fontFamily: 'var(--font-mono)', fontSize: '10px' }}>
+                  <span style={{ color: 'var(--text-muted)' }}>{labelsForma[k] || k}</span>
+                  <span style={{ color: 'var(--text-primary)' }}>{fmt(v)}</span>
+                </div>
               ))}
             </div>
           )}
@@ -134,74 +149,122 @@ export function Financeiro() {
       </div>
 
       {/* Mini gráfico 7 dias */}
-      <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-5">
-        <h3 className="text-sm font-medium text-neutral-400 mb-4">Últimos 7 dias</h3>
+      <div className="card">
+        <h3 style={{ fontFamily: 'var(--font-body)', fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '16px' }}>
+          Últimos 7 dias
+        </h3>
         <div className="flex items-end gap-2 h-32">
           {grafico.map((d, i) => (
-            <div key={i} className="flex-1 flex flex-col items-center gap-1">
-              <div className="w-full flex gap-0.5 items-end justify-center h-24">
-                <div className="w-3 bg-green-500/60 rounded-t transition-all" style={{ height: `${(d.entradas / maxGrafico) * 100}%` }} title={`Entradas: ${fmt(d.entradas)}`} />
-                <div className="w-3 bg-red-500/60 rounded-t transition-all" style={{ height: `${(d.saidas / maxGrafico) * 100}%` }} title={`Saídas: ${fmt(d.saidas)}`} />
+            <div key={i} className="flex-1 flex flex-col items-center gap-2">
+              <div className="w-full flex gap-1 items-end justify-center h-24">
+                <div
+                  style={{ width: '12px', background: 'var(--amber)', height: `${(d.entradas / maxGrafico) * 100}%` }}
+                  title={`Entradas: ${fmt(d.entradas)}`}
+                />
+                <div
+                  style={{ width: '12px', background: 'var(--bg-surface2)', height: `${(d.saidas / maxGrafico) * 100}%` }}
+                  title={`Saídas: ${fmt(d.saidas)}`}
+                />
               </div>
-              <span className="text-[10px] text-neutral-600">{new Date(d.data + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}</span>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', color: 'var(--text-muted)' }}>
+                {new Date(d.data + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
+              </span>
             </div>
           ))}
         </div>
-        <div className="flex gap-4 mt-3 text-xs">
-          <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 bg-green-500/60 rounded" /><span className="text-neutral-500">Entradas</span></div>
-          <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 bg-red-500/60 rounded" /><span className="text-neutral-500">Saídas</span></div>
+        <div className="flex gap-4 mt-4" style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+          <div className="flex items-center gap-1.5"><div style={{ width: '10px', height: '10px', background: 'var(--amber)' }} /><span style={{ color: 'var(--text-muted)' }}>Entradas</span></div>
+          <div className="flex items-center gap-1.5"><div style={{ width: '10px', height: '10px', background: 'var(--bg-surface2)' }} /><span style={{ color: 'var(--text-muted)' }}>Saídas</span></div>
         </div>
       </div>
 
       {/* Lançamentos do dia */}
-      <div className="bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden">
-        <h3 className="text-sm font-medium text-neutral-400 p-4 border-b border-neutral-800">Lançamentos de Hoje</h3>
-        <div className="divide-y divide-neutral-800/50">
-          {lancamentos.map(l => (
-            <div key={l.id} className="flex items-center justify-between p-4 hover:bg-neutral-800/30 transition-colors">
+      <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+        <h3 style={{ fontFamily: 'var(--font-body)', fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)', padding: '1.25rem', borderBottom: '1px solid var(--border)' }}>
+          Lançamentos de Hoje
+        </h3>
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          {lancamentos.map((l, i) => (
+            <div
+              key={l.id}
+              className="flex items-center justify-between transition-colors"
+              style={{
+                padding: '1rem 1.25rem',
+                borderBottom: i < lancamentos.length - 1 ? '1px solid var(--border)' : 'none',
+                background: 'transparent'
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--bg-surface2)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+            >
               <div className="flex items-center gap-3">
-                <div className={`w-2 h-2 rounded-full ${l.tipo === 'ENTRADA' ? 'bg-green-400' : 'bg-red-400'}`} />
+                <div style={{ width: '8px', height: '8px', background: l.tipo === 'ENTRADA' ? 'var(--success-text)' : 'var(--error-text)' }} />
                 <div>
-                  <p className="text-sm text-white">{l.categoria}</p>
-                  <p className="text-xs text-neutral-500">
+                  <p style={{ fontFamily: 'var(--font-body)', fontSize: '13px', fontWeight: 500, color: 'var(--text-primary)' }}>{l.categoria}</p>
+                  <p style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px' }}>
                     {l.servico ? `${l.servico.nome}` : l.descricao} 
-                    {l.barbeiro && ` • Barbeiro: ${l.barbeiro.usuario.nome}`}
+                    {l.barbeiro && ` • ${l.barbeiro.usuario.nome}`}
                   </p>
                 </div>
               </div>
-              <div className="text-right">
-                <p className={`text-sm font-medium ${l.tipo === 'ENTRADA' ? 'text-green-400' : 'text-red-400'}`}>{l.tipo === 'ENTRADA' ? '+' : '-'} {fmt(Number(l.valor))}</p>
-                <p className="text-xs text-neutral-600">{labelsForma[l.formaPagamento] || l.formaPagamento}</p>
+              <div style={{ textAlign: 'right' }}>
+                <p style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', fontWeight: 500, color: l.tipo === 'ENTRADA' ? 'var(--success-text)' : 'var(--error-text)' }}>
+                  {l.tipo === 'ENTRADA' ? '+' : '-'} {fmt(Number(l.valor))}
+                </p>
+                <p style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', letterSpacing: '0.04em', color: 'var(--text-muted)', marginTop: '2px' }}>
+                  {labelsForma[l.formaPagamento] || l.formaPagamento}
+                </p>
               </div>
             </div>
           ))}
-          {lancamentos.length === 0 && <p className="p-8 text-center text-neutral-600 text-sm">Nenhum lançamento hoje</p>}
+          {lancamentos.length === 0 && (
+            <p style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', fontSize: '11px' }}>
+              Nenhum lançamento hoje
+            </p>
+          )}
         </div>
       </div>
 
-      {/* Modal */}
       <Modal aberto={modalAberto} onFechar={() => setModalAberto(false)} titulo="Novo Lançamento">
-        <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-2">
-            {(['ENTRADA', 'SAIDA'] as const).map(t => (
-              <button key={t} onClick={() => setForm({...form, tipo: t})} className={`py-2 rounded-lg text-sm font-medium transition-colors ${form.tipo === t ? (t === 'ENTRADA' ? 'bg-green-500/20 text-green-400 border border-green-500/40' : 'bg-red-500/20 text-red-400 border border-red-500/40') : 'bg-neutral-800 text-neutral-500 border border-neutral-700'}`}>
-                {t === 'ENTRADA' ? 'Entrada' : 'Saída'}
-              </button>
-            ))}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+            {(['ENTRADA', 'SAIDA'] as const).map(t => {
+              const isSelected = form.tipo === t;
+              const activeColor = t === 'ENTRADA' ? 'var(--success-text)' : 'var(--error-text)';
+              return (
+                <button
+                  key={t}
+                  onClick={() => setForm({...form, tipo: t})}
+                  style={{
+                    padding: '8px',
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: '11px',
+                    letterSpacing: '0.1em',
+                    textTransform: 'uppercase',
+                    cursor: 'pointer',
+                    background: isSelected ? 'var(--bg-surface2)' : 'transparent',
+                    border: `1px solid ${isSelected ? activeColor : 'var(--border)'}`,
+                    color: isSelected ? activeColor : 'var(--text-muted)',
+                    transition: 'all 0.2s',
+                  }}
+                >
+                  {t === 'ENTRADA' ? 'Entrada' : 'Saída'}
+                </button>
+              );
+            })}
           </div>
 
           {form.tipo === 'ENTRADA' && (
             <>
               <div>
-                <label className="block text-xs font-medium text-neutral-400 mb-1">Serviço (Opcional)</label>
-                <select value={form.servicoId} onChange={e => setForm({...form, servicoId: e.target.value})} className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:border-cyan-500">
+                <label className="input-label">Serviço (Opcional)</label>
+                <select value={form.servicoId} onChange={e => setForm({...form, servicoId: e.target.value})} className="ds-select">
                   <option value="">Selecione um serviço...</option>
                   {servicos.map(s => <option key={s.id} value={s.id}>{s.nome}</option>)}
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-medium text-neutral-400 mb-1">Barbeiro (Opcional)</label>
-                <select value={form.barbeiroId} onChange={e => setForm({...form, barbeiroId: e.target.value})} className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:border-cyan-500">
+                <label className="input-label">Barbeiro (Opcional)</label>
+                <select value={form.barbeiroId} onChange={e => setForm({...form, barbeiroId: e.target.value})} className="ds-select">
                   <option value="">Selecione um barbeiro...</option>
                   {barbeiros.map(b => <option key={b.id} value={b.id}>{b.usuario.nome}</option>)}
                 </select>
@@ -210,40 +273,40 @@ export function Financeiro() {
           )}
 
           <div>
-            <label className="block text-xs font-medium text-neutral-400 mb-1">Categoria</label>
-            <input value={form.categoria} onChange={e => setForm({...form, categoria: e.target.value})} placeholder="Ex: Serviço Prestado, Produto, Conta de Luz" className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:border-cyan-500" />
+            <label className="input-label">Categoria</label>
+            <input value={form.categoria} onChange={e => setForm({...form, categoria: e.target.value})} placeholder="Ex: Serviço Prestado, Produto, Conta de Luz" className="ds-input" />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-neutral-400 mb-1">Descrição / Observação</label>
-            <input value={form.descricao} onChange={e => setForm({...form, descricao: e.target.value})} placeholder="Opcional" className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:border-cyan-500" />
+            <label className="input-label">Descrição / Observação</label>
+            <input value={form.descricao} onChange={e => setForm({...form, descricao: e.target.value})} placeholder="Opcional" className="ds-input" />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-neutral-400 mb-1">Valor (R$)</label>
-            <input type="number" step="0.01" value={form.valor} onChange={e => setForm({...form, valor: e.target.value})} className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:border-cyan-500" />
+            <label className="input-label">Valor (R$)</label>
+            <input type="number" step="0.01" value={form.valor} onChange={e => setForm({...form, valor: e.target.value})} className="ds-input" />
           </div>
 
           {form.tipo === 'ENTRADA' && form.barbeiroId && form.valor && (
-            <div className="p-3 bg-neutral-900 border border-cyan-500/30 rounded-lg text-sm text-cyan-300">
-              <p>Comissão do Barbeiro: <strong>{fmt(previaComissao)}</strong></p>
-              <p>Líquido Barbearia: <strong>{fmt(previaLiquido)}</strong></p>
+            <div style={{ padding: '12px', background: 'var(--bg-surface2)', border: '1px solid var(--border)', fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--text-primary)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              <p>Comissão do Barbeiro: <strong style={{ color: 'var(--amber)' }}>{fmt(previaComissao)}</strong></p>
+              <p>Líquido Barbearia: <strong style={{ color: 'var(--success-text)' }}>{fmt(previaLiquido)}</strong></p>
             </div>
           )}
 
           <div>
-            <label className="block text-xs font-medium text-neutral-400 mb-1">Forma de Pagamento</label>
-            <select value={form.formaPagamento} onChange={e => setForm({...form, formaPagamento: e.target.value})} className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:border-cyan-500">
+            <label className="input-label">Forma de Pagamento</label>
+            <select value={form.formaPagamento} onChange={e => setForm({...form, formaPagamento: e.target.value})} className="ds-select">
               {formasPagamento.map(f => <option key={f} value={f}>{labelsForma[f]}</option>)}
             </select>
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-neutral-400 mb-1">Data</label>
-            <input type="date" value={form.data} onChange={e => setForm({...form, data: e.target.value})} className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:border-cyan-500" />
+            <label className="input-label">Data</label>
+            <input type="date" value={form.data} onChange={e => setForm({...form, data: e.target.value})} className="ds-input" />
           </div>
 
-          <button onClick={criarLancamento} className="w-full py-2.5 bg-cyan-500 hover:bg-cyan-400 text-neutral-900 font-semibold text-sm rounded-lg transition-colors">Registrar</button>
+          <button onClick={criarLancamento} className="btn-primary w-full justify-center">Registrar</button>
         </div>
       </Modal>
     </div>

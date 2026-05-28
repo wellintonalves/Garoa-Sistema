@@ -1,21 +1,53 @@
 @import "tailwindcss";
 
-/* Tema customizado da barbearia — escuro com acentos ciano */
-@theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --color-gold-50: #fdf8ef;
-  --color-gold-100: #f9edda;
-  --color-gold-200: #f2d8b4;
-  --color-gold-300: #e9be84;
-  --color-gold-400: #dfa253;
-  --color-gold-500: #d4883a;
-  --color-gold-600: #c9a96e;
-  --color-gold-700: #a06428;
-  --color-gold-800: #835026;
-  --color-gold-900: #6b4322;
+/* ================================================================
+   DESIGN SYSTEM — BARBEARIA URBANA
+   Industrial refinado · Cantos retos · Âmbar como único acento
+   ================================================================ */
+
+/* === TOKENS DE COR (CSS Custom Properties) === */
+:root {
+  /* Fundos */
+  --bg-primary:    #141414;
+  --bg-surface:    #1E1E1C;
+  --bg-surface2:   #272724;
+
+  /* Bordas */
+  --border:        #2E2E2B;
+  --border-hover:  #4A4A46;
+
+  /* Acento principal — âmbar */
+  --amber:         #D4820A;
+  --amber-light:   #F0A030;
+  --amber-dim:     #3D2A08;
+
+  /* Texto */
+  --text-primary:  #EDE8DC;
+  --text-muted:    #9A9488;
+  --text-disabled: #4A4A46;
+
+  /* Semântico */
+  --success:       #2D6A3F;
+  --success-text:  #6FCF97;
+  --error:         #711F1F;
+  --error-text:    #E24B4A;
+  --warning:       #3D2A08;
+  --warning-text:  #F0A030;
+
+  /* Fontes */
+  --font-display: 'Bebas Neue', sans-serif;
+  --font-body:    'Syne', sans-serif;
+  --font-mono:    'DM Mono', monospace;
 }
 
-/* Animações */
+/* === TAILWIND THEME OVERRIDE === */
+@theme {
+  --font-sans: 'Syne', sans-serif;
+  --font-display: 'Bebas Neue', sans-serif;
+  --font-mono: 'DM Mono', monospace;
+}
+
+/* === ANIMAÇÕES === */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
@@ -31,12 +63,6 @@
   50% { opacity: 0.7; }
 }
 
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-
-/* Utilitários customizados */
 @utility animate-fade-in {
   animation: fadeIn 0.4s ease-out;
 }
@@ -49,29 +75,390 @@
   animation: pulse-soft 2s ease-in-out infinite;
 }
 
-/* Scrollbar customizada */
+/* === SCROLLBAR CUSTOMIZADA === */
 ::-webkit-scrollbar {
   width: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #1c1c1e;
+  background: var(--bg-primary);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #3a3a3c;
-  border-radius: 3px;
+  background: var(--border);
+  border-radius: 0;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #4a4a4c;
+  background: var(--border-hover);
 }
 
-/* Reset base */
+/* === RESET BASE === */
 body {
-  font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
-  background-color: #0c0c0e;
-  color: #f5f5f7;
+  font-family: var(--font-body);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* === TIPOGRAFIA === */
+.heading-display {
+  font-family: var(--font-display);
+  color: var(--text-primary);
+  letter-spacing: 0.04em;
+  line-height: 1.1;
+}
+
+.text-body {
+  font-family: var(--font-body);
+  color: var(--text-muted);
+}
+
+.text-data {
+  font-family: var(--font-mono);
+  letter-spacing: 0.04em;
+}
+
+/* === BOTÕES === */
+.btn-primary {
+  background: var(--amber);
+  color: var(--bg-primary);
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 11px 24px;
+  border: none;
+  border-radius: 0;
+  cursor: pointer;
+  transition: background 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.btn-primary:hover {
+  background: var(--amber-light);
+}
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 10px 24px;
+  border: 1px solid var(--border);
+  border-radius: 0;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.btn-secondary:hover {
+  border-color: var(--border-hover);
+  color: var(--amber);
+}
+
+/* === INPUTS E SELECTS === */
+.input,
+.ds-input {
+  width: 100%;
+  background: var(--bg-surface2);
+  border: 1px solid var(--border);
+  border-radius: 0;
+  padding: 10px 14px;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  outline: none;
+  transition: border-color 0.2s;
+  min-height: 40px;
+}
+.input:focus,
+.ds-input:focus {
+  border-color: var(--amber);
+}
+.input::placeholder,
+.ds-input::placeholder {
+  color: var(--text-muted);
+}
+
+.ds-select {
+  width: 100%;
+  background: var(--bg-surface2);
+  border: 1px solid var(--border);
+  border-radius: 0;
+  padding: 10px 14px;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  outline: none;
+  transition: border-color 0.2s;
+  min-height: 40px;
+  cursor: pointer;
+}
+.ds-select:focus {
+  border-color: var(--amber);
+}
+
+.ds-textarea {
+  width: 100%;
+  background: var(--bg-surface2);
+  border: 1px solid var(--border);
+  border-radius: 0;
+  padding: 10px 14px;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  outline: none;
+  transition: border-color 0.2s;
+  resize: none;
+}
+.ds-textarea:focus {
+  border-color: var(--amber);
+}
+
+.input-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--amber);
+  margin-bottom: 6px;
+  display: block;
+  font-weight: 500;
+}
+
+/* === CARDS === */
+.card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 0;
+  padding: 1.25rem;
+}
+
+.card-featured {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-left: 2px solid var(--amber);
+  border-radius: 0;
+  padding: 1.25rem;
+}
+
+/* === BADGES === */
+.badge {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 0;
+  display: inline-block;
+}
+
+.badge-confirmed {
+  background: #1A3D2A;
+  color: var(--success-text);
+}
+.badge-pending {
+  background: var(--amber-dim);
+  color: var(--amber-light);
+}
+.badge-cancelled {
+  background: var(--error);
+  color: var(--error-text);
+}
+.badge-info {
+  background: var(--bg-surface2);
+  color: var(--text-muted);
+}
+
+/* === TABELAS === */
+.ds-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.ds-table thead tr {
+  border-bottom: 1px solid var(--border);
+}
+.ds-table th {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--amber);
+  padding: 10px 12px;
+  text-align: left;
+  font-weight: 500;
+}
+.ds-table td {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--text-primary);
+  padding: 12px 12px;
+  border-bottom: 1px solid var(--border);
+}
+.ds-table tbody tr:hover td {
+  background: var(--bg-surface2);
+}
+
+/* === SIDEBAR / NAVEGAÇÃO === */
+.sidebar {
+  background: var(--bg-surface);
+  border-right: 1px solid var(--border);
+  width: 220px;
+  min-height: 100vh;
+}
+
+.nav-logo {
+  font-family: var(--font-display);
+  font-size: 24px;
+  letter-spacing: 0.06em;
+  color: var(--text-primary);
+  padding: 1.5rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 1.25rem;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-left: 2px solid transparent;
+  transition: background 0.15s, color 0.15s;
+  text-decoration: none;
+}
+
+.nav-item:hover {
+  background: var(--bg-surface2);
+  color: var(--text-primary);
+}
+
+.nav-item.active {
+  color: var(--amber);
+  border-left-color: var(--amber);
+  background: var(--bg-surface2);
+}
+
+/* === CARDS DE MÉTRICAS (Dashboard) === */
+.metric-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 0;
+  padding: 1rem 1.25rem;
+}
+.metric-value {
+  font-family: var(--font-display);
+  font-size: 32px;
+  color: var(--text-primary);
+  letter-spacing: 0.02em;
+  line-height: 1;
+}
+.metric-value.highlight {
+  color: var(--amber);
+}
+.metric-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-top: 6px;
+}
+
+/* === LAYOUT GRID === */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+/* === MODAL === */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.modal-content {
+  position: relative;
+  width: 100%;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 0;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.modal-header h2 {
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.modal-body {
+  padding: 1.25rem;
+}
+
+/* === UTILITÁRIOS DE COR === */
+.text-amber { color: var(--amber); }
+.text-amber-light { color: var(--amber-light); }
+.text-success { color: var(--success-text); }
+.text-error { color: var(--error-text); }
+.text-warning { color: var(--warning-text); }
+.text-muted { color: var(--text-muted) !important; }
+.text-primary { color: var(--text-primary) !important; }
+.bg-primary { background-color: var(--bg-primary) !important; }
+.bg-surface { background-color: var(--bg-surface) !important; }
+.bg-surface2 { background-color: var(--bg-surface2) !important; }
+
+/* === LOADING SPINNER === */
+.spinner {
+  border: 2px solid var(--border);
+  border-top-color: var(--amber);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
