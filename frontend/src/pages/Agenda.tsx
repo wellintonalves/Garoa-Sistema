@@ -10,6 +10,7 @@ interface Agendamento {
   dataHora: string;
   status: 'AGUARDANDO' | 'CONFIRMADO' | 'CONCLUIDO' | 'CANCELADO';
   valorCobrado: string;
+  origem?: string;
   cliente: { usuario: { nome: string } };
   barbeiro: { usuario: { nome: string } };
   servico: { nome: string; duracaoMinutos: number };
@@ -244,9 +245,15 @@ export function Agenda() {
                             fontFamily: 'var(--font-body)',
                             fontSize: '11px',
                             marginBottom: '2px',
+                            position: 'relative',
                           }}
                         >
-                          <p className="truncate" style={{ fontWeight: 500 }}>{ag.cliente.usuario.nome}</p>
+                          <div className="flex justify-between items-start">
+                            <p className="truncate pr-1" style={{ fontWeight: 500 }}>{ag.cliente.usuario.nome}</p>
+                            {ag.origem === 'ONLINE' && (
+                              <span className="bg-[var(--amber)] text-black px-1 rounded text-[8px] font-bold">ONLINE</span>
+                            )}
+                          </div>
                           <p className="truncate" style={{ opacity: 0.7, fontFamily: 'var(--font-mono)', fontSize: '9px' }}>{ag.servico.nome}</p>
                         </div>
                       );

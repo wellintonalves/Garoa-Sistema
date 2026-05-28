@@ -1,4 +1,3 @@
-// Roteamento principal da aplicação
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { useAuth } from './hooks/useAuth';
@@ -12,6 +11,9 @@ import { Clientes } from './pages/Clientes';
 import { Financeiro } from './pages/Financeiro';
 import { Relatorios } from './pages/Relatorios';
 import { Estoque } from './pages/Estoque';
+import { Configuracoes } from './pages/Configuracoes';
+import { Agendar } from './pages/publico/Agendar';
+import { Fidelidade } from './pages/publico/Fidelidade';
 import { LoadingSpinner } from './components/LoadingSpinner';
 import { type ReactNode } from 'react';
 
@@ -36,6 +38,10 @@ export function App() {
     <BrowserRouter>
       <AuthProvider>
         <Routes>
+          {/* Rotas Públicas (Área do Cliente) */}
+          <Route path="/agendar" element={<Agendar />} />
+          <Route path="/fidelidade" element={<Fidelidade />} />
+
           {/* Login */}
           <Route path="/login" element={<RotaPublica><Login /></RotaPublica>} />
 
@@ -49,6 +55,7 @@ export function App() {
             <Route path="financeiro" element={<Financeiro />} />
             <Route path="relatorios" element={<Relatorios />} />
             <Route path="estoque" element={<Estoque />} />
+            <Route path="configuracoes" element={<Configuracoes />} />
           </Route>
 
           {/* Fallback */}

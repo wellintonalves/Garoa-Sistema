@@ -4,7 +4,7 @@ import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard, Calendar, Scissors, ListChecks,
   Users, DollarSign, Package, ChevronLeft, ChevronRight, LogOut,
-  BarChart3, X
+  BarChart3, X, Settings
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 
@@ -22,6 +22,7 @@ const menuItems = [
   { path: '/financeiro', label: 'Financeiro', icon: DollarSign },
   { path: '/relatorios', label: 'Relatórios', icon: BarChart3 },
   { path: '/estoque', label: 'Estoque', icon: Package },
+  { path: '/configuracoes', label: 'Configurações', icon: Settings },
 ];
 
 export function Sidebar({ mobileOpen, onCloseMobile }: SidebarProps) {

@@ -106,6 +106,7 @@ model Agendamento {
   status       StatusAgendamento  @default(AGUARDANDO)
   observacoes  String?
   valorCobrado Decimal            @db.Decimal(10, 2)
+  origem       String             @default("SISTEMA")
   createdAt    DateTime           @default(now())
 
   cliente  Cliente  @relation(fields: [clienteId], references: [id], onDelete: Cascade)
@@ -150,4 +151,12 @@ model Estoque {
   custo            Decimal @db.Decimal(10, 2)
 
   @@map("estoque")
+}
+
+model Configuracao {
+  id                    String   @id @default(uuid())
+  horariosFuncionamento Json?
+  regrasFidelidade      Json?
+
+  @@map("configuracoes")
 }
