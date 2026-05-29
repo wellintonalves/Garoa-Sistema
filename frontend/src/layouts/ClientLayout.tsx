@@ -8,7 +8,7 @@ export function ClientLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const { slug } = useParams<{ slug: string }>();
-  const { cliente, sair } = useClientAuth();
+  const { cliente } = useClientAuth();
   const [barbearia, setBarbearia] = useState<any>(null);
 
   useEffect(() => {

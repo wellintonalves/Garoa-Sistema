@@ -19,7 +19,7 @@ export function Configuracoes() {
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
 
-  const urlAgendar = `${window.location.origin}/agendar`;
+
 
   useEffect(() => {
     carregarConfiguracao();
@@ -95,12 +95,11 @@ export function Configuracoes() {
     if (!svg) return;
     const svgData = new XMLSerializer().serializeToString(svg);
     const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('new');
+    const ctx = canvas.getContext('2d');
     const img = new Image();
     img.onload = () => {
       canvas.width = img.width;
       canvas.height = img.height;
-      const ctx = canvas.getContext('2d');
       if (ctx) {
          ctx.fillStyle = 'white';
          ctx.fillRect(0,0, canvas.width, canvas.height);

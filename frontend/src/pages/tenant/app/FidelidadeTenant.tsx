@@ -8,7 +8,7 @@ export function FidelidadeTenant() {
   const [fidelidade, setFidelidade] = useState<any>(null);
 
   useEffect(() => {
-    api.get('/b/' + slug + '/app/minha-fidelidade').then(res => setFidelidade(res.data)).catch(console.error);
+    api.get('/b/' + slug + '/app/minha-fidelidade').then((res: any) => setFidelidade(res.data)).catch(console.error);
   }, [slug]);
 
   return (

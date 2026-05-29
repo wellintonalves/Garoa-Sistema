@@ -8,7 +8,7 @@ export function Historico() {
   const [agendamentos, setAgendamentos] = useState([]);
 
   useEffect(() => {
-    api.get('/b/' + slug + '/app/meus-agendamentos').then(res => setAgendamentos(res.data)).catch(console.error);
+    api.get('/b/' + slug + '/app/meus-agendamentos').then((res: any) => setAgendamentos(res.data)).catch(console.error);
   }, [slug]);
 
   return (
