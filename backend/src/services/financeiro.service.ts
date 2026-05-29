@@ -72,7 +72,7 @@ export class FinanceiroService {
         valorComissao,
         valorLiquido,
         data: new Date(dados.data),
-      },
+      } as any,
     });
   }
 
@@ -83,7 +83,7 @@ export class FinanceiroService {
       data: {
         ...dados,
         data: dados.data ? new Date(dados.data) : undefined,
-      },
+      } as any,
     });
   }
 
@@ -100,7 +100,7 @@ export class FinanceiroService {
     fim.setDate(fim.getDate() + 1);
 
     const lancamentos = await prisma.lancamentoFinanceiro.findMany({
-      where: { data: { gte: inicio, lt: fim } },
+      where: { data: { gte: inicio, lt: fim } } as any,
     });
 
     const porFormaPagamento: Record<string, number> = {};
@@ -145,7 +145,7 @@ export class FinanceiroService {
       fimDia.setDate(fimDia.getDate() + 1);
 
       const lancamentos = await prisma.lancamentoFinanceiro.findMany({
-        where: { data: { gte: dia, lt: fimDia } },
+        where: { data: { gte: dia, lt: fimDia } } as any,
       });
 
       let entradas = 0;
@@ -241,7 +241,7 @@ export class FinanceiroService {
 
     // --- Lançamentos financeiros do período ---
     const lancamentos = await prisma.lancamentoFinanceiro.findMany({
-      where: { data: { gte: dataInicio, lt: dataFim } },
+      where: { data: { gte: dataInicio, lt: dataFim } } as any,
       include: { servico: { select: { nome: true } } },
       orderBy: { data: 'asc' },
     });

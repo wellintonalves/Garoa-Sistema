@@ -7,16 +7,31 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('🌱 Iniciando seed do banco de dados...');
 
+  // 0. Barbearia
+  const barbearia = await prisma.barbearia.upsert({
+    where: { slug: 'garoa-barbearia' },
+    update: {},
+    create: {
+      nome: 'Garoa Barbearia',
+      slug: 'garoa-barbearia',
+      telefone: '(11) 99999-9999',
+      endereco: 'Rua Exemplo, 123',
+    },
+  });
+  const bId = barbearia.id;
+  console.log('✅ Barbearia criada:', barbearia.nome);
+
   // 1. Admin
   const senhaAdmin = await bcrypt.hash('Admin123!', 10);
   const admin = await prisma.usuario.upsert({
-    where: { email: 'admin@barbearia.com' },
+    where: { email_barbeariaId: { email: 'admin@barbearia.com', barbeariaId: bId } },
     update: {},
     create: {
       nome: 'Administrador',
       email: 'admin@barbearia.com',
       senha: senhaAdmin,
       papel: 'ADMIN',
+      barbeariaId: bId,
     },
   });
   console.log('✅ Admin criado:', admin.email);
@@ -25,49 +40,49 @@ async function main() {
   const senhaBarbeiro = await bcrypt.hash('Barber123!', 10);
 
   const barbeiro1User = await prisma.usuario.upsert({
-    where: { email: 'carlos@barbearia.com' },
+    where: { email_barbeariaId: { email: 'carlos@barbearia.com', barbeariaId: bId } },
     update: {},
-    create: { nome: 'Carlos Silva', email: 'carlos@barbearia.com', senha: senhaBarbeiro, papel: 'BARBEIRO' },
+    create: { nome: 'Carlos Silva', email: 'carlos@barbearia.com', senha: senhaBarbeiro, papel: 'BARBEIRO', barbeariaId: bId },
   });
   const barbeiro1 = await prisma.barbeiro.upsert({
     where: { usuarioId: barbeiro1User.id },
     update: {},
-    create: { usuarioId: barbeiro1User.id, especialidades: ['Corte Degradê', 'Barba'], comissaoPercent: 50 },
+    create: { usuarioId: barbeiro1User.id, barbeariaId: bId, especialidades: ['Corte Degradê', 'Barba'], comissaoPercent: 50 },
   });
 
   const barbeiro2User = await prisma.usuario.upsert({
-    where: { email: 'rafael@barbearia.com' },
+    where: { email_barbeariaId: { email: 'rafael@barbearia.com', barbeariaId: bId } },
     update: {},
-    create: { nome: 'Rafael Santos', email: 'rafael@barbearia.com', senha: senhaBarbeiro, papel: 'BARBEIRO' },
+    create: { nome: 'Rafael Santos', email: 'rafael@barbearia.com', senha: senhaBarbeiro, papel: 'BARBEIRO', barbeariaId: bId },
   });
   const barbeiro2 = await prisma.barbeiro.upsert({
     where: { usuarioId: barbeiro2User.id },
     update: {},
-    create: { usuarioId: barbeiro2User.id, especialidades: ['Platinado', 'Pigmentação'], comissaoPercent: 55 },
+    create: { usuarioId: barbeiro2User.id, barbeariaId: bId, especialidades: ['Platinado', 'Pigmentação'], comissaoPercent: 55 },
   });
 
   const barbeiro3User = await prisma.usuario.upsert({
-    where: { email: 'lucas@barbearia.com' },
+    where: { email_barbeariaId: { email: 'lucas@barbearia.com', barbeariaId: bId } },
     update: {},
-    create: { nome: 'Lucas Oliveira', email: 'lucas@barbearia.com', senha: senhaBarbeiro, papel: 'BARBEIRO' },
+    create: { nome: 'Lucas Oliveira', email: 'lucas@barbearia.com', senha: senhaBarbeiro, papel: 'BARBEIRO', barbeariaId: bId },
   });
   const barbeiro3 = await prisma.barbeiro.upsert({
     where: { usuarioId: barbeiro3User.id },
     update: {},
-    create: { usuarioId: barbeiro3User.id, especialidades: ['Corte Social', 'Sobrancelha'], comissaoPercent: 45 },
+    create: { usuarioId: barbeiro3User.id, barbeariaId: bId, especialidades: ['Corte Social', 'Sobrancelha'], comissaoPercent: 45 },
   });
   console.log('✅ 3 barbeiros criados');
 
   // 3. Serviços
   const servicos = await Promise.all([
-    prisma.servico.create({ data: { nome: 'Corte Masculino', descricao: 'Corte na máquina e tesoura', preco: 45.00, duracaoMinutos: 30, comissaoPercent: 50 } }),
-    prisma.servico.create({ data: { nome: 'Barba', descricao: 'Barba na navalha com toalha quente', preco: 35.00, duracaoMinutos: 20, comissaoPercent: 50 } }),
-    prisma.servico.create({ data: { nome: 'Combo Corte + Barba', descricao: 'Corte completo + barba', preco: 70.00, duracaoMinutos: 45, comissaoPercent: 50 } }),
-    prisma.servico.create({ data: { nome: 'Hidratação Capilar', descricao: 'Tratamento de hidratação profunda', preco: 50.00, duracaoMinutos: 30, comissaoPercent: 40 } }),
-    prisma.servico.create({ data: { nome: 'Pigmentação de Barba', descricao: 'Pigmentação para cobrir falhas', preco: 80.00, duracaoMinutos: 40, comissaoPercent: 45 } }),
-    prisma.servico.create({ data: { nome: 'Design de Sobrancelha', descricao: 'Desenho e alinhamento', preco: 25.00, duracaoMinutos: 15, comissaoPercent: 50 } }),
-    prisma.servico.create({ data: { nome: 'Corte Infantil', descricao: 'Corte para crianças até 12 anos', preco: 35.00, duracaoMinutos: 25, comissaoPercent: 50 } }),
-    prisma.servico.create({ data: { nome: 'Platinado', descricao: 'Descoloração completa', preco: 120.00, duracaoMinutos: 60, comissaoPercent: 40 } }),
+    prisma.servico.create({ data: { barbeariaId: bId, nome: 'Corte Masculino', descricao: 'Corte na máquina e tesoura', preco: 45.00, duracaoMinutos: 30, comissaoPercent: 50 } }),
+    prisma.servico.create({ data: { barbeariaId: bId, nome: 'Barba', descricao: 'Barba na navalha com toalha quente', preco: 35.00, duracaoMinutos: 20, comissaoPercent: 50 } }),
+    prisma.servico.create({ data: { barbeariaId: bId, nome: 'Combo Corte + Barba', descricao: 'Corte completo + barba', preco: 70.00, duracaoMinutos: 45, comissaoPercent: 50 } }),
+    prisma.servico.create({ data: { barbeariaId: bId, nome: 'Hidratação Capilar', descricao: 'Tratamento de hidratação profunda', preco: 50.00, duracaoMinutos: 30, comissaoPercent: 40 } }),
+    prisma.servico.create({ data: { barbeariaId: bId, nome: 'Pigmentação de Barba', descricao: 'Pigmentação para cobrir falhas', preco: 80.00, duracaoMinutos: 40, comissaoPercent: 45 } }),
+    prisma.servico.create({ data: { barbeariaId: bId, nome: 'Design de Sobrancelha', descricao: 'Desenho e alinhamento', preco: 25.00, duracaoMinutos: 15, comissaoPercent: 50 } }),
+    prisma.servico.create({ data: { barbeariaId: bId, nome: 'Corte Infantil', descricao: 'Corte para crianças até 12 anos', preco: 35.00, duracaoMinutos: 25, comissaoPercent: 50 } }),
+    prisma.servico.create({ data: { barbeariaId: bId, nome: 'Platinado', descricao: 'Descoloração completa', preco: 120.00, duracaoMinutos: 60, comissaoPercent: 40 } }),
   ]);
   console.log('✅ 8 serviços criados');
 
@@ -75,11 +90,11 @@ async function main() {
   const senhaCliente = await bcrypt.hash('Cliente123!', 10);
 
   const clientes = await Promise.all([
-    prisma.usuario.create({ data: { nome: 'João Pedro', email: 'joao@email.com', senha: senhaCliente, papel: 'CLIENTE' } }),
-    prisma.usuario.create({ data: { nome: 'Marcos Vinícius', email: 'marcos@email.com', senha: senhaCliente, papel: 'CLIENTE' } }),
-    prisma.usuario.create({ data: { nome: 'Felipe Souza', email: 'felipe@email.com', senha: senhaCliente, papel: 'CLIENTE' } }),
-    prisma.usuario.create({ data: { nome: 'Gustavo Lima', email: 'gustavo@email.com', senha: senhaCliente, papel: 'CLIENTE' } }),
-    prisma.usuario.create({ data: { nome: 'André Costa', email: 'andre@email.com', senha: senhaCliente, papel: 'CLIENTE' } }),
+    prisma.usuario.create({ data: { nome: 'João Pedro', email: 'joao@email.com', senha: senhaCliente, papel: 'CLIENTE', barbeariaId: bId } }),
+    prisma.usuario.create({ data: { nome: 'Marcos Vinícius', email: 'marcos@email.com', senha: senhaCliente, papel: 'CLIENTE', barbeariaId: bId } }),
+    prisma.usuario.create({ data: { nome: 'Felipe Souza', email: 'felipe@email.com', senha: senhaCliente, papel: 'CLIENTE', barbeariaId: bId } }),
+    prisma.usuario.create({ data: { nome: 'Gustavo Lima', email: 'gustavo@email.com', senha: senhaCliente, papel: 'CLIENTE', barbeariaId: bId } }),
+    prisma.usuario.create({ data: { nome: 'André Costa', email: 'andre@email.com', senha: senhaCliente, papel: 'CLIENTE', barbeariaId: bId } }),
   ]);
 
   const clientesDb = await Promise.all(
@@ -87,6 +102,7 @@ async function main() {
       prisma.cliente.create({
         data: {
           usuarioId: c.id,
+          barbeariaId: bId,
           telefone: `(11) 9${9000 + i}-${1000 + i}`,
           observacoes: i === 0 ? 'Cliente fiel, vem toda semana' : undefined,
         },
@@ -122,6 +138,7 @@ async function main() {
 
     await prisma.agendamento.create({
       data: {
+        barbeariaId: bId,
         clienteId: clientesDb[ag.clienteIdx].id,
         barbeiroId: barbeiros[ag.barbeiroIdx].id,
         servicoId: servicos[ag.servicoIdx].id,
@@ -148,6 +165,7 @@ async function main() {
 
     await prisma.lancamentoFinanceiro.create({
       data: {
+        barbeariaId: bId,
         tipo: lanc.tipo,
         categoria: lanc.categoria,
         descricao: lanc.descricao,
@@ -161,12 +179,12 @@ async function main() {
 
   // 7. Estoque
   await Promise.all([
-    prisma.estoque.create({ data: { nome: 'Pomada Modeladora', quantidade: 15, unidade: 'unidade', quantidadeMinima: 5, custo: 25.00 } }),
-    prisma.estoque.create({ data: { nome: 'Shampoo Profissional', quantidade: 8, unidade: 'litro', quantidadeMinima: 3, custo: 45.00 } }),
-    prisma.estoque.create({ data: { nome: 'Lâmina de Barbear', quantidade: 50, unidade: 'unidade', quantidadeMinima: 20, custo: 2.50 } }),
-    prisma.estoque.create({ data: { nome: 'Toalha Descartável', quantidade: 3, unidade: 'pacote', quantidadeMinima: 5, custo: 18.00 } }),
-    prisma.estoque.create({ data: { nome: 'Óleo para Barba', quantidade: 12, unidade: 'unidade', quantidadeMinima: 4, custo: 35.00 } }),
-    prisma.estoque.create({ data: { nome: 'Descolorante', quantidade: 2, unidade: 'unidade', quantidadeMinima: 3, custo: 55.00 } }),
+    prisma.estoque.create({ data: { barbeariaId: bId, nome: 'Pomada Modeladora', quantidade: 15, unidade: 'unidade', quantidadeMinima: 5, custo: 25.00 } }),
+    prisma.estoque.create({ data: { barbeariaId: bId, nome: 'Shampoo Profissional', quantidade: 8, unidade: 'litro', quantidadeMinima: 3, custo: 45.00 } }),
+    prisma.estoque.create({ data: { barbeariaId: bId, nome: 'Lâmina de Barbear', quantidade: 50, unidade: 'unidade', quantidadeMinima: 20, custo: 2.50 } }),
+    prisma.estoque.create({ data: { barbeariaId: bId, nome: 'Toalha Descartável', quantidade: 3, unidade: 'pacote', quantidadeMinima: 5, custo: 18.00 } }),
+    prisma.estoque.create({ data: { barbeariaId: bId, nome: 'Óleo para Barba', quantidade: 12, unidade: 'unidade', quantidadeMinima: 4, custo: 35.00 } }),
+    prisma.estoque.create({ data: { barbeariaId: bId, nome: 'Descolorante', quantidade: 2, unidade: 'unidade', quantidadeMinima: 3, custo: 55.00 } }),
   ]);
   console.log('✅ 6 itens de estoque criados');
 

@@ -19,7 +19,7 @@ export class ConfiguracaoService {
       config = await prisma.configuracao.create({
         data: {
           horariosFuncionamento: horariosPadrao,
-          regrasFidelidade: { pontosParaRecompensa: 10 },
+          regrasFidelidade: { pontosParaRecompensa: 10 } as any,
         },
       });
     }

@@ -10,4 +10,7 @@ router.use(authMiddleware);
 router.get('/', ConfiguracaoController.obter);
 router.put('/', ConfiguracaoController.atualizar);
 
+router.get('/minha-barbearia', ConfiguracaoController.getMinhaBarbearia);
+router.put('/minha-barbearia', ConfiguracaoController.updateMinhaBarbearia);
+
 export default router;

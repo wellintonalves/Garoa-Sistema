@@ -87,8 +87,8 @@ export class ClienteService {
             nome: dados.nome,
             email: dados.email,
             senha: senhaHash,
-            papel: 'CLIENTE',
-          },
+            papel: 'CLIENTE' as any,
+          } as any,
         },
       },
       include: {
@@ -106,7 +106,7 @@ export class ClienteService {
       data: {
         ...dados,
         dataNascimento: dados.dataNascimento ? new Date(dados.dataNascimento) : undefined,
-      },
+      } as any,
       include: {
         usuario: {
           select: { id: true, nome: true, email: true },

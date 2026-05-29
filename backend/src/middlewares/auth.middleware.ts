@@ -25,7 +25,16 @@ export function authMiddleware(req: AuthRequest, res: Response, next: NextFuncti
   try {
     const decoded = jwt.verify(token, authConfig.secret) as UsuarioJWT;
     req.usuario = decoded;
-    next();
+
+    // Se houver barbeariaId, injeta no contexto async para RLS
+    if (decoded.barbeariaId) {
+      const { tenantStorage } = require('../lib/als');
+      tenantStorage.run({ barbeariaId: decoded.barbeariaId }, () => {
+        next();
+      });
+    } else {
+      next();
+    }
   } catch {
     res.status(401).json({ erro: 'Token inválido ou expirado' });
   }

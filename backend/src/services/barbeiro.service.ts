@@ -75,8 +75,8 @@ export class BarbeiroService {
             nome: dados.nome,
             email: dados.email,
             senha: senhaHash,
-            papel: 'BARBEIRO',
-          },
+            papel: 'BARBEIRO' as any,
+          } as any,
         },
       },
       include: {
@@ -104,7 +104,7 @@ export class BarbeiroService {
   static async desativar(id: string) {
     return prisma.barbeiro.update({
       where: { id },
-      data: { ativo: false },
+      data: { ativo: false } as any,
     });
   }
 }

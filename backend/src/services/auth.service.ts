@@ -11,11 +11,13 @@ interface DadosRegistro {
   email: string;
   senha: string;
   papel?: Papel;
+  barbeariaId: string;
 }
 
 interface DadosLogin {
   email: string;
   senha: string;
+  barbeariaId?: string;
 }
 
 interface RespostaAuth {
@@ -26,9 +28,9 @@ interface RespostaAuth {
 export class AuthService {
   /** Registra um novo usuário */
   static async registrar(dados: DadosRegistro): Promise<RespostaAuth> {
-    // Verifica se email já existe
+    // Verifica se email já existe na barbearia
     const existente = await prisma.usuario.findUnique({
-      where: { email: dados.email },
+      where: { email_barbeariaId: { email: dados.email, barbeariaId: dados.barbeariaId } },
     });
 
     if (existente) {
@@ -45,7 +47,8 @@ export class AuthService {
         email: dados.email,
         senha: senhaHash,
         papel: dados.papel || 'CLIENTE',
-      },
+        barbeariaId: dados.barbeariaId,
+      } as any,
     });
 
     // Gera o token
@@ -54,6 +57,7 @@ export class AuthService {
       nome: usuario.nome,
       email: usuario.email,
       papel: usuario.papel,
+      barbeariaId: usuario.barbeariaId,
     };
 
     const token = jwt.sign(
@@ -67,9 +71,13 @@ export class AuthService {
 
   /** Autentica um usuário existente */
   static async login(dados: DadosLogin): Promise<RespostaAuth> {
-    // Busca o usuário
-    const usuario = await prisma.usuario.findUnique({
-      where: { email: dados.email },
+    // Busca o usuário (se barbeariaId for fornecido, busca exato, senão pega o primeiro)
+    const whereClause = dados.barbeariaId 
+      ? { email_barbeariaId: { email: dados.email, barbeariaId: dados.barbeariaId } }
+      : { email: dados.email };
+
+    const usuario = await prisma.usuario.findFirst({
+      where: whereClause,
     });
 
     if (!usuario) {
@@ -89,6 +97,7 @@ export class AuthService {
       nome: usuario.nome,
       email: usuario.email,
       papel: usuario.papel,
+      barbeariaId: usuario.barbeariaId,
     };
 
     const token = jwt.sign(

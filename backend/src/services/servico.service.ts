@@ -34,7 +34,7 @@ export class ServicoService {
         preco: dados.preco,
         duracaoMinutos: dados.duracaoMinutos,
         comissaoPercent: dados.comissaoPercent || 50,
-      },
+      } as any,
     });
   }
 
@@ -50,7 +50,7 @@ export class ServicoService {
   static async desativar(id: string) {
     return prisma.servico.update({
       where: { id },
-      data: { ativo: false },
+      data: { ativo: false } as any,
     });
   }
 }

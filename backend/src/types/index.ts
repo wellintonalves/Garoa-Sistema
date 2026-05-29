@@ -8,6 +8,7 @@ export interface UsuarioJWT {
   nome: string;
   email: string;
   papel: Papel;
+  barbeariaId: string;
 }
 
 /** Request com dados do usuário autenticado */

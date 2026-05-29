@@ -10,11 +10,13 @@ import estoqueRoutes from './estoque.routes';
 import relatorioRoutes from './relatorio.routes';
 import configuracaoRoutes from './configuracao.routes';
 import publicoRoutes from './publico.routes';
+import tenantRoutes from './tenantRoutes';
 
 const router = Router();
 
-// Rotas públicas (sem autenticação)
+// Rotas públicas e multi-tenant
 router.use('/publico', publicoRoutes);
+router.use('/b', tenantRoutes);
 
 // Rotas protegidas
 router.use('/auth', authRoutes);

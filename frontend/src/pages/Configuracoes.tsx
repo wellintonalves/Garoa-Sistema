@@ -61,6 +61,62 @@ export function Configuracoes() {
     }));
   }
 
+  const [barbearia, setBarbearia] = useState<any>({});
+  const [salvandoBarbearia, setSalvandoBarbearia] = useState(false);
+
+  async function carregarMinhaBarbearia() {
+    try {
+      const res = await api.get('/configuracoes/minha-barbearia');
+      setBarbearia(res.data);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  useEffect(() => {
+    carregarMinhaBarbearia();
+  }, []);
+
+  async function salvarBarbearia(e: React.FormEvent) {
+    e.preventDefault();
+    setSalvandoBarbearia(true);
+    try {
+      await api.put('/configuracoes/minha-barbearia', barbearia);
+      alert('Dados da barbearia atualizados!');
+    } catch (error) {
+      alert('Erro ao atualizar barbearia');
+    } finally {
+      setSalvandoBarbearia(false);
+    }
+  }
+
+  const handleDownloadQR = () => {
+    const svg = document.getElementById('qr-code-svg');
+    if (!svg) return;
+    const svgData = new XMLSerializer().serializeToString(svg);
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('new');
+    const img = new Image();
+    img.onload = () => {
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+         ctx.fillStyle = 'white';
+         ctx.fillRect(0,0, canvas.width, canvas.height);
+         ctx.drawImage(img, 0, 0);
+         const pngFile = canvas.toDataURL('image/png');
+         const downloadLink = document.createElement('a');
+         downloadLink.download = `${barbearia.slug || 'barbearia'}-qrcode.png`;
+         downloadLink.href = `${pngFile}`;
+         downloadLink.click();
+      }
+    };
+    img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
+  };
+
+  const urlQR = barbearia.slug ? `${window.location.origin}/b/${barbearia.slug}` : window.location.origin;
+
   if (carregando) {
     return <div className="p-6">Carregando configurações...</div>;
   }
@@ -75,6 +131,46 @@ export function Configuracoes() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Minha Barbearia */}
+        <div className="bg-[var(--bg-surface)] border border-[var(--border)] rounded p-6 shadow">
+          <h2 className="text-xl font-bold mb-4 text-white">Minha Barbearia</h2>
+          <form onSubmit={salvarBarbearia} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">Nome da Barbearia</label>
+              <input type="text" className="form-input w-full p-2 bg-black/50 border border-[var(--border)] rounded" value={barbearia.nome || ''} onChange={e => setBarbearia({...barbearia, nome: e.target.value})} required />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Slug (URL)</label>
+              <input type="text" className="form-input w-full p-2 bg-black/50 border border-[var(--border)] rounded" value={barbearia.slug || ''} onChange={e => setBarbearia({...barbearia, slug: e.target.value})} required />
+              <p className="text-xs text-zinc-500 mt-1">Sua url será: {window.location.origin}/b/{barbearia.slug || '...'}</p>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Cor Primária (Hex)</label>
+              <input type="color" className="w-full h-10 bg-transparent rounded cursor-pointer" value={barbearia.corPrimaria || '#ff6b00'} onChange={e => setBarbearia({...barbearia, corPrimaria: e.target.value})} required />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Endereço</label>
+              <input type="text" className="form-input w-full p-2 bg-black/50 border border-[var(--border)] rounded" value={barbearia.endereco || ''} onChange={e => setBarbearia({...barbearia, endereco: e.target.value})} />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Telefone</label>
+              <input type="text" className="form-input w-full p-2 bg-black/50 border border-[var(--border)] rounded" value={barbearia.telefone || ''} onChange={e => setBarbearia({...barbearia, telefone: e.target.value})} />
+            </div>
+            
+            <div className="p-4 bg-zinc-900 border border-zinc-800 rounded flex justify-between items-center">
+              <div>
+                <p className="text-zinc-400 text-sm">Clientes Cadastrados</p>
+                <p className="text-2xl font-bold text-orange-500">{barbearia.clientesCount || 0}</p>
+              </div>
+            </div>
+
+            <button type="submit" disabled={salvandoBarbearia} className="mt-4 flex items-center justify-center gap-2 w-full py-2.5 bg-[var(--amber)] hover:bg-amber-600 text-black font-bold rounded transition-colors">
+              <Save size={20} />
+              {salvandoBarbearia ? 'Salvando...' : 'Salvar Barbearia'}
+            </button>
+          </form>
+        </div>
+
         {/* Horários de Funcionamento */}
         <div className="bg-[var(--bg-surface)] border border-[var(--border)] rounded p-6 shadow">
           <h2 className="text-xl font-bold mb-4 text-white">Horário de Funcionamento</h2>
@@ -144,16 +240,21 @@ export function Configuracoes() {
             <h2 className="text-xl font-bold text-white">QR Code de Agendamento</h2>
           </div>
           <p className="text-sm text-[var(--text-muted)] mb-6">
-            Imprima este QR Code e coloque na sua barbearia para que os clientes possam agendar online.
+            Imprima este QR Code e coloque na sua barbearia para que os clientes possam acessar o seu App.
           </p>
           
           <div className="flex flex-col items-center justify-center p-6 bg-white rounded">
-            <QRCodeSVG value={urlAgendar} size={200} level="H" includeMargin={true} />
+            <QRCodeSVG id="qr-code-svg" value={urlQR} size={200} level="H" includeMargin={true} />
           </div>
           
           <div className="mt-4 p-3 bg-black/30 rounded border border-[var(--border)] text-center break-all text-sm font-mono text-[var(--amber)]">
-            {urlAgendar}
+            {urlQR}
           </div>
+
+          <button onClick={handleDownloadQR} className="mt-4 w-full flex items-center justify-center gap-2 py-2 bg-zinc-800 hover:bg-zinc-700 text-white font-bold rounded transition-colors border border-[var(--border)]">
+             <QrCode size={20} />
+             Baixar QR Code (PNG)
+          </button>
         </div>
       </div>
     </div>

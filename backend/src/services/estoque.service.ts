@@ -39,7 +39,7 @@ export class EstoqueService {
         unidade: dados.unidade,
         quantidadeMinima: dados.quantidadeMinima || 5,
         custo: dados.custo,
-      },
+      } as any,
     });
   }
 

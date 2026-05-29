@@ -33,12 +33,37 @@ function RotaPublica({ children }: { children: ReactNode }) {
   return <>{children}</>;
 }
 
+import { ClientAuthProvider } from './contexts/ClientAuthContext';
+import { ClientLayout } from './layouts/ClientLayout';
+import { Welcome } from './pages/tenant/Welcome';
+import { LoginClient } from './pages/tenant/LoginClient';
+import { RegisterClient } from './pages/tenant/RegisterClient';
+import { Inicio } from './pages/tenant/app/Inicio';
+import { AgendarTenant } from './pages/tenant/app/AgendarTenant';
+import { Historico } from './pages/tenant/app/Historico';
+import { FidelidadeTenant } from './pages/tenant/app/FidelidadeTenant';
+import { Perfil } from './pages/tenant/app/Perfil';
+
 export function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
+        <ClientAuthProvider>
         <Routes>
-          {/* Rotas Públicas (Área do Cliente) */}
+          {/* Área do Cliente (Multi-tenant) */}
+          <Route path="/b/:slug" element={<Welcome />} />
+          <Route path="/b/:slug/login" element={<LoginClient />} />
+          <Route path="/b/:slug/register" element={<RegisterClient />} />
+          
+          <Route path="/b/:slug/app" element={<ClientLayout />}>
+            <Route index element={<Inicio />} />
+            <Route path="agendar" element={<AgendarTenant />} />
+            <Route path="historico" element={<Historico />} />
+            <Route path="fidelidade" element={<FidelidadeTenant />} />
+            <Route path="perfil" element={<Perfil />} />
+          </Route>
+
+          {/* Rotas Públicas Antigas (Serão depreciadas) */}
           <Route path="/agendar" element={<Agendar />} />
           <Route path="/fidelidade" element={<Fidelidade />} />
 
@@ -61,6 +86,7 @@ export function App() {
           {/* Fallback */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+        </ClientAuthProvider>
       </AuthProvider>
     </BrowserRouter>
   );

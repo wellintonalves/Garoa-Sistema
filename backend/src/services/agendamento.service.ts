@@ -84,7 +84,7 @@ export class AgendamentoService {
         dataHora: dataInicio,
         observacoes: dados.observacoes,
         valorCobrado: dados.valorCobrado,
-      },
+      } as any,
       include: {
         cliente: { include: { usuario: { select: { nome: true } } } },
         barbeiro: { include: { usuario: { select: { nome: true } } } },
@@ -100,7 +100,7 @@ export class AgendamentoService {
       data: {
         ...dados,
         dataHora: dados.dataHora ? new Date(dados.dataHora) : undefined,
-      },
+      } as any,
       include: {
         cliente: { include: { usuario: { select: { nome: true } } } },
         barbeiro: { include: { usuario: { select: { nome: true } } } },
@@ -113,7 +113,7 @@ export class AgendamentoService {
   static async cancelar(id: string) {
     return prisma.agendamento.update({
       where: { id },
-      data: { status: 'CANCELADO' },
+      data: { status: 'CANCELADO' } as any,
     });
   }
 

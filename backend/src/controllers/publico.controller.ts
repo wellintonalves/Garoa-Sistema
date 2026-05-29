@@ -186,14 +186,14 @@ export class PublicoController {
             email: `cliente_${telefoneCliente}@garoa.com.br`, // email fake pra satisfazer unique
             senha: 'NO_PASSWORD',
             papel: 'CLIENTE',
-          }
+          } as any
         });
 
         cliente = await prisma.cliente.create({
           data: {
             usuarioId: usuario.id,
             telefone: telefoneCliente,
-          }
+          } as any
         });
       }
 
@@ -236,7 +236,7 @@ export class PublicoController {
           valorCobrado: servico.preco,
           origem: 'ONLINE',
           status: 'CONFIRMADO', // Public appointments auto-confirmed
-        }
+        } as any
       });
 
       res.status(201).json(agendamento);
