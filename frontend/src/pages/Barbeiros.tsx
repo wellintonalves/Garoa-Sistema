@@ -1,6 +1,6 @@
 // Página de Barbeiros — listagem com cards + seção de comissões por período
 import { useEffect, useState } from 'react';
-import { Star, Plus, DollarSign, TrendingUp, Calendar } from 'lucide-react';
+import { Star, Plus, DollarSign, TrendingUp, Calendar, Edit2 } from 'lucide-react';
 import { Modal } from '../components/Modal';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { useNavigate } from 'react-router-dom';
@@ -26,6 +26,7 @@ export function Barbeiros() {
   const [barbeiros, setBarbeiros] = useState<Barbeiro[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [modalAberto, setModalAberto] = useState(false);
+  const [editandoId, setEditandoId] = useState<string | null>(null);
   const [form, setForm] = useState({ nome: '', email: '', senha: '', especialidades: '', comissaoPercent: '50' });
   const navigate = useNavigate();
 
@@ -60,14 +61,50 @@ export function Barbeiros() {
   useEffect(() => { carregar(); }, []);
   useEffect(() => { carregarComissoes(); }, []);
 
-  async function criarBarbeiro() {
+  function abrirModalNovo() {
+    setEditandoId(null);
+    setForm({ nome: '', email: '', senha: '', especialidades: '', comissaoPercent: '50' });
+    setModalAberto(true);
+  }
+
+  function abrirModalEditar(b: Barbeiro) {
+    setEditandoId(b.id);
+    setForm({
+      nome: b.usuario.nome,
+      email: b.usuario.email,
+      senha: '', // leave blank if not changing
+      especialidades: b.especialidades.join(', '),
+      comissaoPercent: String(b.comissaoPercent),
+    });
+    setModalAberto(true);
+  }
+
+  async function salvarBarbeiro() {
     try {
-      await api.post('/barbeiros', {
-        nome: form.nome, email: form.email, senha: form.senha,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const payload: any = {
+        nome: form.nome,
+        email: form.email,
         especialidades: form.especialidades.split(',').map(e => e.trim()).filter(Boolean),
         comissaoPercent: Number(form.comissaoPercent),
-      });
+      };
+      
+      if (form.senha) {
+        payload.senha = form.senha;
+      }
+
+      if (editandoId) {
+        await api.put(`/barbeiros/${editandoId}`, payload);
+      } else {
+        if (!form.senha) {
+          alert('Senha é obrigatória para novos barbeiros.');
+          return;
+        }
+        await api.post('/barbeiros', payload);
+      }
+      
       setModalAberto(false);
+      setEditandoId(null);
       setForm({ nome: '', email: '', senha: '', especialidades: '', comissaoPercent: '50' });
       carregar();
     } catch (err) { console.error(err); }
@@ -95,7 +132,7 @@ export function Barbeiros() {
         >
           Barbeiros
         </h1>
-        <button onClick={() => setModalAberto(true)} className="btn-primary">
+        <button onClick={abrirModalNovo} className="btn-primary">
           <Plus size={14} strokeWidth={1.5} /> Novo
         </button>
       </div>
@@ -147,15 +184,33 @@ export function Barbeiros() {
                   {b.usuario.email}
                 </p>
               </div>
-              {/* Indicador ativo */}
-              <div
-                className="ml-auto flex-shrink-0 badge"
-                style={b.ativo
-                  ? { background: '#1A3D2A', color: 'var(--success-text)' }
-                  : { background: 'var(--bg-surface2)', color: 'var(--text-disabled)' }
-                }
-              >
-                {b.ativo ? 'Ativo' : 'Inativo'}
+              {/* Indicadores */}
+              <div className="ml-auto flex flex-col gap-1 items-end">
+                <div
+                  className="flex-shrink-0 badge"
+                  style={b.ativo
+                    ? { background: '#1A3D2A', color: 'var(--success-text)' }
+                    : { background: 'var(--bg-surface2)', color: 'var(--text-disabled)' }
+                  }
+                >
+                  {b.ativo ? 'Ativo' : 'Inativo'}
+                </div>
+                <button
+                  onClick={() => abrirModalEditar(b)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    color: 'var(--amber)',
+                    padding: '4px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                  title="Editar Barbeiro"
+                >
+                  <Edit2 size={14} />
+                </button>
               </div>
             </div>
             <div className="flex flex-wrap gap-1.5 mb-3">
@@ -280,19 +335,21 @@ export function Barbeiros() {
         </div>
       </div>
 
-      <Modal aberto={modalAberto} onFechar={() => setModalAberto(false)} titulo="Novo Barbeiro">
+      <Modal aberto={modalAberto} onFechar={() => setModalAberto(false)} titulo={editandoId ? "Editar Barbeiro" : "Novo Barbeiro"}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <div><label className="input-label">Nome</label>
           <input value={form.nome} onChange={e => setForm({...form, nome: e.target.value})} className="ds-input" /></div>
           <div><label className="input-label">Email</label>
           <input type="email" value={form.email} onChange={e => setForm({...form, email: e.target.value})} className="ds-input" /></div>
-          <div><label className="input-label">Senha</label>
-          <input type="password" value={form.senha} onChange={e => setForm({...form, senha: e.target.value})} className="ds-input" /></div>
+          <div>
+            <label className="input-label">Senha {editandoId ? "(deixe em branco para manter)" : ""}</label>
+            <input type="password" value={form.senha} onChange={e => setForm({...form, senha: e.target.value})} className="ds-input" placeholder={editandoId ? "Nova senha" : "Senha"} />
+          </div>
           <div><label className="input-label">Especialidades (vírgula)</label>
           <input value={form.especialidades} onChange={e => setForm({...form, especialidades: e.target.value})} placeholder="Corte, Barba" className="ds-input" /></div>
           <div><label className="input-label">Comissão (%)</label>
           <input type="number" value={form.comissaoPercent} onChange={e => setForm({...form, comissaoPercent: e.target.value})} className="ds-input" /></div>
-          <button onClick={criarBarbeiro} className="btn-primary w-full justify-center">Cadastrar</button>
+          <button onClick={salvarBarbeiro} className="btn-primary w-full justify-center">{editandoId ? "Salvar Alterações" : "Cadastrar"}</button>
         </div>
       </Modal>
     </div>

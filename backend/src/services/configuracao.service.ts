@@ -20,7 +20,7 @@ export class ConfiguracaoService {
         data: {
           horariosFuncionamento: horariosPadrao,
           regrasFidelidade: { pontosParaRecompensa: 10 } as any,
-        },
+        } as any,
       });
     }
 

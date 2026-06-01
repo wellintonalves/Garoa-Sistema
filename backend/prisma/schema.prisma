@@ -62,20 +62,22 @@ model Barbearia {
   lancamentosFinanceiros LancamentoFinanceiro[]
   estoque                Estoque[]
   configuracoes          Configuracao[]
+  clientesBarbearias     ClienteBarbearia[]
+  pontosFidelidade       PontoFidelidade[]
 
   @@map("barbearias")
 }
 
 model Usuario {
-  id        String   @id @default(uuid())
+  id          String   @id @default(uuid())
   nome        String
   email       String
   senha       String
   papel       Papel    @default(CLIENTE)
-  barbeariaId String
+  barbeariaId String?
   createdAt   DateTime @default(now())
 
-  barbearia Barbearia @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
+  barbearia Barbearia? @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
   barbeiro  Barbeiro?
   cliente   Cliente?
 
@@ -103,16 +105,45 @@ model Barbeiro {
 model Cliente {
   id             String    @id @default(uuid())
   usuarioId      String    @unique
-  barbeariaId    String
+  barbeariaId    String?
   telefone       String?
   dataNascimento DateTime?
   observacoes    String?
 
-  barbearia    Barbearia     @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
-  usuario      Usuario       @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
-  agendamentos Agendamento[]
+  barbearia          Barbearia?          @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
+  usuario            Usuario             @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  agendamentos       Agendamento[]
+  clientesBarbearias ClienteBarbearia[]
+  pontosFidelidade   PontoFidelidade[]
 
   @@map("clientes")
+}
+
+model ClienteBarbearia {
+  id          String   @id @default(uuid())
+  clienteId   String
+  barbeariaId String
+  conectadoEm DateTime @default(now())
+
+  cliente   Cliente   @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+  barbearia Barbearia @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
+
+  @@unique([clienteId, barbeariaId])
+  @@map("clientes_barbearias")
+}
+
+model PontoFidelidade {
+  id          String   @id @default(uuid())
+  clienteId   String
+  barbeariaId String
+  pontos      Int
+  descricao   String
+  data        DateTime @default(now())
+
+  cliente   Cliente   @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+  barbearia Barbearia @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
+
+  @@map("pontos_fidelidade")
 }
 
 model Servico {

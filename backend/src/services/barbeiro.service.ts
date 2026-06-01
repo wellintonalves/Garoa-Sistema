@@ -11,6 +11,9 @@ interface DadosBarbeiro {
 }
 
 interface DadosAtualizacao {
+  nome?: string;
+  email?: string;
+  senha?: string;
   foto?: string;
   especialidades?: string[];
   comissaoPercent?: number;
@@ -75,10 +78,10 @@ export class BarbeiroService {
             nome: dados.nome,
             email: dados.email,
             senha: senhaHash,
-            papel: 'BARBEIRO' as any,
-          } as any,
+            papel: 'BARBEIRO',
+          },
         },
-      },
+      } as any,
       include: {
         usuario: {
           select: { id: true, nome: true, email: true, papel: true },
@@ -87,11 +90,36 @@ export class BarbeiroService {
     });
   }
 
-  /** Atualiza dados do barbeiro */
+  /** Atualiza dados do barbeiro (incluindo email/senha do usuario) */
   static async atualizar(id: string, dados: DadosAtualizacao) {
+    const barbeiro = await prisma.barbeiro.findUnique({ where: { id } });
+    if (!barbeiro) throw new Error('Barbeiro não encontrado');
+
+    // Atualiza dados do usuario se nome, email ou senha foram passados
+    if (dados.nome || dados.email || dados.senha) {
+      const updateUser: Record<string, unknown> = {};
+      if (dados.nome) updateUser.nome = dados.nome;
+      if (dados.email) updateUser.email = dados.email;
+      if (dados.senha) {
+        const bcrypt = await import('bcryptjs');
+        updateUser.senha = await bcrypt.hash(dados.senha, 10);
+      }
+      await prisma.usuario.update({
+        where: { id: barbeiro.usuarioId },
+        data: updateUser,
+      });
+    }
+
+    // Atualiza dados do barbeiro
+    const updateBarbeiro: Record<string, unknown> = {};
+    if (dados.foto !== undefined) updateBarbeiro.foto = dados.foto;
+    if (dados.especialidades !== undefined) updateBarbeiro.especialidades = dados.especialidades;
+    if (dados.comissaoPercent !== undefined) updateBarbeiro.comissaoPercent = dados.comissaoPercent;
+    if (dados.ativo !== undefined) updateBarbeiro.ativo = dados.ativo;
+
     return prisma.barbeiro.update({
       where: { id },
-      data: dados,
+      data: updateBarbeiro,
       include: {
         usuario: {
           select: { id: true, nome: true, email: true, papel: true },
@@ -104,7 +132,8 @@ export class BarbeiroService {
   static async desativar(id: string) {
     return prisma.barbeiro.update({
       where: { id },
-      data: { ativo: false } as any,
+      data: { ativo: false } as never,
     });
   }
 }
+

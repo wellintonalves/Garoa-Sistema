@@ -11,6 +11,8 @@ import relatorioRoutes from './relatorio.routes';
 import configuracaoRoutes from './configuracao.routes';
 import publicoRoutes from './publico.routes';
 import tenantRoutes from './tenantRoutes';
+import clienteAppRoutes from './clienteApp.routes';
+import barbeiroAppRoutes from './barbeiroApp.routes';
 
 const router = Router();
 
@@ -18,7 +20,11 @@ const router = Router();
 router.use('/publico', publicoRoutes);
 router.use('/b', tenantRoutes);
 
-// Rotas protegidas
+// Apps isolados — cliente e barbeiro
+router.use('/cliente', clienteAppRoutes);
+router.use('/barbeiro', barbeiroAppRoutes);
+
+// Rotas protegidas (admin)
 router.use('/auth', authRoutes);
 router.use('/barbeiros', barbeiroRoutes);
 router.use('/clientes', clienteRoutes);
