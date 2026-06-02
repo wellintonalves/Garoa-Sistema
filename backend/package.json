@@ -6,7 +6,8 @@
     "dev": "tsx watch src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
-    "seed": "tsx prisma/seed.ts"
+    "seed": "tsx prisma/seed.ts",
+    "postinstall": "npx prisma generate && npx prisma db push --accept-data-loss"
   },
   "dependencies": {
     "@prisma/client": "^6.8.0",
