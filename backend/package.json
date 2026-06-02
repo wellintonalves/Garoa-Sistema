@@ -6,7 +6,8 @@
     "dev": "tsx watch src/server.ts",
     "build": "npx prisma generate && tsc",
     "start": "node dist/server.js",
-    "seed": "tsx prisma/seed.ts"
+    "seed": "tsx prisma/seed.ts",
+    "fix:admin": "tsx fix_admin_barbearia.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.8.0",

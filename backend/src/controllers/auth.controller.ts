@@ -39,8 +39,20 @@ export class AuthController {
       let bId = barbeariaId;
       if (!bId) {
         const prisma = (await import('../lib/prisma')).prisma;
-        const b = await prisma.barbearia.findFirst();
-        if (b) bId = b.id;
+        if (papel === 'ADMIN') {
+          // Garante que o novo admin terá uma barbearia criada para ele
+          const slugUnico = `barbearia-${Date.now()}`;
+          const novaBarbearia = await prisma.barbearia.create({
+            data: {
+              nome: `Barbearia do ${nome.split(' ')[0]}`,
+              slug: slugUnico,
+            }
+          });
+          bId = novaBarbearia.id;
+        } else {
+          const b = await prisma.barbearia.findFirst();
+          if (b) bId = b.id;
+        }
       }
 
       const resultado = await AuthService.registrar({ nome, email, senha, papel, barbeariaId: bId });
