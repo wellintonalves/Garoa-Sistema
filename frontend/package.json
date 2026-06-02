@@ -12,6 +12,7 @@
   "dependencies": {
     "@types/qrcode.react": "^1.0.5",
     "axios": "^1.7.9",
+    "html5-qrcode": "^2.3.8",
     "lucide-react": "^0.468.0",
     "qrcode.react": "^4.2.0",
     "react": "^19.0.0",

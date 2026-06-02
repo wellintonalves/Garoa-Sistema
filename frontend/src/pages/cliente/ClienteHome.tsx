@@ -1,9 +1,10 @@
 // Tela inicial do cliente — buscar e gerenciar barbearias conectadas
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useClienteAuth } from '../../hooks/useClienteAuth';
-import { Search, QrCode, MapPin, ChevronRight, LogOut, Scissors } from 'lucide-react';
+import { Search, QrCode, MapPin, ChevronRight, LogOut, Scissors, CheckCircle, XCircle } from 'lucide-react';
 import clienteApi from '../../api/clienteApi';
+import { QrCodeScanner } from '../../components/QrCodeScanner';
 
 interface BarbeariaItem {
   id: string;
@@ -23,6 +24,9 @@ export function ClienteHome() {
   const [buscando, setBuscando] = useState(false);
   const [minhasBarbearias, setMinhasBarbearias] = useState<BarbeariaItem[]>([]);
   const [carregando, setCarregando] = useState(true);
+  const [scannerAberto, setScannerAberto] = useState(false);
+  const [mensagemSucesso, setMensagemSucesso] = useState<string | null>(null);
+  const [mensagemErro, setMensagemErro] = useState<string | null>(null);
 
   // Conectar automaticamente se veio de um slug
   useEffect(() => {
@@ -68,8 +72,18 @@ export function ClienteHome() {
       const res = await clienteApi.get<BarbeariaItem>('/cliente/buscar-barbearia-slug/' + slug);
       await clienteApi.post('/cliente/conectar-barbearia', { barbeariaId: res.data.id });
       carregarMinhasBarbearias();
-    } catch { /* empty */ }
+      setMensagemSucesso(`Conectado à ${res.data.nome}!`);
+      setTimeout(() => setMensagemSucesso(null), 4000);
+    } catch {
+      setMensagemErro('Barbearia não encontrada para este QR Code.');
+      setTimeout(() => setMensagemErro(null), 4000);
+    }
   }
+
+  const handleQrResult = useCallback((slug: string) => {
+    setScannerAberto(false);
+    conectarPorSlug(slug);
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col" style={{ background: 'var(--bg-primary)' }}>
@@ -104,7 +118,7 @@ export function ClienteHome() {
             />
           </div>
           <button
-            onClick={() => alert('QR Code scanner em breve!')}
+            onClick={() => setScannerAberto(true)}
             style={{ background: 'var(--amber-dim)', border: '1px solid var(--amber)', padding: '10px 14px', cursor: 'pointer' }}
             title="Escanear QR Code"
           >
@@ -205,6 +219,71 @@ export function ClienteHome() {
           </div>
         )}
       </div>
+
+      {/* QR Code Scanner Modal */}
+      {scannerAberto && (
+        <QrCodeScanner
+          onResult={handleQrResult}
+          onClose={() => setScannerAberto(false)}
+        />
+      )}
+
+      {/* Mensagem de sucesso */}
+      {mensagemSucesso && (
+        <div style={{
+          position: 'fixed',
+          bottom: '24px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          background: 'linear-gradient(135deg, #065f46, #064e3b)',
+          border: '1px solid #10b981',
+          padding: '14px 24px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+          zIndex: 10000,
+          boxShadow: '0 8px 30px rgba(16, 185, 129, 0.3)',
+          animation: 'slideUp 0.3s ease-out',
+          maxWidth: '90vw',
+        }}>
+          <CheckCircle size={20} style={{ color: '#34d399', flexShrink: 0 }} />
+          <span style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: '#d1fae5', fontWeight: 600 }}>
+            {mensagemSucesso}
+          </span>
+        </div>
+      )}
+
+      {/* Mensagem de erro */}
+      {mensagemErro && (
+        <div style={{
+          position: 'fixed',
+          bottom: '24px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          background: 'linear-gradient(135deg, #7f1d1d, #991b1b)',
+          border: '1px solid #ef4444',
+          padding: '14px 24px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+          zIndex: 10000,
+          boxShadow: '0 8px 30px rgba(239, 68, 68, 0.3)',
+          animation: 'slideUp 0.3s ease-out',
+          maxWidth: '90vw',
+        }}>
+          <XCircle size={20} style={{ color: '#fca5a5', flexShrink: 0 }} />
+          <span style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: '#fecaca', fontWeight: 600 }}>
+            {mensagemErro}
+          </span>
+        </div>
+      )}
+
+      <style>{`
+        @keyframes slideUp {
+          from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+          to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+      `}</style>
     </div>
   );
 }
