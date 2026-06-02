@@ -29,6 +29,8 @@ export function AdminLogin() {
     setCarregando(true);
     try {
       await login(email, senha);
+      navigate('/admin');
+      return;
     } catch (error) {
       const msg = (error as { response?: { data?: { erro?: string } } })?.response?.data?.erro || 'Erro ao fazer login';
       setErro(msg);
