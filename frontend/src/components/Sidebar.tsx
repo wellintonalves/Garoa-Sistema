@@ -14,15 +14,15 @@ interface SidebarProps {
 }
 
 const menuItems = [
-  { path: '/', label: 'Dashboard', icon: LayoutDashboard },
-  { path: '/agenda', label: 'Agenda', icon: Calendar },
-  { path: '/barbeiros', label: 'Barbeiros', icon: Scissors },
-  { path: '/servicos', label: 'Serviços', icon: ListChecks },
-  { path: '/clientes', label: 'Clientes', icon: Users },
-  { path: '/financeiro', label: 'Financeiro', icon: DollarSign },
-  { path: '/relatorios', label: 'Relatórios', icon: BarChart3 },
-  { path: '/estoque', label: 'Estoque', icon: Package },
-  { path: '/configuracoes', label: 'Configurações', icon: Settings },
+  { path: '/admin', label: 'Dashboard', icon: LayoutDashboard },
+  { path: '/admin/agenda', label: 'Agenda', icon: Calendar },
+  { path: '/admin/barbeiros', label: 'Barbeiros', icon: Scissors },
+  { path: '/admin/servicos', label: 'Serviços', icon: ListChecks },
+  { path: '/admin/clientes', label: 'Clientes', icon: Users },
+  { path: '/admin/financeiro', label: 'Financeiro', icon: DollarSign },
+  { path: '/admin/relatorios', label: 'Relatórios', icon: BarChart3 },
+  { path: '/admin/estoque', label: 'Estoque', icon: Package },
+  { path: '/admin/configuracoes', label: 'Configurações', icon: Settings },
 ];
 
 export function Sidebar({ mobileOpen, onCloseMobile }: SidebarProps) {
@@ -103,7 +103,7 @@ export function Sidebar({ mobileOpen, onCloseMobile }: SidebarProps) {
                   onCloseMobile();
                 }
               }}
-              end={path === '/'}
+              end={path === '/admin'}
               className={({ isActive }) =>
                 `nav-item ${isActive ? 'active' : ''}`
               }

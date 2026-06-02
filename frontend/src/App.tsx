@@ -2,7 +2,6 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { useAuth } from './hooks/useAuth';
 import { DashboardLayout } from './layouts/DashboardLayout';
-import { Login } from './pages/Login';
 import { Dashboard } from './pages/Dashboard';
 import { Agenda } from './pages/Agenda';
 import { Barbeiros } from './pages/Barbeiros';
@@ -21,15 +20,7 @@ import { type ReactNode } from 'react';
 function RotaProtegida({ children }: { children: ReactNode }) {
   const { usuario, carregando } = useAuth();
   if (carregando) return <LoadingSpinner />;
-  if (!usuario) return <Navigate to="/login" replace />;
-  return <>{children}</>;
-}
-
-/** Rota pública — redireciona para dashboard se já autenticado */
-function RotaPublica({ children }: { children: ReactNode }) {
-  const { usuario, carregando } = useAuth();
-  if (carregando) return <LoadingSpinner />;
-  if (usuario) return <Navigate to="/" replace />;
+  if (!usuario) return <Navigate to="/admin/login" replace />;
   return <>{children}</>;
 }
 
@@ -47,9 +38,8 @@ import { Perfil } from './pages/tenant/app/Perfil';
 
 // New Client App (Global)
 import { ClienteAuthProvider } from './contexts/ClienteAuthContext';
-import { ClienteWelcome } from './pages/cliente/ClienteWelcome';
-import { ClienteRegister } from './pages/cliente/ClienteRegister';
-import { ClienteLogin } from './pages/cliente/ClienteLogin';
+import { ClienteLoginPrincipal } from './pages/cliente/ClienteLoginPrincipal';
+import { ClienteCadastro } from './pages/cliente/ClienteCadastro';
 import { ClienteHome } from './pages/cliente/ClienteHome';
 import { ClienteLayout } from './layouts/ClienteLayout';
 import { ClienteBarbeariaInicio } from './pages/cliente/barbearia/ClienteBarbeariaInicio';
@@ -57,9 +47,12 @@ import { ClienteBarbeariaAgendar } from './pages/cliente/barbearia/ClienteBarbea
 import { ClienteBarbeariaFidelidade } from './pages/cliente/barbearia/ClienteBarbeariaFidelidade';
 import { ClienteBarbeariaPerfil } from './pages/cliente/barbearia/ClienteBarbeariaPerfil';
 
-// New Barber App
+// Admin Login
+import { AdminLogin } from './pages/admin/AdminLogin';
+
+// Barber App
 import { BarbeiroAuthProvider } from './contexts/BarbeiroAuthContext';
-import { BarbeiroLogin } from './pages/barbeiro/BarbeiroLogin';
+import { BarbeiroLoginPage } from './pages/barbeiro/BarbeiroLoginPage';
 import { BarbeiroLayout } from './layouts/BarbeiroLayout';
 import { BarbeiroHoje } from './pages/barbeiro/BarbeiroHoje';
 import { BarbeiroAgenda } from './pages/barbeiro/BarbeiroAgenda';
@@ -74,12 +67,13 @@ export function App() {
           <ClienteAuthProvider>
             <BarbeiroAuthProvider>
               <Routes>
-                {/* --- App do Cliente (Global) --- */}
-                <Route path="/cliente" element={<ClienteWelcome />} />
-                <Route path="/cliente/register" element={<ClienteRegister />} />
-                <Route path="/cliente/login" element={<ClienteLogin />} />
+                {/* === Tela Principal — Login do Cliente === */}
+                <Route path="/" element={<ClienteLoginPrincipal />} />
+                <Route path="/cadastro" element={<ClienteCadastro />} />
+
+                {/* === App do Cliente (após login) === */}
                 <Route path="/cliente/home" element={<ClienteHome />} />
-                
+
                 <Route path="/cliente/barbearia/:barbeariaId" element={<ClienteLayout />}>
                   <Route index element={<ClienteBarbeariaInicio />} />
                   <Route path="agendar" element={<ClienteBarbeariaAgendar />} />
@@ -87,8 +81,13 @@ export function App() {
                   <Route path="perfil" element={<ClienteBarbeariaPerfil />} />
                 </Route>
 
-                {/* --- App do Barbeiro --- */}
-                <Route path="/barbeiro" element={<BarbeiroLogin />} />
+                {/* === Login do Administrador === */}
+                <Route path="/admin/login" element={<AdminLogin />} />
+
+                {/* === Login do Barbeiro === */}
+                <Route path="/barbeiro/login" element={<BarbeiroLoginPage />} />
+
+                {/* === App do Barbeiro (após login) === */}
                 <Route path="/barbeiro" element={<BarbeiroLayout />}>
                   <Route path="hoje" element={<BarbeiroHoje />} />
                   <Route path="agenda" element={<BarbeiroAgenda />} />
@@ -96,11 +95,11 @@ export function App() {
                   <Route path="perfil" element={<BarbeiroPerfil />} />
                 </Route>
 
-                {/* --- Área do Cliente (Multi-tenant) - Legado --- */}
+                {/* === Área do Cliente (Multi-tenant) - Legado === */}
                 <Route path="/b/:slug" element={<Welcome />} />
                 <Route path="/b/:slug/login" element={<LoginClient />} />
                 <Route path="/b/:slug/register" element={<RegisterClient />} />
-                
+
                 <Route path="/b/:slug/app" element={<ClientLayout />}>
                   <Route index element={<Inicio />} />
                   <Route path="agendar" element={<AgendarTenant />} />
@@ -109,16 +108,12 @@ export function App() {
                   <Route path="perfil" element={<Perfil />} />
                 </Route>
 
-                {/* --- Rotas Públicas Antigas (Serão depreciadas) --- */}
+                {/* === Rotas Públicas Antigas (Serão depreciadas) === */}
                 <Route path="/agendar" element={<Agendar />} />
                 <Route path="/fidelidade" element={<Fidelidade />} />
 
-                {/* --- Admin / Painel --- */}
-                {/* Login */}
-                <Route path="/login" element={<RotaPublica><Login /></RotaPublica>} />
-
-                {/* Dashboard e módulos — protegidos */}
-                <Route path="/" element={<RotaProtegida><DashboardLayout /></RotaProtegida>}>
+                {/* === Admin / Painel — protegido === */}
+                <Route path="/admin" element={<RotaProtegida><DashboardLayout /></RotaProtegida>}>
                   <Route index element={<Dashboard />} />
                   <Route path="agenda" element={<Agenda />} />
                   <Route path="barbeiros" element={<Barbeiros />} />
@@ -130,6 +125,12 @@ export function App() {
                   <Route path="configuracoes" element={<Configuracoes />} />
                 </Route>
 
+                {/* Rotas legadas — redireciona para novas rotas */}
+                <Route path="/login" element={<Navigate to="/admin/login" replace />} />
+                <Route path="/cliente" element={<Navigate to="/" replace />} />
+                <Route path="/cliente/login" element={<Navigate to="/" replace />} />
+                <Route path="/cliente/register" element={<Navigate to="/cadastro" replace />} />
+
                 {/* Fallback */}
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
@@ -140,4 +141,3 @@ export function App() {
     </BrowserRouter>
   );
 }
-
