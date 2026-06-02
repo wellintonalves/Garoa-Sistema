@@ -33,7 +33,26 @@ export class ConfiguracaoController {
       
       if (!barbeariaId && req.usuario?.papel === 'ADMIN') {
         const primeira = await prisma.barbearia.findFirst();
-        if (primeira) barbeariaId = primeira.id;
+        if (primeira) {
+          barbeariaId = primeira.id;
+        } else {
+          // Cria uma barbearia default se o admin ainda não tiver nenhuma e não existir no banco
+          const novaBarbearia = await prisma.barbearia.create({
+            data: {
+              nome: 'Minha Barbearia',
+              slug: `minha-barbearia-${Date.now()}`,
+            }
+          });
+          barbeariaId = novaBarbearia.id;
+          
+          // Vincula o admin à nova barbearia
+          if (req.usuario?.id) {
+            await prisma.usuario.update({
+              where: { id: req.usuario.id },
+              data: { barbeariaId: novaBarbearia.id }
+            });
+          }
+        }
       }
 
       if (!barbeariaId) { res.status(404).json({ erro: 'Barbearia não encontrada' }); return; }
@@ -55,12 +74,37 @@ export class ConfiguracaoController {
 
       if (!barbeariaId && req.usuario?.papel === 'ADMIN') {
         const primeira = await prisma.barbearia.findFirst();
-        if (primeira) barbeariaId = primeira.id;
+        if (primeira) {
+          barbeariaId = primeira.id;
+        } else {
+          // Cria uma barbearia default se o admin ainda não tiver nenhuma e não existir no banco
+          const novaBarbearia = await prisma.barbearia.create({
+            data: {
+              nome: req.body.nome || 'Minha Barbearia',
+              slug: `minha-barbearia-${Date.now()}`,
+            }
+          });
+          barbeariaId = novaBarbearia.id;
+          
+          // Vincula o admin à nova barbearia
+          if (req.usuario?.id) {
+            await prisma.usuario.update({
+              where: { id: req.usuario.id },
+              data: { barbeariaId: novaBarbearia.id }
+            });
+          }
+        }
       }
 
       if (!barbeariaId) { res.status(404).json({ erro: 'Barbearia não encontrada' }); return; }
 
-      const { nome, slug, corPrimaria, endereco, telefone } = req.body;
+      const { nome, corPrimaria, endereco, telefone } = req.body;
+      let slug = req.body.slug;
+      
+      // Se não enviou slug mas enviou nome, gera o slug a partir do nome
+      if (nome && (!slug || slug.trim() === '')) {
+        slug = nome.toLowerCase().trim().replace(/[^\w\s-]/g, '').replace(/[\s_-]+/g, '-').replace(/^-+|-+$/g, '');
+      }
 
       const barbearia = await prisma.barbearia.update({
         where: { id: barbeariaId },
