@@ -34,7 +34,7 @@ export class BarbeiroAppService {
     const payload: BarbeiroJWT = {
       barbeiroId: usuario.barbeiro.id,
       usuarioId: usuario.id,
-      barbeariaId: usuario.barbeiro.barbeariaId,
+      barbeariaId: usuario.barbeiro.barbeariaId as string,
       nome: usuario.nome,
       email: usuario.email,
     };

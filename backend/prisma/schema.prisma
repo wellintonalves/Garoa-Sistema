@@ -88,13 +88,13 @@ model Usuario {
 model Barbeiro {
   id              String   @id @default(uuid())
   usuarioId       String   @unique
-  barbeariaId     String
+  barbeariaId     String?
   foto            String?
   especialidades  String[]
   comissaoPercent Float    @default(50)
   ativo           Boolean  @default(true)
 
-  barbearia    Barbearia     @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
+  barbearia    Barbearia?    @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
   usuario      Usuario       @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
   agendamentos Agendamento[]
   lancamentos  LancamentoFinanceiro[]
@@ -122,11 +122,11 @@ model Cliente {
 model ClienteBarbearia {
   id          String   @id @default(uuid())
   clienteId   String
-  barbeariaId String
+  barbeariaId String?
   conectadoEm DateTime @default(now())
 
   cliente   Cliente   @relation(fields: [clienteId], references: [id], onDelete: Cascade)
-  barbearia Barbearia @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
+  barbearia Barbearia? @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
 
   @@unique([clienteId, barbeariaId])
   @@map("clientes_barbearias")
@@ -135,20 +135,20 @@ model ClienteBarbearia {
 model PontoFidelidade {
   id          String   @id @default(uuid())
   clienteId   String
-  barbeariaId String
+  barbeariaId String?
   pontos      Int
   descricao   String
   data        DateTime @default(now())
 
   cliente   Cliente   @relation(fields: [clienteId], references: [id], onDelete: Cascade)
-  barbearia Barbearia @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
+  barbearia Barbearia? @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
 
   @@map("pontos_fidelidade")
 }
 
 model Servico {
   id              String  @id @default(uuid())
-  barbeariaId     String
+  barbeariaId     String?
   nome            String
   descricao       String?
   preco           Decimal @db.Decimal(10, 2)
@@ -156,7 +156,7 @@ model Servico {
   comissaoPercent Float   @default(50)
   ativo           Boolean @default(true)
 
-  barbearia    Barbearia              @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
+  barbearia    Barbearia?             @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
   agendamentos Agendamento[]
   lancamentos  LancamentoFinanceiro[]
 
@@ -165,7 +165,7 @@ model Servico {
 
 model Agendamento {
   id           String             @id @default(uuid())
-  barbeariaId  String
+  barbeariaId  String?
   clienteId    String
   barbeiroId   String
   servicoId    String
@@ -176,7 +176,7 @@ model Agendamento {
   origem       String             @default("SISTEMA")
   createdAt    DateTime           @default(now())
 
-  barbearia Barbearia @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
+  barbearia Barbearia? @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
   cliente  Cliente  @relation(fields: [clienteId], references: [id], onDelete: Cascade)
   barbeiro Barbeiro @relation(fields: [barbeiroId], references: [id], onDelete: Cascade)
   servico  Servico  @relation(fields: [servicoId], references: [id], onDelete: Cascade)
@@ -188,7 +188,7 @@ model Agendamento {
 
 model LancamentoFinanceiro {
   id             String         @id @default(uuid())
-  barbeariaId    String
+  barbeariaId    String?
   tipo           TipoLancamento
   categoria      String
   descricao      String?
@@ -204,7 +204,7 @@ model LancamentoFinanceiro {
   data           DateTime
   createdAt      DateTime       @default(now())
 
-  barbearia   Barbearia    @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
+  barbearia   Barbearia?   @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
   agendamento Agendamento? @relation(fields: [agendamentoId], references: [id], onDelete: SetNull)
   barbeiro    Barbeiro?    @relation(fields: [barbeiroId], references: [id], onDelete: SetNull)
   servico     Servico?     @relation(fields: [servicoId], references: [id], onDelete: SetNull)
@@ -214,25 +214,25 @@ model LancamentoFinanceiro {
 
 model Estoque {
   id               String  @id @default(uuid())
-  barbeariaId      String
+  barbeariaId      String?
   nome             String
   quantidade       Int
   unidade          String
   quantidadeMinima Int     @default(5)
   custo            Decimal @db.Decimal(10, 2)
 
-  barbearia Barbearia @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
+  barbearia Barbearia? @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
 
   @@map("estoque")
 }
 
 model Configuracao {
   id                    String   @id @default(uuid())
-  barbeariaId           String   @unique
+  barbeariaId           String?   @unique
   horariosFuncionamento Json?
   regrasFidelidade      Json?
 
-  barbearia Barbearia @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
+  barbearia Barbearia? @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
 
   @@map("configuracoes")
 }
