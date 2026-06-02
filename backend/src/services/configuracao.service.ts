@@ -1,9 +1,9 @@
 import { prisma } from '../lib/prisma';
 
 export class ConfiguracaoService {
-  /** Busca a configuração única do sistema. Se não existir, cria uma padrão. */
-  static async obter() {
-    let config = await prisma.configuracao.findFirst();
+  /** Busca a configuração da barbearia. Se não existir, cria uma padrão. */
+  static async obter(barbeariaId?: string | null) {
+    let config = await prisma.configuracao.findFirst(barbeariaId ? { where: { barbeariaId } } : undefined);
 
     if (!config) {
       const horariosPadrao = {
@@ -16,8 +16,15 @@ export class ConfiguracaoService {
         sabado: { abertura: '09:00', fechamento: '17:00', fechado: false },
       };
 
+      let bId = barbeariaId;
+      if (!bId) {
+         const b = await prisma.barbearia.findFirst();
+         if (b) bId = b.id;
+      }
+
       config = await prisma.configuracao.create({
         data: {
+          barbeariaId: bId,
           horariosFuncionamento: horariosPadrao,
           regrasFidelidade: { pontosParaRecompensa: 10 } as any,
         } as any,
@@ -28,8 +35,8 @@ export class ConfiguracaoService {
   }
 
   /** Atualiza a configuração. Passa o payload completo de atualização. */
-  static async atualizar(dados: any) {
-    const configAtual = await this.obter();
+  static async atualizar(dados: any, barbeariaId?: string | null) {
+    const configAtual = await this.obter(barbeariaId);
     return await prisma.configuracao.update({
       where: { id: configAtual.id },
       data: dados,

@@ -1,11 +1,13 @@
 import { Router } from 'express';
 import { ConfiguracaoController } from '../controllers/configuracao.controller';
 import { authMiddleware } from '../middlewares/auth.middleware';
+import { roleMiddleware } from '../middlewares/role.middleware';
 
 const router = Router();
 
-// Todas as rotas de configuração exigem autenticação
+// Todas as rotas de configuração exigem autenticação e privilégio de ADMIN
 router.use(authMiddleware);
+router.use(roleMiddleware('ADMIN'));
 
 router.get('/', ConfiguracaoController.obter);
 router.put('/', ConfiguracaoController.atualizar);

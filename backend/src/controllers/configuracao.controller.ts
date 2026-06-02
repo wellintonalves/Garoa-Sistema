@@ -4,9 +4,9 @@ import { AuthRequest } from '../types';
 
 export class ConfiguracaoController {
   /** GET /configuracoes */
-  static async obter(_req: AuthRequest, res: Response): Promise<void> {
+  static async obter(req: AuthRequest, res: Response): Promise<void> {
     try {
-      const config = await ConfiguracaoService.obter();
+      const config = await ConfiguracaoService.obter(req.usuario?.barbeariaId);
       res.json(config);
     } catch (error) {
       const msg = error instanceof Error ? error.message : 'Erro ao obter configurações';
@@ -17,7 +17,7 @@ export class ConfiguracaoController {
   /** PUT /configuracoes */
   static async atualizar(req: AuthRequest, res: Response): Promise<void> {
     try {
-      const config = await ConfiguracaoService.atualizar(req.body);
+      const config = await ConfiguracaoService.atualizar(req.body, req.usuario?.barbeariaId);
       res.json(config);
     } catch (error) {
       const msg = error instanceof Error ? error.message : 'Erro ao atualizar configurações';
@@ -28,10 +28,16 @@ export class ConfiguracaoController {
   /** GET /configuracoes/minha-barbearia */
   static async getMinhaBarbearia(req: AuthRequest, res: Response): Promise<void> {
     try {
-      const barbeariaId = req.usuario?.barbeariaId;
-      if (!barbeariaId) { res.status(401).json({ erro: 'Não autorizado' }); return; }
-
+      let barbeariaId = req.usuario?.barbeariaId;
       const { prisma } = require('../lib/prisma');
+      
+      if (!barbeariaId && req.usuario?.papel === 'ADMIN') {
+        const primeira = await prisma.barbearia.findFirst();
+        if (primeira) barbeariaId = primeira.id;
+      }
+
+      if (!barbeariaId) { res.status(404).json({ erro: 'Barbearia não encontrada' }); return; }
+
       const barbearia = await prisma.barbearia.findUnique({ where: { id: barbeariaId } });
       const clientesCount = await prisma.cliente.count({ where: { barbeariaId } });
 
@@ -44,11 +50,17 @@ export class ConfiguracaoController {
   /** PUT /configuracoes/minha-barbearia */
   static async updateMinhaBarbearia(req: AuthRequest, res: Response): Promise<void> {
     try {
-      const barbeariaId = req.usuario?.barbeariaId;
-      if (!barbeariaId) { res.status(401).json({ erro: 'Não autorizado' }); return; }
+      let barbeariaId = req.usuario?.barbeariaId;
+      const { prisma } = require('../lib/prisma');
+
+      if (!barbeariaId && req.usuario?.papel === 'ADMIN') {
+        const primeira = await prisma.barbearia.findFirst();
+        if (primeira) barbeariaId = primeira.id;
+      }
+
+      if (!barbeariaId) { res.status(404).json({ erro: 'Barbearia não encontrada' }); return; }
 
       const { nome, slug, corPrimaria, endereco, telefone } = req.body;
-      const { prisma } = require('../lib/prisma');
 
       const barbearia = await prisma.barbearia.update({
         where: { id: barbeariaId },
