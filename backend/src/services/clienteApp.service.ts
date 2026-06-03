@@ -4,6 +4,14 @@ import jwt from 'jsonwebtoken';
 import { prisma } from '../lib/prisma';
 import { authConfig } from '../config/auth';
 import { ClienteJWT } from '../types';
+import {
+  toBrasiliaDate,
+  inicioDiaBrasilia,
+  fimDiaBrasilia,
+  getHoraMinutoBrasilia,
+  criarDataHoraBrasilia,
+  formatarHorario,
+} from '../lib/timezone';
 
 interface DadosCadastroCliente {
   nome: string;
@@ -288,16 +296,14 @@ export class ClienteAppService {
     const barbearia = await prisma.barbearia.findUnique({ where: { id: barbeariaId } });
     if (!barbearia) throw new Error('Barbearia não encontrada');
 
-    const inicio = new Date(data);
-    inicio.setHours(0, 0, 0, 0);
-    const fim = new Date(data);
-    fim.setDate(fim.getDate() + 1);
+    const inicio = inicioDiaBrasilia(data);
+    const fim = fimDiaBrasilia(data);
 
     const agendamentos = await prisma.agendamento.findMany({
       where: {
         barbeiroId,
         barbeariaId,
-        dataHora: { gte: inicio, lt: fim },
+        dataHora: { gte: inicio, lte: fim },
         status: { not: 'CANCELADO' },
       },
       include: { servico: { select: { duracaoMinutos: true } } },
@@ -305,29 +311,46 @@ export class ClienteAppService {
     });
 
     const horaAbertura = parseInt(barbearia.horarioAbertura?.split(':')[0] || '9');
+    const minAbertura = parseInt(barbearia.horarioAbertura?.split(':')[1] || '0');
     const horaFechamento = parseInt(barbearia.horarioFechamento?.split(':')[0] || '19');
+    const minFechamento = parseInt(barbearia.horarioFechamento?.split(':')[1] || '0');
     const duracaoServico = servico.duracaoMinutos;
+
+    // Horário de almoço
+    const temAlmoco = barbearia.temAlmoco || false;
+    const almocoInicio = barbearia.horarioAlmocoInicio || '12:00';
+    const almocoFim = barbearia.horarioAlmocoFim || '13:00';
+    const almocoInicioMin = parseInt(almocoInicio.split(':')[0]) * 60 + parseInt(almocoInicio.split(':')[1]);
+    const almocoFimMin = parseInt(almocoFim.split(':')[0]) * 60 + parseInt(almocoFim.split(':')[1]);
+
+    const inicioMin = horaAbertura * 60 + minAbertura;
+    const fimMin = horaFechamento * 60 + minFechamento;
 
     const slots: Array<{ horario: string; disponivel: boolean }> = [];
 
-    for (let hora = horaAbertura; hora < horaFechamento; hora++) {
-      for (const minuto of [0, 30]) {
-        const slotInicio = new Date(inicio);
-        slotInicio.setHours(hora, minuto, 0, 0);
-        const slotFim = new Date(slotInicio.getTime() + duracaoServico * 60000);
+    for (let m = inicioMin; m < fimMin; m += 30) {
+      const hora = Math.floor(m / 60);
+      const minuto = m % 60;
 
-        // Verifica conflito
-        const conflito = agendamentos.some((ag) => {
-          const agInicio = new Date(ag.dataHora);
-          const agFim = new Date(agInicio.getTime() + ag.servico.duracaoMinutos * 60000);
-          return slotInicio < agFim && slotFim > agInicio;
-        });
-
-        slots.push({
-          horario: `${hora.toString().padStart(2, '0')}:${minuto.toString().padStart(2, '0')}`,
-          disponivel: !conflito,
-        });
+      // Pula horário de almoço
+      if (temAlmoco && m >= almocoInicioMin && m < almocoFimMin) {
+        continue;
       }
+
+      const slotInicio = criarDataHoraBrasilia(data, hora, minuto);
+      const slotFim = new Date(slotInicio.getTime() + duracaoServico * 60000);
+
+      // Verifica conflito
+      const conflito = agendamentos.some((ag) => {
+        const agInicio = new Date(ag.dataHora);
+        const agFim = new Date(agInicio.getTime() + ag.servico.duracaoMinutos * 60000);
+        return slotInicio < agFim && slotFim > agInicio;
+      });
+
+      slots.push({
+        horario: formatarHorario(hora, minuto),
+        disponivel: !conflito,
+      });
     }
 
     return slots;
@@ -344,7 +367,7 @@ export class ClienteAppService {
     const servico = await prisma.servico.findUnique({ where: { id: dados.servicoId } });
     if (!servico) throw new Error('Serviço não encontrado');
 
-    const dataHora = new Date(`${dados.data}T${dados.hora}:00`);
+    const dataHora = toBrasiliaDate(`${dados.data}T${dados.hora}:00`);
 
     const agendamento = await prisma.agendamento.create({
       data: {

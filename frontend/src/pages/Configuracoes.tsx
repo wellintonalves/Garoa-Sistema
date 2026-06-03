@@ -155,6 +155,59 @@ export function Configuracoes() {
               <label className="block text-sm font-medium mb-1">Telefone</label>
               <input type="text" className="form-input w-full p-2 bg-black/50 border border-[var(--border)] rounded" value={barbearia.telefone || ''} onChange={e => setBarbearia({...barbearia, telefone: e.target.value})} />
             </div>
+
+            {/* Horário de Abertura e Fechamento */}
+            <div className="p-4 bg-zinc-900 border border-zinc-800 rounded space-y-3">
+              <h3 className="text-sm font-bold text-[var(--amber)] uppercase tracking-wider">Horário de Funcionamento</h3>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs text-zinc-400 mb-1">Horário de Abertura</label>
+                  <input type="time" className="form-input w-full p-2 bg-black/50 border border-[var(--border)] rounded" value={barbearia.horarioAbertura || '08:00'} onChange={e => setBarbearia({...barbearia, horarioAbertura: e.target.value})} />
+                </div>
+                <div>
+                  <label className="block text-xs text-zinc-400 mb-1">Horário de Fechamento</label>
+                  <input type="time" className="form-input w-full p-2 bg-black/50 border border-[var(--border)] rounded" value={barbearia.horarioFechamento || '19:00'} onChange={e => setBarbearia({...barbearia, horarioFechamento: e.target.value})} />
+                </div>
+              </div>
+
+              {/* Toggle Horário de Almoço */}
+              <div className="flex items-center justify-between pt-2 border-t border-zinc-800">
+                <label htmlFor="toggle-almoco" className="text-sm text-zinc-300 cursor-pointer">
+                  Tem horário de almoço?
+                </label>
+                <button
+                  id="toggle-almoco"
+                  type="button"
+                  onClick={() => setBarbearia({...barbearia, temAlmoco: !barbearia.temAlmoco})}
+                  className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors"
+                  style={{
+                    background: barbearia.temAlmoco ? 'var(--amber)' : 'var(--bg-surface2)',
+                    border: '1px solid var(--border)',
+                  }}
+                >
+                  <span
+                    className="inline-block h-4 w-4 transform rounded-full bg-white transition-transform"
+                    style={{
+                      transform: barbearia.temAlmoco ? 'translateX(22px)' : 'translateX(4px)',
+                    }}
+                  />
+                </button>
+              </div>
+
+              {/* Campos de almoço (visíveis apenas quando toggle ativado) */}
+              {barbearia.temAlmoco && (
+                <div className="grid grid-cols-2 gap-3 pt-2 animate-fade-in">
+                  <div>
+                    <label className="block text-xs text-zinc-400 mb-1">Início do Almoço</label>
+                    <input type="time" className="form-input w-full p-2 bg-black/50 border border-[var(--border)] rounded" value={barbearia.horarioAlmocoInicio || '12:00'} onChange={e => setBarbearia({...barbearia, horarioAlmocoInicio: e.target.value})} />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-zinc-400 mb-1">Fim do Almoço</label>
+                    <input type="time" className="form-input w-full p-2 bg-black/50 border border-[var(--border)] rounded" value={barbearia.horarioAlmocoFim || '13:00'} onChange={e => setBarbearia({...barbearia, horarioAlmocoFim: e.target.value})} />
+                  </div>
+                </div>
+              )}
+            </div>
             
             <div className="p-4 bg-zinc-900 border border-zinc-800 rounded flex justify-between items-center">
               <div>

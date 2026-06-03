@@ -1,18 +1,17 @@
 // Serviço de relatórios — faturamento, ticket médio, comissões
 import { prisma } from '../lib/prisma';
+import { inicioDiaBrasilia, fimDiaBrasilia } from '../lib/timezone';
 
 export class RelatorioService {
   /** Resumo geral por período */
   static async resumo(inicio: string, fim: string) {
-    const dataInicio = new Date(inicio);
-    dataInicio.setHours(0, 0, 0, 0);
-    const dataFim = new Date(fim);
-    dataFim.setDate(dataFim.getDate() + 1);
+    const dataInicio = inicioDiaBrasilia(inicio);
+    const dataFim = fimDiaBrasilia(fim);
 
     // Agendamentos concluídos no período
     const agendamentos = await prisma.agendamento.findMany({
       where: {
-        dataHora: { gte: dataInicio, lt: dataFim },
+        dataHora: { gte: dataInicio, lte: dataFim },
         status: 'CONCLUIDO',
       },
       include: {

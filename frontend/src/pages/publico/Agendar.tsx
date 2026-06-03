@@ -68,17 +68,15 @@ export function Agendar() {
   async function confirmarAgendamento() {
     setCarregando(true);
     try {
-      // Combina data e horario
-      const [h, m] = horario.split(':');
-      const dataObj = new Date(data);
-      dataObj.setHours(Number(h), Number(m), 0, 0);
+      // Combina data e horario — envia como horário local (Brasília) sem converter para UTC
+      const dataHoraLocal = `${data}T${horario}:00`;
 
       await api.post('/publico/agendamentos', {
         nomeCliente: cliente.nome,
         telefoneCliente: cliente.telefone,
         barbeiroId: barbeiroId || 'sem_preferencia',
         servicoId,
-        dataHora: dataObj.toISOString(),
+        dataHora: dataHoraLocal,
         observacoes: cliente.observacoes
       });
 

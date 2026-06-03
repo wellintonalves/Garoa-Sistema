@@ -48,9 +48,12 @@ model Barbearia {
   endereco           String?
   logo               String?
   corPrimaria        String?  @default("#FF8C00") // Laranja
-  horarioAbertura    String?  @default("09:00")
-  horarioFechamento  String?  @default("19:00")
-  diasFuncionamento  String[] @default(["1", "2", "3", "4", "5", "6"]) // Seg a Sab
+  horarioAbertura     String?  @default("09:00")
+  horarioFechamento   String?  @default("19:00")
+  temAlmoco           Boolean  @default(false)
+  horarioAlmocoInicio String?  @default("12:00")
+  horarioAlmocoFim    String?  @default("13:00")
+  diasFuncionamento   String[] @default(["1", "2", "3", "4", "5", "6"]) // Seg a Sab
   ativo              Boolean  @default(true)
   createdAt          DateTime @default(now())
 

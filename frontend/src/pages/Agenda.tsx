@@ -5,6 +5,35 @@ import { Modal } from '../components/Modal';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import api from '../api/client';
 
+/** Extrai hora e minuto de um Date no fuso de Brasília */
+function getHoraMinutoBrasilia(date: Date): { hora: number; minuto: number } {
+  const formatter = new Intl.DateTimeFormat('pt-BR', {
+    timeZone: 'America/Sao_Paulo',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  });
+  const parts = formatter.formatToParts(date);
+  const hora = parseInt(parts.find(p => p.type === 'hour')?.value || '0', 10);
+  const minuto = parseInt(parts.find(p => p.type === 'minute')?.value || '0', 10);
+  return { hora, minuto };
+}
+
+/** Extrai data no fuso de Brasília como string YYYY-MM-DD */
+function getDataBrasilia(date: Date): string {
+  const formatter = new Intl.DateTimeFormat('pt-BR', {
+    timeZone: 'America/Sao_Paulo',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  });
+  const parts = formatter.formatToParts(date);
+  const day = parts.find(p => p.type === 'day')?.value || '01';
+  const month = parts.find(p => p.type === 'month')?.value || '01';
+  const year = parts.find(p => p.type === 'year')?.value || '2026';
+  return `${year}-${month}-${day}`;
+}
+
 interface Agendamento {
   id: string;
   dataHora: string;
@@ -225,8 +254,11 @@ export function Agenda() {
               {diasDaSemana.map((dia, diaIdx) => {
                 const agendamentosDoCelula = agendamentos.filter((ag) => {
                   const d = new Date(ag.dataHora);
-                  return d.toDateString() === dia.toDateString() &&
-                    `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}` === horario;
+                  const dataBR = getDataBrasilia(d);
+                  const diaISO = dia.toISOString().split('T')[0];
+                  const hm = getHoraMinutoBrasilia(d);
+                  const horarioAg = `${String(hm.hora).padStart(2, '0')}:${String(hm.minuto).padStart(2, '0')}`;
+                  return dataBR === diaISO && horarioAg === horario;
                 });
 
                 return (

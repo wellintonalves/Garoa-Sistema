@@ -119,7 +119,7 @@ export class ConfiguracaoController {
 
       if (!barbeariaId) { res.status(404).json({ erro: 'Barbearia não encontrada' }); return; }
 
-      const { nome, corPrimaria, endereco, telefone } = req.body;
+      const { nome, corPrimaria, endereco, telefone, horarioAbertura, horarioFechamento, temAlmoco, horarioAlmocoInicio, horarioAlmocoFim } = req.body;
       let slug = req.body.slug;
       
       // Se não enviou slug mas enviou nome, gera o slug a partir do nome
@@ -129,7 +129,7 @@ export class ConfiguracaoController {
 
       const barbearia = await prisma.barbearia.update({
         where: { id: barbeariaId },
-        data: { nome, slug, corPrimaria, endereco, telefone }
+        data: { nome, slug, corPrimaria, endereco, telefone, horarioAbertura, horarioFechamento, temAlmoco, horarioAlmocoInicio, horarioAlmocoFim }
       });
 
       res.json(barbearia);

@@ -1,6 +1,7 @@
 // Serviço financeiro — CRUD + resumos
 import { prisma } from '../lib/prisma';
 import { TipoLancamento, FormaPagamento } from '@prisma/client';
+import { inicioDiaBrasilia, fimDiaBrasilia } from '../lib/timezone';
 
 interface DadosLancamento {
   tipo: TipoLancamento;
@@ -94,13 +95,11 @@ export class FinanceiroService {
 
   /** Resumo do dia — total por forma de pagamento */
   static async resumoDoDia(data: string) {
-    const inicio = new Date(data);
-    inicio.setHours(0, 0, 0, 0);
-    const fim = new Date(data);
-    fim.setDate(fim.getDate() + 1);
+    const inicio = inicioDiaBrasilia(data);
+    const fim = fimDiaBrasilia(data);
 
     const lancamentos = await prisma.lancamentoFinanceiro.findMany({
-      where: { data: { gte: inicio, lt: fim } } as any,
+      where: { data: { gte: inicio, lte: fim } } as any,
     });
 
     const porFormaPagamento: Record<string, number> = {};
@@ -139,13 +138,13 @@ export class FinanceiroService {
     for (let i = 6; i >= 0; i--) {
       const dia = new Date();
       dia.setDate(dia.getDate() - i);
-      dia.setHours(0, 0, 0, 0);
+      const diaStr = dia.toISOString().split('T')[0];
 
-      const fimDia = new Date(dia);
-      fimDia.setDate(fimDia.getDate() + 1);
+      const inicioDia = inicioDiaBrasilia(diaStr);
+      const fimDia = fimDiaBrasilia(diaStr);
 
       const lancamentos = await prisma.lancamentoFinanceiro.findMany({
-        where: { data: { gte: dia, lt: fimDia } } as any,
+        where: { data: { gte: inicioDia, lte: fimDia } } as any,
       });
 
       let entradas = 0;
@@ -158,7 +157,7 @@ export class FinanceiroService {
       });
 
       resultado.push({
-        data: dia.toISOString().split('T')[0],
+        data: diaStr,
         entradas,
         saidas,
       });

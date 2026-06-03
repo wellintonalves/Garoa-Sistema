@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import { prisma } from '../lib/prisma';
 import { authConfig } from '../config/auth';
 import { BarbeiroJWT } from '../types';
+import { inicioDiaBrasilia, fimDiaBrasilia } from '../lib/timezone';
 
 interface RespostaAuthBarbeiro {
   token: string;
@@ -50,16 +51,15 @@ export class BarbeiroAppService {
 
   /** Agendamentos do barbeiro hoje */
   static async agendaHoje(barbeiroId: string, barbeariaId: string) {
-    const hoje = new Date();
-    hoje.setHours(0, 0, 0, 0);
-    const amanha = new Date(hoje);
-    amanha.setDate(amanha.getDate() + 1);
+    const hojeStr = new Date().toISOString().split('T')[0];
+    const hoje = inicioDiaBrasilia(hojeStr);
+    const amanha = fimDiaBrasilia(hojeStr);
 
     return prisma.agendamento.findMany({
       where: {
         barbeiroId,
         barbeariaId,
-        dataHora: { gte: hoje, lt: amanha },
+        dataHora: { gte: hoje, lte: amanha },
         status: { not: 'CANCELADO' },
       },
       include: {
@@ -72,16 +72,14 @@ export class BarbeiroAppService {
 
   /** Agendamentos do barbeiro por data */
   static async agendaPorData(barbeiroId: string, barbeariaId: string, data: string) {
-    const inicio = new Date(data);
-    inicio.setHours(0, 0, 0, 0);
-    const fim = new Date(inicio);
-    fim.setDate(fim.getDate() + 1);
+    const inicio = inicioDiaBrasilia(data);
+    const fim = fimDiaBrasilia(data);
 
     return prisma.agendamento.findMany({
       where: {
         barbeiroId,
         barbeariaId,
-        dataHora: { gte: inicio, lt: fim },
+        dataHora: { gte: inicio, lte: fim },
         status: { not: 'CANCELADO' },
       },
       include: {
@@ -94,17 +92,15 @@ export class BarbeiroAppService {
 
   /** Comissões do barbeiro no período */
   static async comissoes(barbeiroId: string, barbeariaId: string, inicio: string, fim: string) {
-    const dataInicio = new Date(inicio);
-    dataInicio.setHours(0, 0, 0, 0);
-    const dataFim = new Date(fim);
-    dataFim.setDate(dataFim.getDate() + 1);
+    const dataInicio = inicioDiaBrasilia(inicio);
+    const dataFim = fimDiaBrasilia(fim);
 
     const lancamentos = await prisma.lancamentoFinanceiro.findMany({
       where: {
         barbeiroId,
         barbeariaId,
         tipo: 'ENTRADA',
-        data: { gte: dataInicio, lt: dataFim },
+        data: { gte: dataInicio, lte: dataFim },
       },
       include: {
         servico: { select: { nome: true } },

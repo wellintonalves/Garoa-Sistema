@@ -1,6 +1,14 @@
 import { Request, Response } from 'express';
 import { prisma } from '../lib/prisma';
 import { ConfiguracaoService } from '../services/configuracao.service';
+import {
+  toBrasiliaDate,
+  inicioDiaBrasilia,
+  fimDiaBrasilia,
+  getHoraMinutoBrasilia,
+  criarDataHoraBrasilia,
+  formatarHorario,
+} from '../lib/timezone';
 
 export class PublicoController {
   /** GET /publico/servicos */
@@ -37,7 +45,8 @@ export class PublicoController {
         return;
       }
 
-      const dateObj = new Date(data as string);
+      const dataStr = data as string;
+      const dateObj = inicioDiaBrasilia(dataStr);
       if (isNaN(dateObj.getTime())) {
         res.status(400).json({ erro: 'Data inválida' });
         return;
@@ -46,6 +55,8 @@ export class PublicoController {
       const config = await ConfiguracaoService.obter();
       const horariosFuncionamento = config.horariosFuncionamento as any;
       
+      // Calcula o dia da semana baseado na data em Brasília
+      const { hora: horaCheck } = getHoraMinutoBrasilia(dateObj);
       const diasSemana = ['domingo', 'segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sabado'];
       const diaAtual = diasSemana[dateObj.getDay()];
       
@@ -63,11 +74,9 @@ export class PublicoController {
 
       const duracaoTotal = servico.duracaoMinutos;
 
-      // Buscar agendamentos do dia (para qualquer barbeiro, se barbeiroId for "qualquer", senao especifico)
-      const dataInicioDia = new Date(dateObj);
-      dataInicioDia.setHours(0, 0, 0, 0);
-      const dataFimDia = new Date(dateObj);
-      dataFimDia.setHours(23, 59, 59, 999);
+      // Buscar agendamentos do dia com range de Brasília
+      const dataInicioDia = inicioDiaBrasilia(dataStr);
+      const dataFimDia = fimDiaBrasilia(dataStr);
 
       let whereBarbeiro = {};
       if (barbeiroId && barbeiroId !== 'sem_preferencia') {
@@ -90,6 +99,14 @@ export class PublicoController {
         return;
       }
 
+      // Busca dados de almoço da barbearia
+      const barbearia = await prisma.barbearia.findFirst();
+      const temAlmoco = barbearia?.temAlmoco || false;
+      const almocoInicio = barbearia?.horarioAlmocoInicio || '12:00';
+      const almocoFim = barbearia?.horarioAlmocoFim || '13:00';
+      const almocoInicioMin = parseInt(almocoInicio.split(':')[0]) * 60 + parseInt(almocoInicio.split(':')[1]);
+      const almocoFimMin = parseInt(almocoFim.split(':')[0]) * 60 + parseInt(almocoFim.split(':')[1]);
+
       const { abertura, fechamento } = configDia;
       const [aberturaHora, aberturaMin] = abertura.split(':').map(Number);
       const [fechamentoHora, fechamentoMin] = fechamento.split(':').map(Number);
@@ -98,16 +115,21 @@ export class PublicoController {
       const fimMinutos = fechamentoHora * 60 + fechamentoMin;
 
       const horariosLivres: string[] = [];
+      const agora = new Date();
 
       // Iterar de 30 em 30 minutos
       for (let m = inicioMinutos; m + duracaoTotal <= fimMinutos; m += 30) {
         const horaSlot = Math.floor(m / 60);
         const minSlot = m % 60;
+
+        // Pula horário de almoço
+        if (temAlmoco && m >= almocoInicioMin && m < almocoFimMin) {
+          continue;
+        }
         
-        // Verifica se é no passado
-        const slotDate = new Date(dateObj);
-        slotDate.setHours(horaSlot, minSlot, 0, 0);
-        if (slotDate < new Date()) {
+        // Verifica se é no passado (usando fuso de Brasília)
+        const slotDate = criarDataHoraBrasilia(dataStr, horaSlot, minSlot);
+        if (slotDate < agora) {
           continue;
         }
 
@@ -117,15 +139,15 @@ export class PublicoController {
         // Se barbeiro especifico, checa os agendamentos dele
         if (barbeiroId && barbeiroId !== 'sem_preferencia') {
           const conflito = agendamentosExistentes.some(ag => {
-            const agInicioDate = new Date(ag.dataHora);
-            const agInicioM = agInicioDate.getHours() * 60 + agInicioDate.getMinutes();
+            const agHM = getHoraMinutoBrasilia(new Date(ag.dataHora));
+            const agInicioM = agHM.hora * 60 + agHM.minuto;
             const agFimM = agInicioM + ag.servico.duracaoMinutos;
             // Intersecção de intervalos: inicio1 < fim2 && fim1 > inicio2
             return slotInicioM < agFimM && slotFimM > agInicioM;
           });
 
           if (!conflito) {
-            horariosLivres.push(`${horaSlot.toString().padStart(2, '0')}:${minSlot.toString().padStart(2, '0')}`);
+            horariosLivres.push(formatarHorario(horaSlot, minSlot));
           }
         } else {
           // Sem preferencia: checa se PELO MENOS UM barbeiro está livre
@@ -133,8 +155,8 @@ export class PublicoController {
           for (const barb of barbeirosAtivos) {
             const agsDoBarbeiro = agendamentosExistentes.filter(ag => ag.barbeiroId === barb.id);
             const conflito = agsDoBarbeiro.some(ag => {
-              const agInicioDate = new Date(ag.dataHora);
-              const agInicioM = agInicioDate.getHours() * 60 + agInicioDate.getMinutes();
+              const agHM = getHoraMinutoBrasilia(new Date(ag.dataHora));
+              const agInicioM = agHM.hora * 60 + agHM.minuto;
               const agFimM = agInicioM + ag.servico.duracaoMinutos;
               return slotInicioM < agFimM && slotFimM > agInicioM;
             });
@@ -145,7 +167,7 @@ export class PublicoController {
           }
 
           if (algumBarbeiroLivre) {
-            horariosLivres.push(`${horaSlot.toString().padStart(2, '0')}:${minSlot.toString().padStart(2, '0')}`);
+            horariosLivres.push(formatarHorario(horaSlot, minSlot));
           }
         }
       }
@@ -201,37 +223,57 @@ export class PublicoController {
       let barbeiroFinalId = barbeiroId;
       if (!barbeiroFinalId || barbeiroFinalId === 'sem_preferencia') {
         const barbeirosAtivos = await prisma.barbeiro.findMany({ where: { ativo: true } });
-        // Lógica simples: pegar o primeiro livre
-        const slotInicioM = new Date(dataHora).getHours() * 60 + new Date(dataHora).getMinutes();
+        
+        const dataHoraBrasilia = toBrasiliaDate(dataHora);
+        const { hora, minuto } = getHoraMinutoBrasilia(dataHoraBrasilia);
+        const slotInicioM = hora * 60 + minuto;
         const slotFimM = slotInicioM + servico.duracaoMinutos;
+
+        const dataStr = dataHora.split('T')[0];
+        const dataInicioDia = inicioDiaBrasilia(dataStr);
+        const dataFimDia = fimDiaBrasilia(dataStr);
 
         for (const barb of barbeirosAtivos) {
           // Checar conflito
-          const conflito = await prisma.agendamento.findFirst({
+          const agendamentosDia = await prisma.agendamento.findMany({
             where: {
               barbeiroId: barb.id,
               status: { notIn: ['CANCELADO', 'CONCLUIDO'] },
-              dataHora: {
-                gte: new Date(new Date(dataHora).setHours(0,0,0,0)),
-                lte: new Date(new Date(dataHora).setHours(23,59,59,999)),
-              }
-            }
+              dataHora: { gte: dataInicioDia, lte: dataFimDia },
+            },
+            include: { servico: true }
           });
 
-          // Aqui é um check simplificado (pode melhorar checando overlap real no DB)
-          // Na vida real, seria bom refazer a query de conflito exato.
-          // Para evitar complexidade, vou apenas alocar no primeiro barbeiro e se der conflito a gente tenta outro
-          barbeiroFinalId = barb.id; 
-          break; // pega o primeiro
+          const conflito = agendamentosDia.some(ag => {
+            const agHM = getHoraMinutoBrasilia(new Date(ag.dataHora));
+            const agInicioM = agHM.hora * 60 + agHM.minuto;
+            const agFimM = agInicioM + ag.servico.duracaoMinutos;
+            return slotInicioM < agFimM && slotFimM > agInicioM;
+          });
+
+          if (!conflito) {
+            barbeiroFinalId = barb.id;
+            break;
+          }
+        }
+
+        // Se nenhum barbeiro livre, pega o primeiro (fallback)
+        if (!barbeiroFinalId || barbeiroFinalId === 'sem_preferencia') {
+          if (barbeirosAtivos.length > 0) {
+            barbeiroFinalId = barbeirosAtivos[0].id;
+          }
         }
       }
+
+      // Converte para horário de Brasília
+      const dataHoraBrasilia = toBrasiliaDate(dataHora);
 
       const agendamento = await prisma.agendamento.create({
         data: {
           clienteId: cliente.id,
           barbeiroId: barbeiroFinalId,
           servicoId: servico.id,
-          dataHora: new Date(dataHora),
+          dataHora: dataHoraBrasilia,
           observacoes,
           valorCobrado: servico.preco,
           origem: 'ONLINE',
