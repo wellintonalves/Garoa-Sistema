@@ -36,6 +36,7 @@ export function QrCodeScanner({ onResult, onClose }: QrCodeScannerProps) {
             // - Slug puro: garoa-barbearia
             // - URL do app: https://exemplo.com/cliente/home?slug=garoa-barbearia
             let slug = decodedText.trim();
+            console.log("[QrCodeScanner] QR lido:", slug);
 
             // Tenta extrair slug de URL /b/:slug
             const matchB = slug.match(/\/b\/([a-zA-Z0-9_-]+)/);
@@ -47,16 +48,23 @@ export function QrCodeScanner({ onResult, onClose }: QrCodeScannerProps) {
               if (matchQuery) {
                 slug = matchQuery[1];
               } else {
-                // Remove protocolo e domínio se for uma URL
-                const matchUrl = slug.match(/^https?:\/\/[^/]+\/(.+)$/);
-                if (matchUrl) {
-                  slug = matchUrl[1];
+                // Tenta extrair de URL /cliente/barbearia/:slug
+                const matchBarbearia = slug.match(/\/cliente\/barbearia\/([a-zA-Z0-9_-]+)/);
+                if (matchBarbearia) {
+                  slug = matchBarbearia[1];
+                } else {
+                  // Remove protocolo e domínio se for uma URL, pegando a última parte
+                  const matchUrl = slug.match(/^https?:\/\/[^/]+\/.*\/([a-zA-Z0-9_-]+)$/);
+                  if (matchUrl) {
+                    slug = matchUrl[1];
+                  }
                 }
               }
             }
 
             // Limpa caracteres inválidos e retorna
             slug = slug.replace(/[^a-zA-Z0-9_-]/g, '');
+            console.log("[QrCodeScanner] Slug extraído:", slug);
 
             if (slug) {
               // Para o scanner antes de chamar o callback

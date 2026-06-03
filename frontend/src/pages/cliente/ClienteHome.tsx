@@ -69,12 +69,20 @@ export function ClienteHome() {
 
   async function conectarPorSlug(slug: string) {
     try {
+      console.log("[ClienteHome] Buscando barbearia pelo slug:", slug);
       const res = await clienteApi.get<BarbeariaItem>('/cliente/buscar-barbearia-slug/' + slug);
+      console.log("[ClienteHome] Barbearia encontrada:", res.data);
+      
       await clienteApi.post('/cliente/conectar-barbearia', { barbeariaId: res.data.id });
       carregarMinhasBarbearias();
+      
       setMensagemSucesso(`Conectado à ${res.data.nome}!`);
       setTimeout(() => setMensagemSucesso(null), 4000);
+      
+      console.log("[ClienteHome] Redirecionando para:", `/cliente/barbearia/${res.data.id}`);
+      navigate(`/cliente/barbearia/${res.data.id}`);
     } catch {
+      console.log("[ClienteHome] Falha ao conectar pelo slug:", slug);
       setMensagemErro('Barbearia não encontrada para este QR Code.');
       setTimeout(() => setMensagemErro(null), 4000);
     }

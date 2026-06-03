@@ -114,7 +114,7 @@ export function Configuracoes() {
     img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
   };
 
-  const urlQR = barbearia.id ? `${window.location.origin}/cliente/barbearia/${barbearia.id}` : window.location.origin;
+  const urlQR = barbearia.slug ? `${window.location.origin}/cliente/home?slug=${barbearia.slug}` : window.location.origin;
 
   if (carregando) {
     return <div className="p-6">Carregando configurações...</div>;
@@ -141,7 +141,7 @@ export function Configuracoes() {
             <div>
               <label className="block text-sm font-medium mb-1">Slug (URL)</label>
               <input type="text" className="form-input w-full p-2 bg-black/50 border border-[var(--border)] rounded" value={barbearia.slug || ''} onChange={e => setBarbearia({...barbearia, slug: e.target.value})} required />
-              <p className="text-xs text-zinc-500 mt-1">Sua url será: {window.location.origin}/cliente/barbearia/{barbearia.id || '...'}</p>
+              <p className="text-xs text-zinc-500 mt-1">Sua url será: {window.location.origin}/cliente/home?slug={barbearia.slug || '...'}</p>
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Cor Primária (Hex)</label>
