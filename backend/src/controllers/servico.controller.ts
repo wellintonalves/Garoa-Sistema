@@ -5,9 +5,9 @@ import { AuthRequest } from '../types';
 
 export class ServicoController {
   /** GET /servicos */
-  static async listar(_req: AuthRequest, res: Response): Promise<void> {
+  static async listar(req: AuthRequest, res: Response): Promise<void> {
     try {
-      const servicos = await ServicoService.listarTodos();
+      const servicos = await ServicoService.listarTodos(req.usuario?.barbeariaId);
       res.json(servicos);
     } catch (error) {
       const msg = error instanceof Error ? error.message : 'Erro ao listar serviços';
@@ -36,7 +36,7 @@ export class ServicoController {
         return;
       }
 
-      const servico = await ServicoService.criar(req.body);
+      const servico = await ServicoService.criar(req.body, req.usuario?.barbeariaId);
       res.status(201).json(servico);
     } catch (error) {
       const msg = error instanceof Error ? error.message : 'Erro ao criar serviço';

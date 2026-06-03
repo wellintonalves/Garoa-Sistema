@@ -11,9 +11,17 @@ interface DadosServico {
 
 export class ServicoService {
   /** Lista todos os serviços ativos */
-  static async listarTodos() {
+  static async listarTodos(barbeariaId?: string) {
+    if (barbeariaId) {
+      // Auto-correção: associa serviços órfãos à barbearia atual
+      await prisma.servico.updateMany({
+        where: { barbeariaId: null },
+        data: { barbeariaId },
+      });
+    }
+
     return prisma.servico.findMany({
-      where: { ativo: true },
+      where: { ativo: true, ...(barbeariaId ? { barbeariaId } : {}) },
       orderBy: { nome: 'asc' },
     });
   }
@@ -26,7 +34,7 @@ export class ServicoService {
   }
 
   /** Cria um novo serviço */
-  static async criar(dados: DadosServico) {
+  static async criar(dados: DadosServico, barbeariaId?: string) {
     return prisma.servico.create({
       data: {
         nome: dados.nome,
@@ -34,6 +42,7 @@ export class ServicoService {
         preco: dados.preco,
         duracaoMinutos: dados.duracaoMinutos,
         comissaoPercent: dados.comissaoPercent || 50,
+        barbeariaId: barbeariaId || null,
       } as any,
     });
   }

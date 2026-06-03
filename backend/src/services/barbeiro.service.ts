@@ -22,8 +22,29 @@ interface DadosAtualizacao {
 
 export class BarbeiroService {
   /** Lista todos os barbeiros ativos */
-  static async listarTodos() {
+  static async listarTodos(barbeariaId?: string) {
+    if (barbeariaId) {
+      // Auto-correção: associa barbeiros órfãos à barbearia atual
+      await prisma.barbeiro.updateMany({
+        where: { barbeariaId: null },
+        data: { barbeariaId },
+      });
+      // Opcional: atualizar os usuários ligados aos barbeiros também
+      const barbeirosOrfaos = await prisma.barbeiro.findMany({
+        where: { barbeariaId },
+        select: { usuarioId: true }
+      });
+      if (barbeirosOrfaos.length > 0) {
+        const usuarioIds = barbeirosOrfaos.map(b => b.usuarioId);
+        await prisma.usuario.updateMany({
+          where: { id: { in: usuarioIds }, barbeariaId: null },
+          data: { barbeariaId }
+        });
+      }
+    }
+
     return prisma.barbeiro.findMany({
+      where: { ...(barbeariaId ? { barbeariaId } : {}) },
       include: {
         usuario: {
           select: { id: true, nome: true, email: true, papel: true },
@@ -64,7 +85,7 @@ export class BarbeiroService {
   }
 
   /** Cria um novo barbeiro (com usuário) */
-  static async criar(dados: DadosBarbeiro) {
+  static async criar(dados: DadosBarbeiro, barbeariaId?: string) {
     const bcrypt = await import('bcryptjs');
     const senhaHash = await bcrypt.hash(dados.senha, 10);
 
@@ -79,8 +100,10 @@ export class BarbeiroService {
             email: dados.email,
             senha: senhaHash,
             papel: 'BARBEIRO',
+            barbeariaId: barbeariaId || null,
           },
         },
+        barbeariaId: barbeariaId || null,
       } as any,
       include: {
         usuario: {

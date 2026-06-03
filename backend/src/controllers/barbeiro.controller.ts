@@ -5,9 +5,9 @@ import { AuthRequest } from '../types';
 
 export class BarbeiroController {
   /** GET /barbeiros */
-  static async listar(_req: AuthRequest, res: Response): Promise<void> {
+  static async listar(req: AuthRequest, res: Response): Promise<void> {
     try {
-      const barbeiros = await BarbeiroService.listarTodos();
+      const barbeiros = await BarbeiroService.listarTodos(req.usuario?.barbeariaId);
       res.json(barbeiros);
     } catch (error) {
       const msg = error instanceof Error ? error.message : 'Erro ao listar barbeiros';
@@ -38,7 +38,7 @@ export class BarbeiroController {
 
       const barbeiro = await BarbeiroService.criar({
         nome, email, senha, foto, especialidades, comissaoPercent,
-      });
+      }, req.usuario?.barbeariaId);
       res.status(201).json(barbeiro);
     } catch (error) {
       const msg = error instanceof Error ? error.message : 'Erro ao criar barbeiro';
