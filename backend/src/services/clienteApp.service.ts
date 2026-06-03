@@ -241,6 +241,12 @@ export class ClienteAppService {
 
   /** Serviços de uma barbearia */
   static async servicos(barbeariaId: string) {
+    // Auto-correção: caso algum serviço esteja órfão, vincula à barbearia atual
+    await prisma.servico.updateMany({
+      where: { barbeariaId: null },
+      data: { barbeariaId }
+    });
+
     return prisma.servico.findMany({
       where: { barbeariaId, ativo: true },
       orderBy: { nome: 'asc' },
@@ -249,6 +255,25 @@ export class ClienteAppService {
 
   /** Barbeiros de uma barbearia */
   static async barbeiros(barbeariaId: string) {
+    // Auto-correção: caso algum barbeiro esteja órfão, vincula à barbearia atual
+    await prisma.barbeiro.updateMany({
+      where: { barbeariaId: null },
+      data: { barbeariaId }
+    });
+    
+    // Atualiza o usuário atrelado ao barbeiro órfão se necessário
+    const barbeirosOrfaos = await prisma.barbeiro.findMany({
+      where: { barbeariaId },
+      select: { usuarioId: true }
+    });
+    if (barbeirosOrfaos.length > 0) {
+      const usuarioIds = barbeirosOrfaos.map(b => b.usuarioId);
+      await prisma.usuario.updateMany({
+        where: { id: { in: usuarioIds }, barbeariaId: null },
+        data: { barbeariaId }
+      });
+    }
+
     return prisma.barbeiro.findMany({
       where: { barbeariaId, ativo: true },
       include: { usuario: { select: { nome: true } } },

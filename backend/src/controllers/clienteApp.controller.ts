@@ -161,6 +161,7 @@ export class ClienteAppController {
   static async servicos(req: ClienteAuthRequest, res: Response): Promise<void> {
     try {
       const servicos = await ClienteAppService.servicos(req.params.barbeariaId);
+      res.setHeader('Cache-Control', 'no-cache');
       res.json(servicos);
     } catch (error) {
       res.status(500).json({ erro: 'Erro ao buscar serviços' });
@@ -171,6 +172,7 @@ export class ClienteAppController {
   static async barbeiros(req: ClienteAuthRequest, res: Response): Promise<void> {
     try {
       const barbeiros = await ClienteAppService.barbeiros(req.params.barbeariaId);
+      res.setHeader('Cache-Control', 'no-cache');
       res.json(barbeiros);
     } catch (error) {
       res.status(500).json({ erro: 'Erro ao buscar barbeiros' });
