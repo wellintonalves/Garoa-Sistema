@@ -2,6 +2,16 @@ import { Response } from 'express';
 import { ConfiguracaoService } from '../services/configuracao.service';
 import { AuthRequest } from '../types';
 
+const gerarSlug = (nome: string) => {
+  return nome.toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim()
+    .replace(/[^\w\s-]/g, '')
+    .replace(/[\s_-]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+};
+
 export class ConfiguracaoController {
   /** GET /configuracoes */
   static async obter(req: AuthRequest, res: Response): Promise<void> {
@@ -37,10 +47,11 @@ export class ConfiguracaoController {
           barbeariaId = primeira.id;
         } else {
           // Cria uma barbearia default se o admin ainda não tiver nenhuma e não existir no banco
+          const nome = 'Minha Barbearia';
           const novaBarbearia = await prisma.barbearia.create({
             data: {
-              nome: 'Minha Barbearia',
-              slug: `minha-barbearia-${Date.now()}`,
+              nome,
+              slug: gerarSlug(nome),
             }
           });
           barbeariaId = novaBarbearia.id;
@@ -57,8 +68,17 @@ export class ConfiguracaoController {
 
       if (!barbeariaId) { res.status(404).json({ erro: 'Barbearia não encontrada' }); return; }
 
-      const barbearia = await prisma.barbearia.findUnique({ where: { id: barbeariaId } });
-      const clientesCount = await prisma.cliente.count({ where: { barbeariaId } });
+      let barbearia = await prisma.barbearia.findUnique({ where: { id: barbeariaId } });
+      
+      // Auto-correção: Atualiza o slug atual diretamente no banco se estiver com o padrão antigo
+      if (barbearia && barbearia.slug && barbearia.slug.startsWith('minha-barbearia-')) {
+        barbearia = await prisma.barbearia.update({
+          where: { id: barbeariaId },
+          data: { slug: 'garoa-barbearia' }
+        });
+      }
+
+      const clientesCount = await prisma.clienteBarbearia.count({ where: { barbeariaId } });
 
       res.json({ ...barbearia, clientesCount });
     } catch (error) {
@@ -78,10 +98,11 @@ export class ConfiguracaoController {
           barbeariaId = primeira.id;
         } else {
           // Cria uma barbearia default se o admin ainda não tiver nenhuma e não existir no banco
+          const nome = req.body.nome || 'Minha Barbearia';
           const novaBarbearia = await prisma.barbearia.create({
             data: {
-              nome: req.body.nome || 'Minha Barbearia',
-              slug: `minha-barbearia-${Date.now()}`,
+              nome,
+              slug: gerarSlug(nome),
             }
           });
           barbeariaId = novaBarbearia.id;
@@ -103,7 +124,7 @@ export class ConfiguracaoController {
       
       // Se não enviou slug mas enviou nome, gera o slug a partir do nome
       if (nome && (!slug || slug.trim() === '')) {
-        slug = nome.toLowerCase().trim().replace(/[^\w\s-]/g, '').replace(/[\s_-]+/g, '-').replace(/^-+|-+$/g, '');
+        slug = gerarSlug(nome);
       }
 
       const barbearia = await prisma.barbearia.update({
