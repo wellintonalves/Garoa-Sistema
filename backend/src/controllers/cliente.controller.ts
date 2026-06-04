@@ -149,7 +149,12 @@ export class ClienteController {
   /** PUT /clientes/:id */
   static async atualizar(req: AuthRequest, res: Response): Promise<void> {
     try {
-      const cliente = await ClienteService.atualizar(req.params.id, req.body);
+      const barbeariaId = req.usuario?.barbeariaId;
+      if (!barbeariaId) {
+        res.status(400).json({ erro: 'Barbearia não identificada no token.' });
+        return;
+      }
+      const cliente = await ClienteService.atualizar(req.params.id, req.body, barbeariaId);
       res.json(cliente);
     } catch (error) {
       const msg = error instanceof Error ? error.message : 'Erro ao atualizar cliente';
@@ -160,7 +165,12 @@ export class ClienteController {
   /** DELETE /clientes/:id */
   static async remover(req: AuthRequest, res: Response): Promise<void> {
     try {
-      await ClienteService.remover(req.params.id);
+      const barbeariaId = req.usuario?.barbeariaId;
+      if (!barbeariaId) {
+        res.status(400).json({ erro: 'Barbearia não identificada no token.' });
+        return;
+      }
+      await ClienteService.remover(req.params.id, barbeariaId);
       res.json({ mensagem: 'Cliente removido com sucesso' });
     } catch (error) {
       const msg = error instanceof Error ? error.message : 'Erro ao remover cliente';

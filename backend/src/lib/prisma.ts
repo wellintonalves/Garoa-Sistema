@@ -17,8 +17,8 @@ export const prisma = basePrisma.$extends({
         const store = tenantStorage.getStore();
         const barbeariaId = store?.barbeariaId;
 
-        // Modelos que não devem ter tenant automático (ex: Barbearia)
-        const ignoredModels = ['Barbearia'];
+        // Modelos globais ou multi-tenant explícitos que não devem ter isolamento automático rígido
+        const ignoredModels = ['Barbearia', 'Usuario', 'Cliente', 'ClienteBarbearia'];
         
         if (barbeariaId && !ignoredModels.includes(model)) {
           if (['findMany', 'findFirst', 'findUnique', 'count', 'updateMany', 'deleteMany'].includes(operation)) {

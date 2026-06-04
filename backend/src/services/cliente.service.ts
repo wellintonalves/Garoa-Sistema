@@ -179,6 +179,18 @@ export class ClienteService {
 
     if (!cliente) throw new Error('Cliente não encontrado');
 
+    // Validação manual de segurança (já que Cliente está ignorado pelo tenant no prisma.ts)
+    const vinculadoDiretamente = cliente.barbeariaId === barbeariaId;
+    const vinculoJunction = await prisma.clienteBarbearia.findUnique({
+      where: {
+        clienteId_barbeariaId: { clienteId: id, barbeariaId }
+      }
+    });
+
+    if (!vinculadoDiretamente && !vinculoJunction) {
+      throw new Error('Cliente não pertence a esta barbearia');
+    }
+
     const agConcluidos = (cliente.agendamentos || []).filter((a: any) => a.status === 'CONCLUIDO');
     const totalVisitas = agConcluidos.length;
     const totalGasto = agConcluidos.reduce((s: number, a: any) => s + Number(a.valorCobrado), 0);
@@ -449,7 +461,19 @@ export class ClienteService {
   }
 
   /** Atualiza dados do cliente */
-  static async atualizar(id: string, dados: DadosAtualizacao) {
+  static async atualizar(id: string, dados: DadosAtualizacao, barbeariaId: string) {
+    const cliente = await prisma.cliente.findUnique({ where: { id } });
+    if (!cliente) throw new Error('Cliente não encontrado');
+
+    const vinculadoDiretamente = cliente.barbeariaId === barbeariaId;
+    const vinculoJunction = await prisma.clienteBarbearia.findUnique({
+      where: { clienteId_barbeariaId: { clienteId: id, barbeariaId } }
+    });
+
+    if (!vinculadoDiretamente && !vinculoJunction) {
+      throw new Error('Cliente não pertence a esta barbearia');
+    }
+
     return prisma.cliente.update({
       where: { id },
       data: {
@@ -465,9 +489,18 @@ export class ClienteService {
   }
 
   /** Remove um cliente */
-  static async remover(id: string) {
+  static async remover(id: string, barbeariaId: string) {
     const cliente = await prisma.cliente.findUnique({ where: { id } });
     if (!cliente) throw new Error('Cliente não encontrado');
+
+    const vinculadoDiretamente = cliente.barbeariaId === barbeariaId;
+    const vinculoJunction = await prisma.clienteBarbearia.findUnique({
+      where: { clienteId_barbeariaId: { clienteId: id, barbeariaId } }
+    });
+
+    if (!vinculadoDiretamente && !vinculoJunction) {
+      throw new Error('Cliente não pertence a esta barbearia');
+    }
 
     await prisma.cliente.delete({ where: { id } });
     await prisma.usuario.delete({ where: { id: cliente.usuarioId } });
