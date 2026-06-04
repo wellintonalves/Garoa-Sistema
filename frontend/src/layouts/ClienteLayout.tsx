@@ -39,14 +39,14 @@ export function ClienteLayout() {
   ];
 
   return (
-    <div className="flex flex-col min-h-screen" style={{ background: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
-      <div className="flex-1 overflow-y-auto pb-20">
+    <div className="flex flex-col h-[100dvh] overflow-hidden" style={{ background: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
+      <div className="flex-1 overflow-y-auto pb-24">
         <Outlet context={{ barbearia, barbeariaId }} />
       </div>
 
       {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 w-full px-2 py-2 flex justify-between items-center z-50"
-        style={{ background: 'var(--bg-surface)', borderTop: '1px solid var(--border)' }}>
+      <nav style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'var(--bg-surface)', borderTop: '1px solid var(--border)' }} 
+           className="px-2 py-2 flex justify-between items-center z-50">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = location.pathname === tab.path ||

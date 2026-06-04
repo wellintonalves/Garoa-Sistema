@@ -35,13 +35,13 @@ export function ClientLayout() {
   ];
 
   return (
-    <div className="flex flex-col h-screen bg-zinc-950 text-zinc-100 font-sans">
-      <div className="flex-1 overflow-y-auto pb-20">
+    <div className="flex flex-col h-[100dvh] overflow-hidden bg-zinc-950 text-zinc-100 font-sans">
+      <div className="flex-1 overflow-y-auto pb-24">
         <Outlet context={{ barbearia }} />
       </div>
 
       {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 w-full bg-zinc-900 border-t border-zinc-800 px-2 py-2 flex justify-between items-center z-50">
+      <nav style={{ position: 'fixed', bottom: 0, left: 0, right: 0 }} className="bg-zinc-900 border-t border-zinc-800 px-2 py-2 flex justify-between items-center z-50">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = location.pathname === tab.path || (tab.path !== `/b/${slug}/app` && location.pathname.startsWith(tab.path));
