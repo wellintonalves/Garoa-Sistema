@@ -216,8 +216,6 @@ export function Clientes() {
     window.open(`https://wa.me/55${num}?text=${encodeURIComponent(mensagem)}`, '_blank');
   }
 
-  if (carregando && clientes.length === 0) return <LoadingSpinner />;
-
   const mesAtual = MESES[new Date().getMonth()];
 
   /* ─── Render ───────────────────────────────────────────── */
@@ -408,7 +406,7 @@ export function Clientes() {
                   {clientes.length === 0 && (
                     <tr>
                       <td colSpan={8} style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', fontSize: '11px' }}>
-                        Nenhum cliente encontrado
+                        {carregando ? 'Buscando clientes...' : 'Nenhum cliente encontrado'}
                       </td>
                     </tr>
                   )}
