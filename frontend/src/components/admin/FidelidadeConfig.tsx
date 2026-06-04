@@ -299,7 +299,11 @@ export function FidelidadeConfig() {
                   <label className="block text-sm font-medium mb-1">Selecione o Serviço</label>
                   <select required className="form-select w-full p-2 bg-black/50 border border-[var(--border)] rounded" value={recompensaForm.servicoId || ''} onChange={e => setRecompensaForm({...recompensaForm, servicoId: e.target.value})}>
                     <option value="" disabled>Selecione um serviço</option>
-                    {servicos.map(s => <option key={s.id} value={s.id}>{s.nome}</option>)}
+                    {servicos.map(s => (
+                      <option key={s.id} value={s.id}>
+                        {s.nome} — R$ {Number(s.preco).toFixed(2).replace('.', ',')}
+                      </option>
+                    ))}
                   </select>
                 </div>
               )}
