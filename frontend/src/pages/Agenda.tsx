@@ -41,13 +41,14 @@ interface Agendamento {
   valorCobrado: string;
   origem?: string;
   cliente: { usuario: { nome: string } };
-  barbeiro: { usuario: { nome: string } };
-  servico: { nome: string; duracaoMinutos: number };
+  barbeiroId: string;
+  barbeiro: { usuario: { nome: string }; cor: string };
+  servico: { nome: string; duracaoMinutos: number; cor: string };
 }
 
-interface Barbeiro { id: string; usuario: { nome: string } }
+interface Barbeiro { id: string; usuario: { nome: string }; cor: string }
 interface Cliente { id: string; usuario: { nome: string } }
-interface Servico { id: string; nome: string; preco: string; duracaoMinutos: number }
+interface Servico { id: string; nome: string; preco: string; duracaoMinutos: number; cor: string }
 
 const statusStyles: Record<string, { bg: string; border: string; color: string }> = {
   AGUARDANDO:  { bg: 'var(--amber-dim)', border: 'var(--amber)', color: 'var(--amber-light)' },
@@ -76,6 +77,7 @@ export function Agenda() {
   const [barbeiros, setBarbeiros] = useState<Barbeiro[]>([]);
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [servicos, setServicos] = useState<Servico[]>([]);
+  const [filtroBarbeiro, setFiltroBarbeiro] = useState('todos');
 
   // Form
   const [form, setForm] = useState({ clienteId: '', barbeiroId: '', servicoId: '', dataHora: '', observacoes: '' });
@@ -100,16 +102,23 @@ export function Agenda() {
     }
   }, [semanaInicio]);
 
-  useEffect(() => { carregar(); }, [carregar]);
+  const carregarBarbeiros = useCallback(async () => {
+    try {
+      const res = await api.get<Barbeiro[]>('/barbeiros');
+      setBarbeiros(res.data);
+    } catch (err) {
+      console.error('Erro ao carregar barbeiros:', err);
+    }
+  }, []);
+
+  useEffect(() => { carregar(); carregarBarbeiros(); }, [carregar, carregarBarbeiros]);
 
   async function abrirModal() {
     try {
-      const [b, c, s] = await Promise.all([
-        api.get<Barbeiro[]>('/barbeiros'),
+      const [c, s] = await Promise.all([
         api.get<Cliente[]>('/clientes'),
         api.get<Servico[]>('/servicos'),
       ]);
-      setBarbeiros(b.data);
       setClientes(c.data);
       setServicos(s.data);
       setModalAberto(true);
@@ -192,6 +201,36 @@ export function Agenda() {
         </div>
       </div>
 
+      {/* Filtros e Legenda */}
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-wrap gap-2">
+          <button
+            onClick={() => setFiltroBarbeiro('todos')}
+            style={{ background: filtroBarbeiro === 'todos' ? 'var(--amber)' : 'var(--bg-surface)', color: filtroBarbeiro === 'todos' ? 'black' : 'var(--text-primary)', border: '1px solid var(--border)', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontFamily: 'var(--font-body)', fontSize: '12px', fontWeight: 600 }}
+          >
+            Todos
+          </button>
+          {barbeiros.map((b) => (
+            <button
+              key={b.id}
+              onClick={() => setFiltroBarbeiro(b.id)}
+              style={{ background: filtroBarbeiro === b.id ? 'var(--amber)' : 'var(--bg-surface)', color: filtroBarbeiro === b.id ? 'black' : 'var(--text-primary)', border: '1px solid var(--border)', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontFamily: 'var(--font-body)', fontSize: '12px', fontWeight: 600 }}
+            >
+              {b.usuario.nome}
+            </button>
+          ))}
+        </div>
+        <div className="flex flex-wrap gap-4">
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Barbeiros:</span>
+          {barbeiros.map(b => (
+            <div key={b.id} className="flex items-center gap-1.5">
+              <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: b.cor || '#F97316' }} />
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--text-primary)' }}>{b.usuario.nome}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* Calendário semanal */}
       <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', overflow: 'auto' }}>
         <div style={{ minWidth: '700px' }}>
@@ -258,35 +297,57 @@ export function Agenda() {
                   const diaISO = dia.toISOString().split('T')[0];
                   const hm = getHoraMinutoBrasilia(d);
                   const horarioAg = `${String(hm.hora).padStart(2, '0')}:${String(hm.minuto).padStart(2, '0')}`;
-                  return dataBR === diaISO && horarioAg === horario;
+                  
+                  const checkBarbeiro = filtroBarbeiro === 'todos' || ag.barbeiroId === filtroBarbeiro;
+                  return dataBR === diaISO && horarioAg === horario && checkBarbeiro;
                 });
 
                 return (
                   <div key={diaIdx} style={{ borderLeft: '1px solid var(--border)', minHeight: '48px', padding: '2px' }}>
                     {agendamentosDoCelula.map((ag) => {
-                      const st = statusStyles[ag.status] || statusStyles.AGUARDANDO;
+                      const isCancelado = ag.status === 'CANCELADO';
+                      const isConcluido = ag.status === 'CONCLUIDO';
+                      const corB = isCancelado ? '#ef4444' : (ag.barbeiro.cor || '#F97316');
+                      const bgB = isCancelado ? '#ef444420' : (corB + '20');
+                      
+                      const corS = ag.servico.cor || '#22C55E';
+                      const bgS = corS + '30';
+
                       return (
                         <div
                           key={ag.id}
                           className="truncate cursor-pointer"
                           style={{
                             padding: '4px 8px',
-                            background: st.bg,
-                            borderLeft: `2px solid ${st.border}`,
-                            color: st.color,
+                            background: bgB,
+                            borderLeft: `3px solid ${corB}`,
+                            color: 'var(--text-primary)',
+                            opacity: isConcluido ? 0.7 : 1,
                             fontFamily: 'var(--font-body)',
                             fontSize: '11px',
-                            marginBottom: '2px',
+                            marginBottom: '4px',
                             position: 'relative',
+                            borderRadius: '0 4px 4px 0'
                           }}
                         >
-                          <div className="flex justify-between items-start">
-                            <p className="truncate pr-1" style={{ fontWeight: 500 }}>{ag.cliente.usuario.nome}</p>
+                          <div className="flex justify-between items-start mb-1">
+                            <p className="truncate pr-1" style={{ fontWeight: 600 }}>{ag.cliente.usuario.nome}</p>
                             {ag.origem === 'ONLINE' && (
-                              <span className="bg-[var(--amber)] text-black px-1 rounded text-[8px] font-bold">ONLINE</span>
+                              <span className="bg-[var(--amber)] text-black px-1 rounded text-[8px] font-bold">WEB</span>
                             )}
                           </div>
-                          <p className="truncate" style={{ opacity: 0.7, fontFamily: 'var(--font-mono)', fontSize: '9px' }}>{ag.servico.nome}</p>
+                          <p className="truncate" style={{ 
+                            fontFamily: 'var(--font-mono)', 
+                            fontSize: '9px', 
+                            background: bgS, 
+                            color: 'var(--text-primary)',
+                            padding: '2px 4px', 
+                            borderRadius: '2px', 
+                            display: 'inline-block', 
+                            border: `1px solid ${corS}50` 
+                          }}>
+                            {ag.servico.nome}
+                          </p>
                         </div>
                       );
                     })}

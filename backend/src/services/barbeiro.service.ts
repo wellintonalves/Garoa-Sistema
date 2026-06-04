@@ -8,6 +8,7 @@ interface DadosBarbeiro {
   foto?: string;
   especialidades?: string[];
   comissaoPercent?: number;
+  cor?: string;
 }
 
 interface DadosAtualizacao {
@@ -17,6 +18,7 @@ interface DadosAtualizacao {
   foto?: string;
   especialidades?: string[];
   comissaoPercent?: number;
+  cor?: string;
   ativo?: boolean;
 }
 
@@ -94,6 +96,7 @@ export class BarbeiroService {
         foto: dados.foto,
         especialidades: dados.especialidades || [],
         comissaoPercent: dados.comissaoPercent || 50,
+        cor: dados.cor || '#F97316',
         usuario: {
           create: {
             nome: dados.nome,
@@ -138,6 +141,7 @@ export class BarbeiroService {
     if (dados.foto !== undefined) updateBarbeiro.foto = dados.foto;
     if (dados.especialidades !== undefined) updateBarbeiro.especialidades = dados.especialidades;
     if (dados.comissaoPercent !== undefined) updateBarbeiro.comissaoPercent = dados.comissaoPercent;
+    if (dados.cor !== undefined) updateBarbeiro.cor = dados.cor;
     if (dados.ativo !== undefined) updateBarbeiro.ativo = dados.ativo;
 
     return prisma.barbeiro.update({

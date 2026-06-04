@@ -7,6 +7,7 @@ interface DadosServico {
   preco: number;
   duracaoMinutos: number;
   comissaoPercent?: number;
+  cor?: string;
 }
 
 export class ServicoService {
@@ -42,6 +43,7 @@ export class ServicoService {
         preco: dados.preco,
         duracaoMinutos: dados.duracaoMinutos,
         comissaoPercent: dados.comissaoPercent || 50,
+        cor: dados.cor || '#22C55E',
         barbeariaId: barbeariaId || null,
       } as any,
     });

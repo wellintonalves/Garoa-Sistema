@@ -7,7 +7,7 @@ import api from '../api/client';
 
 interface Servico {
   id: string; nome: string; descricao: string | null;
-  preco: string; duracaoMinutos: number; comissaoPercent: number; ativo: boolean;
+  preco: string; duracaoMinutos: number; comissaoPercent: number; cor: string; ativo: boolean;
 }
 
 export function Servicos() {
@@ -16,7 +16,14 @@ export function Servicos() {
   const [editandoId, setEditandoId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState({ preco: '', duracaoMinutos: '' });
   const [modalAberto, setModalAberto] = useState(false);
-  const [form, setForm] = useState({ nome: '', descricao: '', preco: '', duracaoMinutos: '', comissaoPercent: '50' });
+  const [form, setForm] = useState({ nome: '', descricao: '', preco: '', duracaoMinutos: '', comissaoPercent: '50', cor: '#22C55E' });
+
+  const coresSugeridas = [
+    { cor: '#22C55E', nome: 'Verde (Cortes)' },
+    { cor: '#3B82F6', nome: 'Azul (Barba)' },
+    { cor: '#A855F7', nome: 'Roxo (Tratamentos)' },
+    { cor: '#EAB308', nome: 'Amarelo (Combos)' },
+  ];
 
   async function carregar() {
     try { const r = await api.get<Servico[]>('/servicos'); setServicos(r.data); }
@@ -38,8 +45,8 @@ export function Servicos() {
 
   async function criarServico() {
     try {
-      await api.post('/servicos', { nome: form.nome, descricao: form.descricao || undefined, preco: Number(form.preco), duracaoMinutos: Number(form.duracaoMinutos), comissaoPercent: Number(form.comissaoPercent) });
-      setModalAberto(false); setForm({ nome: '', descricao: '', preco: '', duracaoMinutos: '', comissaoPercent: '50' }); carregar();
+      await api.post('/servicos', { nome: form.nome, descricao: form.descricao || undefined, preco: Number(form.preco), duracaoMinutos: Number(form.duracaoMinutos), comissaoPercent: Number(form.comissaoPercent), cor: form.cor });
+      setModalAberto(false); setForm({ nome: '', descricao: '', preco: '', duracaoMinutos: '', comissaoPercent: '50', cor: '#22C55E' }); carregar();
     } catch (e) { console.error(e); }
   }
 
@@ -147,6 +154,20 @@ export function Servicos() {
             <input type="number" step="0.01" value={form.preco} onChange={e => setForm({...form, preco: e.target.value})} className="ds-input" /></div>
             <div><label className="input-label">Duração (min)</label>
             <input type="number" value={form.duracaoMinutos} onChange={e => setForm({...form, duracaoMinutos: e.target.value})} className="ds-input" /></div>
+          </div>
+          <div>
+            <label className="input-label">Cor do Serviço</label>
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center gap-2">
+                <input type="color" value={form.cor} onChange={e => setForm({...form, cor: e.target.value})} style={{ width: '38px', height: '38px', padding: '0', border: '1px solid var(--border)', borderRadius: '4px', cursor: 'pointer', background: 'transparent' }} />
+                <input type="text" value={form.cor} onChange={e => setForm({...form, cor: e.target.value})} className="ds-input flex-1" style={{ textTransform: 'uppercase' }} />
+              </div>
+              <div className="flex flex-wrap gap-2 mt-1">
+                {coresSugeridas.map(c => (
+                  <button key={c.cor} onClick={() => setForm({...form, cor: c.cor})} title={c.nome} style={{ width: '24px', height: '24px', borderRadius: '50%', background: c.cor, border: form.cor === c.cor ? '2px solid white' : '2px solid transparent', cursor: 'pointer', outline: form.cor === c.cor ? `2px solid ${c.cor}` : 'none' }} />
+                ))}
+              </div>
+            </div>
           </div>
           <button onClick={criarServico} className="btn-primary w-full justify-center">Cadastrar</button>
         </div>

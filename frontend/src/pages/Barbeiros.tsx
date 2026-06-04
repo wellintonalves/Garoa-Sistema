@@ -11,6 +11,7 @@ interface Barbeiro {
   foto: string | null;
   especialidades: string[];
   comissaoPercent: number;
+  cor: string;
   ativo: boolean;
   usuario: { id: string; nome: string; email: string };
 }
@@ -27,7 +28,7 @@ export function Barbeiros() {
   const [carregando, setCarregando] = useState(true);
   const [modalAberto, setModalAberto] = useState(false);
   const [editandoId, setEditandoId] = useState<string | null>(null);
-  const [form, setForm] = useState({ nome: '', email: '', senha: '', especialidades: '', comissaoPercent: '50' });
+  const [form, setForm] = useState({ nome: '', email: '', senha: '', especialidades: '', comissaoPercent: '50', cor: '#F97316' });
   const navigate = useNavigate();
 
   // Seção de comissões
@@ -63,7 +64,7 @@ export function Barbeiros() {
 
   function abrirModalNovo() {
     setEditandoId(null);
-    setForm({ nome: '', email: '', senha: '', especialidades: '', comissaoPercent: '50' });
+    setForm({ nome: '', email: '', senha: '', especialidades: '', comissaoPercent: '50', cor: '#F97316' });
     setModalAberto(true);
   }
 
@@ -75,6 +76,7 @@ export function Barbeiros() {
       senha: '', // leave blank if not changing
       especialidades: b.especialidades.join(', '),
       comissaoPercent: String(b.comissaoPercent),
+      cor: b.cor || '#F97316',
     });
     setModalAberto(true);
   }
@@ -87,6 +89,7 @@ export function Barbeiros() {
         email: form.email,
         especialidades: form.especialidades.split(',').map(e => e.trim()).filter(Boolean),
         comissaoPercent: Number(form.comissaoPercent),
+        cor: form.cor,
       };
       
       if (form.senha) {
@@ -105,7 +108,7 @@ export function Barbeiros() {
       
       setModalAberto(false);
       setEditandoId(null);
-      setForm({ nome: '', email: '', senha: '', especialidades: '', comissaoPercent: '50' });
+      setForm({ nome: '', email: '', senha: '', especialidades: '', comissaoPercent: '50', cor: '#F97316' });
       carregar();
     } catch (err) { console.error(err); }
   }
@@ -347,8 +350,15 @@ export function Barbeiros() {
           </div>
           <div><label className="input-label">Especialidades (vírgula)</label>
           <input value={form.especialidades} onChange={e => setForm({...form, especialidades: e.target.value})} placeholder="Corte, Barba" className="ds-input" /></div>
-          <div><label className="input-label">Comissão (%)</label>
-          <input type="number" value={form.comissaoPercent} onChange={e => setForm({...form, comissaoPercent: e.target.value})} className="ds-input" /></div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+            <div><label className="input-label">Comissão (%)</label>
+            <input type="number" value={form.comissaoPercent} onChange={e => setForm({...form, comissaoPercent: e.target.value})} className="ds-input" /></div>
+            <div><label className="input-label">Cor</label>
+            <div className="flex items-center gap-2">
+              <input type="color" value={form.cor} onChange={e => setForm({...form, cor: e.target.value})} style={{ width: '38px', height: '38px', padding: '0', border: '1px solid var(--border)', borderRadius: '4px', cursor: 'pointer', background: 'transparent' }} />
+              <input type="text" value={form.cor} onChange={e => setForm({...form, cor: e.target.value})} className="ds-input flex-1" style={{ textTransform: 'uppercase' }} />
+            </div></div>
+          </div>
           <button onClick={salvarBarbeiro} className="btn-primary w-full justify-center">{editandoId ? "Salvar Alterações" : "Cadastrar"}</button>
         </div>
       </Modal>

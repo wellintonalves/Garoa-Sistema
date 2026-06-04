@@ -29,7 +29,7 @@ export class BarbeiroController {
   /** POST /barbeiros */
   static async criar(req: AuthRequest, res: Response): Promise<void> {
     try {
-      const { nome, email, senha, foto, especialidades, comissaoPercent } = req.body;
+      const { nome, email, senha, foto, especialidades, comissaoPercent, cor } = req.body;
 
       if (!nome || !email || !senha) {
         res.status(400).json({ erro: 'Nome, email e senha são obrigatórios' });
@@ -37,7 +37,7 @@ export class BarbeiroController {
       }
 
       const barbeiro = await BarbeiroService.criar({
-        nome, email, senha, foto, especialidades, comissaoPercent,
+        nome, email, senha, foto, especialidades, comissaoPercent, cor,
       }, req.usuario?.barbeariaId || undefined);
       res.status(201).json(barbeiro);
     } catch (error) {

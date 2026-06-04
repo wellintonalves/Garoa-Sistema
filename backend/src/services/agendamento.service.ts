@@ -38,7 +38,7 @@ export class AgendamentoService {
       include: {
         cliente: { include: { usuario: { select: { nome: true } } } },
         barbeiro: { include: { usuario: { select: { nome: true } } } },
-        servico: { select: { nome: true, duracaoMinutos: true, preco: true } },
+        servico: { select: { nome: true, duracaoMinutos: true, preco: true, cor: true } },
       },
       orderBy: { dataHora: 'asc' },
     });
@@ -95,7 +95,7 @@ export class AgendamentoService {
       include: {
         cliente: { include: { usuario: { select: { nome: true } } } },
         barbeiro: { include: { usuario: { select: { nome: true } } } },
-        servico: { select: { nome: true, duracaoMinutos: true } },
+        servico: { select: { nome: true, duracaoMinutos: true, cor: true } },
       },
     });
   }
@@ -111,7 +111,7 @@ export class AgendamentoService {
       include: {
         cliente: { include: { usuario: { select: { nome: true } } } },
         barbeiro: { include: { usuario: { select: { nome: true } } } },
-        servico: { select: { nome: true, duracaoMinutos: true } },
+        servico: { select: { nome: true, duracaoMinutos: true, cor: true } },
       },
     });
   }

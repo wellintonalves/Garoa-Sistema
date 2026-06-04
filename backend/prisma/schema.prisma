@@ -95,6 +95,7 @@ model Barbeiro {
   foto            String?
   especialidades  String[]
   comissaoPercent Float    @default(50)
+  cor             String?  @default("#F97316") // Laranja
   ativo           Boolean  @default(true)
 
   barbearia    Barbearia?    @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
@@ -157,6 +158,7 @@ model Servico {
   preco           Decimal @db.Decimal(10, 2)
   duracaoMinutos  Int
   comissaoPercent Float   @default(50)
+  cor             String? @default("#22C55E") // Verde
   ativo           Boolean @default(true)
 
   barbearia    Barbearia?             @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
