@@ -397,29 +397,108 @@ export class ClienteAppService {
 
   /** Fidelidade do cliente em uma barbearia */
   static async fidelidade(clienteId: string, barbeariaId: string) {
+    const pontosAgregados = await prisma.pontoFidelidade.aggregate({
+      _sum: { pontos: true },
+      where: { clienteId, barbeariaId },
+    });
+    
+    const resgatesAgregados = await prisma.resgateRecompensa.aggregate({
+      _sum: { pontosUsados: true },
+      where: { clienteId, barbeariaId },
+    });
+
+    const totalGanhos = pontosAgregados._sum.pontos || 0;
+    const totalUsados = resgatesAgregados._sum.pontosUsados || 0;
+    const saldo = totalGanhos - totalUsados;
+
+    const config = await prisma.configuracaoFidelidade.findUnique({
+      where: { barbeariaId }
+    });
+
+    const recompensas = await prisma.recompensa.findMany({
+      where: { barbeariaId, ativo: true },
+      include: { servico: { select: { nome: true } } },
+      orderBy: { pontosNecessarios: 'asc' }
+    });
+
     const pontos = await prisma.pontoFidelidade.findMany({
       where: { clienteId, barbeariaId },
       orderBy: { data: 'desc' },
+      take: 20
     });
 
-    const totalPontos = pontos.reduce((acc, p) => acc + p.pontos, 0);
+    const resgates = await prisma.resgateRecompensa.findMany({
+      where: { clienteId, barbeariaId },
+      include: { recompensa: true },
+      orderBy: { createdAt: 'desc' },
+      take: 20
+    });
 
-    // Configuração padrão: 100 pontos = 1 recompensa
-    const pontosParaRecompensa = 100;
-    const progresso = (totalPontos % pontosParaRecompensa) / pontosParaRecompensa * 100;
-    const recompensasResgatadas = Math.floor(totalPontos / pontosParaRecompensa);
-
-    return {
-      totalPontos,
-      pontosParaRecompensa,
-      progresso,
-      recompensasResgatadas,
-      historico: pontos.map((p) => ({
+    // Merge history
+    const historico = [
+      ...pontos.map(p => ({
         id: p.id,
+        tipo: 'GANHO',
         pontos: p.pontos,
         descricao: p.descricao,
         data: p.data,
       })),
+      ...resgates.map(r => ({
+        id: r.id,
+        tipo: 'RESGATE',
+        pontos: -r.pontosUsados,
+        descricao: `Resgate: ${r.recompensa.nome}`,
+        data: r.createdAt,
+      }))
+    ].sort((a, b) => b.data.getTime() - a.data.getTime()).slice(0, 30);
+
+    return {
+      saldo,
+      totalGanhos,
+      totalUsados,
+      config: config || { ativo: false },
+      recompensas,
+      historico,
     };
+  }
+
+  static async resgatarRecompensa(clienteId: string, barbeariaId: string, recompensaId: string) {
+    const config = await prisma.configuracaoFidelidade.findUnique({ where: { barbeariaId } });
+    if (!config?.ativo) {
+      throw new Error('Programa de fidelidade inativo nesta barbearia.');
+    }
+
+    const recompensa = await prisma.recompensa.findUnique({ where: { id: recompensaId } });
+    if (!recompensa || recompensa.barbeariaId !== barbeariaId || !recompensa.ativo) {
+      throw new Error('Recompensa não encontrada ou inativa.');
+    }
+
+    const pontosAgregados = await prisma.pontoFidelidade.aggregate({
+      _sum: { pontos: true },
+      where: { clienteId, barbeariaId },
+    });
+    
+    const resgatesAgregados = await prisma.resgateRecompensa.aggregate({
+      _sum: { pontosUsados: true },
+      where: { clienteId, barbeariaId },
+    });
+
+    const saldo = (pontosAgregados._sum.pontos || 0) - (resgatesAgregados._sum.pontosUsados || 0);
+
+    if (saldo < recompensa.pontosNecessarios) {
+      throw new Error('Saldo de pontos insuficiente para esta recompensa.');
+    }
+
+    // Cria o resgate
+    const resgate = await prisma.resgateRecompensa.create({
+      data: {
+        clienteId,
+        recompensaId,
+        barbeariaId,
+        pontosUsados: recompensa.pontosNecessarios,
+      },
+    });
+
+    return resgate;
   }
 }

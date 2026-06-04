@@ -227,4 +227,24 @@ export class ClienteAppController {
       res.status(500).json({ erro: 'Erro ao buscar fidelidade' });
     }
   }
+
+  /** POST /cliente/barbearia/:barbeariaId/fidelidade/resgatar */
+  static async resgatarRecompensa(req: ClienteAuthRequest, res: Response): Promise<void> {
+    try {
+      const clienteId = req.cliente?.clienteId;
+      if (!clienteId) { res.status(401).json({ erro: 'Não autorizado' }); return; }
+
+      const { recompensaId } = req.body;
+      if (!recompensaId) {
+        res.status(400).json({ erro: 'recompensaId é obrigatório' });
+        return;
+      }
+
+      const resgate = await ClienteAppService.resgatarRecompensa(clienteId, req.params.barbeariaId, recompensaId);
+      res.status(201).json(resgate);
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : 'Erro ao resgatar recompensa';
+      res.status(400).json({ erro: msg });
+    }
+  }
 }

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Settings, Save, QrCode } from 'lucide-react';
 import api from '../api/client';
 import { QRCodeSVG } from 'qrcode.react';
+import { FidelidadeConfig } from '../components/admin/FidelidadeConfig';
 
 const diasSemana = [
   { key: 'domingo', label: 'Domingo' },
@@ -308,6 +309,9 @@ export function Configuracoes() {
              Baixar QR Code (PNG)
           </button>
         </div>
+        
+        {/* Programa de Fidelidade */}
+        <FidelidadeConfig />
       </div>
     </div>
   );

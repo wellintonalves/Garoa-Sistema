@@ -9,6 +9,7 @@ import financeiroRoutes from './financeiro.routes';
 import estoqueRoutes from './estoque.routes';
 import relatorioRoutes from './relatorio.routes';
 import configuracaoRoutes from './configuracao.routes';
+import fidelidadeRoutes from './fidelidade.routes';
 import publicoRoutes from './publico.routes';
 import tenantRoutes from './tenantRoutes';
 import clienteAppRoutes from './clienteApp.routes';
@@ -34,5 +35,6 @@ router.use('/financeiro', financeiroRoutes);
 router.use('/estoque', estoqueRoutes);
 router.use('/relatorios', relatorioRoutes);
 router.use('/configuracoes', configuracaoRoutes);
+router.use('/fidelidade', fidelidadeRoutes);
 
 export default router;

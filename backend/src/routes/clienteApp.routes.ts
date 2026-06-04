@@ -27,5 +27,6 @@ router.get('/barbearia/:barbeariaId/barbeiros', ClienteAppController.barbeiros);
 router.get('/barbearia/:barbeariaId/horarios-disponiveis', ClienteAppController.horariosDisponiveis);
 router.post('/barbearia/:barbeariaId/agendar', ClienteAppController.agendar);
 router.get('/barbearia/:barbeariaId/fidelidade', ClienteAppController.fidelidade);
+router.post('/barbearia/:barbeariaId/fidelidade/resgatar', ClienteAppController.resgatarRecompensa);
 
 export default router;

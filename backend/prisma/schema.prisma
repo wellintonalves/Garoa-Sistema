@@ -38,6 +38,12 @@ enum FormaPagamento {
   CARTAO_CREDITO
 }
 
+enum TipoRecompensa {
+  SERVICO_GRATIS
+  DESCONTO_PERCENTUAL
+  DESCONTO_REAIS
+}
+
 // --- Modelos ---
 
 model Barbearia {
@@ -67,6 +73,9 @@ model Barbearia {
   configuracoes          Configuracao[]
   clientesBarbearias     ClienteBarbearia[]
   pontosFidelidade       PontoFidelidade[]
+  configuracaoFidelidade ConfiguracaoFidelidade?
+  recompensas            Recompensa[]
+  resgatesRecompensa     ResgateRecompensa[]
 
   @@map("barbearias")
 }
@@ -119,6 +128,7 @@ model Cliente {
   agendamentos       Agendamento[]
   clientesBarbearias ClienteBarbearia[]
   pontosFidelidade   PontoFidelidade[]
+  resgatesRecompensa ResgateRecompensa[]
 
   @@map("clientes")
 }
@@ -164,6 +174,7 @@ model Servico {
   barbearia    Barbearia?             @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
   agendamentos Agendamento[]
   lancamentos  LancamentoFinanceiro[]
+  recompensas  Recompensa[]
 
   @@map("servicos")
 }
@@ -240,4 +251,52 @@ model Configuracao {
   barbearia Barbearia? @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
 
   @@map("configuracoes")
+}
+
+model ConfiguracaoFidelidade {
+  id                     String   @id @default(uuid())
+  barbeariaId            String?  @unique
+  ativo                  Boolean  @default(false)
+  pontosPorReal          Int      @default(0)
+  pontosPorVisita        Int      @default(0)
+  pontosDobroAniversario Boolean  @default(false)
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  barbearia Barbearia? @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
+
+  @@map("configuracoes_fidelidade")
+}
+
+model Recompensa {
+  id                String         @id @default(uuid())
+  barbeariaId       String?
+  nome              String
+  tipo              TipoRecompensa
+  valorDesconto     Decimal?       @db.Decimal(10, 2)
+  servicoId         String?
+  pontosNecessarios Int
+  ativo             Boolean        @default(true)
+  createdAt         DateTime       @default(now())
+
+  barbearia Barbearia? @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
+  servico   Servico?   @relation(fields: [servicoId], references: [id], onDelete: SetNull)
+  resgates  ResgateRecompensa[]
+
+  @@map("recompensas")
+}
+
+model ResgateRecompensa {
+  id           String   @id @default(uuid())
+  clienteId    String
+  recompensaId String
+  barbeariaId  String?
+  pontosUsados Int
+  createdAt    DateTime @default(now())
+
+  cliente    Cliente    @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+  recompensa Recompensa @relation(fields: [recompensaId], references: [id], onDelete: Cascade)
+  barbearia  Barbearia? @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
+
+  @@map("resgates_recompensa")
 }
