@@ -52,12 +52,12 @@ export class ClienteService {
     const clienteIds = [...new Set([...idsPorVinculo, ...idsDiretos])];
     if (clienteIds.length === 0) return [];
 
-    // Monta o filtro de busca
-    const buscaFilter = filtros?.busca
+    const termoBusca = filtros?.busca?.trim();
+    const buscaFilter = termoBusca
       ? {
           OR: [
-            { usuario: { nome: { contains: filtros.busca, mode: 'insensitive' as const } } },
-            { telefone: { contains: filtros.busca } },
+            { usuario: { nome: { contains: termoBusca, mode: 'insensitive' as const } } },
+            { telefone: { contains: termoBusca } },
           ],
         }
       : {};
@@ -72,28 +72,26 @@ export class ClienteService {
           select: { id: true, nome: true, email: true },
         },
         agendamentos: {
-          where: { barbeariaId },
           select: {
             id: true,
             dataHora: true,
             status: true,
             valorCobrado: true,
+            barbeariaId: true,
           },
         },
         pontosFidelidade: {
-          where: { barbeariaId },
-          select: { pontos: true },
+          select: { pontos: true, barbeariaId: true },
         },
         resgatesRecompensa: {
-          where: { barbeariaId },
-          select: { pontosUsados: true },
+          select: { pontosUsados: true, barbeariaId: true },
         },
       },
     });
 
     // Processar e agregar dados
     const resultado = clientes.map((c: any) => {
-      const agConcluidos = (c.agendamentos || []).filter((a: any) => a.status === 'CONCLUIDO');
+      const agConcluidos = (c.agendamentos || []).filter((a: any) => a.status === 'CONCLUIDO' && a.barbeariaId === barbeariaId);
       const totalVisitas = agConcluidos.length;
       const totalGasto = agConcluidos.reduce((s: number, a: any) => s + Number(a.valorCobrado), 0);
 
@@ -101,8 +99,8 @@ export class ClienteService {
         ? agConcluidos.sort((a: any, b: any) => new Date(b.dataHora).getTime() - new Date(a.dataHora).getTime())[0].dataHora
         : null;
 
-      const pontosGanhos = (c.pontosFidelidade || []).reduce((s: number, p: any) => s + p.pontos, 0);
-      const pontosUsados = (c.resgatesRecompensa || []).reduce((s: number, r: any) => s + r.pontosUsados, 0);
+      const pontosGanhos = (c.pontosFidelidade || []).filter((p: any) => p.barbeariaId === barbeariaId).reduce((s: number, p: any) => s + p.pontos, 0);
+      const pontosUsados = (c.resgatesRecompensa || []).filter((r: any) => r.barbeariaId === barbeariaId).reduce((s: number, r: any) => s + r.pontosUsados, 0);
       const pontosAtuais = pontosGanhos - pontosUsados;
       const nivelInfo = calcularNivel(pontosAtuais);
 

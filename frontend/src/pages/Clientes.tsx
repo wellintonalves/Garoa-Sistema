@@ -342,10 +342,10 @@ export function Clientes() {
                               letterSpacing: '0.04em',
                             }}
                           >
-                            {getIniciais(c.usuario.nome)}
+                            {getIniciais(c.usuario?.nome || 'Cliente')}
                           </div>
                           <span style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: '13px' }}>
-                            {c.usuario.nome}
+                            {c.usuario?.nome || 'Cliente sem nome'}
                           </span>
                         </div>
                       </td>
@@ -353,7 +353,7 @@ export function Clientes() {
                       <td>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                           <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                            <Mail size={10} /> {c.usuario.email}
+                            <Mail size={10} /> {c.usuario?.email || '—'}
                           </span>
                           <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
                             <Phone size={10} /> {c.telefone || '—'}
