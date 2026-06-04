@@ -472,3 +472,117 @@ body {
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
+
+/* === BADGES DE FIDELIDADE === */
+.badge-bronze {
+  background: rgba(205, 127, 50, 0.15);
+  color: #CD7F32;
+  border: 1px solid rgba(205, 127, 50, 0.3);
+}
+.badge-prata {
+  background: rgba(192, 192, 192, 0.15);
+  color: #C0C0C0;
+  border: 1px solid rgba(192, 192, 192, 0.3);
+}
+.badge-ouro {
+  background: rgba(255, 215, 0, 0.15);
+  color: #FFD700;
+  border: 1px solid rgba(255, 215, 0, 0.3);
+}
+.badge-diamante {
+  background: rgba(0, 191, 255, 0.12);
+  color: #00BFFF;
+  border: 1px solid rgba(0, 191, 255, 0.3);
+}
+
+/* === BARRA DE PROGRESSO === */
+.progress-bar-container {
+  width: 100%;
+  height: 8px;
+  background: var(--bg-surface2);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+.progress-bar-fill {
+  height: 100%;
+  transition: width 0.6s ease-out;
+}
+
+/* === PAINEL LATERAL (Slide) === */
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(100%); }
+  to { opacity: 1; transform: translateX(0); }
+}
+.slide-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 560px;
+  max-width: 100vw;
+  background: var(--bg-surface);
+  border-left: 1px solid var(--border);
+  z-index: 110;
+  animation: slideInRight 0.3s ease-out;
+  overflow-y: auto;
+}
+
+/* === TABS === */
+.tab-bar {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--border);
+}
+.tab-item {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 12px 20px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: color 0.2s, border-color 0.2s;
+}
+.tab-item:hover {
+  color: var(--text-primary);
+}
+.tab-item.active {
+  color: var(--amber);
+  border-bottom-color: var(--amber);
+}
+
+/* === BOTÃO WHATSAPP === */
+.btn-whatsapp {
+  background: #25D366;
+  color: #fff;
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 8px 16px;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 0.2s;
+}
+.btn-whatsapp:hover {
+  background: #1DA851;
+}
+
+/* === SECTION DIVIDER === */
+.section-divider {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--amber);
+  padding: 12px 0 8px;
+  margin-top: 16px;
+  border-bottom: 1px solid var(--border);
+}
