@@ -34,13 +34,22 @@ export class ClienteService {
     nivel?: string;
     ordenar?: string;
   }) {
-    // Busca os registros de ClienteBarbearia para obter os clienteIds vinculados
+    // Busca clientes vinculados via tabela de junção ClienteBarbearia
     const vinculos = await prisma.clienteBarbearia.findMany({
       where: { barbeariaId },
       select: { clienteId: true },
     });
+    const idsPorVinculo = vinculos.map((v: any) => v.clienteId);
 
-    const clienteIds = vinculos.map((v: any) => v.clienteId);
+    // Busca clientes vinculados diretamente via Cliente.barbeariaId
+    const clientesDiretos = await prisma.cliente.findMany({
+      where: { barbeariaId },
+      select: { id: true },
+    });
+    const idsDiretos = clientesDiretos.map((c: any) => c.id);
+
+    // Combina sem duplicatas
+    const clienteIds = [...new Set([...idsPorVinculo, ...idsDiretos])];
     if (clienteIds.length === 0) return [];
 
     // Monta o filtro de busca
@@ -278,12 +287,20 @@ export class ClienteService {
   static async aniversariantesDoMes(barbeariaId: string) {
     const mesAtual = new Date().getMonth() + 1; // 1-12
 
+    // Combina clientes de ClienteBarbearia + Cliente.barbeariaId
     const vinculos = await prisma.clienteBarbearia.findMany({
       where: { barbeariaId },
       select: { clienteId: true },
     });
+    const idsPorVinculo = vinculos.map((v: any) => v.clienteId);
 
-    const clienteIds = vinculos.map((v: any) => v.clienteId);
+    const clientesDiretos = await prisma.cliente.findMany({
+      where: { barbeariaId },
+      select: { id: true },
+    });
+    const idsDiretos = clientesDiretos.map((c: any) => c.id);
+
+    const clienteIds = [...new Set([...idsPorVinculo, ...idsDiretos])];
     if (clienteIds.length === 0) return [];
 
     const clientes: any[] = await (prisma.cliente as any).findMany({
@@ -311,12 +328,20 @@ export class ClienteService {
 
   /** Resumo / stats para cards do topo */
   static async resumo(barbeariaId: string) {
+    // Combina clientes de ClienteBarbearia + Cliente.barbeariaId
     const vinculos = await prisma.clienteBarbearia.findMany({
       where: { barbeariaId },
       select: { clienteId: true },
     });
+    const idsPorVinculo = vinculos.map((v: any) => v.clienteId);
 
-    const clienteIds = vinculos.map((v: any) => v.clienteId);
+    const clientesDiretos = await prisma.cliente.findMany({
+      where: { barbeariaId },
+      select: { id: true },
+    });
+    const idsDiretos = clientesDiretos.map((c: any) => c.id);
+
+    const clienteIds = [...new Set([...idsPorVinculo, ...idsDiretos])];
     const totalClientes = clienteIds.length;
 
     // Clientes ativos no mês (com agendamento concluído no mês atual)

@@ -1,5 +1,5 @@
 // Página de Clientes — estética industrial com dados ricos
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import {
   Search, Users, Calendar, TrendingUp, DollarSign, Gift,
   Star, Phone, Mail, X, Plus, MessageCircle, Cake,
@@ -98,6 +98,7 @@ export function Clientes() {
   const [recompensas, setRecompensas] = useState<Recompensa[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [busca, setBusca] = useState('');
+  const [buscaDebounced, setBuscaDebounced] = useState('');
   const [filtroNivel, setFiltroNivel] = useState('Todos');
   const [ordenar, setOrdenar] = useState('recente');
   const [abaAtiva, setAbaAtiva] = useState<'clientes' | 'aniversariantes'>('clientes');
@@ -115,12 +116,26 @@ export function Clientes() {
   // Formulário de resgate
   const [mostrarFormResgate, setMostrarFormResgate] = useState(false);
 
+  // Ref para o timer de debounce
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  /* ─── Debounce da busca (500ms) ────────────────────────── */
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      setBuscaDebounced(busca);
+    }, 500);
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, [busca]);
+
   /* ─── Carregamento ─────────────────────────────────────── */
   const carregar = useCallback(async () => {
     setCarregando(true);
     try {
       const params: Record<string, string> = {};
-      if (busca) params.busca = busca;
+      if (buscaDebounced) params.busca = buscaDebounced;
       if (filtroNivel !== 'Todos') params.nivel = filtroNivel;
       if (ordenar) params.ordenar = ordenar;
 
@@ -134,7 +149,7 @@ export function Clientes() {
       setAniversariantes(rAniver.data);
     } catch (e) { console.error(e); }
     finally { setCarregando(false); }
-  }, [busca, filtroNivel, ordenar]);
+  }, [buscaDebounced, filtroNivel, ordenar]);
 
   useEffect(() => { carregar(); }, [carregar]);
 
@@ -188,8 +203,11 @@ export function Clientes() {
     }
   }
 
-  /* ─── Busca ────────────────────────────────────────────── */
-  function handleBusca() { carregar(); }
+  /* ─── Busca imediata (botão/Enter) ──────────────────────── */
+  function handleBusca() {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    setBuscaDebounced(busca);
+  }
 
   /* ─── WhatsApp ─────────────────────────────────────────── */
   function enviarWhatsApp(telefone: string | null, mensagem: string) {
