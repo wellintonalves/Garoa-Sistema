@@ -1,5 +1,5 @@
 // Sidebar — menu lateral com estética industrial responsivo
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard, Calendar, Scissors, ListChecks,
@@ -7,6 +7,7 @@ import {
   BarChart3, X, Settings
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
+import api from '../api/client';
 
 interface SidebarProps {
   mobileOpen: boolean;
@@ -28,8 +29,17 @@ const menuItems = [
 export function Sidebar({ mobileOpen, onCloseMobile }: SidebarProps) {
   const [recolhido, setRecolhido] = useState(false);
   const { usuario, logout } = useAuth();
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [nomeDaBarbearia, setNomeDaBarbearia] = useState<string>(import.meta.env.VITE_BARBEARIA_NOME || 'GAROA');
 
-  const nomeBarbearia = import.meta.env.VITE_BARBEARIA_NOME || 'GAROA';
+  useEffect(() => {
+    if (usuario) {
+      api.get('/configuracoes/minha-barbearia').then(res => {
+        if (res.data.logo) setLogoUrl(res.data.logo);
+        if (res.data.nome) setNomeDaBarbearia(res.data.nome);
+      }).catch(() => {});
+    }
+  }, [usuario]);
 
   return (
     <>
@@ -58,17 +68,21 @@ export function Sidebar({ mobileOpen, onCloseMobile }: SidebarProps) {
           style={{ borderBottom: '1px solid var(--border)' }}
         >
           {!recolhido ? (
-            <span
-              className="animate-fade-in truncate"
-              style={{
-                fontFamily: "var(--font-display)",
-                fontSize: '24px',
-                letterSpacing: '0.06em',
-                color: 'var(--text-primary)',
-              }}
-            >
-              {nomeBarbearia}
-            </span>
+            logoUrl ? (
+              <img src={logoUrl} alt="Logo da Barbearia" className="h-8 object-contain" />
+            ) : (
+              <span
+                className="animate-fade-in truncate"
+                style={{
+                  fontFamily: "var(--font-display)",
+                  fontSize: '24px',
+                  letterSpacing: '0.06em',
+                  color: 'var(--text-primary)',
+                }}
+              >
+                {nomeDaBarbearia}
+              </span>
+            )
           ) : (
             <span
               style={{

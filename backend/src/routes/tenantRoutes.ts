@@ -6,6 +6,7 @@ const router = Router();
 
 // Dados públicos
 router.get('/:slug', TenantController.getBarbearia);
+router.get('/:slug/identidade', TenantController.getIdentidade);
 router.get('/:slug/servicos', TenantController.getServicos);
 router.get('/:slug/barbeiros', TenantController.getBarbeiros);
 router.get('/:slug/horarios-disponiveis', TenantController.getHorariosDisponiveis);

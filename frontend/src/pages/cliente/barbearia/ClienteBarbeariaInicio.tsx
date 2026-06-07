@@ -47,10 +47,13 @@ export function ClienteBarbeariaInicio() {
     <div className="px-5 py-6 animate-fade-in">
       {/* Header da barbearia */}
       <div className="flex items-center gap-4 mb-8">
-        <div className="w-14 h-14 flex items-center justify-center flex-shrink-0"
-          style={{ background: 'var(--amber-dim)' }}>
-          <Scissors size={28} style={{ color: 'var(--amber-light)' }} />
-        </div>
+        {barbearia?.logo ? (
+          <img src={barbearia.logo} alt="Logo" className="w-14 h-14 object-contain rounded" />
+        ) : (
+          <div className="w-14 h-14 flex items-center justify-center flex-shrink-0" style={{ background: 'var(--amber-dim)', borderRadius: '4px' }}>
+            <Scissors size={28} style={{ color: 'var(--amber-light)' }} />
+          </div>
+        )}
         <div>
           <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '24px', color: 'var(--text-primary)', letterSpacing: '0.04em' }}>
             {barbearia?.nome || 'Barbearia'}

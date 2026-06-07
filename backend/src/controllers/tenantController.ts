@@ -21,6 +21,31 @@ export class TenantController {
     }
   }
 
+  /** GET /b/:slug/identidade - Retorna a identidade visual da barbearia */
+  static async getIdentidade(req: AuthRequest, res: Response): Promise<void> {
+    try {
+      const { slug } = req.params;
+      const barbearia = await prisma.barbearia.findUnique({
+        where: { slug },
+        select: {
+          nome: true,
+          logo: true,
+          corPrimaria: true,
+          corSecundaria: true,
+          corTexto: true,
+          fonte: true
+        }
+      });
+      if (!barbearia) {
+        res.status(404).json({ erro: 'Barbearia não encontrada' });
+        return;
+      }
+      res.json(barbearia);
+    } catch (error) {
+      res.status(500).json({ erro: 'Erro ao buscar identidade' });
+    }
+  }
+
   /** POST /b/:slug/auth/register */
   static async registerClient(req: AuthRequest, res: Response): Promise<void> {
     try {

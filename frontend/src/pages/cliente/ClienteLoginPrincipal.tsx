@@ -1,12 +1,14 @@
 // Tela principal de login — focada no cliente
 // Visual premium de barbearia, mobile-first
-import { useState, type FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect, type FormEvent } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useClienteAuth } from '../../hooks/useClienteAuth';
 import { Mail, Lock, AlertCircle, Scissors, Settings, Shield, X } from 'lucide-react';
+import clienteApi from '../../api/clienteApi';
 
 export function ClienteLoginPrincipal() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { cliente, carregando: authCarregando, login } = useClienteAuth();
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
@@ -14,13 +16,41 @@ export function ClienteLoginPrincipal() {
   const [enviando, setEnviando] = useState(false);
   const [mostrarModal, setMostrarModal] = useState(false);
 
+  const [identidade, setIdentidade] = useState<{ logo: string | null; nome: string; corPrimaria?: string; fonte?: string }>({
+    logo: null,
+    nome: import.meta.env.VITE_BARBEARIA_NOME || 'GAROA'
+  });
+
+  useEffect(() => {
+    const slug = searchParams.get('slug');
+    if (slug) {
+      clienteApi.get(`/b/${slug}/identidade`).then((res) => {
+        setIdentidade({
+          logo: res.data.logo || null,
+          nome: res.data.nome || import.meta.env.VITE_BARBEARIA_NOME || 'GAROA',
+          corPrimaria: res.data.corPrimaria,
+          fonte: res.data.fonte
+        });
+        
+        if (res.data.corPrimaria) {
+          document.documentElement.style.setProperty('--amber', res.data.corPrimaria);
+        }
+        if (res.data.fonte && res.data.fonte !== 'Inter') {
+          const link = document.createElement('link');
+          link.href = `https://fonts.googleapis.com/css2?family=${res.data.fonte.replace(/ /g, '+')}:wght@400;600;700&display=swap`;
+          link.rel = 'stylesheet';
+          document.head.appendChild(link);
+          document.documentElement.style.setProperty('--font-display', `'${res.data.fonte}', sans-serif`);
+        }
+      }).catch(() => {});
+    }
+  }, [searchParams]);
+
   // Se já está logado, redireciona
   if (!authCarregando && cliente) {
     navigate('/cliente/home', { replace: true });
     return null;
   }
-
-  const nomeBarbearia = import.meta.env.VITE_BARBEARIA_NOME || 'GAROA';
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -121,20 +151,36 @@ export function ClienteLoginPrincipal() {
           alignItems: 'center',
           marginBottom: '3rem',
         }}>
-          {/* Ícone da tesoura com glow */}
-          <div style={{
-            width: '80px',
-            height: '80px',
-            borderRadius: '50%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            background: 'linear-gradient(135deg, var(--amber) 0%, #E8A020 50%, var(--amber-light) 100%)',
-            boxShadow: '0 0 60px rgba(212, 130, 10, 0.3), 0 0 120px rgba(212, 130, 10, 0.1)',
-            marginBottom: '1.5rem',
-          }}>
-            <Scissors size={38} style={{ color: '#0A0A0A' }} />
-          </div>
+          {/* Ícone ou Logo com glow */}
+          {identidade.logo ? (
+            <div style={{
+              width: '80px',
+              height: '80px',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 0 60px rgba(212, 130, 10, 0.3), 0 0 120px rgba(212, 130, 10, 0.1)',
+              marginBottom: '1.5rem',
+              overflow: 'hidden'
+            }}>
+              <img src={identidade.logo} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            </div>
+          ) : (
+            <div style={{
+              width: '80px',
+              height: '80px',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              background: 'linear-gradient(135deg, var(--amber) 0%, #E8A020 50%, var(--amber-light) 100%)',
+              boxShadow: '0 0 60px rgba(212, 130, 10, 0.3), 0 0 120px rgba(212, 130, 10, 0.1)',
+              marginBottom: '1.5rem',
+            }}>
+              <Scissors size={38} style={{ color: '#0A0A0A' }} />
+            </div>
+          )}
 
           {/* Nome da barbearia */}
           <h1 style={{
@@ -145,7 +191,7 @@ export function ClienteLoginPrincipal() {
             lineHeight: 1,
             textAlign: 'center',
           }}>
-            {nomeBarbearia}
+            {identidade.nome}
           </h1>
 
           {/* Subtítulo */}
@@ -387,7 +433,7 @@ export function ClienteLoginPrincipal() {
         letterSpacing: '0.15em',
         textTransform: 'uppercase' as const,
       }}>
-        © {new Date().getFullYear()} {nomeBarbearia} Barbearia
+        © {new Date().getFullYear()} {identidade.nome} Barbearia
       </p>
 
       {/* ====== Modal de acesso da equipe ====== */}

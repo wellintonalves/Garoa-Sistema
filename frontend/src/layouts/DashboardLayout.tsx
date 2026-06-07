@@ -1,12 +1,21 @@
 // Layout principal responsivo
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import { Sidebar } from '../components/Sidebar';
 import { Menu } from 'lucide-react';
+import api from '../api/client';
 
 export function DashboardLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const nomeBarbearia = import.meta.env.VITE_BARBEARIA_NOME || 'GAROA';
+  const [nomeDaBarbearia, setNomeDaBarbearia] = useState<string>(import.meta.env.VITE_BARBEARIA_NOME || 'GAROA');
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    api.get('/configuracoes/minha-barbearia').then(res => {
+      if (res.data.nome) setNomeDaBarbearia(res.data.nome);
+      if (res.data.logo) setLogoUrl(res.data.logo);
+    }).catch(() => {});
+  }, []);
 
   return (
     <div className="min-h-screen" style={{ background: 'var(--bg-primary)' }}>
@@ -25,16 +34,20 @@ export function DashboardLayout() {
         >
           <Menu size={20} strokeWidth={1.5} />
         </button>
-        <span
-          style={{
-            fontFamily: "var(--font-display)",
-            fontSize: '20px',
-            letterSpacing: '0.06em',
-            color: 'var(--text-primary)',
-          }}
-        >
-          {nomeBarbearia}
-        </span>
+        {logoUrl ? (
+          <img src={logoUrl} alt="Logo" className="h-8 object-contain" />
+        ) : (
+          <span
+            style={{
+              fontFamily: "var(--font-display)",
+              fontSize: '20px',
+              letterSpacing: '0.06em',
+              color: 'var(--text-primary)',
+            }}
+          >
+            {nomeDaBarbearia}
+          </span>
+        )}
       </header>
 
       {/* Sidebar (Controla seu próprio mobile/desktop view) */}

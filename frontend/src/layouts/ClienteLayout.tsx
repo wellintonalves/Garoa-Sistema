@@ -22,7 +22,34 @@ export function ClienteLayout() {
       // Busca dados da barbearia via minhas-barbearias para obter o nome
       clienteApi.get('/cliente/minhas-barbearias').then((res) => {
         const found = res.data.find((b: BarbeariaInfo) => b.id === barbeariaId);
-        if (found) setBarbearia(found);
+        if (found) {
+          setBarbearia(found);
+          // Busca identidade visual
+          clienteApi.get(`/b/${found.slug}/identidade`).then((resIdentidade) => {
+            const iden = resIdentidade.data;
+            setBarbearia(prev => prev ? { ...prev, ...iden } : iden);
+            
+            // Aplica CSS variables
+            const root = document.documentElement;
+            if (iden.corPrimaria) root.style.setProperty('--amber', iden.corPrimaria);
+            if (iden.corSecundaria) {
+              root.style.setProperty('--bg-primary', iden.corSecundaria);
+              root.style.setProperty('--bg-surface', iden.corSecundaria);
+            }
+            if (iden.corTexto) root.style.setProperty('--text-primary', iden.corTexto);
+            
+            // Carrega a fonte
+            if (iden.fonte && iden.fonte !== 'Inter') {
+              const link = document.createElement('link');
+              link.href = `https://fonts.googleapis.com/css2?family=${iden.fonte.replace(/ /g, '+')}:wght@400;600;700&display=swap`;
+              link.rel = 'stylesheet';
+              document.head.appendChild(link);
+              root.style.setProperty('--font-display', `'${iden.fonte}', sans-serif`);
+            } else {
+              root.style.setProperty('--font-display', `'Inter', sans-serif`);
+            }
+          });
+        }
       }).catch(() => {
         navigate('/cliente/home');
       });

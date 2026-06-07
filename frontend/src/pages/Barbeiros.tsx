@@ -28,7 +28,7 @@ export function Barbeiros() {
   const [carregando, setCarregando] = useState(true);
   const [modalAberto, setModalAberto] = useState(false);
   const [editandoId, setEditandoId] = useState<string | null>(null);
-  const [form, setForm] = useState({ nome: '', email: '', senha: '', especialidades: '', comissaoPercent: '50', cor: '#F97316' });
+  const [form, setForm] = useState({ nome: '', email: '', senha: '', foto: '', especialidades: '', comissaoPercent: '50', cor: '#F97316' });
   const navigate = useNavigate();
 
   // Seção de comissões
@@ -64,7 +64,7 @@ export function Barbeiros() {
 
   function abrirModalNovo() {
     setEditandoId(null);
-    setForm({ nome: '', email: '', senha: '', especialidades: '', comissaoPercent: '50', cor: '#F97316' });
+    setForm({ nome: '', email: '', senha: '', foto: '', especialidades: '', comissaoPercent: '50', cor: '#F97316' });
     setModalAberto(true);
   }
 
@@ -74,6 +74,7 @@ export function Barbeiros() {
       nome: b.usuario.nome,
       email: b.usuario.email,
       senha: '', // leave blank if not changing
+      foto: b.foto || '',
       especialidades: b.especialidades.join(', '),
       comissaoPercent: String(b.comissaoPercent),
       cor: b.cor || '#F97316',
@@ -87,6 +88,7 @@ export function Barbeiros() {
       const payload: any = {
         nome: form.nome,
         email: form.email,
+        foto: form.foto,
         especialidades: form.especialidades.split(',').map(e => e.trim()).filter(Boolean),
         comissaoPercent: Number(form.comissaoPercent),
         cor: form.cor,
@@ -108,7 +110,7 @@ export function Barbeiros() {
       
       setModalAberto(false);
       setEditandoId(null);
-      setForm({ nome: '', email: '', senha: '', especialidades: '', comissaoPercent: '50', cor: '#F97316' });
+      setForm({ nome: '', email: '', senha: '', foto: '', especialidades: '', comissaoPercent: '50', cor: '#F97316' });
       carregar();
     } catch (err) { console.error(err); }
   }
@@ -148,21 +150,26 @@ export function Barbeiros() {
             style={{ borderLeft: b.ativo ? '2px solid var(--amber)' : '2px solid var(--border)' }}
           >
             <div className="flex items-center gap-4 mb-4">
-              {/* Avatar com iniciais */}
-              <div
-                className="flex items-center justify-center flex-shrink-0"
-                style={{
-                  width: '48px',
-                  height: '48px',
-                  background: 'var(--amber-dim)',
-                  fontFamily: 'var(--font-display)',
-                  fontSize: '20px',
-                  color: 'var(--amber-light)',
-                  letterSpacing: '0.04em',
-                }}
-              >
-                {getIniciais(b.usuario.nome)}
-              </div>
+              {/* Avatar com iniciais ou foto */}
+              {b.foto ? (
+                <img src={b.foto} alt={b.usuario.nome} className="w-12 h-12 rounded-full object-cover border-2 border-[var(--border)]" />
+              ) : (
+                <div
+                  className="flex items-center justify-center flex-shrink-0"
+                  style={{
+                    width: '48px',
+                    height: '48px',
+                    background: 'var(--amber-dim)',
+                    fontFamily: 'var(--font-display)',
+                    fontSize: '20px',
+                    color: 'var(--amber-light)',
+                    letterSpacing: '0.04em',
+                    borderRadius: '50%',
+                  }}
+                >
+                  {getIniciais(b.usuario.nome)}
+                </div>
+              )}
               <div className="min-w-0">
                 <h3
                   className="truncate"
@@ -340,6 +347,30 @@ export function Barbeiros() {
 
       <Modal aberto={modalAberto} onFechar={() => setModalAberto(false)} titulo={editandoId ? "Editar Barbeiro" : "Novo Barbeiro"}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div>
+            <label className="input-label">Foto do Barbeiro (Opcional, Max 2MB)</label>
+            <div className="flex items-center gap-4">
+              {form.foto ? (
+                <img src={form.foto} alt="Foto do Barbeiro" className="w-12 h-12 object-cover rounded-full border border-[var(--border)]" />
+              ) : (
+                <div className="w-12 h-12 bg-[var(--amber-dim)] text-[var(--amber-light)] rounded-full flex items-center justify-center font-bold">
+                  {form.nome ? getIniciais(form.nome) : 'B'}
+                </div>
+              )}
+              <input type="file" accept="image/png, image/jpeg, image/webp" onChange={async (e) => {
+                if (e.target.files && e.target.files[0]) {
+                  const file = e.target.files[0];
+                  if (file.size > 2 * 1024 * 1024) { alert('Arquivo muito grande (Max 2MB)'); return; }
+                  const formData = new FormData();
+                  formData.append('file', file);
+                  try {
+                    const res = await api.post('/upload/barbeiro', formData);
+                    setForm({ ...form, foto: res.data.url });
+                  } catch (error) { alert('Erro ao fazer upload da foto'); }
+                }
+              }} className="text-sm text-zinc-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-bold file:bg-[var(--bg-surface2)] file:text-white hover:file:bg-zinc-700 cursor-pointer" />
+            </div>
+          </div>
           <div><label className="input-label">Nome</label>
           <input value={form.nome} onChange={e => setForm({...form, nome: e.target.value})} className="ds-input" /></div>
           <div><label className="input-label">Email</label>

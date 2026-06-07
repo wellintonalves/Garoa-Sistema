@@ -54,6 +54,9 @@ model Barbearia {
   endereco           String?
   logo               String?
   corPrimaria        String?  @default("#FF8C00") // Laranja
+  corSecundaria      String?  @default("#1A1A1A") // Escuro
+  corTexto           String?  @default("#FFFFFF") // Branco
+  fonte              String?  @default("Inter")
   horarioAbertura     String?  @default("09:00")
   horarioFechamento   String?  @default("19:00")
   temAlmoco           Boolean  @default(false)

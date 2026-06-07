@@ -139,14 +139,79 @@ export function Configuracoes() {
               <label className="block text-sm font-medium mb-1">Nome da Barbearia</label>
               <input type="text" className="form-input w-full p-2 bg-black/50 border border-[var(--border)] rounded" value={barbearia.nome || ''} onChange={e => setBarbearia({...barbearia, nome: e.target.value})} required />
             </div>
+            
+            <div className="p-4 bg-zinc-900 border border-zinc-800 rounded space-y-4">
+              <h3 className="text-sm font-bold text-[var(--amber)] uppercase tracking-wider">Identidade Visual</h3>
+              
+              <div>
+                <label className="block text-sm font-medium mb-1">Logo da Barbearia (Max 2MB)</label>
+                <div className="flex items-center gap-4">
+                  {barbearia.logo && (
+                    <img src={barbearia.logo} alt="Logo" className="w-16 h-16 object-cover rounded bg-black/50 border border-[var(--border)]" />
+                  )}
+                  <input type="file" accept="image/png, image/jpeg, image/webp, image/svg+xml" onChange={async (e) => {
+                    if (e.target.files && e.target.files[0]) {
+                      const file = e.target.files[0];
+                      if (file.size > 2 * 1024 * 1024) { alert('Arquivo muito grande (Max 2MB)'); return; }
+                      const formData = new FormData();
+                      formData.append('file', file);
+                      try {
+                        const res = await api.post('/upload/logo', formData);
+                        setBarbearia({ ...barbearia, logo: res.data.url });
+                      } catch (error) { alert('Erro ao fazer upload da logo'); }
+                    }
+                  }} className="text-sm text-zinc-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-bold file:bg-[var(--amber)] file:text-black hover:file:bg-amber-600 cursor-pointer" />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-xs text-zinc-400 mb-1">Cor Primária</label>
+                  <input type="color" className="w-full h-10 bg-transparent rounded cursor-pointer" value={barbearia.corPrimaria || '#ff6b00'} onChange={e => setBarbearia({...barbearia, corPrimaria: e.target.value})} required />
+                </div>
+                <div>
+                  <label className="block text-xs text-zinc-400 mb-1">Cor Secundária</label>
+                  <input type="color" className="w-full h-10 bg-transparent rounded cursor-pointer" value={barbearia.corSecundaria || '#1a1a1a'} onChange={e => setBarbearia({...barbearia, corSecundaria: e.target.value})} required />
+                </div>
+                <div>
+                  <label className="block text-xs text-zinc-400 mb-1">Cor do Texto</label>
+                  <input type="color" className="w-full h-10 bg-transparent rounded cursor-pointer" value={barbearia.corTexto || '#ffffff'} onChange={e => setBarbearia({...barbearia, corTexto: e.target.value})} required />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">Fonte dos Títulos</label>
+                <select className="form-select w-full p-2 bg-black/50 border border-[var(--border)] rounded text-white" value={barbearia.fonte || 'Inter'} onChange={e => setBarbearia({...barbearia, fonte: e.target.value})}>
+                  <option value="Inter">Inter (Neutro)</option>
+                  <option value="Bebas Neue">Bebas Neue (Clássica)</option>
+                  <option value="Syne">Syne (Moderno)</option>
+                  <option value="Oswald">Oswald (Impactante)</option>
+                  <option value="Playfair Display">Playfair Display (Elegante)</option>
+                  <option value="Montserrat">Montserrat (Profissional)</option>
+                </select>
+              </div>
+
+              <div className="mt-4 p-4 rounded border border-zinc-700" style={{ backgroundColor: barbearia.corSecundaria || '#1a1a1a', color: barbearia.corTexto || '#ffffff' }}>
+                <p className="text-xs opacity-70 mb-2 uppercase tracking-widest">Preview no App</p>
+                <div className="flex items-center gap-3">
+                  {barbearia.logo ? (
+                    <img src={barbearia.logo} alt="Logo" className="h-8 object-contain" />
+                  ) : (
+                     <div className="h-8 w-8 bg-black/20 rounded flex items-center justify-center">L</div>
+                  )}
+                  <h1 className="text-2xl m-0 font-bold" style={{ fontFamily: barbearia.fonte || 'Inter' }}>
+                    {barbearia.nome || 'Nome da Barbearia'}
+                  </h1>
+                </div>
+                <button type="button" className="mt-4 px-4 py-2 rounded font-bold text-black text-sm" style={{ backgroundColor: barbearia.corPrimaria || '#ff6b00' }}>
+                  Agendar Horário
+                </button>
+              </div>
+            </div>
             <div>
               <label className="block text-sm font-medium mb-1">Slug (URL)</label>
               <input type="text" className="form-input w-full p-2 bg-black/50 border border-[var(--border)] rounded" value={barbearia.slug || ''} onChange={e => setBarbearia({...barbearia, slug: e.target.value})} required />
               <p className="text-xs text-zinc-500 mt-1">Sua url será: {window.location.origin}/cliente/home?slug={barbearia.slug || '...'}</p>
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Cor Primária (Hex)</label>
-              <input type="color" className="w-full h-10 bg-transparent rounded cursor-pointer" value={barbearia.corPrimaria || '#ff6b00'} onChange={e => setBarbearia({...barbearia, corPrimaria: e.target.value})} required />
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Endereço</label>
@@ -297,7 +362,21 @@ export function Configuracoes() {
           </p>
           
           <div className="flex flex-col items-center justify-center p-6 bg-white rounded">
-            <QRCodeSVG id="qr-code-svg" value={urlQR} size={200} level="H" includeMargin={true} />
+            <QRCodeSVG 
+              id="qr-code-svg" 
+              value={urlQR} 
+              size={200} 
+              level="H" 
+              includeMargin={true}
+              imageSettings={barbearia.logo ? {
+                src: barbearia.logo,
+                x: undefined,
+                y: undefined,
+                height: 48,
+                width: 48,
+                excavate: true,
+              } : undefined}
+            />
           </div>
           
           <div className="mt-4 p-3 bg-black/30 rounded border border-[var(--border)] text-center break-all text-sm font-mono text-[var(--amber)]">
