@@ -3,6 +3,7 @@ import { Outlet, useNavigate, useLocation, useParams } from 'react-router-dom';
 import { Home, Calendar, Star, User } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import clienteApi from '../api/clienteApi';
+import { useTema } from '../hooks/useTema';
 
 interface BarbeariaInfo {
   id: string;
@@ -17,6 +18,8 @@ export function ClienteLayout() {
   const { barbeariaId } = useParams<{ barbeariaId: string }>();
   const [barbearia, setBarbearia] = useState<BarbeariaInfo | null>(null);
 
+  const { carregarTemaCliente } = useTema();
+
   useEffect(() => {
     if (barbeariaId) {
       // Busca dados da barbearia via minhas-barbearias para obter o nome
@@ -25,36 +28,13 @@ export function ClienteLayout() {
         if (found) {
           setBarbearia(found);
           // Busca identidade visual
-          clienteApi.get(`/b/${found.slug}/identidade`).then((resIdentidade) => {
-            const iden = resIdentidade.data;
-            setBarbearia(prev => prev ? { ...prev, ...iden } : iden);
-            
-            // Aplica CSS variables
-            const root = document.documentElement;
-            if (iden.corPrimaria) root.style.setProperty('--amber', iden.corPrimaria);
-            if (iden.corSecundaria) {
-              root.style.setProperty('--bg-primary', iden.corSecundaria);
-              root.style.setProperty('--bg-surface', iden.corSecundaria);
-            }
-            if (iden.corTexto) root.style.setProperty('--text-primary', iden.corTexto);
-            
-            // Carrega a fonte
-            if (iden.fonte && iden.fonte !== 'Inter') {
-              const link = document.createElement('link');
-              link.href = `https://fonts.googleapis.com/css2?family=${iden.fonte.replace(/ /g, '+')}:wght@400;600;700&display=swap`;
-              link.rel = 'stylesheet';
-              document.head.appendChild(link);
-              root.style.setProperty('--font-display', `'${iden.fonte}', sans-serif`);
-            } else {
-              root.style.setProperty('--font-display', `'Inter', sans-serif`);
-            }
-          });
+          carregarTemaCliente(found.slug);
         }
       }).catch(() => {
         navigate('/cliente/home');
       });
     }
-  }, [barbeariaId]);
+  }, [barbeariaId, carregarTemaCliente]);
 
   const basePath = `/cliente/barbearia/${barbeariaId}`;
 

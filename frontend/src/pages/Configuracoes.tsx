@@ -3,6 +3,7 @@ import { Settings, Save, QrCode } from 'lucide-react';
 import api from '../api/client';
 import { QRCodeSVG } from 'qrcode.react';
 import { FidelidadeConfig } from '../components/admin/FidelidadeConfig';
+import { useTema } from '../hooks/useTema';
 
 const diasSemana = [
   { key: 'domingo', label: 'Domingo' },
@@ -15,6 +16,7 @@ const diasSemana = [
 ];
 
 export function Configuracoes() {
+  const { aplicarTema } = useTema();
   const [horarios, setHorarios] = useState<any>({});
   const [carregando, setCarregando] = useState(true);
   const [salvando, setSalvando] = useState(false);
@@ -83,6 +85,7 @@ export function Configuracoes() {
     setSalvandoBarbearia(true);
     try {
       await api.put('/configuracoes/minha-barbearia', barbearia);
+      aplicarTema(barbearia);
       alert('Dados da barbearia atualizados!');
     } catch (error) {
       alert('Erro ao atualizar barbearia');
@@ -140,7 +143,7 @@ export function Configuracoes() {
               <input type="text" className="form-input w-full p-2 bg-black/50 border border-[var(--border)] rounded" value={barbearia.nome || ''} onChange={e => setBarbearia({...barbearia, nome: e.target.value})} required />
             </div>
             
-            <div className="p-4 bg-zinc-900 border border-zinc-800 rounded space-y-4">
+            <div className="p-4 bg-fundo border border-zinc-800 rounded space-y-4">
               <h3 className="text-sm font-bold text-[var(--amber)] uppercase tracking-wider">Identidade Visual</h3>
               
               <div>
@@ -164,7 +167,7 @@ export function Configuracoes() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 <div>
                   <label className="block text-xs text-zinc-400 mb-1">Cor Primária</label>
                   <input type="color" className="w-full h-10 bg-transparent rounded cursor-pointer" value={barbearia.corPrimaria || '#ff6b00'} onChange={e => setBarbearia({...barbearia, corPrimaria: e.target.value})} required />
@@ -172,6 +175,10 @@ export function Configuracoes() {
                 <div>
                   <label className="block text-xs text-zinc-400 mb-1">Cor Secundária</label>
                   <input type="color" className="w-full h-10 bg-transparent rounded cursor-pointer" value={barbearia.corSecundaria || '#1a1a1a'} onChange={e => setBarbearia({...barbearia, corSecundaria: e.target.value})} required />
+                </div>
+                <div>
+                  <label className="block text-xs text-zinc-400 mb-1">Cor de Fundo</label>
+                  <input type="color" className="w-full h-10 bg-transparent rounded cursor-pointer" value={barbearia.corFundo || '#0f0f1a'} onChange={e => setBarbearia({...barbearia, corFundo: e.target.value})} required />
                 </div>
                 <div>
                   <label className="block text-xs text-zinc-400 mb-1">Cor do Texto</label>
@@ -223,7 +230,7 @@ export function Configuracoes() {
             </div>
 
             {/* Horário de Abertura e Fechamento */}
-            <div className="p-4 bg-zinc-900 border border-zinc-800 rounded space-y-3">
+            <div className="p-4 bg-fundo border border-zinc-800 rounded space-y-3">
               <h3 className="text-sm font-bold text-[var(--amber)] uppercase tracking-wider">Horário de Funcionamento</h3>
               <div className="grid grid-cols-2 gap-3">
                 <div>
@@ -275,10 +282,10 @@ export function Configuracoes() {
               )}
             </div>
             
-            <div className="p-4 bg-zinc-900 border border-zinc-800 rounded flex justify-between items-center">
+            <div className="p-4 bg-fundo border border-zinc-800 rounded flex justify-between items-center">
               <div>
                 <p className="text-zinc-400 text-sm">Clientes Cadastrados</p>
-                <p className="text-2xl font-bold text-orange-500">{barbearia.clientesCount || 0}</p>
+                <p className="text-2xl font-bold text-primaria">{barbearia.clientesCount || 0}</p>
               </div>
             </div>
 

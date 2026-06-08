@@ -7,22 +7,29 @@
 
 /* === TOKENS DE COR (CSS Custom Properties) === */
 :root {
-  /* Fundos */
-  --bg-primary:    #141414;
-  --bg-surface:    #1E1E1C;
+  /* Novas Cores Dinâmicas */
+  --cor-primaria: #F97316;
+  --cor-secundaria: #1A1A2E;
+  --cor-texto: #FFFFFF;
+  --cor-fundo: #0F0F1A;
+  --fonte-titulo: 'Bebas Neue';
+
+  /* Fundos (Antigos mapeados para os novos como fallback) */
+  --bg-primary:    var(--cor-fundo);
+  --bg-surface:    var(--cor-secundaria);
   --bg-surface2:   #272724;
 
   /* Bordas */
   --border:        #2E2E2B;
   --border-hover:  #4A4A46;
 
-  /* Acento principal — âmbar */
-  --amber:         #D4820A;
-  --amber-light:   #F0A030;
+  /* Acento principal — âmbar (Mapeado para cor primaria) */
+  --amber:         var(--cor-primaria);
+  --amber-light:   var(--cor-primaria);
   --amber-dim:     #3D2A08;
 
   /* Texto */
-  --text-primary:  #EDE8DC;
+  --text-primary:  var(--cor-texto);
   --text-muted:    #9A9488;
   --text-disabled: #4A4A46;
 
@@ -35,7 +42,7 @@
   --warning-text:  #F0A030;
 
   /* Fontes */
-  --font-display: 'Bebas Neue', sans-serif;
+  --font-display: var(--fonte-titulo), sans-serif;
   --font-body:    'Syne', sans-serif;
   --font-mono:    'DM Mono', monospace;
 }
@@ -43,8 +50,13 @@
 /* === TAILWIND THEME OVERRIDE === */
 @theme {
   --font-sans: 'Syne', sans-serif;
-  --font-display: 'Bebas Neue', sans-serif;
+  --font-display: var(--fonte-titulo), sans-serif;
   --font-mono: 'DM Mono', monospace;
+  
+  --color-primaria: var(--cor-primaria);
+  --color-secundaria: var(--cor-secundaria);
+  --color-cor-texto: var(--cor-texto);
+  --color-fundo: var(--cor-fundo);
 }
 
 /* === ANIMAÇÕES === */

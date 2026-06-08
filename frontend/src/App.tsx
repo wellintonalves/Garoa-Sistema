@@ -14,7 +14,8 @@ import { Configuracoes } from './pages/Configuracoes';
 import { Agendar } from './pages/publico/Agendar';
 import { Fidelidade } from './pages/publico/Fidelidade';
 import { LoadingSpinner } from './components/LoadingSpinner';
-import { type ReactNode } from 'react';
+import { type ReactNode, useEffect } from 'react';
+import { useTema } from './hooks/useTema';
 
 /** Rota protegida — redireciona para login se não autenticado */
 function RotaProtegida({ children }: { children: ReactNode }) {
@@ -60,6 +61,12 @@ import { BarbeiroComissoes } from './pages/barbeiro/BarbeiroComissoes';
 import { BarbeiroPerfil } from './pages/barbeiro/BarbeiroPerfil';
 
 export function App() {
+  const { carregarTemaCache } = useTema();
+
+  useEffect(() => {
+    carregarTemaCache();
+  }, [carregarTemaCache]);
+
   return (
     <BrowserRouter>
       <AuthProvider>

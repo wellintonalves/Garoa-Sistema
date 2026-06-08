@@ -4,18 +4,21 @@ import { Outlet } from 'react-router-dom';
 import { Sidebar } from '../components/Sidebar';
 import { Menu } from 'lucide-react';
 import api from '../api/client';
+import { useTema } from '../hooks/useTema';
 
 export function DashboardLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [nomeDaBarbearia, setNomeDaBarbearia] = useState<string>(import.meta.env.VITE_BARBEARIA_NOME || 'GAROA');
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const { carregarTemaAdmin } = useTema();
 
   useEffect(() => {
+    carregarTemaAdmin();
     api.get('/configuracoes/minha-barbearia').then(res => {
       if (res.data.nome) setNomeDaBarbearia(res.data.nome);
       if (res.data.logo) setLogoUrl(res.data.logo);
     }).catch(() => {});
-  }, []);
+  }, [carregarTemaAdmin]);
 
   return (
     <div className="min-h-screen" style={{ background: 'var(--bg-primary)' }}>
