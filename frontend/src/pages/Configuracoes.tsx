@@ -5,7 +5,7 @@ import { QRCodeSVG } from 'qrcode.react';
 import { FidelidadeConfig } from '../components/admin/FidelidadeConfig';
 import { useTema } from '../hooks/useTema';
 // @ts-ignore
-import ColorThief from 'colorthief';
+import { getPalette } from 'colorthief';
 
 function rgbToHex(r: number, g: number, b: number) {
   return '#' + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('');
@@ -187,14 +187,14 @@ export function Configuracoes() {
                         const img = new Image();
                         img.crossOrigin = "Anonymous";
                         img.onload = () => {
-                          const extractColors = (imageObj: HTMLImageElement) => {
+                          const extractColors = async (imageObj: HTMLImageElement) => {
                             try {
-                              const colorThief = new ColorThief();
-                              const palette = colorThief.getPalette(imageObj, 3);
+                              const palette = await getPalette(imageObj, { colorCount: 3 });
                               if (palette && palette.length >= 3) {
                                 const colors = palette.map((p: any) => {
-                                   const [h, s, l] = rgbToHsl(p[0], p[1], p[2]);
-                                   return { rgb: p, hex: rgbToHex(p[0], p[1], p[2]), s, l };
+                                   const rgbArray = p.array ? p.array() : p;
+                                   const [, s, l] = rgbToHsl(rgbArray[0], rgbArray[1], rgbArray[2]);
+                                   return { rgb: rgbArray, hex: rgbToHex(rgbArray[0], rgbArray[1], rgbArray[2]), s, l };
                                 });
                                 
                                 colors.sort((a: any, b: any) => a.l - b.l);
