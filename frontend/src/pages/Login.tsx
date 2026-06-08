@@ -1,5 +1,5 @@
 // Página de Login — estética industrial (âmbar + cantos retos + sem gradientes)
-import { useState, type FormEvent } from 'react';
+import { useState, useEffect, type FormEvent } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { Mail, Lock, AlertCircle, UserPlus, User, CheckCircle2, ChevronLeft } from 'lucide-react';
 import api from '../api/client';
@@ -10,6 +10,7 @@ export function Login() {
   const [senha, setSenha] = useState('');
   const [erro, setErro] = useState('');
   const [carregando, setCarregando] = useState(false);
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
 
   // Estado do formulário de primeiro acesso
   const [mostrarRegistro, setMostrarRegistro] = useState(false);
@@ -21,6 +22,16 @@ export function Login() {
   const [adminCriado, setAdminCriado] = useState(false);
 
   const nomeBarbearia = import.meta.env.VITE_BARBEARIA_NOME || 'GAROA BARBEARIA';
+
+  useEffect(() => {
+    const cache = localStorage.getItem('temaBarbearia');
+    if (cache) {
+      try {
+        const tema = JSON.parse(cache);
+        if (tema.logo) setLogoUrl(tema.logo);
+      } catch (e) {}
+    }
+  }, []);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -80,17 +91,21 @@ export function Login() {
         >
           {/* Logo */}
           <div className="flex flex-col items-center mb-8">
-            <h1
-              style={{
-                fontFamily: 'var(--font-display)',
-                fontSize: '48px',
-                color: 'var(--text-primary)',
-                letterSpacing: '0.06em',
-                lineHeight: 1,
-              }}
-            >
-              {nomeBarbearia}
-            </h1>
+            {logoUrl ? (
+              <img src={logoUrl} alt="Logo" className="object-contain" style={{ maxHeight: '80px', maxWidth: '240px' }} />
+            ) : (
+              <h1
+                style={{
+                  fontFamily: 'var(--font-display)',
+                  fontSize: '48px',
+                  color: 'var(--text-primary)',
+                  letterSpacing: '0.06em',
+                  lineHeight: 1,
+                }}
+              >
+                {nomeBarbearia}
+              </h1>
+            )}
             <p
               style={{
                 fontFamily: 'var(--font-mono)',

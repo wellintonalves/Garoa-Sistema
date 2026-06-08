@@ -4,6 +4,23 @@ import api from '../api/client';
 import { QRCodeSVG } from 'qrcode.react';
 import { FidelidadeConfig } from '../components/admin/FidelidadeConfig';
 import { useTema } from '../hooks/useTema';
+// @ts-ignore
+import ColorThief from 'colorthief';
+
+function rgbToHex(r: number, g: number, b: number) {
+  return '#' + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('');
+}
+
+function rgbToHsl(r: number, g: number, b: number) {
+  r /= 255; g /= 255; b /= 255;
+  const max = Math.max(r, g, b), min = Math.min(r, g, b);
+  let s = 0, l = (max + min) / 2;
+  if (max !== min) {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+  }
+  return [0, s, l]; // Apenas S e L importam aqui
+}
 
 const diasSemana = [
   { key: 'domingo', label: 'Domingo' },
@@ -66,6 +83,12 @@ export function Configuracoes() {
 
   const [barbearia, setBarbearia] = useState<any>({});
   const [salvandoBarbearia, setSalvandoBarbearia] = useState(false);
+  const [sugestaoCores, setSugestaoCores] = useState<{
+    primaria: string;
+    secundaria: string;
+    fundo: string;
+    logoBase64: string;
+  } | null>(null);
 
   async function carregarMinhaBarbearia() {
     try {
@@ -152,19 +175,114 @@ export function Configuracoes() {
                   {barbearia.logo && (
                     <img src={barbearia.logo} alt="Logo" className="w-16 h-16 object-cover rounded bg-black/50 border border-[var(--border)]" />
                   )}
-                  <input type="file" accept="image/png, image/jpeg, image/webp, image/svg+xml" onChange={async (e) => {
+                  <input type="file" accept="image/png, image/jpeg, image/webp, image/svg+xml" onChange={(e) => {
                     if (e.target.files && e.target.files[0]) {
                       const file = e.target.files[0];
                       if (file.size > 2 * 1024 * 1024) { alert('Arquivo muito grande (Max 2MB)'); return; }
-                      const formData = new FormData();
-                      formData.append('file', file);
-                      try {
-                        const res = await api.post('/upload/logo', formData);
-                        setBarbearia({ ...barbearia, logo: res.data.url });
-                      } catch (error) { alert('Erro ao fazer upload da logo'); }
+                      
+                      const reader = new FileReader();
+                      reader.onload = (event) => {
+                        const base64 = event.target?.result as string;
+                        
+                        const img = new Image();
+                        img.crossOrigin = "Anonymous";
+                        img.onload = () => {
+                          const extractColors = (imageObj: HTMLImageElement) => {
+                            try {
+                              const colorThief = new ColorThief();
+                              const palette = colorThief.getPalette(imageObj, 3);
+                              if (palette && palette.length >= 3) {
+                                const colors = palette.map((p: any) => {
+                                   const [h, s, l] = rgbToHsl(p[0], p[1], p[2]);
+                                   return { rgb: p, hex: rgbToHex(p[0], p[1], p[2]), s, l };
+                                });
+                                
+                                colors.sort((a: any, b: any) => a.l - b.l);
+                                const fundo = colors[0]; 
+                                
+                                const remaining = [colors[1], colors[2]];
+                                remaining.sort((a: any, b: any) => b.s - a.s);
+                                const primaria = remaining[0];
+                                const secundaria = remaining[1];
+                                
+                                setSugestaoCores({
+                                   fundo: fundo.hex,
+                                   primaria: primaria.hex,
+                                   secundaria: secundaria.hex,
+                                   logoBase64: base64
+                                });
+                              } else {
+                                setBarbearia({ ...barbearia, logo: base64 });
+                              }
+                            } catch (error) {
+                              console.error('Erro ColorThief', error);
+                              setBarbearia({ ...barbearia, logo: base64 });
+                            }
+                          };
+
+                          if (file.type === 'image/svg+xml') {
+                             const canvas = document.createElement('canvas');
+                             canvas.width = img.width || 256;
+                             canvas.height = img.height || 256;
+                             const ctx = canvas.getContext('2d');
+                             if (ctx) {
+                               ctx.fillStyle = '#ffffff';
+                               ctx.fillRect(0, 0, canvas.width, canvas.height);
+                               ctx.drawImage(img, 0, 0);
+                               const newImg = new Image();
+                               newImg.onload = () => extractColors(newImg);
+                               newImg.src = canvas.toDataURL('image/png');
+                               return;
+                             }
+                          }
+                          extractColors(img);
+                        };
+                        img.src = base64;
+                      };
+                      reader.readAsDataURL(file);
                     }
                   }} className="text-sm text-zinc-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-bold file:bg-[var(--amber)] file:text-black hover:file:bg-amber-600 cursor-pointer" />
                 </div>
+                
+                {sugestaoCores && (
+                  <div className="mt-4 p-4 border border-emerald-500/30 bg-emerald-500/10 rounded animate-fade-in">
+                    <p className="text-sm font-bold text-emerald-400 mb-2">Detectamos estas cores na sua logo. Deseja aplicá-las no sistema?</p>
+                    <div className="flex items-center gap-4 mb-4">
+                      <div className="flex flex-col items-center gap-1">
+                        <div className="w-8 h-8 rounded-full border border-zinc-700 shadow" style={{ backgroundColor: sugestaoCores.primaria }}></div>
+                        <span className="text-[10px] text-zinc-400">{sugestaoCores.primaria}</span>
+                      </div>
+                      <div className="flex flex-col items-center gap-1">
+                        <div className="w-8 h-8 rounded-full border border-zinc-700 shadow" style={{ backgroundColor: sugestaoCores.secundaria }}></div>
+                        <span className="text-[10px] text-zinc-400">{sugestaoCores.secundaria}</span>
+                      </div>
+                      <div className="flex flex-col items-center gap-1">
+                        <div className="w-8 h-8 rounded-full border border-zinc-700 shadow" style={{ backgroundColor: sugestaoCores.fundo }}></div>
+                        <span className="text-[10px] text-zinc-400">{sugestaoCores.fundo}</span>
+                      </div>
+                    </div>
+                    <div className="flex gap-3">
+                      <button type="button" onClick={() => {
+                        setBarbearia({
+                          ...barbearia,
+                          logo: sugestaoCores.logoBase64,
+                          corPrimaria: sugestaoCores.primaria,
+                          corSecundaria: sugestaoCores.secundaria,
+                          corFundo: sugestaoCores.fundo
+                        });
+                        setSugestaoCores(null);
+                      }} className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded">
+                        Aplicar cores sugeridas
+                      </button>
+                      <button type="button" onClick={() => {
+                        setBarbearia({ ...barbearia, logo: sugestaoCores.logoBase64 });
+                        setSugestaoCores(null);
+                      }} className="px-3 py-1.5 bg-transparent border border-zinc-600 hover:bg-zinc-800 text-zinc-300 text-xs rounded">
+                        Ignorar
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

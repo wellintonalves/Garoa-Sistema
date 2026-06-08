@@ -69,7 +69,7 @@ export function Sidebar({ mobileOpen, onCloseMobile }: SidebarProps) {
         >
           {!recolhido ? (
             logoUrl ? (
-              <img src={logoUrl} alt="Logo da Barbearia" className="h-8 object-contain" />
+              <img src={logoUrl} alt="Logo da Barbearia" className="object-contain" style={{ maxHeight: '48px', maxWidth: '160px' }} />
             ) : (
               <span
                 className="animate-fade-in truncate"
