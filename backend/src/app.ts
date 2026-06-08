@@ -26,8 +26,9 @@ app.use(cors({
   credentials: true,
 }));
 
-// Parse de JSON
-app.use(express.json());
+// Parse de JSON com limite estendido para suportar imagens em Base64
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
 // Rota de health check (usada pelo Railway)
 app.get('/health', (_req, res) => {
