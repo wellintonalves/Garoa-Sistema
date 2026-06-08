@@ -57,7 +57,9 @@ model Barbearia {
   corSecundaria      String?  @default("#1A1A1A") // Escuro
   corTexto           String?  @default("#FFFFFF") // Branco
   fonte              String?  @default("Inter")
-  horarioAbertura     String?  @default("09:00")
+  fonteCorpo         String?  @default("Inter")
+  fonteNumeros       String?  @default("DM Mono")
+  horarioAbertura    String?  @default("09:00")
   horarioFechamento   String?  @default("19:00")
   temAlmoco           Boolean  @default(false)
   horarioAlmocoInicio String?  @default("12:00")

@@ -8,6 +8,8 @@ export interface TemaBarbearia {
   corTexto?: string;
   corFundo?: string;
   fonte?: string;
+  fonteCorpo?: string;
+  fonteNumeros?: string;
 }
 
 export function useTema() {
@@ -27,18 +29,29 @@ export function useTema() {
       root.style.setProperty('--cor-fundo', tema.corFundo);
     }
     
-    if (tema.fonte) {
-      root.style.setProperty('--fonte-titulo', `'${tema.fonte}', sans-serif`);
-      if (tema.fonte !== 'Inter') {
-        const fontId = `font-${tema.fonte.replace(/\s+/g, '-')}`;
+    const carregarFonte = (nomeFonte: string, cssVar: string) => {
+      root.style.setProperty(cssVar, `'${nomeFonte}', sans-serif`);
+      if (nomeFonte !== 'Inter') {
+        const fontId = `font-${nomeFonte.replace(/\s+/g, '-')}`;
         if (!document.getElementById(fontId)) {
           const link = document.createElement('link');
           link.id = fontId;
-          link.href = `https://fonts.googleapis.com/css2?family=${tema.fonte.replace(/ /g, '+')}:wght@400;600;700;800&display=swap`;
+          link.href = `https://fonts.googleapis.com/css2?family=${nomeFonte.replace(/ /g, '+')}:wght@400;500;600;700;800&display=swap`;
           link.rel = 'stylesheet';
           document.head.appendChild(link);
         }
       }
+    };
+
+    if (tema.fonte) {
+      carregarFonte(tema.fonte, '--fonte-titulo');
+    }
+    if (tema.fonteCorpo) {
+      carregarFonte(tema.fonteCorpo, '--fonte-corpo');
+    }
+    if (tema.fonteNumeros) {
+      // Para números, as fontes podem ser diferentes, mas a URL do google fonts é similar
+      carregarFonte(tema.fonteNumeros, '--fonte-numeros');
     }
 
     // Salvar no localStorage como cache

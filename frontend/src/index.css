@@ -13,6 +13,8 @@
   --cor-texto: #FFFFFF;
   --cor-fundo: #0F0F1A;
   --fonte-titulo: 'Bebas Neue';
+  --fonte-corpo: 'Inter';
+  --fonte-numeros: 'DM Mono';
 
   /* Fundos (Antigos mapeados para os novos como fallback) */
   --bg-primary:    var(--cor-fundo);
@@ -43,8 +45,8 @@
 
   /* Fontes */
   --font-display: var(--fonte-titulo), sans-serif;
-  --font-body:    'Syne', sans-serif;
-  --font-mono:    'DM Mono', monospace;
+  --font-body:    var(--fonte-corpo), sans-serif;
+  --font-mono:    var(--fonte-numeros), monospace;
 }
 
 /* === TAILWIND THEME OVERRIDE === */
@@ -108,11 +110,19 @@
 
 /* === RESET BASE === */
 body {
-  font-family: var(--font-body);
+  font-family: var(--fonte-corpo);
   background-color: var(--bg-primary);
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, .titulo {
+  font-family: var(--fonte-titulo);
+}
+
+.valor, .numero, .horario, .contador {
+  font-family: var(--fonte-numeros);
 }
 
 /* === TIPOGRAFIA === */

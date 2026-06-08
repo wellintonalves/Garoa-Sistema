@@ -186,31 +186,65 @@ export function Configuracoes() {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium mb-1">Fonte dos Títulos</label>
-                <select className="form-select w-full p-2 bg-black/50 border border-[var(--border)] rounded text-white" value={barbearia.fonte || 'Inter'} onChange={e => setBarbearia({...barbearia, fonte: e.target.value})}>
-                  <option value="Inter">Inter (Neutro)</option>
-                  <option value="Bebas Neue">Bebas Neue (Clássica)</option>
-                  <option value="Syne">Syne (Moderno)</option>
-                  <option value="Oswald">Oswald (Impactante)</option>
-                  <option value="Playfair Display">Playfair Display (Elegante)</option>
-                  <option value="Montserrat">Montserrat (Profissional)</option>
-                </select>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Fonte dos Títulos</label>
+                  <select className="form-select w-full p-2 bg-black/50 border border-[var(--border)] rounded text-white" value={barbearia.fonte || 'Inter'} onChange={e => setBarbearia({...barbearia, fonte: e.target.value})}>
+                    <option value="Inter">Inter (Neutro)</option>
+                    <option value="Bebas Neue">Bebas Neue (Clássica)</option>
+                    <option value="Syne">Syne (Moderno)</option>
+                    <option value="Oswald">Oswald (Impactante)</option>
+                    <option value="Playfair Display">Playfair Display (Elegante)</option>
+                    <option value="Montserrat">Montserrat (Profissional)</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Fonte do Corpo</label>
+                  <select className="form-select w-full p-2 bg-black/50 border border-[var(--border)] rounded text-white" value={barbearia.fonteCorpo || 'Inter'} onChange={e => setBarbearia({...barbearia, fonteCorpo: e.target.value})}>
+                    <option value="Inter">Inter</option>
+                    <option value="Roboto">Roboto</option>
+                    <option value="Open Sans">Open Sans</option>
+                    <option value="Lato">Lato</option>
+                    <option value="Nunito">Nunito</option>
+                    <option value="Poppins">Poppins</option>
+                    <option value="Source Sans Pro">Source Sans Pro</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Fonte dos Números</label>
+                  <select className="form-select w-full p-2 bg-black/50 border border-[var(--border)] rounded text-white" value={barbearia.fonteNumeros || 'DM Mono'} onChange={e => setBarbearia({...barbearia, fonteNumeros: e.target.value})}>
+                    <option value="DM Mono">DM Mono</option>
+                    <option value="Roboto Mono">Roboto Mono</option>
+                    <option value="JetBrains Mono">JetBrains Mono</option>
+                    <option value="Space Mono">Space Mono</option>
+                    <option value="Courier Prime">Courier Prime</option>
+                    <option value="Oswald">Oswald</option>
+                  </select>
+                </div>
               </div>
 
               <div className="mt-4 p-4 rounded border border-zinc-700" style={{ backgroundColor: barbearia.corSecundaria || '#1a1a1a', color: barbearia.corTexto || '#ffffff' }}>
                 <p className="text-xs opacity-70 mb-2 uppercase tracking-widest">Preview no App</p>
-                <div className="flex items-center gap-3">
-                  {barbearia.logo ? (
-                    <img src={barbearia.logo} alt="Logo" className="h-8 object-contain" />
-                  ) : (
-                     <div className="h-8 w-8 bg-black/20 rounded flex items-center justify-center">L</div>
-                  )}
-                  <h1 className="text-2xl m-0 font-bold" style={{ fontFamily: barbearia.fonte || 'Inter' }}>
-                    {barbearia.nome || 'Nome da Barbearia'}
-                  </h1>
+                
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3 mb-4">
+                    {barbearia.logo ? (
+                      <img src={barbearia.logo} alt="Logo" className="h-8 object-contain" />
+                    ) : (
+                       <div className="h-8 w-8 bg-black/20 rounded flex items-center justify-center">L</div>
+                    )}
+                    <h1 className="text-2xl m-0 font-bold" style={{ fontFamily: barbearia.fonte || 'Inter' }}>
+                      {barbearia.nome || 'GAROA BARBEARIA'}
+                    </h1>
+                  </div>
                 </div>
-                <button type="button" className="mt-4 px-4 py-2 rounded font-bold text-black text-sm" style={{ backgroundColor: barbearia.corPrimaria || '#ff6b00' }}>
+
+                <div className="mb-4">
+                  <p style={{ fontFamily: barbearia.fonteCorpo || 'Inter' }}>Corte Social — João Silva</p>
+                  <p className="mt-1" style={{ fontFamily: barbearia.fonteNumeros || 'DM Mono' }}>R$ 45,00 — 10:30</p>
+                </div>
+
+                <button type="button" className="px-4 py-2 rounded font-bold text-black text-sm" style={{ backgroundColor: barbearia.corPrimaria || '#ff6b00', fontFamily: barbearia.fonteCorpo || 'Inter' }}>
                   Agendar Horário
                 </button>
               </div>
