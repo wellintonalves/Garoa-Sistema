@@ -106,7 +106,7 @@ export function Agendar() {
     <div className="min-h-screen bg-[var(--bg-primary)] text-white flex flex-col font-body">
       {/* Header Público */}
       <header className="h-16 flex items-center justify-center bg-[var(--bg-surface)] border-b border-[var(--border)] sticky top-0 z-10">
-        <h1 className="font-display text-xl tracking-wider text-[var(--amber)] uppercase">
+        <h1 className="font-display text-xl tracking-wider text-[var(--cor-primaria)] uppercase">
           {nomeBarbearia}
         </h1>
       </header>
@@ -120,7 +120,7 @@ export function Agendar() {
             </div>
             <div className="h-1 w-full bg-[var(--bg-surface2)] rounded overflow-hidden">
               <div 
-                className="h-full bg-[var(--amber)] transition-all duration-300 ease-in-out" 
+                className="h-full bg-[var(--cor-primaria)] transition-all duration-300 ease-in-out" 
                 style={{ width: `${progresso}%` }}
               />
             </div>
@@ -131,7 +131,7 @@ export function Agendar() {
         {etapa === 1 && (
           <div className="animate-fade-in flex flex-col gap-4 flex-1">
             <div className="flex items-center gap-2 mb-2">
-              <Scissors className="text-[var(--amber)]" size={20} />
+              <Scissors className="text-[var(--cor-primaria)]" size={20} />
               <h2 className="text-xl font-bold font-display tracking-wide">Escolha o Serviço</h2>
             </div>
             
@@ -142,13 +142,13 @@ export function Agendar() {
                   onClick={() => setServicoId(s.id)}
                   className={`p-4 rounded border cursor-pointer transition-all ${
                     servicoId === s.id 
-                      ? 'border-[var(--amber)] bg-[var(--amber-dim)]' 
+                      ? 'border-[var(--cor-primaria)] bg-[rgba(var(--cor-primaria-rgb), 0.10)]' 
                       : 'border-[var(--border)] bg-[var(--bg-surface)] hover:border-[var(--border-hover)]'
                   }`}
                 >
                   <div className="flex justify-between items-start mb-1">
                     <h3 className="font-bold">{s.nome}</h3>
-                    <span className="text-[var(--amber)] font-mono font-bold">
+                    <span className="text-[var(--cor-primaria)] font-mono font-bold">
                       R$ {Number(s.preco).toFixed(2)}
                     </span>
                   </div>
@@ -163,7 +163,7 @@ export function Agendar() {
             <button 
               onClick={() => setEtapa(2)}
               disabled={!servicoId}
-              className="mt-4 flex items-center justify-center gap-2 w-full py-3 bg-[var(--amber)] hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed text-black font-bold uppercase tracking-widest text-sm rounded transition-colors"
+              className="mt-4 flex items-center justify-center gap-2 w-full py-3 bg-[var(--cor-primaria)] hover:bg-[var(--cor-primaria)] disabled:opacity-50 disabled:cursor-not-allowed text-black font-bold uppercase tracking-widest text-sm rounded transition-colors"
             >
               Avançar <ChevronRight size={18} />
             </button>
@@ -177,7 +177,7 @@ export function Agendar() {
               <ChevronLeft size={16} /> Voltar
             </button>
             <div className="flex items-center gap-2 mb-2">
-              <User className="text-[var(--amber)]" size={20} />
+              <User className="text-[var(--cor-primaria)]" size={20} />
               <h2 className="text-xl font-bold font-display tracking-wide">Escolha o Barbeiro</h2>
             </div>
             
@@ -186,7 +186,7 @@ export function Agendar() {
                 onClick={() => setBarbeiroId('')}
                 className={`p-4 rounded border cursor-pointer transition-all flex items-center gap-4 ${
                   barbeiroId === '' 
-                    ? 'border-[var(--amber)] bg-[var(--amber-dim)]' 
+                    ? 'border-[var(--cor-primaria)] bg-[rgba(var(--cor-primaria-rgb), 0.10)]' 
                     : 'border-[var(--border)] bg-[var(--bg-surface)] hover:border-[var(--border-hover)]'
                 }`}
               >
@@ -205,7 +205,7 @@ export function Agendar() {
                   onClick={() => setBarbeiroId(b.id)}
                   className={`p-4 rounded border cursor-pointer transition-all flex items-center gap-4 ${
                     barbeiroId === b.id 
-                      ? 'border-[var(--amber)] bg-[var(--amber-dim)]' 
+                      ? 'border-[var(--cor-primaria)] bg-[rgba(var(--cor-primaria-rgb), 0.10)]' 
                       : 'border-[var(--border)] bg-[var(--bg-surface)] hover:border-[var(--border-hover)]'
                   }`}
                 >
@@ -228,7 +228,7 @@ export function Agendar() {
 
             <button 
               onClick={() => { setEtapa(3); buscarHorarios(data); }}
-              className="mt-4 flex items-center justify-center gap-2 w-full py-3 bg-[var(--amber)] hover:bg-amber-600 text-black font-bold uppercase tracking-widest text-sm rounded transition-colors"
+              className="mt-4 flex items-center justify-center gap-2 w-full py-3 bg-[var(--cor-primaria)] hover:bg-[var(--cor-primaria)] text-black font-bold uppercase tracking-widest text-sm rounded transition-colors"
             >
               Avançar <ChevronRight size={18} />
             </button>
@@ -242,7 +242,7 @@ export function Agendar() {
               <ChevronLeft size={16} /> Voltar
             </button>
             <div className="flex items-center gap-2 mb-2">
-              <Calendar className="text-[var(--amber)]" size={20} />
+              <Calendar className="text-[var(--cor-primaria)]" size={20} />
               <h2 className="text-xl font-bold font-display tracking-wide">Data e Horário</h2>
             </div>
             
@@ -258,7 +258,7 @@ export function Agendar() {
                       onClick={() => buscarHorarios(dataIso)}
                       className={`flex-shrink-0 snap-center w-16 p-2 flex flex-col items-center justify-center rounded border cursor-pointer transition-all ${
                         data === dataIso 
-                          ? 'border-[var(--amber)] bg-[var(--amber-dim)]' 
+                          ? 'border-[var(--cor-primaria)] bg-[rgba(var(--cor-primaria-rgb), 0.10)]' 
                           : 'border-[var(--border)] bg-[var(--bg-surface)]'
                       }`}
                     >
@@ -281,7 +281,7 @@ export function Agendar() {
                   Selecione um dia acima
                 </div>
               ) : carregando ? (
-                <div className="flex justify-center p-6"><div className="animate-spin w-6 h-6 border-2 border-[var(--amber)] border-t-transparent rounded-full"></div></div>
+                <div className="flex justify-center p-6"><div className="animate-spin w-6 h-6 border-2 border-[var(--cor-primaria)] border-t-transparent rounded-full"></div></div>
               ) : horarios.length === 0 ? (
                 <div className="text-center p-6 text-[var(--text-muted)] border border-dashed border-[var(--border)] rounded">
                   Nenhum horário disponível para este dia.
@@ -294,8 +294,8 @@ export function Agendar() {
                       onClick={() => setHorario(h)}
                       className={`p-2 text-center rounded border cursor-pointer font-mono text-sm transition-all ${
                         horario === h
-                          ? 'border-[var(--amber)] bg-[var(--amber)] text-black font-bold'
-                          : 'border-[var(--border)] bg-[var(--bg-surface)] hover:border-[var(--amber-dim)]'
+                          ? 'border-[var(--cor-primaria)] bg-[var(--cor-primaria)] text-black font-bold'
+                          : 'border-[var(--border)] bg-[var(--bg-surface)] hover:border-[rgba(var(--cor-primaria-rgb), 0.10)]'
                       }`}
                     >
                       {h}
@@ -308,7 +308,7 @@ export function Agendar() {
             <button 
               onClick={() => setEtapa(4)}
               disabled={!data || !horario}
-              className="mt-4 flex items-center justify-center gap-2 w-full py-3 bg-[var(--amber)] hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed text-black font-bold uppercase tracking-widest text-sm rounded transition-colors"
+              className="mt-4 flex items-center justify-center gap-2 w-full py-3 bg-[var(--cor-primaria)] hover:bg-[var(--cor-primaria)] disabled:opacity-50 disabled:cursor-not-allowed text-black font-bold uppercase tracking-widest text-sm rounded transition-colors"
             >
               Avançar <ChevronRight size={18} />
             </button>
@@ -322,7 +322,7 @@ export function Agendar() {
               <ChevronLeft size={16} /> Voltar
             </button>
             <div className="flex items-center gap-2 mb-4">
-              <User className="text-[var(--amber)]" size={20} />
+              <User className="text-[var(--cor-primaria)]" size={20} />
               <h2 className="text-xl font-bold font-display tracking-wide">Seus Dados</h2>
             </div>
             
@@ -333,7 +333,7 @@ export function Agendar() {
                   type="text" 
                   value={cliente.nome}
                   onChange={(e) => setCliente({...cliente, nome: e.target.value})}
-                  className="w-full p-3 bg-[var(--bg-surface)] border border-[var(--border)] rounded focus:outline-none focus:border-[var(--amber)] text-white"
+                  className="w-full p-3 bg-[var(--bg-surface)] border border-[var(--border)] rounded focus:outline-none focus:border-[var(--cor-primaria)] text-white"
                   placeholder="Seu nome"
                 />
               </div>
@@ -343,7 +343,7 @@ export function Agendar() {
                   type="tel" 
                   value={cliente.telefone}
                   onChange={(e) => setCliente({...cliente, telefone: e.target.value})}
-                  className="w-full p-3 bg-[var(--bg-surface)] border border-[var(--border)] rounded focus:outline-none focus:border-[var(--amber)] text-white"
+                  className="w-full p-3 bg-[var(--bg-surface)] border border-[var(--border)] rounded focus:outline-none focus:border-[var(--cor-primaria)] text-white"
                   placeholder="(00) 00000-0000"
                 />
               </div>
@@ -352,7 +352,7 @@ export function Agendar() {
                 <textarea 
                   value={cliente.observacoes}
                   onChange={(e) => setCliente({...cliente, observacoes: e.target.value})}
-                  className="w-full p-3 bg-[var(--bg-surface)] border border-[var(--border)] rounded focus:outline-none focus:border-[var(--amber)] text-white h-24 resize-none"
+                  className="w-full p-3 bg-[var(--bg-surface)] border border-[var(--border)] rounded focus:outline-none focus:border-[var(--cor-primaria)] text-white h-24 resize-none"
                   placeholder="Algum detalhe para o barbeiro?"
                 />
               </div>
@@ -361,7 +361,7 @@ export function Agendar() {
             <button 
               onClick={() => setEtapa(5)}
               disabled={!cliente.nome || !cliente.telefone}
-              className="mt-auto flex items-center justify-center gap-2 w-full py-3 bg-[var(--amber)] hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed text-black font-bold uppercase tracking-widest text-sm rounded transition-colors"
+              className="mt-auto flex items-center justify-center gap-2 w-full py-3 bg-[var(--cor-primaria)] hover:bg-[var(--cor-primaria)] disabled:opacity-50 disabled:cursor-not-allowed text-black font-bold uppercase tracking-widest text-sm rounded transition-colors"
             >
               Avançar <ChevronRight size={18} />
             </button>
@@ -375,7 +375,7 @@ export function Agendar() {
               <ChevronLeft size={16} /> Voltar
             </button>
             <div className="flex items-center gap-2 mb-4">
-              <Check className="text-[var(--amber)]" size={20} />
+              <Check className="text-[var(--cor-primaria)]" size={20} />
               <h2 className="text-xl font-bold font-display tracking-wide">Confirmar Agendamento</h2>
             </div>
             
@@ -383,7 +383,7 @@ export function Agendar() {
               <div>
                 <p className="text-[10px] text-[var(--text-muted)] font-mono uppercase tracking-widest mb-1">Serviço</p>
                 <p className="font-bold">{servicoSelecionado?.nome}</p>
-                <p className="text-sm text-[var(--amber)] font-mono">R$ {Number(servicoSelecionado?.preco || 0).toFixed(2)}</p>
+                <p className="text-sm text-[var(--cor-primaria)] font-mono">R$ {Number(servicoSelecionado?.preco || 0).toFixed(2)}</p>
               </div>
               <div className="h-px bg-[var(--border)] w-full"></div>
               <div>
@@ -431,7 +431,7 @@ export function Agendar() {
 
             <button 
               onClick={() => navigate('/fidelidade')}
-              className="mt-auto flex items-center justify-center gap-2 w-full py-3 bg-[var(--bg-surface)] border border-[var(--border)] hover:border-[var(--amber)] text-white font-bold uppercase tracking-widest text-sm rounded transition-colors"
+              className="mt-auto flex items-center justify-center gap-2 w-full py-3 bg-[var(--bg-surface)] border border-[var(--border)] hover:border-[var(--cor-primaria)] text-white font-bold uppercase tracking-widest text-sm rounded transition-colors"
             >
               Ver meus Pontos de Fidelidade
             </button>

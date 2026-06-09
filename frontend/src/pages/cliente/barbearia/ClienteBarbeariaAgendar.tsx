@@ -120,7 +120,7 @@ export function ClienteBarbeariaAgendar() {
               <button key={s.id} onClick={() => { setServicoSel(s); setEtapa('barbeiro'); }}
                 className="flex items-center justify-between p-4 w-full text-left transition-all"
                 style={{
-                  background: servicoSel?.id === s.id ? 'var(--amber-dim)' : 'var(--bg-surface)',
+                  background: servicoSel?.id === s.id ? 'rgba(var(--cor-primaria-rgb), 0.10)' : 'var(--bg-surface)',
                   border: servicoSel?.id === s.id ? '1px solid var(--amber)' : '1px solid var(--border)',
                   cursor: 'pointer',
                 }}>
@@ -153,12 +153,12 @@ export function ClienteBarbeariaAgendar() {
               <button key={b.id} onClick={() => { setBarbeiroSel(b); setEtapa('data'); }}
                 className="flex items-center gap-4 p-4 w-full text-left transition-all"
                 style={{
-                  background: barbeiroSel?.id === b.id ? 'var(--amber-dim)' : 'var(--bg-surface)',
+                  background: barbeiroSel?.id === b.id ? 'rgba(var(--cor-primaria-rgb), 0.10)' : 'var(--bg-surface)',
                   border: barbeiroSel?.id === b.id ? '1px solid var(--amber)' : '1px solid var(--border)',
                   cursor: 'pointer',
                 }}>
                 <div className="w-11 h-11 flex items-center justify-center"
-                  style={{ background: 'var(--amber-dim)', fontFamily: 'var(--font-display)', fontSize: '18px', color: 'var(--amber-light)' }}>
+                  style={{ background: 'rgba(var(--cor-primaria-rgb), 0.10)', fontFamily: 'var(--font-display)', fontSize: '18px', color: 'rgba(var(--cor-primaria-rgb), 0.15)' }}>
                   {b.usuario.nome.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
                 </div>
                 <div>

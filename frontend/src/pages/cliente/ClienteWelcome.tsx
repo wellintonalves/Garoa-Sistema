@@ -24,7 +24,7 @@ export function ClienteWelcome() {
       <div className="mb-8 animate-fade-in flex flex-col items-center">
         <div className="w-24 h-24 rounded-full flex items-center justify-center mb-6"
           style={{
-            background: 'linear-gradient(135deg, var(--amber) 0%, var(--amber-light) 100%)',
+            background: 'linear-gradient(135deg, #F59E0B 0%, rgba(245, 158, 11, 0.15) 100%)',
             boxShadow: '0 0 60px rgba(212, 130, 10, 0.3)',
           }}>
           <Scissors size={48} style={{ color: '#0A0A0A' }} />
@@ -34,7 +34,7 @@ export function ClienteWelcome() {
           fontFamily: 'var(--font-display)',
           fontSize: '48px',
           letterSpacing: '0.06em',
-          color: 'var(--text-primary)',
+          color: '#FFFFFF',
           lineHeight: 1,
         }}>
           GAROA
@@ -43,7 +43,7 @@ export function ClienteWelcome() {
           fontFamily: 'var(--font-mono)',
           fontSize: '11px',
           letterSpacing: '0.3em',
-          color: 'var(--cor-icone)',
+          color: '#F59E0B',
           textTransform: 'uppercase',
           marginTop: '8px',
         }}>
@@ -55,7 +55,7 @@ export function ClienteWelcome() {
       <div className="w-full max-w-xs flex flex-col gap-4 animate-fade-in" style={{ animationDelay: '0.2s' }}>
         <button
           onClick={() => navigate('/cliente/login')}
-          className="btn-primary w-full justify-center"
+          className="flex items-center gap-2 py-3 bg-[#F59E0B] hover:bg-[#D97706] text-[#0F172A] font-bold uppercase tracking-widest text-xs rounded transition-colors w-full justify-center"
           style={{ padding: '16px 24px', fontSize: '13px' }}
         >
           Entrar

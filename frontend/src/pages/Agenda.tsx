@@ -51,7 +51,7 @@ interface Cliente { id: string; usuario: { nome: string } }
 interface Servico { id: string; nome: string; preco: string; duracaoMinutos: number; cor: string }
 
 const statusStyles: Record<string, { bg: string; border: string; color: string }> = {
-  AGUARDANDO:  { bg: 'var(--amber-dim)', border: 'var(--amber)', color: 'var(--amber-light)' },
+  AGUARDANDO:  { bg: 'rgba(var(--cor-primaria-rgb), 0.10)', border: 'var(--amber)', color: 'rgba(var(--cor-primaria-rgb), 0.15)' },
   CONFIRMADO:  { bg: 'var(--bg-surface2)', border: 'var(--border-hover)', color: 'var(--text-primary)' },
   CONCLUIDO:   { bg: '#1A3D2A', border: 'var(--success-text)', color: 'var(--success-text)' },
   CANCELADO:   { bg: 'var(--error)', border: 'var(--error-text)', color: 'var(--error-text)' },
@@ -246,7 +246,7 @@ export function Agenda() {
                   style={{
                     padding: '12px',
                     borderLeft: '1px solid var(--border)',
-                    background: isHoje ? 'var(--amber-dim)' : 'transparent',
+                    background: isHoje ? 'rgba(var(--cor-primaria-rgb), 0.10)' : 'transparent',
                   }}
                 >
                   <p
@@ -333,7 +333,7 @@ export function Agenda() {
                           <div className="flex justify-between items-start mb-1">
                             <p className="truncate pr-1" style={{ fontWeight: 600 }}>{ag.cliente.usuario.nome}</p>
                             {ag.origem === 'ONLINE' && (
-                              <span className="bg-[var(--amber)] text-black px-1 rounded text-[8px] font-bold">WEB</span>
+                              <span className="bg-[var(--cor-primaria)] text-black px-1 rounded text-[8px] font-bold">WEB</span>
                             )}
                           </div>
                           <p className="truncate" style={{ 

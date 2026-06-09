@@ -159,10 +159,10 @@ export function Barbeiros() {
                   style={{
                     width: '48px',
                     height: '48px',
-                    background: 'var(--amber-dim)',
+                    background: 'rgba(var(--cor-primaria-rgb), 0.10)',
                     fontFamily: 'var(--font-display)',
                     fontSize: '20px',
-                    color: 'var(--amber-light)',
+                    color: 'rgba(var(--cor-primaria-rgb), 0.15)',
                     letterSpacing: '0.04em',
                     borderRadius: '50%',
                   }}
@@ -310,10 +310,10 @@ export function Barbeiros() {
                       style={{
                         width: '36px',
                         height: '36px',
-                        background: 'var(--amber-dim)',
+                        background: 'rgba(var(--cor-primaria-rgb), 0.10)',
                         fontFamily: 'var(--font-display)',
                         fontSize: '16px',
-                        color: 'var(--amber-light)',
+                        color: 'rgba(var(--cor-primaria-rgb), 0.15)',
                       }}
                     >
                       {getIniciais(b.nome)}
@@ -353,7 +353,7 @@ export function Barbeiros() {
               {form.foto ? (
                 <img src={form.foto} alt="Foto do Barbeiro" className="w-12 h-12 object-cover rounded-full border border-[var(--border)]" />
               ) : (
-                <div className="w-12 h-12 bg-[var(--amber-dim)] text-[var(--amber-light)] rounded-full flex items-center justify-center font-bold">
+                <div className="w-12 h-12 bg-[rgba(var(--cor-primaria-rgb), 0.10)] text-[rgba(var(--cor-primaria-rgb), 0.15)] rounded-full flex items-center justify-center font-bold">
                   {form.nome ? getIniciais(form.nome) : 'B'}
                 </div>
               )}

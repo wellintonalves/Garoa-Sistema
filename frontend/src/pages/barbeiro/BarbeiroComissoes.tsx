@@ -60,16 +60,16 @@ export function BarbeiroComissoes() {
         <>
           {/* Card Principal */}
           <div className="p-6 mb-6" style={{
-            background: 'linear-gradient(135deg, var(--amber-dim) 0%, var(--bg-surface) 100%)',
+            background: 'linear-gradient(135deg, rgba(var(--cor-primaria-rgb), 0.10) 0%, var(--bg-surface) 100%)',
             border: '1px solid var(--amber)',
           }}>
             <div className="flex items-center gap-3 mb-4">
-              <DollarSign size={20} style={{ color: 'var(--amber-light)' }} />
+              <DollarSign size={20} style={{ color: 'rgba(var(--cor-primaria-rgb), 0.15)' }} />
               <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--cor-icone)' }}>
                 Sua Comissão ({dados.percentualComissao}%)
               </span>
             </div>
-            <p style={{ fontFamily: 'var(--font-display)', fontSize: '40px', color: 'var(--amber-light)', lineHeight: 1 }}>
+            <p style={{ fontFamily: 'var(--font-display)', fontSize: '40px', color: 'rgba(var(--cor-primaria-rgb), 0.15)', lineHeight: 1 }}>
               {fmt(dados.valorComissao)}
             </p>
             <div className="flex justify-between mt-6 pt-4" style={{ borderTop: '1px solid rgba(212, 130, 10, 0.2)' }}>

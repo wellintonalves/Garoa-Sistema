@@ -217,7 +217,7 @@ export function QrCodeScanner({ onResult, onClose }: QrCodeScannerProps) {
                 fontFamily: 'var(--font-mono)',
                 fontSize: '11px',
                 color: 'var(--cor-icone)',
-                background: 'var(--amber-dim)',
+                background: 'rgba(var(--cor-primaria-rgb), 0.10)',
                 border: '1px solid var(--amber)',
                 padding: '10px 24px',
                 cursor: 'pointer',

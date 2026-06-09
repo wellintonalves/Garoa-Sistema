@@ -166,7 +166,7 @@ export function ClienteLoginPrincipal() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              background: 'linear-gradient(135deg, var(--amber) 0%, #E8A020 50%, var(--amber-light) 100%)',
+              background: 'linear-gradient(135deg, var(--amber) 0%, #E8A020 50%, rgba(var(--cor-primaria-rgb), 0.15) 100%)',
               boxShadow: '0 0 60px rgba(212, 130, 10, 0.3), 0 0 120px rgba(212, 130, 10, 0.1)',
               marginBottom: '1.5rem',
             }}>
@@ -405,7 +405,7 @@ export function ClienteLoginPrincipal() {
               transition: 'color 0.2s',
             }}
             onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.color = 'var(--amber-light)';
+              (e.currentTarget as HTMLElement).style.color = 'rgba(var(--cor-primaria-rgb), 0.15)';
             }}
             onMouseLeave={(e) => {
               (e.currentTarget as HTMLElement).style.color = 'var(--amber)';
@@ -505,7 +505,7 @@ export function ClienteLoginPrincipal() {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                background: 'var(--amber-dim)',
+                background: 'rgba(var(--cor-primaria-rgb), 0.10)',
                 marginBottom: '12px',
               }}>
                 <Settings size={20} style={{ color: 'var(--cor-icone)' }} />
@@ -572,7 +572,7 @@ export function ClienteLoginPrincipal() {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  background: 'var(--amber-dim)',
+                  background: 'rgba(var(--cor-primaria-rgb), 0.10)',
                   flexShrink: 0,
                 }}>
                   <Shield size={18} style={{ color: 'var(--cor-icone)' }} />
@@ -635,7 +635,7 @@ export function ClienteLoginPrincipal() {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  background: 'var(--amber-dim)',
+                  background: 'rgba(var(--cor-primaria-rgb), 0.10)',
                   flexShrink: 0,
                 }}>
                   <Scissors size={18} style={{ color: 'var(--cor-icone)' }} />

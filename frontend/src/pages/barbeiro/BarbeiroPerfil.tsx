@@ -38,7 +38,7 @@ export function BarbeiroPerfil() {
       {/* Avatar e Nome */}
       <div className="flex flex-col items-center mb-8">
         <div className="w-24 h-24 rounded-full flex items-center justify-center mb-4"
-          style={{ background: 'var(--amber-dim)', border: '2px solid var(--amber)', fontFamily: 'var(--font-display)', fontSize: '32px', color: 'var(--amber-light)' }}>
+          style={{ background: 'rgba(var(--cor-primaria-rgb), 0.10)', border: '2px solid var(--amber)', fontFamily: 'var(--font-display)', fontSize: '32px', color: 'rgba(var(--cor-primaria-rgb), 0.15)' }}>
           {perfil.usuario.nome.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
         </div>
         <h2 style={{ fontFamily: 'var(--font-body)', fontSize: '20px', fontWeight: 700, color: 'var(--text-primary)' }}>

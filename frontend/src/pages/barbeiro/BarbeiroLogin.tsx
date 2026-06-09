@@ -29,19 +29,19 @@ export function BarbeiroLogin() {
 
   return (
     <div className="flex flex-col min-h-screen px-6 py-8"
-      style={{ background: 'var(--bg-primary)' }}>
+      style={{ background: '#0F172A' }}>
 
       {/* Logo */}
       <div className="flex flex-col items-center mt-12 mb-10 animate-fade-in">
         <div className="w-20 h-20 rounded-full flex items-center justify-center mb-6"
-          style={{ background: 'var(--amber-dim)' }}>
-          <Scissors size={36} style={{ color: 'var(--cor-icone)' }} />
+          style={{ background: 'rgba(245, 158, 11, 0.10)' }}>
+          <Scissors size={36} style={{ color: '#F59E0B' }} />
         </div>
         <h1 style={{
           fontFamily: 'var(--font-display)',
           fontSize: '28px',
           letterSpacing: '0.04em',
-          color: 'var(--text-primary)',
+          color: '#FFFFFF',
         }}>
           Portal do Barbeiro
         </h1>
@@ -49,7 +49,7 @@ export function BarbeiroLogin() {
           fontFamily: 'var(--font-mono)',
           fontSize: '11px',
           letterSpacing: '0.1em',
-          color: 'var(--text-muted)',
+          color: '#94A3B8',
           marginTop: '8px',
           textTransform: 'uppercase'
         }}>
@@ -75,7 +75,7 @@ export function BarbeiroLogin() {
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="ds-input"
+            className="w-full bg-[#1E293B] border border-[#334155] rounded text-[#FFFFFF] placeholder-[#64748B] focus:outline-none focus:border-[#F59E0B] py-2.5"
             placeholder="seu@email.com"
             required
           />
@@ -87,14 +87,14 @@ export function BarbeiroLogin() {
             type="password"
             value={senha}
             onChange={(e) => setSenha(e.target.value)}
-            className="ds-input"
+            className="w-full bg-[#1E293B] border border-[#334155] rounded text-[#FFFFFF] placeholder-[#64748B] focus:outline-none focus:border-[#F59E0B] py-2.5"
             placeholder="••••••••"
             required
           />
         </div>
 
         <button type="submit" disabled={enviando}
-          className="btn-primary w-full justify-center"
+          className="flex items-center gap-2 py-3 bg-[#F59E0B] hover:bg-[#D97706] text-[#0F172A] font-bold uppercase tracking-widest text-xs rounded transition-colors w-full justify-center"
           style={{ padding: '14px', fontSize: '13px', marginTop: '8px' }}>
           {enviando ? 'Entrando...' : 'Entrar'}
         </button>

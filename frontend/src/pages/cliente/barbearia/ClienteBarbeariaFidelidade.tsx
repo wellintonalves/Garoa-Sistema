@@ -99,17 +99,17 @@ export function ClienteBarbeariaFidelidade() {
 
       {/* Card de Pontos */}
       <div className="p-6 mb-6" style={{
-        background: 'linear-gradient(135deg, var(--amber-dim) 0%, var(--bg-surface) 100%)',
+        background: 'linear-gradient(135deg, rgba(var(--cor-primaria-rgb), 0.10) 0%, var(--bg-surface) 100%)',
         border: '1px solid var(--amber)',
       }}>
         <div className="flex items-center gap-3 mb-4">
-          <Star size={24} style={{ color: 'var(--amber-light)' }} />
+          <Star size={24} style={{ color: 'rgba(var(--cor-primaria-rgb), 0.15)' }} />
           <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--cor-icone)' }}>
             Seu Saldo
           </span>
         </div>
-        <p style={{ fontFamily: 'var(--font-display)', fontSize: '48px', color: 'var(--amber-light)', lineHeight: 1 }}>
-          {dados.saldo} <span className="text-lg text-amber-500/50">pts</span>
+        <p style={{ fontFamily: 'var(--font-display)', fontSize: '48px', color: 'rgba(var(--cor-primaria-rgb), 0.15)', lineHeight: 1 }}>
+          {dados.saldo} <span className="text-lg text-[var(--cor-primaria)]/50">pts</span>
         </p>
         <p style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--text-muted)', marginTop: '8px' }}>
           Você já acumulou {dados.totalGanhos} pts no total
@@ -136,7 +136,7 @@ export function ClienteBarbeariaFidelidade() {
                 }}>
                   <div className="flex justify-between items-start mb-2">
                     <h3 className="font-bold text-white text-sm">{rec.nome}</h3>
-                    <span className="font-bold text-[var(--amber)] text-sm">{rec.pontosNecessarios} pts</span>
+                    <span className="font-bold text-[var(--cor-primaria)] text-sm">{rec.pontosNecessarios} pts</span>
                   </div>
                   <p className="text-xs text-zinc-400 mb-4">
                     {rec.tipo === 'SERVICO_GRATIS' ? `Serviço: ${rec.servico?.nome}` : (rec.tipo === 'DESCONTO_PERCENTUAL' ? `Desconto de ${rec.valorDesconto}%` : `Desconto de R$${rec.valorDesconto}`)}
@@ -146,7 +146,7 @@ export function ClienteBarbeariaFidelidade() {
                     <button 
                       onClick={() => resgatar(rec.id)}
                       disabled={resgatando === rec.id}
-                      className="w-full py-2 bg-[var(--amber)] hover:bg-amber-600 text-black font-bold text-xs rounded transition-colors"
+                      className="w-full py-2 bg-[var(--cor-primaria)] hover:bg-[var(--cor-primaria)] text-black font-bold text-xs rounded transition-colors"
                     >
                       {resgatando === rec.id ? 'Resgatando...' : 'Resgatar Recompensa'}
                     </button>

@@ -129,7 +129,7 @@ export function FidelidadeConfig() {
   return (
     <div className="bg-[var(--bg-surface)] border border-[var(--border)] rounded p-6 shadow col-span-1 lg:col-span-2 mt-6">
       <div className="flex items-center gap-2 mb-4">
-        <Gift className="text-[var(--amber)]" size={24} />
+        <Gift className="text-[var(--cor-primaria)]" size={24} />
         <h2 className="text-xl font-bold text-white">Programa de Fidelidade</h2>
       </div>
       
@@ -140,7 +140,7 @@ export function FidelidadeConfig() {
             id="ativo-fidelidade"
             checked={config.ativo}
             onChange={e => setConfig({...config, ativo: e.target.checked})}
-            className="w-4 h-4 rounded border-[var(--border)] bg-black/50 text-[var(--amber)] focus:ring-[var(--amber)]"
+            className="w-4 h-4 rounded border-[var(--border)] bg-black/50 text-[var(--cor-primaria)] focus:ring-[var(--cor-primaria)]"
           />
           <label htmlFor="ativo-fidelidade" className="text-sm font-medium">Ativar programa de fidelidade</label>
         </div>
@@ -174,7 +174,7 @@ export function FidelidadeConfig() {
                   id="dobro-aniversario"
                   checked={config.pontosDobroAniversario}
                   onChange={e => setConfig({...config, pontosDobroAniversario: e.target.checked})}
-                  className="w-4 h-4 rounded border-[var(--border)] bg-black/50 text-[var(--amber)] focus:ring-[var(--amber)]"
+                  className="w-4 h-4 rounded border-[var(--border)] bg-black/50 text-[var(--cor-primaria)] focus:ring-[var(--cor-primaria)]"
                 />
                 <label htmlFor="dobro-aniversario" className="text-sm font-medium">Pontos em dobro no aniversário</label>
               </div>
@@ -182,7 +182,7 @@ export function FidelidadeConfig() {
           </div>
         )}
         
-        <button type="submit" disabled={salvandoConfig} className="flex items-center justify-center gap-2 w-full md:w-auto px-6 py-2 bg-[var(--amber)] hover:bg-amber-600 text-black font-bold rounded transition-colors">
+        <button type="submit" disabled={salvandoConfig} className="flex items-center justify-center gap-2 w-full md:w-auto px-6 py-2 bg-[var(--cor-primaria)] hover:bg-[var(--cor-primaria)] text-black font-bold rounded transition-colors">
           <Save size={20} />
           {salvandoConfig ? 'Salvando...' : 'Salvar Regras'}
         </button>
@@ -217,7 +217,7 @@ export function FidelidadeConfig() {
                   <tr key={rec.id} className="border-b border-[var(--border)]/50 hover:bg-white/5 transition-colors">
                     <td className="p-3 text-sm">{rec.nome}</td>
                     <td className="p-3 text-sm">{rec.tipo === 'SERVICO_GRATIS' ? `Serviço: ${rec.servico?.nome}` : (rec.tipo === 'DESCONTO_PERCENTUAL' ? `Desconto de ${rec.valorDesconto}%` : `Desconto de R$${rec.valorDesconto}`)}</td>
-                    <td className="p-3 text-sm font-bold text-[var(--amber)]">{rec.pontosNecessarios}</td>
+                    <td className="p-3 text-sm font-bold text-[var(--cor-primaria)]">{rec.pontosNecessarios}</td>
                     <td className="p-3 text-sm">
                       <span className={`px-2 py-1 rounded text-xs ${rec.ativo ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
                         {rec.ativo ? 'Ativo' : 'Inativo'}
@@ -321,13 +321,13 @@ export function FidelidadeConfig() {
               </div>
               
               <div className="flex items-center gap-2 pt-2">
-                <input type="checkbox" id="ativo-recompensa" checked={recompensaForm.ativo} onChange={e => setRecompensaForm({...recompensaForm, ativo: e.target.checked})} className="w-4 h-4 rounded border-[var(--border)] bg-black/50 text-[var(--amber)] focus:ring-[var(--amber)]" />
+                <input type="checkbox" id="ativo-recompensa" checked={recompensaForm.ativo} onChange={e => setRecompensaForm({...recompensaForm, ativo: e.target.checked})} className="w-4 h-4 rounded border-[var(--border)] bg-black/50 text-[var(--cor-primaria)] focus:ring-[var(--cor-primaria)]" />
                 <label htmlFor="ativo-recompensa" className="text-sm font-medium">Recompensa Ativa</label>
               </div>
               
               <div className="flex gap-2 pt-4">
                 <button type="button" onClick={() => setModalRecompensa(false)} className="flex-1 py-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded transition-colors">Cancelar</button>
-                <button type="submit" className="flex-1 py-2 bg-[var(--amber)] hover:bg-amber-600 text-black font-bold rounded transition-colors">Salvar</button>
+                <button type="submit" className="flex-1 py-2 bg-[var(--cor-primaria)] hover:bg-[var(--cor-primaria)] text-black font-bold rounded transition-colors">Salvar</button>
               </div>
             </form>
           </div>

@@ -127,7 +127,7 @@ export function ClienteHome() {
           </div>
           <button
             onClick={() => setScannerAberto(true)}
-            style={{ background: 'var(--amber-dim)', border: '1px solid var(--amber)', padding: '10px 14px', cursor: 'pointer' }}
+            style={{ background: 'rgba(var(--cor-primaria-rgb), 0.10)', border: '1px solid var(--amber)', padding: '10px 14px', cursor: 'pointer' }}
             title="Escanear QR Code"
           >
             <QrCode size={20} style={{ color: 'var(--cor-icone)' }} />
@@ -145,7 +145,7 @@ export function ClienteHome() {
                 style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', cursor: 'pointer' }}
               >
                 <div className="w-10 h-10 flex items-center justify-center flex-shrink-0"
-                  style={{ background: 'var(--amber-dim)' }}>
+                  style={{ background: 'rgba(var(--cor-primaria-rgb), 0.10)' }}>
                   <Scissors size={18} style={{ color: 'var(--cor-icone)' }} />
                 </div>
                 <div className="min-w-0 flex-1">
@@ -208,8 +208,8 @@ export function ClienteHome() {
                 onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.borderLeftColor = 'var(--amber)'; }}
               >
                 <div className="w-12 h-12 flex items-center justify-center flex-shrink-0"
-                  style={{ background: 'var(--amber-dim)' }}>
-                  <Scissors size={22} style={{ color: 'var(--amber-light)' }} />
+                  style={{ background: 'rgba(var(--cor-primaria-rgb), 0.10)' }}>
+                  <Scissors size={22} style={{ color: 'rgba(var(--cor-primaria-rgb), 0.15)' }} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p style={{ fontFamily: 'var(--font-body)', fontWeight: 700, color: 'var(--text-primary)', fontSize: '14px' }}>

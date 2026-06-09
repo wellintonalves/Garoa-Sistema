@@ -150,7 +150,7 @@ export function Configuracoes() {
   return (
     <div className="animate-fade-in space-y-6">
       <div className="flex items-center gap-3 mb-6">
-        <Settings className="text-[var(--amber)]" size={24} />
+        <Settings className="text-[var(--cor-primaria)]" size={24} />
         <h1 className="text-2xl font-bold font-display tracking-wide text-white">
           Configurações
         </h1>
@@ -167,7 +167,7 @@ export function Configuracoes() {
             </div>
             
             <div className="p-4 bg-fundo border border-zinc-800 rounded space-y-4">
-              <h3 className="text-sm font-bold text-[var(--amber)] uppercase tracking-wider">Identidade Visual</h3>
+              <h3 className="text-sm font-bold text-[var(--cor-primaria)] uppercase tracking-wider">Identidade Visual</h3>
               
               <div>
                 <label className="block text-sm font-medium mb-1">Logo da Barbearia (Max 2MB)</label>
@@ -241,7 +241,7 @@ export function Configuracoes() {
                       };
                       reader.readAsDataURL(file);
                     }
-                  }} className="text-sm text-zinc-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-bold file:bg-[var(--amber)] file:text-black hover:file:bg-amber-600 cursor-pointer" />
+                  }} className="text-sm text-zinc-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-bold file:bg-[var(--cor-primaria)] file:text-black hover:file:bg-[var(--cor-primaria)] cursor-pointer" />
                 </div>
                 
                 {sugestaoCores && (
@@ -383,7 +383,7 @@ export function Configuracoes() {
 
             {/* Horário de Abertura e Fechamento */}
             <div className="p-4 bg-fundo border border-zinc-800 rounded space-y-3">
-              <h3 className="text-sm font-bold text-[var(--amber)] uppercase tracking-wider">Horário de Funcionamento</h3>
+              <h3 className="text-sm font-bold text-[var(--cor-primaria)] uppercase tracking-wider">Horário de Funcionamento</h3>
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs text-zinc-400 mb-1">Horário de Abertura</label>
@@ -441,7 +441,7 @@ export function Configuracoes() {
               </div>
             </div>
 
-            <button type="submit" disabled={salvandoBarbearia} className="mt-4 flex items-center justify-center gap-2 w-full py-2.5 bg-[var(--amber)] hover:bg-amber-600 text-black font-bold rounded transition-colors">
+            <button type="submit" disabled={salvandoBarbearia} className="mt-4 flex items-center justify-center gap-2 w-full py-2.5 bg-[var(--cor-primaria)] hover:bg-[var(--cor-primaria)] text-black font-bold rounded transition-colors">
               <Save size={20} />
               {salvandoBarbearia ? 'Salvando...' : 'Salvar Barbearia'}
             </button>
@@ -465,7 +465,7 @@ export function Configuracoes() {
                       id={`check-${dia.key}`}
                       checked={!configDia.fechado}
                       onChange={(e) => handleChange(dia.key, 'fechado', !e.target.checked)}
-                      className="w-4 h-4 rounded border-[var(--border)] bg-black/50 text-[var(--amber)] focus:ring-[var(--amber)]"
+                      className="w-4 h-4 rounded border-[var(--border)] bg-black/50 text-[var(--cor-primaria)] focus:ring-[var(--cor-primaria)]"
                     />
                     <label htmlFor={`check-${dia.key}`} className="text-sm font-medium">
                       {dia.label}
@@ -502,7 +502,7 @@ export function Configuracoes() {
             <button
               type="submit"
               disabled={salvando}
-              className="mt-6 flex items-center justify-center gap-2 w-full py-2.5 bg-[var(--amber)] hover:bg-amber-600 text-black font-bold rounded transition-colors"
+              className="mt-6 flex items-center justify-center gap-2 w-full py-2.5 bg-[var(--cor-primaria)] hover:bg-[var(--cor-primaria)] text-black font-bold rounded transition-colors"
             >
               <Save size={20} />
               {salvando ? 'Salvando...' : 'Salvar Horários'}
@@ -513,7 +513,7 @@ export function Configuracoes() {
         {/* QR Code */}
         <div className="bg-[var(--bg-surface)] border border-[var(--border)] rounded p-6 shadow h-fit">
           <div className="flex items-center gap-2 mb-4">
-            <QrCode className="text-[var(--amber)]" size={24} />
+            <QrCode className="text-[var(--cor-primaria)]" size={24} />
             <h2 className="text-xl font-bold text-white">QR Code de Agendamento</h2>
           </div>
           <p className="text-sm text-[var(--text-muted)] mb-6">
@@ -538,7 +538,7 @@ export function Configuracoes() {
             />
           </div>
           
-          <div className="mt-4 p-3 bg-black/30 rounded border border-[var(--border)] text-center break-all text-sm font-mono text-[var(--amber)]">
+          <div className="mt-4 p-3 bg-black/30 rounded border border-[var(--border)] text-center break-all text-sm font-mono text-[var(--cor-primaria)]">
             {urlQR}
           </div>
 

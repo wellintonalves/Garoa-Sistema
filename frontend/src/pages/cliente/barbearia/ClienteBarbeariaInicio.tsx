@@ -50,8 +50,8 @@ export function ClienteBarbeariaInicio() {
         {barbearia?.logo ? (
           <img src={barbearia.logo} alt="Logo" className="w-14 h-14 object-contain rounded" />
         ) : (
-          <div className="w-14 h-14 flex items-center justify-center flex-shrink-0" style={{ background: 'var(--amber-dim)', borderRadius: '4px' }}>
-            <Scissors size={28} style={{ color: 'var(--amber-light)' }} />
+          <div className="w-14 h-14 flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(var(--cor-primaria-rgb), 0.10)', borderRadius: '4px' }}>
+            <Scissors size={28} style={{ color: 'rgba(var(--cor-primaria-rgb), 0.15)' }} />
           </div>
         )}
         <div>

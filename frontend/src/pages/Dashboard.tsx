@@ -239,7 +239,7 @@ export function Dashboard() {
             <div className="metric-card animate-fade-in" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
               <div className="flex items-center justify-between mb-3">
                 <span className="metric-label">Serviço Mais Realizado</span>
-                <div className="flex items-center justify-center" style={{ width: '36px', height: '36px', background: 'var(--amber-dim)', border: '1px solid var(--border)' }}>
+                <div className="flex items-center justify-center" style={{ width: '36px', height: '36px', background: 'rgba(var(--cor-primaria-rgb), 0.10)', border: '1px solid var(--border)' }}>
                   <Award size={16} strokeWidth={1.5} style={{ color: 'var(--cor-icone)' }} />
                 </div>
               </div>
@@ -288,7 +288,7 @@ export function Dashboard() {
                           width: '100%', 
                           maxWidth: '30px', 
                           height: `${altura}%`, 
-                          background: isHoje ? 'var(--amber-light)' : 'var(--amber)', 
+                          background: isHoje ? 'rgba(var(--cor-primaria-rgb), 0.15)' : 'var(--amber)', 
                           minHeight: dia.entradas > 0 ? '4px' : '0',
                           transition: 'height 0.4s ease-out',
                           cursor: 'pointer'

@@ -53,7 +53,7 @@ export function ClienteCadastro() {
     border: '1px solid rgba(255,255,255,0.08)',
     borderRadius: '10px',
     padding: '14px 14px 14px 42px',
-    color: 'var(--text-primary)',
+    color: '#FFFFFF',
     fontFamily: 'var(--font-mono)',
     fontSize: '13px',
     letterSpacing: '0.02em',
@@ -67,7 +67,7 @@ export function ClienteCadastro() {
     fontSize: '9px',
     letterSpacing: '0.18em',
     textTransform: 'uppercase' as const,
-    color: 'var(--text-muted)',
+    color: '#94A3B8',
     marginBottom: '6px',
     display: 'block',
   };
@@ -81,7 +81,7 @@ export function ClienteCadastro() {
   };
 
   function handleFocus(e: React.FocusEvent<HTMLInputElement>) {
-    e.currentTarget.style.borderColor = 'var(--amber)';
+    e.currentTarget.style.borderColor = '#F59E0B';
     e.currentTarget.style.background = 'rgba(255,255,255,0.06)';
   }
 
@@ -135,16 +135,16 @@ export function ClienteCadastro() {
             fontFamily: 'var(--font-mono)',
             fontSize: '10px',
             letterSpacing: '0.1em',
-            color: 'var(--text-muted)',
+            color: '#94A3B8',
             textTransform: 'uppercase' as const,
             padding: '8px 0',
             transition: 'color 0.2s',
           }}
           onMouseEnter={(e) => {
-            (e.currentTarget as HTMLElement).style.color = 'var(--amber)';
+            (e.currentTarget as HTMLElement).style.color = '#F59E0B';
           }}
           onMouseLeave={(e) => {
-            (e.currentTarget as HTMLElement).style.color = 'var(--text-muted)';
+            (e.currentTarget as HTMLElement).style.color = '#94A3B8';
           }}
         >
           <ArrowLeft size={14} strokeWidth={1.5} />
@@ -179,7 +179,7 @@ export function ClienteCadastro() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            background: 'linear-gradient(135deg, var(--amber) 0%, var(--amber-light) 100%)',
+            background: 'linear-gradient(135deg, #F59E0B 0%, rgba(245, 158, 11, 0.15) 100%)',
             boxShadow: '0 0 40px rgba(212, 130, 10, 0.25)',
             marginBottom: '1rem',
           }}>
@@ -190,7 +190,7 @@ export function ClienteCadastro() {
             fontFamily: 'var(--font-display)',
             fontSize: '36px',
             letterSpacing: '0.06em',
-            color: 'var(--text-primary)',
+            color: '#FFFFFF',
             lineHeight: 1,
           }}>
             Criar Conta
@@ -200,7 +200,7 @@ export function ClienteCadastro() {
             fontFamily: 'var(--font-mono)',
             fontSize: '10px',
             letterSpacing: '0.2em',
-            color: 'var(--text-muted)',
+            color: '#94A3B8',
             textTransform: 'uppercase' as const,
             marginTop: '8px',
           }}>
@@ -326,7 +326,7 @@ export function ClienteCadastro() {
               width: '100%',
               padding: '15px',
               marginTop: '8px',
-              background: 'linear-gradient(135deg, var(--amber) 0%, #E09818 100%)',
+              background: 'linear-gradient(135deg, #F59E0B 0%, #E09818 100%)',
               border: 'none',
               borderRadius: '10px',
               color: '#0A0A0A',
@@ -368,15 +368,15 @@ export function ClienteCadastro() {
               fontFamily: 'var(--font-mono)',
               fontSize: '12px',
               letterSpacing: '0.08em',
-              color: 'var(--cor-icone)',
+              color: '#F59E0B',
               padding: '8px',
               transition: 'color 0.2s',
             }}
             onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.color = 'var(--amber-light)';
+              (e.currentTarget as HTMLElement).style.color = 'rgba(245, 158, 11, 0.15)';
             }}
             onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.color = 'var(--amber)';
+              (e.currentTarget as HTMLElement).style.color = '#F59E0B';
             }}
           >
             Já tenho conta, entrar

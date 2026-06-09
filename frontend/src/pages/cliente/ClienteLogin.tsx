@@ -29,26 +29,26 @@ export function ClienteLogin() {
 
   return (
     <div className="flex flex-col min-h-screen px-6 py-8"
-      style={{ background: 'var(--bg-primary)' }}>
+      style={{ background: '#0F172A' }}>
 
       {/* Header */}
       <button onClick={() => navigate('/cliente')}
         className="flex items-center gap-2 mb-8"
-        style={{ color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.1em', textTransform: 'uppercase' as const }}>
+        style={{ color: '#94A3B8', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.1em', textTransform: 'uppercase' as const }}>
         <ArrowLeft size={16} /> Voltar
       </button>
 
       {/* Logo */}
       <div className="flex flex-col items-center mb-10">
         <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4"
-          style={{ background: 'var(--amber-dim)' }}>
-          <Scissors size={28} style={{ color: 'var(--cor-icone)' }} />
+          style={{ background: 'rgba(245, 158, 11, 0.10)' }}>
+          <Scissors size={28} style={{ color: '#F59E0B' }} />
         </div>
         <h1 style={{
           fontFamily: 'var(--font-display)',
           fontSize: '28px',
           letterSpacing: '0.04em',
-          color: 'var(--text-primary)',
+          color: '#FFFFFF',
         }}>
           Entrar
         </h1>
@@ -72,7 +72,7 @@ export function ClienteLogin() {
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="ds-input"
+            className="w-full bg-[#1E293B] border border-[#334155] rounded text-[#FFFFFF] placeholder-[#64748B] focus:outline-none focus:border-[#F59E0B] py-2.5"
             placeholder="seu@email.com"
             required
           />
@@ -84,14 +84,14 @@ export function ClienteLogin() {
             type="password"
             value={senha}
             onChange={(e) => setSenha(e.target.value)}
-            className="ds-input"
+            className="w-full bg-[#1E293B] border border-[#334155] rounded text-[#FFFFFF] placeholder-[#64748B] focus:outline-none focus:border-[#F59E0B] py-2.5"
             placeholder="••••••••"
             required
           />
         </div>
 
         <button type="submit" disabled={enviando}
-          className="btn-primary w-full justify-center"
+          className="flex items-center gap-2 py-3 bg-[#F59E0B] hover:bg-[#D97706] text-[#0F172A] font-bold uppercase tracking-widest text-xs rounded transition-colors w-full justify-center"
           style={{ padding: '14px', fontSize: '13px', marginTop: '8px' }}>
           {enviando ? 'Entrando...' : 'Entrar'}
         </button>
@@ -101,7 +101,7 @@ export function ClienteLogin() {
             style={{
               background: 'none', border: 'none', cursor: 'pointer',
               fontFamily: 'var(--font-mono)', fontSize: '11px',
-              color: 'var(--cor-icone)', letterSpacing: '0.08em',
+              color: '#F59E0B', letterSpacing: '0.08em',
             }}>
             Criar conta
           </button>

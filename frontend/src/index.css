@@ -165,7 +165,7 @@ h1, h2, h3, h4, .titulo {
   box-shadow: 0 4px 0 0 rgba(0,0,0,0.3), 0 6px 12px rgba(0,0,0,0.2);
 }
 .btn-primary:hover {
-  background: var(--amber-light);
+  background: rgba(var(--cor-primaria-rgb), 0.15);
   transform: translateY(-2px);
   box-shadow: 0 6px 0 0 rgba(0,0,0,0.3), 0 8px 16px rgba(0,0,0,0.2);
 }
@@ -309,8 +309,8 @@ h1, h2, h3, h4, .titulo {
   color: var(--success-text);
 }
 .badge-pending {
-  background: var(--amber-dim);
-  color: var(--amber-light);
+  background: rgba(var(--cor-primaria-rgb), 0.10);
+  color: rgba(var(--cor-primaria-rgb), 0.15);
 }
 .badge-cancelled {
   background: var(--error);
@@ -484,7 +484,7 @@ h1, h2, h3, h4, .titulo {
 
 /* === UTILITÁRIOS DE COR === */
 .text-amber { color: var(--amber); }
-.text-amber-light { color: var(--amber-light); }
+.text-amber-light { color: rgba(var(--cor-primaria-rgb), 0.15); }
 .text-success { color: var(--success-text); }
 .text-error { color: var(--error-text); }
 .text-warning { color: var(--warning-text); }
