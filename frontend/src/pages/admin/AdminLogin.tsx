@@ -1,8 +1,9 @@
 // Tela de login do administrador — /admin/login
 // Visual sóbrio e profissional
-import { useState, type FormEvent } from 'react';
+import { useState, type FormEvent, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
+import { useTema } from '../../hooks/useTema';
 import { Mail, Lock, AlertCircle, Shield, ArrowLeft, CheckCircle2, UserPlus, User, ChevronLeft } from 'lucide-react';
 import api from '../../api/client';
 
@@ -13,6 +14,11 @@ export function AdminLogin() {
   const [senha, setSenha] = useState('');
   const [erro, setErro] = useState('');
   const [carregando, setCarregando] = useState(false);
+  const { limparTema } = useTema();
+
+  useEffect(() => {
+    limparTema();
+  }, [limparTema]);
 
   // Estado do formulário de primeiro acesso
   const [mostrarRegistro, setMostrarRegistro] = useState(false);

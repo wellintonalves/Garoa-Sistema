@@ -3,6 +3,7 @@
 import { useState, useEffect, type FormEvent } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useClienteAuth } from '../../hooks/useClienteAuth';
+import { useTema } from '../../hooks/useTema';
 import { Mail, Lock, AlertCircle, Scissors, Settings, Shield, X } from 'lucide-react';
 import clienteApi from '../../api/clienteApi';
 
@@ -10,6 +11,7 @@ export function ClienteLoginPrincipal() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { cliente, carregando: authCarregando, login } = useClienteAuth();
+  const { limparTema } = useTema();
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [erro, setErro] = useState('');
@@ -22,6 +24,7 @@ export function ClienteLoginPrincipal() {
   });
 
   useEffect(() => {
+    limparTema();
     const slug = searchParams.get('slug');
     if (slug) {
       clienteApi.get(`/b/${slug}/identidade`).then((res) => {
@@ -31,20 +34,9 @@ export function ClienteLoginPrincipal() {
           corPrimaria: res.data.corPrimaria,
           fonte: res.data.fonte
         });
-        
-        if (res.data.corPrimaria) {
-          document.documentElement.style.setProperty('--amber', res.data.corPrimaria);
-        }
-        if (res.data.fonte && res.data.fonte !== 'Inter') {
-          const link = document.createElement('link');
-          link.href = `https://fonts.googleapis.com/css2?family=${res.data.fonte.replace(/ /g, '+')}:wght@400;600;700&display=swap`;
-          link.rel = 'stylesheet';
-          document.head.appendChild(link);
-          document.documentElement.style.setProperty('--font-display', `'${res.data.fonte}', sans-serif`);
-        }
       }).catch(() => {});
     }
-  }, [searchParams]);
+  }, [searchParams, limparTema]);
 
   // Se já está logado, redireciona
   if (!authCarregando && cliente) {

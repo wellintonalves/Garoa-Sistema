@@ -58,6 +58,19 @@ export function useTema() {
     localStorage.setItem('temaBarbearia', JSON.stringify(tema));
   }, []);
 
+  const limparTema = useCallback(() => {
+    const root = document.documentElement;
+    root.style.removeProperty('--cor-primaria');
+    root.style.removeProperty('--cor-secundaria');
+    root.style.removeProperty('--cor-texto');
+    root.style.removeProperty('--cor-fundo');
+    root.style.removeProperty('--fonte-titulo');
+    root.style.removeProperty('--fonte-corpo');
+    root.style.removeProperty('--fonte-numeros');
+    root.style.removeProperty('--amber');
+    root.style.removeProperty('--font-display');
+  }, []);
+
   const carregarTemaCache = useCallback(() => {
     const cache = localStorage.getItem('temaBarbearia');
     if (cache) {
@@ -95,6 +108,7 @@ export function useTema() {
     aplicarTema,
     carregarTemaCache,
     carregarTemaAdmin,
-    carregarTemaCliente
+    carregarTemaCliente,
+    limparTema
   };
 }

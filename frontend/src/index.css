@@ -8,10 +8,10 @@
 /* === TOKENS DE COR (CSS Custom Properties) === */
 :root {
   /* Novas Cores Dinâmicas */
-  --cor-primaria: #F97316;
-  --cor-secundaria: #1A1A2E;
-  --cor-texto: #FFFFFF;
-  --cor-fundo: #0F0F1A;
+  --cor-primaria: #F59E0B;
+  --cor-secundaria: #1E293B;
+  --cor-texto: #F8FAFC;
+  --cor-fundo: #0F172A;
   --fonte-titulo: 'Bebas Neue';
   --fonte-corpo: 'Inter';
   --fonte-numeros: 'DM Mono';
@@ -156,17 +156,26 @@ h1, h2, h3, h4, .titulo {
   border: none;
   border-radius: 0;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: all 0.15s ease;
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  box-shadow: 0 4px 0 0 rgba(0,0,0,0.3), 0 6px 12px rgba(0,0,0,0.2);
 }
 .btn-primary:hover {
   background: var(--amber-light);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 0 0 rgba(0,0,0,0.3), 0 8px 16px rgba(0,0,0,0.2);
+}
+.btn-primary:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 0 rgba(0,0,0,0.3);
 }
 .btn-primary:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
 .btn-secondary {
