@@ -1,6 +1,6 @@
 // Tela de login do barbeiro — /barbeiro/login
 // Visual sóbrio com "Área do Barbeiro" no topo
-import { useState, type FormEvent, useEffect } from 'react';
+import { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useBarbeiroAuth } from '../../hooks/useBarbeiroAuth';
 import { Mail, Lock, AlertCircle, Scissors, ArrowLeft } from 'lucide-react';
