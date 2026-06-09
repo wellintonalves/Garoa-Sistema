@@ -65,7 +65,7 @@ export function BarbeiroComissoes() {
           }}>
             <div className="flex items-center gap-3 mb-4">
               <DollarSign size={20} style={{ color: 'var(--amber-light)' }} />
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--amber)' }}>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--cor-icone)' }}>
                 Sua Comissão ({dados.percentualComissao}%)
               </span>
             </div>
@@ -86,7 +86,7 @@ export function BarbeiroComissoes() {
 
           {/* Histórico */}
           <div>
-            <h2 style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--amber)', marginBottom: '12px' }}>
+            <h2 style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--cor-icone)', marginBottom: '12px' }}>
               <TrendingUp size={12} className="inline mr-1" /> Histórico no Período
             </h2>
             {dados.lancamentos.length === 0 ? (
@@ -101,7 +101,7 @@ export function BarbeiroComissoes() {
                       <p style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--text-primary)', fontWeight: 600 }}>
                         {l.cliente}
                       </p>
-                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'var(--amber)' }}>
+                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'var(--cor-icone)' }}>
                         +{fmt(l.valorComissao)}
                       </span>
                     </div>

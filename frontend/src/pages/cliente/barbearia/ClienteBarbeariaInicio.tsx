@@ -67,14 +67,14 @@ export function ClienteBarbeariaInicio() {
       {/* Agendamentos Futuros */}
       {agendamentosFuturos.length > 0 ? (
         <div className="mb-6">
-          <h2 style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase' as const, color: 'var(--amber)', marginBottom: '12px' }}>
+          <h2 style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase' as const, color: 'var(--cor-icone)', marginBottom: '12px' }}>
             Agendamentos Futuros
           </h2>
           <div className="flex flex-col gap-3">
             {agendamentosFuturos.map((ag) => (
               <div key={ag.id} className="p-4" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderLeft: '3px solid var(--amber)', borderRadius: '4px' }}>
                 <div className="flex items-center gap-3 mb-3">
-                  <Calendar size={16} style={{ color: 'var(--amber)' }} />
+                  <Calendar size={16} style={{ color: 'var(--cor-icone)' }} />
                   <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'var(--text-primary)' }}>
                     {fmtData(ag.dataHora)}
                   </span>

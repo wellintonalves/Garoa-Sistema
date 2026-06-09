@@ -450,7 +450,7 @@ export function Clientes() {
                       background: 'var(--amber-dim)',
                       fontFamily: 'var(--font-display)',
                       fontSize: '14px',
-                      color: 'var(--amber)',
+                      color: 'var(--cor-icone)',
                     }}
                   >
                     {getIniciais(a.usuario.nome)}
@@ -725,7 +725,7 @@ export function Clientes() {
                             </div>
                           </div>
                           <div style={{ textAlign: 'right' }}>
-                            <p style={{ fontFamily: 'var(--font-display)', fontSize: '16px', color: 'var(--amber)' }}>R$ {Number(ag.valorCobrado).toFixed(2)}</p>
+                            <p style={{ fontFamily: 'var(--font-display)', fontSize: '16px', color: 'var(--cor-icone)' }}>R$ {Number(ag.valorCobrado).toFixed(2)}</p>
                             <p style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', letterSpacing: '0.1em', textTransform: 'uppercase', color: statusStyles[ag.status] || 'var(--text-muted)', marginTop: '2px' }}>
                               {ag.status}
                             </p>

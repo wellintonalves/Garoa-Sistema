@@ -9,9 +9,11 @@
 :root {
   /* Novas Cores Dinâmicas */
   --cor-primaria: #F59E0B;
+  --cor-primaria-rgb: 245, 158, 11;
   --cor-secundaria: #1E293B;
   --cor-texto: #F8FAFC;
   --cor-fundo: #0F172A;
+  --cor-icone: #F59E0B; /* Fallback until JS loads */
   --fonte-titulo: 'Bebas Neue';
   --fonte-corpo: 'Inter';
   --fonte-numeros: 'DM Mono';
@@ -28,7 +30,7 @@
   /* Acento principal — âmbar (Mapeado para cor primaria) */
   --amber:         var(--cor-primaria);
   --amber-light:   var(--cor-primaria);
-  --amber-dim:     #3D2A08;
+  --amber-dim:     rgba(var(--cor-primaria-rgb), 0.15);
 
   /* Texto */
   --text-primary:  var(--cor-texto);
@@ -491,6 +493,15 @@ h1, h2, h3, h4, .titulo {
 .bg-primary { background-color: var(--bg-primary) !important; }
 .bg-surface { background-color: var(--bg-surface) !important; }
 .bg-surface2 { background-color: var(--bg-surface2) !important; }
+
+/* === CONTAINERS DE ÍCONES (Automático Contraste) === */
+.icon-wrapper {
+  background: rgba(var(--cor-primaria-rgb), 0.15) !important;
+  border: 1px solid rgba(var(--cor-primaria-rgb), 0.3) !important;
+}
+.icon-wrapper svg {
+  color: var(--cor-icone) !important;
+}
 
 /* === LOADING SPINNER === */
 .spinner {

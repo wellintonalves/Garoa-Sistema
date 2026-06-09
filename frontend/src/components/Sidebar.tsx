@@ -88,7 +88,7 @@ export function Sidebar({ mobileOpen, onCloseMobile }: SidebarProps) {
               style={{
                 fontFamily: "var(--font-display)",
                 fontSize: '20px',
-                color: 'var(--amber)',
+                color: 'var(--cor-icone)',
               }}
             >
               G

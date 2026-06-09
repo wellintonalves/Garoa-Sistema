@@ -105,7 +105,7 @@ export function AdminLogin() {
               background: 'var(--amber-dim)',
               marginBottom: '1rem',
             }}>
-              <Shield size={24} style={{ color: 'var(--amber)' }} />
+              <Shield size={24} style={{ color: 'var(--cor-icone)' }} />
             </div>
 
             <h1 style={{

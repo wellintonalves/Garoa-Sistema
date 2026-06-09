@@ -132,11 +132,11 @@ export function QrCodeScanner({ onResult, onClose }: QrCodeScannerProps) {
         zIndex: 10,
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Camera size={18} style={{ color: 'var(--amber)' }} />
+          <Camera size={18} style={{ color: 'var(--cor-icone)' }} />
           <span style={{
             fontFamily: 'var(--font-mono)',
             fontSize: '11px',
-            color: 'var(--amber)',
+            color: 'var(--cor-icone)',
             letterSpacing: '0.15em',
             textTransform: 'uppercase' as const,
           }}>
@@ -216,7 +216,7 @@ export function QrCodeScanner({ onResult, onClose }: QrCodeScannerProps) {
               style={{
                 fontFamily: 'var(--font-mono)',
                 fontSize: '11px',
-                color: 'var(--amber)',
+                color: 'var(--cor-icone)',
                 background: 'var(--amber-dim)',
                 border: '1px solid var(--amber)',
                 padding: '10px 24px',

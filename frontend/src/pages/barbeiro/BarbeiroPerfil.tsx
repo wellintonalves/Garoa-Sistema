@@ -53,7 +53,7 @@ export function BarbeiroPerfil() {
       <div className="flex flex-col gap-4 mb-8">
         <div className="p-4" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
           <div className="flex items-center gap-3 mb-2">
-            <User size={16} style={{ color: 'var(--amber)' }} />
+            <User size={16} style={{ color: 'var(--cor-icone)' }} />
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Comissão Padrão</span>
           </div>
           <p style={{ fontFamily: 'var(--font-body)', fontSize: '16px', color: 'var(--text-primary)' }}>
@@ -63,7 +63,7 @@ export function BarbeiroPerfil() {
 
         <div className="p-4" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
           <div className="flex items-center gap-3 mb-3">
-            <Scissors size={16} style={{ color: 'var(--amber)' }} />
+            <Scissors size={16} style={{ color: 'var(--cor-icone)' }} />
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Especialidades</span>
           </div>
           <div className="flex flex-wrap gap-2">

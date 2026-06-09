@@ -35,7 +35,7 @@ export function BarbeiroLogin() {
       <div className="flex flex-col items-center mt-12 mb-10 animate-fade-in">
         <div className="w-20 h-20 rounded-full flex items-center justify-center mb-6"
           style={{ background: 'var(--amber-dim)' }}>
-          <Scissors size={36} style={{ color: 'var(--amber)' }} />
+          <Scissors size={36} style={{ color: 'var(--cor-icone)' }} />
         </div>
         <h1 style={{
           fontFamily: 'var(--font-display)',

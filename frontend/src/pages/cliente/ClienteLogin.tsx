@@ -42,7 +42,7 @@ export function ClienteLogin() {
       <div className="flex flex-col items-center mb-10">
         <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4"
           style={{ background: 'var(--amber-dim)' }}>
-          <Scissors size={28} style={{ color: 'var(--amber)' }} />
+          <Scissors size={28} style={{ color: 'var(--cor-icone)' }} />
         </div>
         <h1 style={{
           fontFamily: 'var(--font-display)',
@@ -101,7 +101,7 @@ export function ClienteLogin() {
             style={{
               background: 'none', border: 'none', cursor: 'pointer',
               fontFamily: 'var(--font-mono)', fontSize: '11px',
-              color: 'var(--amber)', letterSpacing: '0.08em',
+              color: 'var(--cor-icone)', letterSpacing: '0.08em',
             }}>
             Criar conta
           </button>

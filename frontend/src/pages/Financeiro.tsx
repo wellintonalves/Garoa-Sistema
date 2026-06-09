@@ -133,7 +133,7 @@ export function Financeiro() {
           <p className="metric-value">{fmt(resumo?.totalSaidas || 0)}</p>
         </div>
         <div className="metric-card" style={{ borderLeft: '2px solid var(--amber)' }}>
-          <p className="metric-label" style={{ color: 'var(--amber)', marginBottom: '8px' }}>Saldo</p>
+          <p className="metric-label" style={{ color: 'var(--cor-icone)', marginBottom: '8px' }}>Saldo</p>
           <p className="metric-value">{fmt(resumo?.saldo || 0)}</p>
           {resumo?.porFormaPagamento && (
             <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
@@ -289,7 +289,7 @@ export function Financeiro() {
 
           {form.tipo === 'ENTRADA' && form.barbeiroId && form.valor && (
             <div style={{ padding: '12px', background: 'var(--bg-surface2)', border: '1px solid var(--border)', fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--text-primary)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-              <p>Comissão do Barbeiro: <strong style={{ color: 'var(--amber)' }}>{fmt(previaComissao)}</strong></p>
+              <p>Comissão do Barbeiro: <strong style={{ color: 'var(--cor-icone)' }}>{fmt(previaComissao)}</strong></p>
               <p>Líquido Barbearia: <strong style={{ color: 'var(--success-text)' }}>{fmt(previaLiquido)}</strong></p>
             </div>
           )}

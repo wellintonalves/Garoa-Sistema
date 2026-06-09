@@ -99,7 +99,7 @@ export function ClienteHome() {
       <div className="px-5 pt-8 pb-4" style={{ borderBottom: '1px solid var(--border)' }}>
         <div className="flex items-center justify-between mb-6">
           <div>
-            <p style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--amber)', letterSpacing: '0.15em', textTransform: 'uppercase' as const }}>
+            <p style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--cor-icone)', letterSpacing: '0.15em', textTransform: 'uppercase' as const }}>
               Olá,
             </p>
             <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '28px', color: 'var(--text-primary)', letterSpacing: '0.04em' }}>
@@ -130,7 +130,7 @@ export function ClienteHome() {
             style={{ background: 'var(--amber-dim)', border: '1px solid var(--amber)', padding: '10px 14px', cursor: 'pointer' }}
             title="Escanear QR Code"
           >
-            <QrCode size={20} style={{ color: 'var(--amber)' }} />
+            <QrCode size={20} style={{ color: 'var(--cor-icone)' }} />
           </button>
         </div>
 
@@ -146,7 +146,7 @@ export function ClienteHome() {
               >
                 <div className="w-10 h-10 flex items-center justify-center flex-shrink-0"
                   style={{ background: 'var(--amber-dim)' }}>
-                  <Scissors size={18} style={{ color: 'var(--amber)' }} />
+                  <Scissors size={18} style={{ color: 'var(--cor-icone)' }} />
                 </div>
                 <div className="min-w-0 flex-1">
                   <p style={{ fontFamily: 'var(--font-body)', fontWeight: 700, color: 'var(--text-primary)', fontSize: '13px' }}>{b.nome}</p>
@@ -156,7 +156,7 @@ export function ClienteHome() {
                     </p>
                   )}
                 </div>
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', color: 'var(--amber)', letterSpacing: '0.1em', textTransform: 'uppercase' as const }}>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', color: 'var(--cor-icone)', letterSpacing: '0.1em', textTransform: 'uppercase' as const }}>
                   Conectar
                 </span>
               </button>
@@ -173,7 +173,7 @@ export function ClienteHome() {
 
       {/* Minhas Barbearias */}
       <div className="flex-1 px-5 py-6">
-        <h2 style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase' as const, color: 'var(--amber)', marginBottom: '16px' }}>
+        <h2 style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase' as const, color: 'var(--cor-icone)', marginBottom: '16px' }}>
           Minhas Barbearias
         </h2>
 

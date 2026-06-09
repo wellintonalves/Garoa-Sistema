@@ -55,7 +55,7 @@ export function BarbeiroHoje() {
     <div className="px-5 py-6 animate-fade-in">
       {/* Header */}
       <div className="mb-8">
-        <p style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--amber)', letterSpacing: '0.15em', textTransform: 'uppercase' }}>
+        <p style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--cor-icone)', letterSpacing: '0.15em', textTransform: 'uppercase' }}>
           Hoje
         </p>
         <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '28px', color: 'var(--text-primary)', letterSpacing: '0.04em' }}>
@@ -69,7 +69,7 @@ export function BarbeiroHoje() {
         <>
           {/* Pendentes */}
           <div className="mb-8">
-            <h2 style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--amber)', marginBottom: '12px' }}>
+            <h2 style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--cor-icone)', marginBottom: '12px' }}>
               Próximos Atendimentos ({pendentes.length})
             </h2>
             
@@ -84,8 +84,8 @@ export function BarbeiroHoje() {
                   <div key={a.id} className="p-4" style={{ background: 'var(--bg-surface)', border: '1px solid var(--amber)' }}>
                     <div className="flex justify-between items-start mb-3">
                       <div className="flex items-center gap-2">
-                        <Clock size={14} style={{ color: 'var(--amber)' }} />
-                        <span style={{ fontFamily: 'var(--font-display)', fontSize: '20px', color: 'var(--amber)' }}>
+                        <Clock size={14} style={{ color: 'var(--cor-icone)' }} />
+                        <span style={{ fontFamily: 'var(--font-display)', fontSize: '20px', color: 'var(--cor-icone)' }}>
                           {fmtHora(a.dataHora)}
                         </span>
                       </div>

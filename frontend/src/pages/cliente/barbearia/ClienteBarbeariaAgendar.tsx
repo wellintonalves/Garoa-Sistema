@@ -125,13 +125,13 @@ export function ClienteBarbeariaAgendar() {
                   cursor: 'pointer',
                 }}>
                 <div className="flex items-center gap-3">
-                  <Scissors size={18} style={{ color: 'var(--amber)' }} />
+                  <Scissors size={18} style={{ color: 'var(--cor-icone)' }} />
                   <div>
                     <p style={{ fontFamily: 'var(--font-body)', fontWeight: 700, color: 'var(--text-primary)', fontSize: '14px' }}>{s.nome}</p>
                     <p style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--text-muted)' }}>{s.duracaoMinutos} min</p>
                   </div>
                 </div>
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'var(--amber)', fontWeight: 600 }}>{fmt(s.preco)}</span>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'var(--cor-icone)', fontWeight: 600 }}>{fmt(s.preco)}</span>
               </button>
             ))}
           </div>
@@ -234,30 +234,30 @@ export function ClienteBarbeariaAgendar() {
           <div className="flex flex-col gap-4 mb-8">
             <div className="p-4" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
               <div className="flex items-center gap-3 mb-3">
-                <Scissors size={16} style={{ color: 'var(--amber)' }} />
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--amber)', letterSpacing: '0.12em', textTransform: 'uppercase' as const }}>Serviço</span>
+                <Scissors size={16} style={{ color: 'var(--cor-icone)' }} />
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--cor-icone)', letterSpacing: '0.12em', textTransform: 'uppercase' as const }}>Serviço</span>
               </div>
               <p style={{ fontFamily: 'var(--font-body)', fontWeight: 700, color: 'var(--text-primary)', fontSize: '15px' }}>{servicoSel?.nome}</p>
-              <p style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--amber)', marginTop: '4px' }}>{fmt(servicoSel?.preco || '0')}</p>
+              <p style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--cor-icone)', marginTop: '4px' }}>{fmt(servicoSel?.preco || '0')}</p>
             </div>
 
             <div className="p-4" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
               <div className="flex items-center gap-3 mb-3">
-                <User size={16} style={{ color: 'var(--amber)' }} />
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--amber)', letterSpacing: '0.12em', textTransform: 'uppercase' as const }}>Barbeiro</span>
+                <User size={16} style={{ color: 'var(--cor-icone)' }} />
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--cor-icone)', letterSpacing: '0.12em', textTransform: 'uppercase' as const }}>Barbeiro</span>
               </div>
               <p style={{ fontFamily: 'var(--font-body)', fontWeight: 700, color: 'var(--text-primary)', fontSize: '15px' }}>{barbeiroSel?.usuario.nome}</p>
             </div>
 
             <div className="p-4" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
               <div className="flex items-center gap-3 mb-3">
-                <Calendar size={16} style={{ color: 'var(--amber)' }} />
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--amber)', letterSpacing: '0.12em', textTransform: 'uppercase' as const }}>Data e Hora</span>
+                <Calendar size={16} style={{ color: 'var(--cor-icone)' }} />
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--cor-icone)', letterSpacing: '0.12em', textTransform: 'uppercase' as const }}>Data e Hora</span>
               </div>
               <p style={{ fontFamily: 'var(--font-body)', fontWeight: 700, color: 'var(--text-primary)', fontSize: '15px' }}>
                 {new Date(dataSel + 'T00:00').toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' })}
               </p>
-              <p style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', color: 'var(--amber)', marginTop: '4px' }}>{horarioSel}</p>
+              <p style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', color: 'var(--cor-icone)', marginTop: '4px' }}>{horarioSel}</p>
             </div>
           </div>
 

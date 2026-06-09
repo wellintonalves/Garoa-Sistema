@@ -191,7 +191,7 @@ export function ClienteLoginPrincipal() {
             fontFamily: 'var(--font-mono)',
             fontSize: '10px',
             letterSpacing: '0.35em',
-            color: 'var(--amber)',
+            color: 'var(--cor-icone)',
             textTransform: 'uppercase' as const,
             marginTop: '10px',
           }}>
@@ -400,7 +400,7 @@ export function ClienteLoginPrincipal() {
               fontFamily: 'var(--font-mono)',
               fontSize: '12px',
               letterSpacing: '0.08em',
-              color: 'var(--amber)',
+              color: 'var(--cor-icone)',
               padding: '8px',
               transition: 'color 0.2s',
             }}
@@ -508,7 +508,7 @@ export function ClienteLoginPrincipal() {
                 background: 'var(--amber-dim)',
                 marginBottom: '12px',
               }}>
-                <Settings size={20} style={{ color: 'var(--amber)' }} />
+                <Settings size={20} style={{ color: 'var(--cor-icone)' }} />
               </div>
               <h2 style={{
                 fontFamily: 'var(--font-body)',
@@ -575,7 +575,7 @@ export function ClienteLoginPrincipal() {
                   background: 'var(--amber-dim)',
                   flexShrink: 0,
                 }}>
-                  <Shield size={18} style={{ color: 'var(--amber)' }} />
+                  <Shield size={18} style={{ color: 'var(--cor-icone)' }} />
                 </div>
                 <div>
                   <p style={{
@@ -638,7 +638,7 @@ export function ClienteLoginPrincipal() {
                   background: 'var(--amber-dim)',
                   flexShrink: 0,
                 }}>
-                  <Scissors size={18} style={{ color: 'var(--amber)' }} />
+                  <Scissors size={18} style={{ color: 'var(--cor-icone)' }} />
                 </div>
                 <div>
                   <p style={{

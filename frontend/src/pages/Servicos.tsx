@@ -91,7 +91,7 @@ export function Servicos() {
                   {editandoId === s.id ? (
                     <input type="number" step="0.01" value={editForm.preco} onChange={e => setEditForm({...editForm, preco: e.target.value})} className="ds-input" style={{ width: '100px', minHeight: '32px', padding: '6px 8px' }} />
                   ) : (
-                    <span style={{ fontFamily: 'var(--font-display)', fontSize: '20px', color: 'var(--amber)' }}>
+                    <span style={{ fontFamily: 'var(--font-display)', fontSize: '20px', color: 'var(--cor-icone)' }}>
                       R$ {Number(s.preco).toFixed(2)}
                     </span>
                   )}

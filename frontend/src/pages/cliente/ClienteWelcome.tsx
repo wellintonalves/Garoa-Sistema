@@ -43,7 +43,7 @@ export function ClienteWelcome() {
           fontFamily: 'var(--font-mono)',
           fontSize: '11px',
           letterSpacing: '0.3em',
-          color: 'var(--amber)',
+          color: 'var(--cor-icone)',
           textTransform: 'uppercase',
           marginTop: '8px',
         }}>

@@ -240,7 +240,7 @@ export function Dashboard() {
               <div className="flex items-center justify-between mb-3">
                 <span className="metric-label">Serviço Mais Realizado</span>
                 <div className="flex items-center justify-center" style={{ width: '36px', height: '36px', background: 'var(--amber-dim)', border: '1px solid var(--border)' }}>
-                  <Award size={16} strokeWidth={1.5} style={{ color: 'var(--amber)' }} />
+                  <Award size={16} strokeWidth={1.5} style={{ color: 'var(--cor-icone)' }} />
                 </div>
               </div>
               {dados.servicoMaisRealizado ? (

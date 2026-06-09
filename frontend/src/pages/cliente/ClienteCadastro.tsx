@@ -368,7 +368,7 @@ export function ClienteCadastro() {
               fontFamily: 'var(--font-mono)',
               fontSize: '12px',
               letterSpacing: '0.08em',
-              color: 'var(--amber)',
+              color: 'var(--cor-icone)',
               padding: '8px',
               transition: 'color 0.2s',
             }}

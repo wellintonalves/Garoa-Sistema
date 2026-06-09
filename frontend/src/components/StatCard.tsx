@@ -19,11 +19,12 @@ export function StatCard({ titulo, valor, icone: Icone, subtexto, destaque }: St
           style={{
             width: '36px',
             height: '36px',
-            background: 'var(--amber-dim)',
-            border: '1px solid var(--border)',
+            background: 'rgba(var(--cor-primaria-rgb), 0.15)',
+            border: '1px solid rgba(var(--cor-primaria-rgb), 0.3)',
+            borderRadius: '4px',
           }}
         >
-          <Icone size={16} strokeWidth={1.5} style={{ color: 'var(--amber)' }} />
+          <Icone size={16} strokeWidth={1.5} style={{ color: 'var(--cor-icone)' }} />
         </div>
       </div>
       <p className={`metric-value ${destaque ? 'highlight' : ''}`}>{valor}</p>

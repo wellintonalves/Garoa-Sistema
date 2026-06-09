@@ -70,7 +70,7 @@ export function BarbeiroLoginPage() {
               background: 'var(--amber-dim)',
               marginBottom: '1rem',
             }}>
-              <Scissors size={24} style={{ color: 'var(--amber)' }} />
+              <Scissors size={24} style={{ color: 'var(--cor-icone)' }} />
             </div>
 
             <h1 style={{

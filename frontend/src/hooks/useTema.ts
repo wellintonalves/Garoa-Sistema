@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import api from '../api/client';
 import clienteApi from '../api/clienteApi';
+import { gerarCorIcone } from '../utils/cores';
 
 export interface TemaBarbearia {
   corPrimaria?: string;
@@ -18,6 +19,12 @@ export function useTema() {
 
     if (tema.corPrimaria) {
       root.style.setProperty('--cor-primaria', tema.corPrimaria);
+      
+      const r = parseInt(tema.corPrimaria.slice(1,3), 16);
+      const g = parseInt(tema.corPrimaria.slice(3,5), 16);
+      const b = parseInt(tema.corPrimaria.slice(5,7), 16);
+      root.style.setProperty('--cor-primaria-rgb', `${r},${g},${b}`);
+      root.style.setProperty('--cor-icone', gerarCorIcone(tema.corPrimaria));
     }
     if (tema.corSecundaria) {
       root.style.setProperty('--cor-secundaria', tema.corSecundaria);
@@ -69,6 +76,8 @@ export function useTema() {
     root.style.removeProperty('--fonte-numeros');
     root.style.removeProperty('--amber');
     root.style.removeProperty('--font-display');
+    root.style.removeProperty('--cor-primaria-rgb');
+    root.style.removeProperty('--cor-icone');
   }, []);
 
   const carregarTemaCache = useCallback(() => {

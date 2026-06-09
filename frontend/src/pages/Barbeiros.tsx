@@ -211,7 +211,7 @@ export function Barbeiros() {
                     background: 'none',
                     border: 'none',
                     cursor: 'pointer',
-                    color: 'var(--amber)',
+                    color: 'var(--cor-icone)',
                     padding: '4px',
                     display: 'flex',
                     alignItems: 'center',
@@ -237,7 +237,7 @@ export function Barbeiros() {
               className="flex items-center justify-between mt-4 pt-3"
               style={{ borderTop: '1px solid var(--border)' }}
             >
-              <div className="flex items-center gap-1.5" style={{ color: 'var(--amber)', fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.04em' }}>
+              <div className="flex items-center gap-1.5" style={{ color: 'var(--cor-icone)', fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.04em' }}>
                 <Star size={14} strokeWidth={1.5} /> <span>Comissão: {b.comissaoPercent}%</span>
               </div>
               <button
@@ -269,7 +269,7 @@ export function Barbeiros() {
         <div style={{ paddingBottom: '1.25rem', borderBottom: '1px solid var(--border)', marginBottom: '1.25rem' }}>
           <div className="flex flex-wrap items-end gap-4">
             <div className="flex items-center gap-2">
-              <TrendingUp size={16} strokeWidth={1.5} style={{ color: 'var(--amber)' }} />
+              <TrendingUp size={16} strokeWidth={1.5} style={{ color: 'var(--cor-icone)' }} />
               <h2
                 style={{
                   fontFamily: 'var(--font-body)',
@@ -327,7 +327,7 @@ export function Barbeiros() {
                     </div>
                     <div className="flex justify-between items-center">
                       <span style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Comissão</span>
-                      <span style={{ color: 'var(--amber)', fontFamily: 'var(--font-mono)', fontSize: '12px', fontWeight: 500 }}>{fmt(b.comissao)}</span>
+                      <span style={{ color: 'var(--cor-icone)', fontFamily: 'var(--font-mono)', fontSize: '12px', fontWeight: 500 }}>{fmt(b.comissao)}</span>
                     </div>
                     <div className="flex justify-between items-center" style={{ borderTop: '1px solid var(--border)', paddingTop: '8px', marginTop: '4px' }}>
                       <span style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Líquido</span>
