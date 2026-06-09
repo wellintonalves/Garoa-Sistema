@@ -3,7 +3,6 @@
 import { useState, useEffect, type FormEvent } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useClienteAuth } from '../../hooks/useClienteAuth';
-import { useTema } from '../../hooks/useTema';
 import { Mail, Lock, AlertCircle, Scissors, Settings, Shield, X } from 'lucide-react';
 import clienteApi from '../../api/clienteApi';
 
@@ -11,8 +10,7 @@ export function ClienteLoginPrincipal() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { cliente, carregando: authCarregando, login } = useClienteAuth();
-  const { limparTema } = useTema();
-  const [email, setEmail] = useState('');
+    const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [erro, setErro] = useState('');
   const [enviando, setEnviando] = useState(false);
@@ -24,8 +22,7 @@ export function ClienteLoginPrincipal() {
   });
 
   useEffect(() => {
-    limparTema();
-    const slug = searchParams.get('slug');
+        const slug = searchParams.get('slug');
     if (slug) {
       clienteApi.get(`/b/${slug}/identidade`).then((res) => {
         setIdentidade({
@@ -36,7 +33,7 @@ export function ClienteLoginPrincipal() {
         });
       }).catch(() => {});
     }
-  }, [searchParams, limparTema]);
+  }, [searchParams]);
 
   // Se já está logado, redireciona
   if (!authCarregando && cliente) {
@@ -66,7 +63,7 @@ export function ClienteLoginPrincipal() {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        background: 'linear-gradient(180deg, #0A0A0A 0%, #141414 40%, #1A1408 100%)',
+        background: '#0F172A',
         position: 'relative',
         overflow: 'hidden',
       }}
@@ -96,7 +93,7 @@ export function ClienteLoginPrincipal() {
           display: 'flex',
           alignItems: 'center',
           gap: '6px',
-          background: 'rgba(255,255,255,0.04)',
+          background: '#1E293B',
           border: '1px solid rgba(255,255,255,0.06)',
           borderRadius: '8px',
           padding: '8px 12px',
@@ -111,7 +108,7 @@ export function ClienteLoginPrincipal() {
           backdropFilter: 'blur(8px)',
         }}
         onMouseEnter={(e) => {
-          (e.currentTarget as HTMLElement).style.color = 'var(--text-muted)';
+          (e.currentTarget as HTMLElement).style.color = '#94A3B8';
           (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.12)';
         }}
         onMouseLeave={(e) => {
@@ -166,11 +163,11 @@ export function ClienteLoginPrincipal() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              background: 'linear-gradient(135deg, var(--amber) 0%, #E8A020 50%, rgba(var(--cor-primaria-rgb), 0.15) 100%)',
+              background: 'linear-gradient(135deg, #F59E0B 0%, #E8A020 50%, rgba(245, 158, 11, 0.15) 100%)',
               boxShadow: '0 0 60px rgba(212, 130, 10, 0.3), 0 0 120px rgba(212, 130, 10, 0.1)',
               marginBottom: '1.5rem',
             }}>
-              <Scissors size={38} style={{ color: '#0A0A0A' }} />
+              <Scissors size={38} style={{ color: '#0F172A' }} />
             </div>
           )}
 
@@ -179,7 +176,7 @@ export function ClienteLoginPrincipal() {
             fontFamily: 'var(--font-display)',
             fontSize: '52px',
             letterSpacing: '0.08em',
-            color: 'var(--text-primary)',
+            color: '#FFFFFF',
             lineHeight: 1,
             textAlign: 'center',
           }}>
@@ -191,7 +188,7 @@ export function ClienteLoginPrincipal() {
             fontFamily: 'var(--font-mono)',
             fontSize: '10px',
             letterSpacing: '0.35em',
-            color: 'var(--cor-icone)',
+            color: '#F59E0B',
             textTransform: 'uppercase' as const,
             marginTop: '10px',
           }}>
@@ -202,7 +199,7 @@ export function ClienteLoginPrincipal() {
           <div style={{
             width: '50px',
             height: '1px',
-            background: 'linear-gradient(90deg, transparent, var(--amber), transparent)',
+            background: 'linear-gradient(90deg, transparent, #F59E0B, transparent)',
             marginTop: '1.5rem',
           }} />
         </div>
@@ -248,7 +245,7 @@ export function ClienteLoginPrincipal() {
               fontSize: '9px',
               letterSpacing: '0.18em',
               textTransform: 'uppercase' as const,
-              color: 'var(--text-muted)',
+              color: '#94A3B8',
               marginBottom: '6px',
               display: 'block',
             }}>
@@ -271,11 +268,11 @@ export function ClienteLoginPrincipal() {
                 required
                 style={{
                   width: '100%',
-                  background: 'rgba(255,255,255,0.04)',
-                  border: '1px solid rgba(255,255,255,0.08)',
+                  background: '#1E293B',
+                  border: '1px solid #334155',
                   borderRadius: '10px',
                   padding: '14px 14px 14px 42px',
-                  color: 'var(--text-primary)',
+                  color: '#FFFFFF',
                   fontFamily: 'var(--font-mono)',
                   fontSize: '13px',
                   letterSpacing: '0.02em',
@@ -284,12 +281,12 @@ export function ClienteLoginPrincipal() {
                   boxSizing: 'border-box' as const,
                 }}
                 onFocus={(e) => {
-                  e.currentTarget.style.borderColor = 'var(--amber)';
-                  e.currentTarget.style.background = 'rgba(255,255,255,0.06)';
+                  e.currentTarget.style.borderColor = '#F59E0B';
+                  e.currentTarget.style.background = '#1E293B';
                 }}
                 onBlur={(e) => {
-                  e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)';
-                  e.currentTarget.style.background = 'rgba(255,255,255,0.04)';
+                  e.currentTarget.style.borderColor = '#334155';
+                  e.currentTarget.style.background = '#1E293B';
                 }}
               />
             </div>
@@ -302,7 +299,7 @@ export function ClienteLoginPrincipal() {
               fontSize: '9px',
               letterSpacing: '0.18em',
               textTransform: 'uppercase' as const,
-              color: 'var(--text-muted)',
+              color: '#94A3B8',
               marginBottom: '6px',
               display: 'block',
             }}>
@@ -325,11 +322,11 @@ export function ClienteLoginPrincipal() {
                 required
                 style={{
                   width: '100%',
-                  background: 'rgba(255,255,255,0.04)',
-                  border: '1px solid rgba(255,255,255,0.08)',
+                  background: '#1E293B',
+                  border: '1px solid #334155',
                   borderRadius: '10px',
                   padding: '14px 14px 14px 42px',
-                  color: 'var(--text-primary)',
+                  color: '#FFFFFF',
                   fontFamily: 'var(--font-mono)',
                   fontSize: '13px',
                   letterSpacing: '0.1em',
@@ -338,12 +335,12 @@ export function ClienteLoginPrincipal() {
                   boxSizing: 'border-box' as const,
                 }}
                 onFocus={(e) => {
-                  e.currentTarget.style.borderColor = 'var(--amber)';
-                  e.currentTarget.style.background = 'rgba(255,255,255,0.06)';
+                  e.currentTarget.style.borderColor = '#F59E0B';
+                  e.currentTarget.style.background = '#1E293B';
                 }}
                 onBlur={(e) => {
-                  e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)';
-                  e.currentTarget.style.background = 'rgba(255,255,255,0.04)';
+                  e.currentTarget.style.borderColor = '#334155';
+                  e.currentTarget.style.background = '#1E293B';
                 }}
               />
             </div>
@@ -358,10 +355,10 @@ export function ClienteLoginPrincipal() {
               width: '100%',
               padding: '15px',
               marginTop: '8px',
-              background: 'linear-gradient(135deg, var(--amber) 0%, #E09818 100%)',
+              background: '#F59E0B',
               border: 'none',
               borderRadius: '10px',
-              color: '#0A0A0A',
+              color: '#0F172A',
               fontFamily: 'var(--font-body)',
               fontSize: '14px',
               fontWeight: 700,
@@ -400,15 +397,15 @@ export function ClienteLoginPrincipal() {
               fontFamily: 'var(--font-mono)',
               fontSize: '12px',
               letterSpacing: '0.08em',
-              color: 'var(--cor-icone)',
+              color: '#F59E0B',
               padding: '8px',
               transition: 'color 0.2s',
             }}
             onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.color = 'rgba(var(--cor-primaria-rgb), 0.15)';
+              (e.currentTarget as HTMLElement).style.color = 'rgba(245, 158, 11, 0.15)';
             }}
             onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.color = 'var(--amber)';
+              (e.currentTarget as HTMLElement).style.color = '#F59E0B';
             }}
           >
             Criar minha conta
@@ -459,8 +456,8 @@ export function ClienteLoginPrincipal() {
               position: 'relative',
               width: '100%',
               maxWidth: '340px',
-              background: 'var(--bg-surface)',
-              border: '1px solid var(--border)',
+              background: '#1E293B',
+              border: '1px solid #334155',
               borderRadius: '16px',
               padding: '2rem',
               boxShadow: '0 24px 60px rgba(0,0,0,0.5)',
@@ -482,7 +479,7 @@ export function ClienteLoginPrincipal() {
                 transition: 'color 0.2s',
               }}
               onMouseEnter={(e) => {
-                (e.currentTarget as HTMLElement).style.color = 'var(--text-muted)';
+                (e.currentTarget as HTMLElement).style.color = '#94A3B8';
               }}
               onMouseLeave={(e) => {
                 (e.currentTarget as HTMLElement).style.color = 'var(--text-disabled)';
@@ -505,16 +502,16 @@ export function ClienteLoginPrincipal() {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                background: 'rgba(var(--cor-primaria-rgb), 0.10)',
+                background: 'rgba(245, 158, 11, 0.10)',
                 marginBottom: '12px',
               }}>
-                <Settings size={20} style={{ color: 'var(--cor-icone)' }} />
+                <Settings size={20} style={{ color: '#F59E0B' }} />
               </div>
               <h2 style={{
                 fontFamily: 'var(--font-body)',
                 fontSize: '16px',
                 fontWeight: 700,
-                color: 'var(--text-primary)',
+                color: '#FFFFFF',
                 marginBottom: '4px',
               }}>
                 Acesso da Equipe
@@ -522,7 +519,7 @@ export function ClienteLoginPrincipal() {
               <p style={{
                 fontFamily: 'var(--font-mono)',
                 fontSize: '10px',
-                color: 'var(--text-muted)',
+                color: '#94A3B8',
                 letterSpacing: '0.1em',
               }}>
                 Selecione seu perfil
@@ -550,18 +547,18 @@ export function ClienteLoginPrincipal() {
                   width: '100%',
                   padding: '16px',
                   background: 'rgba(255,255,255,0.03)',
-                  border: '1px solid var(--border)',
+                  border: '1px solid #334155',
                   borderRadius: '12px',
                   cursor: 'pointer',
                   transition: 'all 0.25s ease',
                   textAlign: 'left' as const,
                 }}
                 onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLElement).style.borderColor = 'var(--amber)';
+                  (e.currentTarget as HTMLElement).style.borderColor = '#F59E0B';
                   (e.currentTarget as HTMLElement).style.background = 'rgba(212, 130, 10, 0.06)';
                 }}
                 onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLElement).style.borderColor = 'var(--border)';
+                  (e.currentTarget as HTMLElement).style.borderColor = '#334155';
                   (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.03)';
                 }}
               >
@@ -572,17 +569,17 @@ export function ClienteLoginPrincipal() {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  background: 'rgba(var(--cor-primaria-rgb), 0.10)',
+                  background: 'rgba(245, 158, 11, 0.10)',
                   flexShrink: 0,
                 }}>
-                  <Shield size={18} style={{ color: 'var(--cor-icone)' }} />
+                  <Shield size={18} style={{ color: '#F59E0B' }} />
                 </div>
                 <div>
                   <p style={{
                     fontFamily: 'var(--font-body)',
                     fontSize: '14px',
                     fontWeight: 600,
-                    color: 'var(--text-primary)',
+                    color: '#FFFFFF',
                     marginBottom: '2px',
                   }}>
                     Sou Administrador
@@ -590,7 +587,7 @@ export function ClienteLoginPrincipal() {
                   <p style={{
                     fontFamily: 'var(--font-mono)',
                     fontSize: '10px',
-                    color: 'var(--text-muted)',
+                    color: '#94A3B8',
                     letterSpacing: '0.06em',
                   }}>
                     Painel de gestão da barbearia
@@ -613,18 +610,18 @@ export function ClienteLoginPrincipal() {
                   width: '100%',
                   padding: '16px',
                   background: 'rgba(255,255,255,0.03)',
-                  border: '1px solid var(--border)',
+                  border: '1px solid #334155',
                   borderRadius: '12px',
                   cursor: 'pointer',
                   transition: 'all 0.25s ease',
                   textAlign: 'left' as const,
                 }}
                 onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLElement).style.borderColor = 'var(--amber)';
+                  (e.currentTarget as HTMLElement).style.borderColor = '#F59E0B';
                   (e.currentTarget as HTMLElement).style.background = 'rgba(212, 130, 10, 0.06)';
                 }}
                 onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLElement).style.borderColor = 'var(--border)';
+                  (e.currentTarget as HTMLElement).style.borderColor = '#334155';
                   (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.03)';
                 }}
               >
@@ -635,17 +632,17 @@ export function ClienteLoginPrincipal() {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  background: 'rgba(var(--cor-primaria-rgb), 0.10)',
+                  background: 'rgba(245, 158, 11, 0.10)',
                   flexShrink: 0,
                 }}>
-                  <Scissors size={18} style={{ color: 'var(--cor-icone)' }} />
+                  <Scissors size={18} style={{ color: '#F59E0B' }} />
                 </div>
                 <div>
                   <p style={{
                     fontFamily: 'var(--font-body)',
                     fontSize: '14px',
                     fontWeight: 600,
-                    color: 'var(--text-primary)',
+                    color: '#FFFFFF',
                     marginBottom: '2px',
                   }}>
                     Sou Barbeiro
@@ -653,7 +650,7 @@ export function ClienteLoginPrincipal() {
                   <p style={{
                     fontFamily: 'var(--font-mono)',
                     fontSize: '10px',
-                    color: 'var(--text-muted)',
+                    color: '#94A3B8',
                     letterSpacing: '0.06em',
                   }}>
                     Minha agenda e comissões
