@@ -91,17 +91,11 @@ export function AdminLogin() {
             alignItems: 'center',
             marginBottom: '2rem',
           }}>
-            <div style={{
-              width: '52px',
-              height: '52px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              background: 'rgba(245, 158, 11, 0.10)',
-              marginBottom: '1rem',
-            }}>
-              <Shield size={24} style={{ color: '#F59E0B' }} />
-            </div>
+            <Shield 
+              size={40} 
+              strokeWidth={1.5}
+              style={{ color: '#F59E0B', marginBottom: '1rem' }} 
+            />
 
             <h1 style={{
               fontFamily: 'var(--font-display)',
