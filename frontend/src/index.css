@@ -22,6 +22,13 @@
   --texto-secundario:  #737373;
   --texto-placeholder: #404040;
   --texto-label:       #525252;
+
+  /* Aliases de compatibilidade — mapeiam variáveis antigas para as novas */
+  --font-body:     var(--fonte-interface);
+  --font-display:  var(--fonte-interface);
+  --font-mono:     var(--fonte-numeros);
+  --fonte-titulo:  var(--fonte-interface);
+  --fonte-corpo:   var(--fonte-interface);
 }
 
 :root.light {
@@ -36,6 +43,13 @@
   --texto-secundario:  #737373;
   --texto-placeholder: #A0A0A0;
   --texto-label:       #A0A0A0;
+
+  /* Aliases de compatibilidade — mapeiam variáveis antigas para as novas */
+  --font-body:     var(--fonte-interface);
+  --font-display:  var(--fonte-interface);
+  --font-mono:     var(--fonte-numeros);
+  --fonte-titulo:  var(--fonte-interface);
+  --fonte-corpo:   var(--fonte-interface);
 }
 
 /* Aplicação global das fontes */
