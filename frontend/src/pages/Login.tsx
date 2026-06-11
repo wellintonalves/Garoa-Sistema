@@ -78,7 +78,7 @@ export function Login() {
   return (
     <div
       className="min-h-screen flex items-center justify-center p-4"
-      style={{ background: 'var(--bg-primary)' }}
+      style={{ background: 'var(--fundo-pagina)' }}
     >
       {/* Card de login */}
       <div className="relative w-full max-w-md animate-fade-in">

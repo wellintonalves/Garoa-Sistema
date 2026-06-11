@@ -46,7 +46,7 @@ export function ClienteLayout() {
   ];
 
   return (
-    <div className="flex flex-col h-[100dvh] overflow-hidden" style={{ background: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
+    <div className="flex flex-col h-[100dvh] overflow-hidden" style={{ background: 'var(--fundo-pagina)', color: 'var(--text-primary)' }}>
       <div className="flex-1 overflow-y-auto pb-24">
         <Outlet context={{ barbearia, barbeariaId }} />
       </div>

@@ -38,7 +38,7 @@ export function Fidelidade() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--bg-primary)] text-white flex flex-col font-body">
+    <div className="min-h-screen bg-[var(--fundo-pagina)] text-white flex flex-col font-body">
       {/* Header Público */}
       <header className="h-16 flex items-center px-4 bg-[var(--bg-surface)] border-b border-[var(--border)] sticky top-0 z-10">
         <button onClick={() => navigate('/agendar')} className="text-[var(--cor-primaria)]">

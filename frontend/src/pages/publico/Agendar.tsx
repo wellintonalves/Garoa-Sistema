@@ -103,7 +103,7 @@ export function Agendar() {
   });
 
   return (
-    <div className="min-h-screen bg-[var(--bg-primary)] text-white flex flex-col font-body">
+    <div className="min-h-screen bg-[var(--fundo-pagina)] text-white flex flex-col font-body">
       {/* Header Público */}
       <header className="h-16 flex items-center justify-center bg-[var(--bg-surface)] border-b border-[var(--border)] sticky top-0 z-10">
         <h1 className="font-display text-xl tracking-wider text-[var(--cor-primaria)] uppercase">

@@ -21,7 +21,7 @@ export function DashboardLayout() {
   }, [carregarTemaAdmin]);
 
   return (
-    <div className="min-h-screen" style={{ background: 'var(--bg-primary)' }}>
+    <div className="min-h-screen" style={{ background: 'var(--fundo-pagina)' }}>
       {/* Topbar Mobile */}
       <header 
         className="md:hidden flex items-center h-16 px-4 sticky top-0 z-30"

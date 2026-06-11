@@ -630,7 +630,7 @@ export function Clientes() {
 
                       {/* Form adicionar pontos */}
                       {mostrarFormPontos && (
-                        <div style={{ padding: '14px', background: 'var(--bg-primary)', border: '1px solid rgba(var(--cor-primaria-rgb), 0.10)' }}>
+                        <div style={{ padding: '14px', background: 'var(--fundo-pagina)', border: '1px solid rgba(var(--cor-primaria-rgb), 0.10)' }}>
                           <p className="section-divider" style={{ marginTop: 0 }}>Adicionar pontos manualmente</p>
                           <div className="flex gap-2" style={{ marginTop: '10px' }}>
                             <div style={{ flex: 1 }}>
@@ -663,7 +663,7 @@ export function Clientes() {
 
                       {/* Form resgatar */}
                       {mostrarFormResgate && (
-                        <div style={{ padding: '14px', background: 'var(--bg-primary)', border: '1px solid rgba(var(--cor-primaria-rgb), 0.10)' }}>
+                        <div style={{ padding: '14px', background: 'var(--fundo-pagina)', border: '1px solid rgba(var(--cor-primaria-rgb), 0.10)' }}>
                           <p className="section-divider" style={{ marginTop: 0 }}>Resgatar recompensa</p>
                           <p style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--text-muted)', margin: '8px 0' }}>
                             Saldo atual: <strong style={{ color: clienteSelecionado.cor }}>{clienteSelecionado.pontosAtuais} pts</strong>

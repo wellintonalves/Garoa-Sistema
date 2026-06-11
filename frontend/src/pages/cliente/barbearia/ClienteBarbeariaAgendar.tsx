@@ -96,7 +96,7 @@ export function ClienteBarbeariaAgendar() {
             <div className="flex items-center justify-center w-7 h-7 text-xs font-bold"
               style={{
                 background: i <= etapaIdx ? 'var(--amber)' : 'var(--bg-surface2)',
-                color: i <= etapaIdx ? 'var(--bg-primary)' : 'var(--text-disabled)',
+                color: i <= etapaIdx ? 'var(--fundo-pagina)' : 'var(--text-disabled)',
                 fontFamily: 'var(--font-mono)',
                 fontSize: '10px',
               }}>
@@ -207,7 +207,7 @@ export function ClienteBarbeariaAgendar() {
                       textAlign: 'center',
                       cursor: s.disponivel ? 'pointer' : 'not-allowed',
                       background: horarioSel === s.horario ? 'var(--amber)' : s.disponivel ? 'var(--bg-surface)' : 'var(--bg-surface2)',
-                      color: horarioSel === s.horario ? 'var(--bg-primary)' : s.disponivel ? 'var(--text-primary)' : 'var(--text-disabled)',
+                      color: horarioSel === s.horario ? 'var(--fundo-pagina)' : s.disponivel ? 'var(--text-primary)' : 'var(--text-disabled)',
                       border: horarioSel === s.horario ? '1px solid var(--amber)' : '1px solid var(--border)',
                       opacity: s.disponivel ? 1 : 0.4,
                     }}>

@@ -94,7 +94,7 @@ export function ClienteHome() {
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: 'var(--bg-primary)' }}>
+    <div className="min-h-screen flex flex-col" style={{ background: 'var(--fundo-pagina)' }}>
       {/* Header */}
       <div className="px-5 pt-8 pb-4" style={{ borderBottom: '1px solid var(--border)' }}>
         <div className="flex items-center justify-between mb-6">

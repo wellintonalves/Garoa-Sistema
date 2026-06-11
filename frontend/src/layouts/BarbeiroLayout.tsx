@@ -16,7 +16,7 @@ export function BarbeiroLayout() {
   ];
 
   return (
-    <div className="flex flex-col min-h-screen" style={{ background: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
+    <div className="flex flex-col min-h-screen" style={{ background: 'var(--fundo-pagina)', color: 'var(--text-primary)' }}>
       <div className="flex-1 overflow-y-auto pb-20">
         <Outlet context={{ barbeiro }} />
       </div>
