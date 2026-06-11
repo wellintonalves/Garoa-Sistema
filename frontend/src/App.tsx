@@ -16,6 +16,7 @@ import { Fidelidade } from './pages/publico/Fidelidade';
 import { LoadingSpinner } from './components/LoadingSpinner';
 import { type ReactNode, useEffect } from 'react';
 import { useTema } from './hooks/useTema';
+import { useModoTema } from './hooks/useModoTema';
 
 /** Rota protegida — redireciona para login se não autenticado */
 function RotaProtegida({ children }: { children: ReactNode }) {
@@ -61,6 +62,7 @@ import { BarbeiroComissoes } from './pages/barbeiro/BarbeiroComissoes';
 import { BarbeiroPerfil } from './pages/barbeiro/BarbeiroPerfil';
 
 export function App() {
+  useModoTema();
   const { carregarTemaCache } = useTema();
 
   useEffect(() => {
