@@ -7,48 +7,49 @@
 
 /* === TOKENS DE COR (CSS Custom Properties) === */
 :root {
-  /* Novas Cores Dinâmicas */
-  --cor-primaria: #F59E0B;
-  --cor-primaria-rgb: 245, 158, 11;
-  --cor-secundaria: #1E293B;
-  --cor-texto: #F8FAFC;
-  --cor-fundo: #0F172A;
-  --cor-icone: #F59E0B; /* Fallback until JS loads */
-  --fonte-titulo: 'Bebas Neue';
-  --fonte-corpo: 'Inter';
-  --fonte-numeros: 'DM Mono';
-
-  /* Fundos (Antigos mapeados para os novos como fallback) */
-  --bg-primary:    var(--cor-fundo);
-  --bg-surface:    var(--cor-secundaria);
-  --bg-surface2:   #272724;
-
-  /* Bordas */
-  --border:        #2E2E2B;
-  --border-hover:  #4A4A46;
-
-  /* Acento principal — âmbar (Mapeado para cor primaria) */
-  --amber:         var(--cor-primaria);
-  --amber-light:   var(--cor-primaria);
-  --amber-dim:     rgba(var(--cor-primaria-rgb), 0.15);
-
-  /* Texto */
-  --text-primary:  var(--cor-texto);
-  --text-muted:    #9A9488;
-  --text-disabled: #4A4A46;
-
-  /* Semântico */
-  --success:       #2D6A3F;
-  --success-text:  #6FCF97;
-  --error:         #711F1F;
-  --error-text:    #E24B4A;
-  --warning:       #3D2A08;
-  --warning-text:  #F0A030;
-
   /* Fontes */
-  --font-display: var(--fonte-titulo), sans-serif;
-  --font-body:    var(--fonte-corpo), sans-serif;
-  --font-mono:    var(--fonte-numeros), monospace;
+  --fonte-interface: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --fonte-numeros:   'JetBrains Mono', monospace;
+
+  /* Modo escuro — padrão */
+  --fundo-pagina:      #0A0A0A;
+  --fundo-card:        #141414;
+  --fundo-input:       #1A1A1A;
+  --fundo-sidebar:     #111111;
+  --borda:             #1F1F1F;
+  --borda-input:       #2A2A2A;
+  --texto-principal:   #F5F5F5;
+  --texto-secundario:  #737373;
+  --texto-placeholder: #404040;
+  --texto-label:       #525252;
+}
+
+:root.light {
+  /* Modo claro */
+  --fundo-pagina:      #F5F5F5;
+  --fundo-card:        #FFFFFF;
+  --fundo-input:       #F0F0F0;
+  --fundo-sidebar:     #FFFFFF;
+  --borda:             #E5E5E5;
+  --borda-input:       #D4D4D4;
+  --texto-principal:   #0A0A0A;
+  --texto-secundario:  #737373;
+  --texto-placeholder: #A0A0A0;
+  --texto-label:       #A0A0A0;
+}
+
+/* Aplicação global das fontes */
+body {
+  font-family: var(--fonte-interface);
+  background-color: var(--fundo-pagina);
+  color: var(--texto-principal);
+}
+
+/* Valores numéricos e dados financeiros */
+.font-mono,
+.valor-monetario,
+.valor-numerico {
+  font-family: var(--fonte-numeros);
 }
 
 /* === TAILWIND THEME OVERRIDE === */

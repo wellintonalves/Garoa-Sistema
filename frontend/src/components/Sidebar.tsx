@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import api from '../api/client';
+import { ToggleModo } from './ToggleModo';
 
 interface SidebarProps {
   mobileOpen: boolean;
@@ -127,6 +128,8 @@ export function Sidebar({ mobileOpen, onCloseMobile }: SidebarProps) {
             </NavLink>
           ))}
         </nav>
+
+        {!recolhido && <ToggleModo />}
 
         {/* Usuário + Logout */}
         <div style={{ borderTop: '1px solid var(--border)', padding: '12px' }}>
