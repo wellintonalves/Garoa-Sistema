@@ -29,6 +29,29 @@
   --font-mono:     var(--fonte-numeros);
   --fonte-titulo:  var(--fonte-interface);
   --fonte-corpo:   var(--fonte-interface);
+
+  /* Aliases de compatibilidade — vocabulário antigo → novos tokens */
+  --bg-primary:     var(--fundo-pagina);
+  --bg-surface:     var(--fundo-sidebar);
+  --bg-card:        var(--fundo-card);
+  --bg-input:       var(--fundo-input);
+  --surface:        var(--fundo-card);
+  --card-bg:        var(--fundo-card);
+
+  --text-primary:   var(--texto-principal);
+  --text-secondary: var(--texto-secundario);
+  --text-muted:     var(--texto-secundario);
+  --text-placeholder: var(--texto-placeholder);
+
+  --border:         var(--borda);
+  --border-hover:   var(--borda-input);
+
+  --font-display:   var(--fonte-interface);
+  --font-heading:   var(--fonte-interface);
+
+  --error-text:     #EF4444;
+  --success-text:   #22C55E;
+  --warning-text:   #F59E0B;
 }
 
 :root.light {
