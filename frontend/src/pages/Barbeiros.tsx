@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { Star, Plus, DollarSign, TrendingUp, Calendar, Edit2 } from 'lucide-react';
 import { Modal } from '../components/Modal';
+import { ImageCropperModal } from '../components/ImageCropperModal';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/client';
@@ -27,6 +28,8 @@ export function Barbeiros() {
   const [barbeiros, setBarbeiros] = useState<Barbeiro[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [modalAberto, setModalAberto] = useState(false);
+  const [cropModalAberto, setCropModalAberto] = useState(false);
+  const [imagemParaCortar, setImagemParaCortar] = useState<string>('');
   const [editandoId, setEditandoId] = useState<string | null>(null);
   const [form, setForm] = useState({ nome: '', email: '', senha: '', foto: '', especialidades: '', comissaoPercent: '50', cor: '#F97316' });
   const navigate = useNavigate();
@@ -357,16 +360,17 @@ export function Barbeiros() {
                   {form.nome ? getIniciais(form.nome) : 'B'}
                 </div>
               )}
-              <input type="file" accept="image/png, image/jpeg, image/webp" onChange={async (e) => {
+              <input type="file" accept="image/png, image/jpeg, image/webp" onChange={(e) => {
                 if (e.target.files && e.target.files[0]) {
                   const file = e.target.files[0];
                   if (file.size > 2 * 1024 * 1024) { alert('Arquivo muito grande (Max 2MB)'); return; }
-                  const formData = new FormData();
-                  formData.append('file', file);
-                  try {
-                    const res = await api.post('/upload/barbeiro', formData);
-                    setForm({ ...form, foto: res.data.url });
-                  } catch (error) { alert('Erro ao fazer upload da foto'); }
+                  const reader = new FileReader();
+                  reader.onload = () => {
+                    setImagemParaCortar(reader.result as string);
+                    setCropModalAberto(true);
+                  };
+                  reader.readAsDataURL(file);
+                  e.target.value = '';
                 }
               }} className="text-sm text-zinc-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-bold file:bg-[var(--bg-surface2)] file:text-white hover:file:bg-zinc-700 cursor-pointer" />
             </div>
@@ -393,6 +397,24 @@ export function Barbeiros() {
           <button onClick={salvarBarbeiro} className="btn-primary w-full justify-center">{editandoId ? "Salvar Alterações" : "Cadastrar"}</button>
         </div>
       </Modal>
+
+      <ImageCropperModal
+        aberto={cropModalAberto}
+        onFechar={() => setCropModalAberto(false)}
+        imageSrc={imagemParaCortar}
+        onCropComplete={async (croppedBlob) => {
+          setCropModalAberto(false);
+          const formData = new FormData();
+          formData.append('file', croppedBlob, 'avatar.jpeg');
+          try {
+            const res = await api.post('/upload/barbeiro', formData);
+            setForm({ ...form, foto: res.data.url });
+          } catch (error: any) { 
+            console.error(error);
+            alert(error?.response?.data?.erro || 'Erro ao fazer upload da foto'); 
+          }
+        }}
+      />
     </div>
   );
 }
