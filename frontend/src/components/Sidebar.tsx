@@ -75,7 +75,7 @@ export function Sidebar({ mobileOpen, onCloseMobile }: SidebarProps) {
               <span
                 className="animate-fade-in truncate"
                 style={{
-                  fontFamily: "var(--font-display)",
+                  fontFamily: "var(--fonte-interface)",
                   fontSize: '24px',
                   letterSpacing: '0.06em',
                   color: 'var(--text-primary)',
@@ -87,7 +87,7 @@ export function Sidebar({ mobileOpen, onCloseMobile }: SidebarProps) {
           ) : (
             <span
               style={{
-                fontFamily: "var(--font-display)",
+                fontFamily: "var(--fonte-interface)",
                 fontSize: '20px',
                 color: 'var(--cor-icone)',
               }}
@@ -138,7 +138,7 @@ export function Sidebar({ mobileOpen, onCloseMobile }: SidebarProps) {
               <p
                 className="truncate"
                 style={{
-                  fontFamily: 'var(--font-body)',
+                  fontFamily: 'var(--fonte-interface)',
                   fontSize: '12px',
                   fontWeight: 500,
                   color: 'var(--text-primary)',
@@ -149,7 +149,7 @@ export function Sidebar({ mobileOpen, onCloseMobile }: SidebarProps) {
               <p
                 className="truncate"
                 style={{
-                  fontFamily: 'var(--font-mono)',
+                  fontFamily: 'var(--fonte-numeros)',
                   fontSize: '10px',
                   color: 'var(--text-muted)',
                   letterSpacing: '0.04em',
@@ -163,7 +163,7 @@ export function Sidebar({ mobileOpen, onCloseMobile }: SidebarProps) {
             onClick={logout}
             className="flex items-center gap-3 w-full px-3 py-2 transition-colors"
             style={{
-              fontFamily: 'var(--font-mono)',
+              fontFamily: 'var(--fonte-numeros)',
               fontSize: '10px',
               letterSpacing: '0.14em',
               textTransform: 'uppercase',

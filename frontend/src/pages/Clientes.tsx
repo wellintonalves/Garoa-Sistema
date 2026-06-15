@@ -224,7 +224,7 @@ export function Clientes() {
       {/* Header */}
       <h1
         style={{
-          fontFamily: 'var(--font-display)',
+          fontFamily: 'var(--fonte-interface)',
           fontSize: '32px',
           color: 'var(--text-primary)',
           letterSpacing: '0.04em',
@@ -336,7 +336,7 @@ export function Clientes() {
                               height: '36px',
                               background: `${c.cor}20`,
                               border: `1px solid ${c.cor}40`,
-                              fontFamily: 'var(--font-display)',
+                              fontFamily: 'var(--fonte-interface)',
                               fontSize: '14px',
                               color: c.cor,
                               letterSpacing: '0.04em',
@@ -352,28 +352,28 @@ export function Clientes() {
                       {/* Contato */}
                       <td>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
                             <Mail size={10} /> {c.usuario?.email || '—'}
                           </span>
-                          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
                             <Phone size={10} /> {c.telefone || '—'}
                           </span>
                         </div>
                       </td>
                       {/* Última visita */}
-                      <td style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--text-muted)' }}>
+                      <td style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--text-muted)' }}>
                         {formatarData(c.ultimoAtendimento)}
                       </td>
                       {/* Visitas */}
-                      <td style={{ textAlign: 'center', fontFamily: 'var(--font-display)', fontSize: '20px', color: 'var(--text-primary)' }}>
+                      <td style={{ textAlign: 'center', fontFamily: 'var(--fonte-interface)', fontSize: '20px', color: 'var(--text-primary)' }}>
                         {c.totalVisitas}
                       </td>
                       {/* Gasto total */}
-                      <td style={{ textAlign: 'right', fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'rgba(var(--cor-primaria-rgb), 0.15)' }}>
+                      <td style={{ textAlign: 'right', fontFamily: 'var(--fonte-numeros)', fontSize: '12px', color: 'rgba(var(--cor-primaria-rgb), 0.15)' }}>
                         {formatarMoeda(c.totalGasto)}
                       </td>
                       {/* Pontos */}
-                      <td style={{ textAlign: 'center', fontFamily: 'var(--font-display)', fontSize: '18px', color: c.cor }}>
+                      <td style={{ textAlign: 'center', fontFamily: 'var(--fonte-interface)', fontSize: '18px', color: c.cor }}>
                         {c.pontosAtuais}
                       </td>
                       {/* Badge nível */}
@@ -386,7 +386,7 @@ export function Clientes() {
                           onClick={() => abrirPerfil(c.id)}
                           className="transition-colors"
                           style={{
-                            fontFamily: 'var(--font-mono)',
+                            fontFamily: 'var(--fonte-numeros)',
                             fontSize: '9px',
                             letterSpacing: '0.12em',
                             textTransform: 'uppercase',
@@ -405,7 +405,7 @@ export function Clientes() {
                   ))}
                   {clientes.length === 0 && (
                     <tr>
-                      <td colSpan={8} style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', fontSize: '11px' }}>
+                      <td colSpan={8} style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)', fontFamily: 'var(--fonte-numeros)', fontSize: '11px' }}>
                         {carregando ? 'Buscando clientes...' : 'Nenhum cliente encontrado'}
                       </td>
                     </tr>
@@ -421,10 +421,10 @@ export function Clientes() {
       {abaAtiva === 'aniversariantes' && (
         <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
           <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border)' }}>
-            <p style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--text-primary)', fontWeight: 600 }}>
+            <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '14px', color: 'var(--text-primary)', fontWeight: 600 }}>
               🎂 Aniversariantes de {mesAtual}
             </p>
-            <p style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--text-muted)', marginTop: '4px' }}>
+            <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--text-muted)', marginTop: '4px' }}>
               {aniversariantes.length} cliente{aniversariantes.length !== 1 ? 's' : ''} fazendo aniversário este mês
             </p>
           </div>
@@ -448,7 +448,7 @@ export function Clientes() {
                       width: '40px',
                       height: '40px',
                       background: 'rgba(var(--cor-primaria-rgb), 0.10)',
-                      fontFamily: 'var(--font-display)',
+                      fontFamily: 'var(--fonte-interface)',
                       fontSize: '14px',
                       color: 'var(--cor-icone)',
                     }}
@@ -457,7 +457,7 @@ export function Clientes() {
                   </div>
                   <div>
                     <p style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: '14px' }}>{a.usuario.nome}</p>
-                    <p style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--text-muted)' }}>
+                    <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--text-muted)' }}>
                       {formatarData(a.dataNascimento)} — Dia {a.diaAniversario}
                     </p>
                   </div>
@@ -475,7 +475,7 @@ export function Clientes() {
               </div>
             ))}
             {aniversariantes.length === 0 && (
-              <p style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', fontSize: '11px' }}>
+              <p style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)', fontFamily: 'var(--fonte-numeros)', fontSize: '11px' }}>
                 Nenhum aniversariante encontrado este mês
               </p>
             )}
@@ -509,7 +509,7 @@ export function Clientes() {
                         height: '48px',
                         background: `${clienteSelecionado.cor}20`,
                         border: `1px solid ${clienteSelecionado.cor}40`,
-                        fontFamily: 'var(--font-display)',
+                        fontFamily: 'var(--fonte-interface)',
                         fontSize: '18px',
                         color: clienteSelecionado.cor,
                       }}
@@ -517,7 +517,7 @@ export function Clientes() {
                       {getIniciais(clienteSelecionado.usuario.nome)}
                     </div>
                     <div>
-                      <h2 style={{ fontFamily: 'var(--font-body)', fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)' }}>
+                      <h2 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)' }}>
                         {clienteSelecionado.usuario.nome}
                       </h2>
                       <span className={`badge ${badgeClass(clienteSelecionado.nivel)}`}>{clienteSelecionado.nivel}</span>
@@ -552,14 +552,14 @@ export function Clientes() {
                         ].map((item, i) => (
                           <div key={i} style={{ padding: '10px', background: 'var(--bg-surface2)', border: '1px solid var(--border)' }}>
                             <span className="input-label" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>{item.icon} {item.label}</span>
-                            <p style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--text-primary)', marginTop: '4px' }}>{item.value}</p>
+                            <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '12px', color: 'var(--text-primary)', marginTop: '4px' }}>{item.value}</p>
                           </div>
                         ))}
                       </div>
                       {clienteSelecionado.observacoes && (
                         <div style={{ padding: '10px', background: 'var(--bg-surface2)', border: '1px solid var(--border)' }}>
                           <span className="input-label">Observações</span>
-                          <p style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>{clienteSelecionado.observacoes}</p>
+                          <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>{clienteSelecionado.observacoes}</p>
                         </div>
                       )}
 
@@ -576,7 +576,7 @@ export function Clientes() {
                         ].map((s, i) => (
                           <div key={i} style={{ padding: '10px', background: 'var(--bg-surface2)', border: '1px solid var(--border)' }}>
                             <span className="metric-label">{s.label}</span>
-                            <p style={{ fontFamily: 'var(--font-display)', fontSize: '22px', color: i === 5 ? clienteSelecionado.cor : 'var(--text-primary)', marginTop: '4px' }}>{s.value}</p>
+                            <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '22px', color: i === 5 ? clienteSelecionado.cor : 'var(--text-primary)', marginTop: '4px' }}>{s.value}</p>
                           </div>
                         ))}
                       </div>
@@ -585,11 +585,11 @@ export function Clientes() {
                       <div className="section-divider">Fidelidade</div>
                       <div style={{ padding: '14px', background: 'var(--bg-surface2)', border: '1px solid var(--border)' }}>
                         <div className="flex items-center justify-between" style={{ marginBottom: '8px' }}>
-                          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--text-muted)' }}>
+                          <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--text-muted)' }}>
                             {clienteSelecionado.pontosAtuais} pts
                           </span>
                           {clienteSelecionado.nivel !== 'Diamante' && (
-                            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--text-muted)' }}>
+                            <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--text-muted)' }}>
                               {clienteSelecionado.proximoNivel} pts (próximo nível)
                             </span>
                           )}
@@ -611,7 +611,7 @@ export function Clientes() {
                             {clienteSelecionado.nivel}
                           </span>
                           {clienteSelecionado.pontosParaProximo > 0 && (
-                            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--text-muted)' }}>
+                            <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--text-muted)' }}>
                               Faltam {clienteSelecionado.pontosParaProximo} pts
                             </span>
                           )}
@@ -665,7 +665,7 @@ export function Clientes() {
                       {mostrarFormResgate && (
                         <div style={{ padding: '14px', background: 'var(--fundo-pagina)', border: '1px solid rgba(var(--cor-primaria-rgb), 0.10)' }}>
                           <p className="section-divider" style={{ marginTop: 0 }}>Resgatar recompensa</p>
-                          <p style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--text-muted)', margin: '8px 0' }}>
+                          <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--text-muted)', margin: '8px 0' }}>
                             Saldo atual: <strong style={{ color: clienteSelecionado.cor }}>{clienteSelecionado.pontosAtuais} pts</strong>
                           </p>
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
@@ -677,7 +677,7 @@ export function Clientes() {
                               >
                                 <div>
                                   <p style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: '13px' }}>{r.nome}</p>
-                                  <p style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--text-muted)' }}>{r.pontosNecessarios} pts necessários</p>
+                                  <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--text-muted)' }}>{r.pontosNecessarios} pts necessários</p>
                                 </div>
                                 <button
                                   className="btn-primary"
@@ -690,7 +690,7 @@ export function Clientes() {
                               </div>
                             ))}
                             {recompensas.length === 0 && (
-                              <p style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--text-muted)', textAlign: 'center', padding: '12px' }}>
+                              <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--text-muted)', textAlign: 'center', padding: '12px' }}>
                                 Nenhuma recompensa cadastrada
                               </p>
                             )}
@@ -718,22 +718,22 @@ export function Clientes() {
                           <div className="flex items-center gap-3">
                             <Calendar size={14} strokeWidth={1.5} style={{ color: 'var(--text-muted)' }} />
                             <div>
-                              <p style={{ fontFamily: 'var(--font-body)', fontSize: '13px', fontWeight: 700, color: 'var(--text-primary)' }}>{ag.servico}</p>
-                              <p style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                              <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '13px', fontWeight: 700, color: 'var(--text-primary)' }}>{ag.servico}</p>
+                              <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px' }}>
                                 {formatarData(ag.dataHora)} — {ag.barbeiro}
                               </p>
                             </div>
                           </div>
                           <div style={{ textAlign: 'right' }}>
-                            <p style={{ fontFamily: 'var(--font-display)', fontSize: '16px', color: 'var(--cor-icone)' }}>R$ {Number(ag.valorCobrado).toFixed(2)}</p>
-                            <p style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', letterSpacing: '0.1em', textTransform: 'uppercase', color: statusStyles[ag.status] || 'var(--text-muted)', marginTop: '2px' }}>
+                            <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '16px', color: 'var(--cor-icone)' }}>R$ {Number(ag.valorCobrado).toFixed(2)}</p>
+                            <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '9px', letterSpacing: '0.1em', textTransform: 'uppercase', color: statusStyles[ag.status] || 'var(--text-muted)', marginTop: '2px' }}>
                               {ag.status}
                             </p>
                           </div>
                         </div>
                       ))}
                       {clienteSelecionado.agendamentos.length === 0 && (
-                        <p style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', fontSize: '11px' }}>
+                        <p style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)', fontFamily: 'var(--fonte-numeros)', fontSize: '11px' }}>
                           Nenhum agendamento encontrado
                         </p>
                       )}
@@ -755,17 +755,17 @@ export function Clientes() {
                             >
                               <div>
                                 <p style={{ fontSize: '12px', color: 'var(--text-primary)' }}>{p.descricao}</p>
-                                <p style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                                <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px' }}>
                                   {formatarData(p.data)}
                                 </p>
                               </div>
-                              <span style={{ fontFamily: 'var(--font-display)', fontSize: '18px', color: 'var(--success-text)' }}>
+                              <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '18px', color: 'var(--success-text)' }}>
                                 +{p.pontos}
                               </span>
                             </div>
                           ))}
                           {clienteSelecionado.historicoPontos.length === 0 && (
-                            <p style={{ textAlign: 'center', padding: '1rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', fontSize: '11px' }}>
+                            <p style={{ textAlign: 'center', padding: '1rem', color: 'var(--text-muted)', fontFamily: 'var(--fonte-numeros)', fontSize: '11px' }}>
                               Nenhum ponto registrado
                             </p>
                           )}
@@ -784,17 +784,17 @@ export function Clientes() {
                             >
                               <div>
                                 <p style={{ fontSize: '12px', color: 'var(--text-primary)' }}>{r.recompensa}</p>
-                                <p style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                                <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px' }}>
                                   {formatarData(r.data)}
                                 </p>
                               </div>
-                              <span style={{ fontFamily: 'var(--font-display)', fontSize: '18px', color: 'var(--error-text)' }}>
+                              <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '18px', color: 'var(--error-text)' }}>
                                 −{r.pontosUsados}
                               </span>
                             </div>
                           ))}
                           {clienteSelecionado.historicoResgates.length === 0 && (
-                            <p style={{ textAlign: 'center', padding: '1rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', fontSize: '11px' }}>
+                            <p style={{ textAlign: 'center', padding: '1rem', color: 'var(--text-muted)', fontFamily: 'var(--fonte-numeros)', fontSize: '11px' }}>
                               Nenhum resgate realizado
                             </p>
                           )}

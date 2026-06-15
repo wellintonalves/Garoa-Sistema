@@ -129,7 +129,7 @@ export function Barbeiros() {
       <div className="flex items-center justify-between flex-wrap gap-4">
         <h1
           style={{
-            fontFamily: 'var(--font-display)',
+            fontFamily: 'var(--fonte-interface)',
             fontSize: '32px',
             color: 'var(--text-primary)',
             letterSpacing: '0.04em',
@@ -160,7 +160,7 @@ export function Barbeiros() {
                     width: '48px',
                     height: '48px',
                     background: 'rgba(var(--cor-primaria-rgb), 0.10)',
-                    fontFamily: 'var(--font-display)',
+                    fontFamily: 'var(--fonte-interface)',
                     fontSize: '20px',
                     color: 'rgba(var(--cor-primaria-rgb), 0.15)',
                     letterSpacing: '0.04em',
@@ -174,7 +174,7 @@ export function Barbeiros() {
                 <h3
                   className="truncate"
                   style={{
-                    fontFamily: 'var(--font-body)',
+                    fontFamily: 'var(--fonte-interface)',
                     fontSize: '14px',
                     fontWeight: 700,
                     color: 'var(--text-primary)',
@@ -185,7 +185,7 @@ export function Barbeiros() {
                 <p
                   className="truncate"
                   style={{
-                    fontFamily: 'var(--font-mono)',
+                    fontFamily: 'var(--fonte-numeros)',
                     fontSize: '10px',
                     color: 'var(--text-muted)',
                     letterSpacing: '0.04em',
@@ -237,14 +237,14 @@ export function Barbeiros() {
               className="flex items-center justify-between mt-4 pt-3"
               style={{ borderTop: '1px solid var(--border)' }}
             >
-              <div className="flex items-center gap-1.5" style={{ color: 'var(--cor-icone)', fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.04em' }}>
+              <div className="flex items-center gap-1.5" style={{ color: 'var(--cor-icone)', fontFamily: 'var(--fonte-numeros)', fontSize: '11px', letterSpacing: '0.04em' }}>
                 <Star size={14} strokeWidth={1.5} /> <span>Comissão: {b.comissaoPercent}%</span>
               </div>
               <button
                 onClick={() => navigate(`/relatorios?barbeiroId=${b.id}`)}
                 className="flex items-center gap-1 transition-colors"
                 style={{
-                  fontFamily: 'var(--font-mono)',
+                  fontFamily: 'var(--fonte-numeros)',
                   fontSize: '9px',
                   letterSpacing: '0.12em',
                   textTransform: 'uppercase',
@@ -272,7 +272,7 @@ export function Barbeiros() {
               <TrendingUp size={16} strokeWidth={1.5} style={{ color: 'var(--cor-icone)' }} />
               <h2
                 style={{
-                  fontFamily: 'var(--font-body)',
+                  fontFamily: 'var(--fonte-interface)',
                   fontSize: '16px',
                   fontWeight: 700,
                   color: 'var(--text-primary)',
@@ -311,34 +311,34 @@ export function Barbeiros() {
                         width: '36px',
                         height: '36px',
                         background: 'rgba(var(--cor-primaria-rgb), 0.10)',
-                        fontFamily: 'var(--font-display)',
+                        fontFamily: 'var(--fonte-interface)',
                         fontSize: '16px',
                         color: 'rgba(var(--cor-primaria-rgb), 0.15)',
                       }}
                     >
                       {getIniciais(b.nome)}
                     </div>
-                    <p style={{ fontFamily: 'var(--font-body)', fontWeight: 700, color: 'var(--text-primary)', fontSize: '13px' }}>{b.nome}</p>
+                    <p style={{ fontFamily: 'var(--fonte-interface)', fontWeight: 700, color: 'var(--text-primary)', fontSize: '13px' }}>{b.nome}</p>
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '13px' }}>
                     <div className="flex justify-between items-center">
-                      <span style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Produzido</span>
-                      <span style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-mono)', fontSize: '12px' }}>{fmt(b.bruto)}</span>
+                      <span style={{ color: 'var(--text-muted)', fontFamily: 'var(--fonte-numeros)', fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Produzido</span>
+                      <span style={{ color: 'var(--text-primary)', fontFamily: 'var(--fonte-numeros)', fontSize: '12px' }}>{fmt(b.bruto)}</span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Comissão</span>
-                      <span style={{ color: 'var(--cor-icone)', fontFamily: 'var(--font-mono)', fontSize: '12px', fontWeight: 500 }}>{fmt(b.comissao)}</span>
+                      <span style={{ color: 'var(--text-muted)', fontFamily: 'var(--fonte-numeros)', fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Comissão</span>
+                      <span style={{ color: 'var(--cor-icone)', fontFamily: 'var(--fonte-numeros)', fontSize: '12px', fontWeight: 500 }}>{fmt(b.comissao)}</span>
                     </div>
                     <div className="flex justify-between items-center" style={{ borderTop: '1px solid var(--border)', paddingTop: '8px', marginTop: '4px' }}>
-                      <span style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Líquido</span>
-                      <span style={{ color: 'var(--success-text)', fontFamily: 'var(--font-mono)', fontSize: '12px', fontWeight: 500 }}>{fmt(b.liquido)}</span>
+                      <span style={{ color: 'var(--text-muted)', fontFamily: 'var(--fonte-numeros)', fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Líquido</span>
+                      <span style={{ color: 'var(--success-text)', fontFamily: 'var(--fonte-numeros)', fontSize: '12px', fontWeight: 500 }}>{fmt(b.liquido)}</span>
                     </div>
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            <p style={{ textAlign: 'center', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', fontSize: '11px', padding: '2rem 0' }}>
+            <p style={{ textAlign: 'center', color: 'var(--text-muted)', fontFamily: 'var(--fonte-numeros)', fontSize: '11px', padding: '2rem 0' }}>
               Nenhuma comissão encontrada para o período selecionado.
             </p>
           )}

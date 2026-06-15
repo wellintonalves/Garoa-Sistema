@@ -31,7 +31,7 @@ export function StatCard({ titulo, valor, icone: Icone, subtexto, destaque }: St
       {subtexto && (
         <p
           style={{
-            fontFamily: 'var(--font-mono)',
+            fontFamily: 'var(--fonte-numeros)',
             fontSize: '10px',
             color: 'var(--text-muted)',
             marginTop: '4px',

@@ -62,7 +62,7 @@ export function ClienteBarbeariaPerfil() {
 
   return (
     <div className="px-5 py-6 animate-fade-in">
-      <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '24px', color: 'var(--text-primary)', marginBottom: '24px', letterSpacing: '0.04em' }}>
+      <h1 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '24px', color: 'var(--text-primary)', marginBottom: '24px', letterSpacing: '0.04em' }}>
         Meu Perfil
       </h1>
 
@@ -82,7 +82,7 @@ export function ClienteBarbeariaPerfil() {
         </div>
 
         {mensagem && (
-          <p style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: mensagem.includes('Erro') ? 'var(--error-text)' : 'var(--success-text)' }}>
+          <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: mensagem.includes('Erro') ? 'var(--error-text)' : 'var(--success-text)' }}>
             {mensagem}
           </p>
         )}
@@ -94,7 +94,7 @@ export function ClienteBarbeariaPerfil() {
 
       {/* Barbearias conectadas */}
       <div className="mb-8">
-        <h2 style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase' as const, color: 'var(--cor-icone)', marginBottom: '12px' }}>
+        <h2 style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase' as const, color: 'var(--cor-icone)', marginBottom: '12px' }}>
           Barbearias Conectadas
         </h2>
         <div className="flex flex-col gap-2">
@@ -103,7 +103,7 @@ export function ClienteBarbeariaPerfil() {
               style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
               <div className="flex items-center gap-3">
                 <Scissors size={16} style={{ color: 'var(--cor-icone)' }} />
-                <span style={{ fontFamily: 'var(--font-body)', fontWeight: 600, color: 'var(--text-primary)', fontSize: '13px' }}>{b.nome}</span>
+                <span style={{ fontFamily: 'var(--fonte-interface)', fontWeight: 600, color: 'var(--text-primary)', fontSize: '13px' }}>{b.nome}</span>
               </div>
               <button onClick={() => desconectar(b.id)}
                 style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--error-text)', padding: '4px' }}

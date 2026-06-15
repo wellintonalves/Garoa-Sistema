@@ -93,7 +93,7 @@ export function ClienteBarbeariaFidelidade() {
         </div>
       )}
 
-      <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '24px', color: 'var(--text-primary)', marginBottom: '24px', letterSpacing: '0.04em' }}>
+      <h1 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '24px', color: 'var(--text-primary)', marginBottom: '24px', letterSpacing: '0.04em' }}>
         Fidelidade
       </h1>
 
@@ -104,21 +104,21 @@ export function ClienteBarbeariaFidelidade() {
       }}>
         <div className="flex items-center gap-3 mb-4">
           <Star size={24} style={{ color: 'rgba(var(--cor-primaria-rgb), 0.15)' }} />
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--cor-icone)' }}>
+          <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--cor-icone)' }}>
             Seu Saldo
           </span>
         </div>
-        <p style={{ fontFamily: 'var(--font-display)', fontSize: '48px', color: 'rgba(var(--cor-primaria-rgb), 0.15)', lineHeight: 1 }}>
+        <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '48px', color: 'rgba(var(--cor-primaria-rgb), 0.15)', lineHeight: 1 }}>
           {dados.saldo} <span className="text-lg text-[var(--cor-primaria)]/50">pts</span>
         </p>
-        <p style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--text-muted)', marginTop: '8px' }}>
+        <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--text-muted)', marginTop: '8px' }}>
           Você já acumulou {dados.totalGanhos} pts no total
         </p>
       </div>
 
       {/* Recompensas Disponíveis */}
       <div className="mb-8">
-        <h2 style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--cor-icone)', marginBottom: '12px' }}>
+        <h2 style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--cor-icone)', marginBottom: '12px' }}>
           <Gift size={12} className="inline mr-1" /> Recompensas
         </h2>
         {dados.recompensas.length === 0 ? (
@@ -164,11 +164,11 @@ export function ClienteBarbeariaFidelidade() {
 
       {/* Histórico */}
       <div>
-        <h2 style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--cor-icone)', marginBottom: '12px' }}>
+        <h2 style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--cor-icone)', marginBottom: '12px' }}>
           <TrendingUp size={12} className="inline mr-1" /> Histórico
         </h2>
         {dados.historico.length === 0 ? (
-          <p style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--text-muted)', textAlign: 'center', padding: '2rem 0' }}>
+          <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--text-muted)', textAlign: 'center', padding: '2rem 0' }}>
             Nenhum registro ainda.
           </p>
         ) : (
@@ -177,12 +177,12 @@ export function ClienteBarbeariaFidelidade() {
               <div key={h.id} className="flex items-center justify-between p-3"
                 style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
                 <div>
-                  <p style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--text-primary)' }}>{h.descricao}</p>
-                  <p style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--text-muted)' }}>
+                  <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '13px', color: 'var(--text-primary)' }}>{h.descricao}</p>
+                  <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--text-muted)' }}>
                     {new Date(h.data).toLocaleDateString('pt-BR')}
                   </p>
                 </div>
-                <span style={{ fontFamily: 'var(--font-display)', fontSize: '20px', color: h.tipo === 'GANHO' ? 'var(--amber)' : 'var(--error-text)' }}>
+                <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '20px', color: h.tipo === 'GANHO' ? 'var(--amber)' : 'var(--error-text)' }}>
                   {h.tipo === 'GANHO' ? '+' : ''}{h.pontos}
                 </span>
               </div>

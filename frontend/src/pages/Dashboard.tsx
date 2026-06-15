@@ -98,7 +98,7 @@ export function Dashboard() {
       <div>
         <h1
           style={{
-            fontFamily: 'var(--font-display)',
+            fontFamily: 'var(--fonte-interface)',
             fontSize: '32px',
             color: 'var(--text-primary)',
             letterSpacing: '0.04em',
@@ -109,7 +109,7 @@ export function Dashboard() {
         </h1>
         <p
           style={{
-            fontFamily: 'var(--font-mono)',
+            fontFamily: 'var(--fonte-numeros)',
             fontSize: '11px',
             color: 'var(--text-muted)',
             marginTop: '8px',
@@ -190,10 +190,10 @@ export function Dashboard() {
             padding: '1.25rem',
           }}
         >
-          <p style={{ fontFamily: 'var(--font-body)', fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)' }}>
+          <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)' }}>
             Erro ao carregar dados do dashboard
           </p>
-          <p style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>
+          <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>
             {erro}
           </p>
         </div>
@@ -246,7 +246,7 @@ export function Dashboard() {
               {dados.servicoMaisRealizado ? (
                 <>
                   <p className="metric-value" style={{ fontSize: '24px' }}>{dados.servicoMaisRealizado.nome}</p>
-                  <p style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--text-muted)', marginTop: '4px', letterSpacing: '0.04em' }}>
+                  <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--text-muted)', marginTop: '4px', letterSpacing: '0.04em' }}>
                     {dados.servicoMaisRealizado.count} vezes ({formatarMoeda(dados.servicoMaisRealizado.total)})
                   </p>
                 </>
@@ -258,7 +258,7 @@ export function Dashboard() {
 
           {/* Gráfico de Faturamento */}
           <div className="card">
-            <h3 style={{ fontFamily: 'var(--font-body)', fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '24px' }}>
+            <h3 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '24px' }}>
               Faturamento Dia a Dia
             </h3>
             
@@ -279,8 +279,8 @@ export function Dashboard() {
                     <div key={idx} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end', height: '100%', zIndex: 1, position: 'relative', minWidth: '20px' }}>
                       {/* Tooltip ao passar o mouse */}
                       <div className="chart-tooltip" style={{ opacity: 0, position: 'absolute', bottom: '100%', marginBottom: '8px', background: 'var(--bg-surface2)', border: '1px solid var(--border)', padding: '6px 8px', borderRadius: '4px', whiteSpace: 'nowrap', pointerEvents: 'none', transition: 'opacity 0.2s', zIndex: 10 }}>
-                        <p style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--text-muted)' }}>{dataObj.toLocaleDateString('pt-BR')}</p>
-                        <p style={{ fontFamily: 'var(--font-body)', fontSize: '12px', fontWeight: 700, color: 'var(--text-primary)' }}>{formatarMoeda(dia.entradas)}</p>
+                        <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--text-muted)' }}>{dataObj.toLocaleDateString('pt-BR')}</p>
+                        <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '12px', fontWeight: 700, color: 'var(--text-primary)' }}>{formatarMoeda(dia.entradas)}</p>
                       </div>
 
                       <div 
@@ -305,7 +305,7 @@ export function Dashboard() {
                       
                       {/* Mostrar rótulo do dia X se couber, senão a cada N dias para não embolar */}
                       {dados.porDia.length <= 14 || idx % Math.ceil(dados.porDia.length / 10) === 0 ? (
-                        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', color: 'var(--text-muted)', marginTop: '8px', transform: 'rotate(-45deg)', whiteSpace: 'nowrap' }}>
+                        <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '9px', color: 'var(--text-muted)', marginTop: '8px', transform: 'rotate(-45deg)', whiteSpace: 'nowrap' }}>
                           {dataObj.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
                         </span>
                       ) : (
@@ -316,7 +316,7 @@ export function Dashboard() {
                 })}
               </div>
             ) : (
-              <p style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--text-muted)' }}>Nenhum dado para este período.</p>
+              <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--text-muted)' }}>Nenhum dado para este período.</p>
             )}
           </div>
         </>

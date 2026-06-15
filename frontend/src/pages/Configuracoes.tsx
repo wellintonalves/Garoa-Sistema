@@ -330,7 +330,7 @@ export function Configuracoes() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1">Fonte dos Números</label>
-                  <select className="form-select w-full p-2 bg-black/50 border border-[var(--border)] rounded text-white" value={barbearia.fonteNumeros || 'DM Mono'} onChange={e => setBarbearia({...barbearia, fonteNumeros: e.target.value})}>
+                  <select className="form-select w-full p-2 bg-black/50 border border-[var(--border)] rounded text-white" value={barbearia.fonteNumeros || var(--fonte-numeros)} onChange={e => setBarbearia({...barbearia, fonteNumeros: e.target.value})}>
                     <option value="DM Mono">DM Mono</option>
                     <option value="Roboto Mono">Roboto Mono</option>
                     <option value="JetBrains Mono">JetBrains Mono</option>
@@ -359,7 +359,7 @@ export function Configuracoes() {
 
                 <div className="mb-4">
                   <p style={{ fontFamily: barbearia.fonteCorpo || 'Inter' }}>Corte Social — João Silva</p>
-                  <p className="mt-1" style={{ fontFamily: barbearia.fonteNumeros || 'DM Mono' }}>R$ 45,00 — 10:30</p>
+                  <p className="mt-1" style={{ fontFamily: barbearia.fonteNumeros || var(--fonte-numeros) }}>R$ 45,00 — 10:30</p>
                 </div>
 
                 <button type="button" className="px-4 py-2 rounded font-bold text-black text-sm" style={{ backgroundColor: barbearia.corPrimaria || '#ff6b00', fontFamily: barbearia.fonteCorpo || 'Inter' }}>

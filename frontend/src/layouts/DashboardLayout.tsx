@@ -42,7 +42,7 @@ export function DashboardLayout() {
         ) : (
           <span
             style={{
-              fontFamily: "var(--font-display)",
+              fontFamily: "var(--fonte-interface)",
               fontSize: '20px',
               letterSpacing: '0.06em',
               color: 'var(--text-primary)',

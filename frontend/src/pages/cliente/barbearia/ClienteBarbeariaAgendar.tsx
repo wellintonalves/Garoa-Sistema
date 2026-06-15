@@ -66,10 +66,10 @@ export function ClienteBarbeariaAgendar() {
           style={{ background: 'var(--success)', border: '2px solid var(--success-text)' }}>
           <Check size={40} style={{ color: 'var(--success-text)' }} />
         </div>
-        <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '28px', color: 'var(--text-primary)', marginBottom: '8px' }}>
+        <h2 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '28px', color: 'var(--text-primary)', marginBottom: '8px' }}>
           Agendado!
         </h2>
-        <p style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--text-muted)', textAlign: 'center', marginBottom: '24px' }}>
+        <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '14px', color: 'var(--text-muted)', textAlign: 'center', marginBottom: '24px' }}>
           Seu agendamento foi confirmado com sucesso.
         </p>
         <button onClick={() => navigate(`/cliente/barbearia/${barbeariaId}`)} className="btn-primary">
@@ -97,7 +97,7 @@ export function ClienteBarbeariaAgendar() {
               style={{
                 background: i <= etapaIdx ? 'var(--amber)' : 'var(--bg-surface2)',
                 color: i <= etapaIdx ? 'var(--fundo-pagina)' : 'var(--text-disabled)',
-                fontFamily: 'var(--font-mono)',
+                fontFamily: 'var(--fonte-numeros)',
                 fontSize: '10px',
               }}>
               {i + 1}
@@ -112,7 +112,7 @@ export function ClienteBarbeariaAgendar() {
       {/* Etapa 1: Serviço */}
       {etapa === 'servico' && (
         <div>
-          <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '22px', color: 'var(--text-primary)', marginBottom: '16px' }}>
+          <h2 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '22px', color: 'var(--text-primary)', marginBottom: '16px' }}>
             Escolha o Serviço
           </h2>
           <div className="flex flex-col gap-3">
@@ -127,11 +127,11 @@ export function ClienteBarbeariaAgendar() {
                 <div className="flex items-center gap-3">
                   <Scissors size={18} style={{ color: 'var(--cor-icone)' }} />
                   <div>
-                    <p style={{ fontFamily: 'var(--font-body)', fontWeight: 700, color: 'var(--text-primary)', fontSize: '14px' }}>{s.nome}</p>
-                    <p style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--text-muted)' }}>{s.duracaoMinutos} min</p>
+                    <p style={{ fontFamily: 'var(--fonte-interface)', fontWeight: 700, color: 'var(--text-primary)', fontSize: '14px' }}>{s.nome}</p>
+                    <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--text-muted)' }}>{s.duracaoMinutos} min</p>
                   </div>
                 </div>
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'var(--cor-icone)', fontWeight: 600 }}>{fmt(s.preco)}</span>
+                <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '13px', color: 'var(--cor-icone)', fontWeight: 600 }}>{fmt(s.preco)}</span>
               </button>
             ))}
           </div>
@@ -142,10 +142,10 @@ export function ClienteBarbeariaAgendar() {
       {etapa === 'barbeiro' && (
         <div>
           <button onClick={() => setEtapa('servico')} className="flex items-center gap-1 mb-4"
-            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', fontSize: '11px' }}>
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontFamily: 'var(--fonte-numeros)', fontSize: '11px' }}>
             <ArrowLeft size={14} /> Voltar
           </button>
-          <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '22px', color: 'var(--text-primary)', marginBottom: '16px' }}>
+          <h2 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '22px', color: 'var(--text-primary)', marginBottom: '16px' }}>
             Escolha o Barbeiro
           </h2>
           <div className="flex flex-col gap-3">
@@ -158,11 +158,11 @@ export function ClienteBarbeariaAgendar() {
                   cursor: 'pointer',
                 }}>
                 <div className="w-11 h-11 flex items-center justify-center"
-                  style={{ background: 'rgba(var(--cor-primaria-rgb), 0.10)', fontFamily: 'var(--font-display)', fontSize: '18px', color: 'rgba(var(--cor-primaria-rgb), 0.15)' }}>
+                  style={{ background: 'rgba(var(--cor-primaria-rgb), 0.10)', fontFamily: 'var(--fonte-interface)', fontSize: '18px', color: 'rgba(var(--cor-primaria-rgb), 0.15)' }}>
                   {b.usuario.nome.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
                 </div>
                 <div>
-                  <p style={{ fontFamily: 'var(--font-body)', fontWeight: 700, color: 'var(--text-primary)', fontSize: '14px' }}>{b.usuario.nome}</p>
+                  <p style={{ fontFamily: 'var(--fonte-interface)', fontWeight: 700, color: 'var(--text-primary)', fontSize: '14px' }}>{b.usuario.nome}</p>
                   <div className="flex gap-1 mt-1">
                     {b.especialidades.slice(0, 3).map((e, i) => (
                       <span key={i} className="badge badge-info">{e}</span>
@@ -179,10 +179,10 @@ export function ClienteBarbeariaAgendar() {
       {etapa === 'data' && (
         <div>
           <button onClick={() => setEtapa('barbeiro')} className="flex items-center gap-1 mb-4"
-            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', fontSize: '11px' }}>
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontFamily: 'var(--fonte-numeros)', fontSize: '11px' }}>
             <ArrowLeft size={14} /> Voltar
           </button>
-          <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '22px', color: 'var(--text-primary)', marginBottom: '16px' }}>
+          <h2 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '22px', color: 'var(--text-primary)', marginBottom: '16px' }}>
             Data e Horário
           </h2>
 
@@ -202,7 +202,7 @@ export function ClienteBarbeariaAgendar() {
                     onClick={() => { setHorarioSel(s.horario); setEtapa('confirmacao'); }}
                     style={{
                       padding: '10px 4px',
-                      fontFamily: 'var(--font-mono)',
+                      fontFamily: 'var(--fonte-numeros)',
                       fontSize: '12px',
                       textAlign: 'center',
                       cursor: s.disponivel ? 'pointer' : 'not-allowed',
@@ -224,10 +224,10 @@ export function ClienteBarbeariaAgendar() {
       {etapa === 'confirmacao' && (
         <div>
           <button onClick={() => setEtapa('data')} className="flex items-center gap-1 mb-4"
-            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', fontSize: '11px' }}>
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontFamily: 'var(--fonte-numeros)', fontSize: '11px' }}>
             <ArrowLeft size={14} /> Voltar
           </button>
-          <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '22px', color: 'var(--text-primary)', marginBottom: '20px' }}>
+          <h2 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '22px', color: 'var(--text-primary)', marginBottom: '20px' }}>
             Confirmar Agendamento
           </h2>
 
@@ -235,29 +235,29 @@ export function ClienteBarbeariaAgendar() {
             <div className="p-4" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
               <div className="flex items-center gap-3 mb-3">
                 <Scissors size={16} style={{ color: 'var(--cor-icone)' }} />
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--cor-icone)', letterSpacing: '0.12em', textTransform: 'uppercase' as const }}>Serviço</span>
+                <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--cor-icone)', letterSpacing: '0.12em', textTransform: 'uppercase' as const }}>Serviço</span>
               </div>
-              <p style={{ fontFamily: 'var(--font-body)', fontWeight: 700, color: 'var(--text-primary)', fontSize: '15px' }}>{servicoSel?.nome}</p>
-              <p style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--cor-icone)', marginTop: '4px' }}>{fmt(servicoSel?.preco || '0')}</p>
+              <p style={{ fontFamily: 'var(--fonte-interface)', fontWeight: 700, color: 'var(--text-primary)', fontSize: '15px' }}>{servicoSel?.nome}</p>
+              <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '12px', color: 'var(--cor-icone)', marginTop: '4px' }}>{fmt(servicoSel?.preco || '0')}</p>
             </div>
 
             <div className="p-4" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
               <div className="flex items-center gap-3 mb-3">
                 <User size={16} style={{ color: 'var(--cor-icone)' }} />
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--cor-icone)', letterSpacing: '0.12em', textTransform: 'uppercase' as const }}>Barbeiro</span>
+                <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--cor-icone)', letterSpacing: '0.12em', textTransform: 'uppercase' as const }}>Barbeiro</span>
               </div>
-              <p style={{ fontFamily: 'var(--font-body)', fontWeight: 700, color: 'var(--text-primary)', fontSize: '15px' }}>{barbeiroSel?.usuario.nome}</p>
+              <p style={{ fontFamily: 'var(--fonte-interface)', fontWeight: 700, color: 'var(--text-primary)', fontSize: '15px' }}>{barbeiroSel?.usuario.nome}</p>
             </div>
 
             <div className="p-4" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
               <div className="flex items-center gap-3 mb-3">
                 <Calendar size={16} style={{ color: 'var(--cor-icone)' }} />
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--cor-icone)', letterSpacing: '0.12em', textTransform: 'uppercase' as const }}>Data e Hora</span>
+                <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--cor-icone)', letterSpacing: '0.12em', textTransform: 'uppercase' as const }}>Data e Hora</span>
               </div>
-              <p style={{ fontFamily: 'var(--font-body)', fontWeight: 700, color: 'var(--text-primary)', fontSize: '15px' }}>
+              <p style={{ fontFamily: 'var(--fonte-interface)', fontWeight: 700, color: 'var(--text-primary)', fontSize: '15px' }}>
                 {new Date(dataSel + 'T00:00').toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' })}
               </p>
-              <p style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', color: 'var(--cor-icone)', marginTop: '4px' }}>{horarioSel}</p>
+              <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '14px', color: 'var(--cor-icone)', marginTop: '4px' }}>{horarioSel}</p>
             </div>
           </div>
 

@@ -31,20 +31,20 @@ export function BarbeiroPerfil() {
 
   return (
     <div className="px-5 py-6 animate-fade-in">
-      <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '24px', color: 'var(--text-primary)', marginBottom: '24px', letterSpacing: '0.04em' }}>
+      <h1 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '24px', color: 'var(--text-primary)', marginBottom: '24px', letterSpacing: '0.04em' }}>
         Meu Perfil
       </h1>
 
       {/* Avatar e Nome */}
       <div className="flex flex-col items-center mb-8">
         <div className="w-24 h-24 rounded-full flex items-center justify-center mb-4"
-          style={{ background: 'rgba(var(--cor-primaria-rgb), 0.10)', border: '2px solid var(--amber)', fontFamily: 'var(--font-display)', fontSize: '32px', color: 'rgba(var(--cor-primaria-rgb), 0.15)' }}>
+          style={{ background: 'rgba(var(--cor-primaria-rgb), 0.10)', border: '2px solid var(--amber)', fontFamily: 'var(--fonte-interface)', fontSize: '32px', color: 'rgba(var(--cor-primaria-rgb), 0.15)' }}>
           {perfil.usuario.nome.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
         </div>
-        <h2 style={{ fontFamily: 'var(--font-body)', fontSize: '20px', fontWeight: 700, color: 'var(--text-primary)' }}>
+        <h2 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '20px', fontWeight: 700, color: 'var(--text-primary)' }}>
           {perfil.usuario.nome}
         </h2>
-        <p style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>
+        <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>
           {perfil.usuario.email}
         </p>
       </div>
@@ -54,9 +54,9 @@ export function BarbeiroPerfil() {
         <div className="p-4" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
           <div className="flex items-center gap-3 mb-2">
             <User size={16} style={{ color: 'var(--cor-icone)' }} />
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Comissão Padrão</span>
+            <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Comissão Padrão</span>
           </div>
-          <p style={{ fontFamily: 'var(--font-body)', fontSize: '16px', color: 'var(--text-primary)' }}>
+          <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '16px', color: 'var(--text-primary)' }}>
             {perfil.comissaoPercent}%
           </p>
         </div>
@@ -64,7 +64,7 @@ export function BarbeiroPerfil() {
         <div className="p-4" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
           <div className="flex items-center gap-3 mb-3">
             <Scissors size={16} style={{ color: 'var(--cor-icone)' }} />
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Especialidades</span>
+            <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Especialidades</span>
           </div>
           <div className="flex flex-wrap gap-2">
             {perfil.especialidades.map((e, i) => (
@@ -82,7 +82,7 @@ export function BarbeiroPerfil() {
 
       {/* Footer Info */}
       <div className="mt-8 text-center">
-        <p style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--text-disabled)' }}>
+        <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--text-disabled)' }}>
           Vinculado a: <br />
           <strong style={{ color: 'var(--text-muted)' }}>{perfil.barbearia.nome}</strong>
         </p>

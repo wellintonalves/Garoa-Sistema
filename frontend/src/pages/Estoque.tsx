@@ -45,7 +45,7 @@ export function Estoque() {
       <div className="flex items-center justify-between flex-wrap gap-4">
         <h1
           style={{
-            fontFamily: 'var(--font-display)',
+            fontFamily: 'var(--fonte-interface)',
             fontSize: '32px',
             color: 'var(--text-primary)',
             letterSpacing: '0.04em',
@@ -81,13 +81,13 @@ export function Estoque() {
                     {editandoId === item.id ? (
                       <input type="number" value={editQtd} onChange={e => setEditQtd(e.target.value)} className="ds-input" style={{ width: '80px', minHeight: '32px', padding: '6px 8px' }} />
                     ) : (
-                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: baixo ? 'var(--error-text)' : 'var(--text-primary)' }}>
+                      <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '12px', color: baixo ? 'var(--error-text)' : 'var(--text-primary)' }}>
                         {item.quantidade} <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>{item.unidade}</span>
                       </span>
                     )}
                   </td>
-                  <td style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--text-muted)' }}>{item.quantidadeMinima}</td>
-                  <td style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--text-muted)' }}>R$ {Number(item.custo).toFixed(2)}</td>
+                  <td style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--text-muted)' }}>{item.quantidadeMinima}</td>
+                  <td style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '12px', color: 'var(--text-muted)' }}>R$ {Number(item.custo).toFixed(2)}</td>
                   <td>
                     {baixo ? (
                       <span className="badge badge-cancelled">Baixo</span>

@@ -55,10 +55,10 @@ export function BarbeiroHoje() {
     <div className="px-5 py-6 animate-fade-in">
       {/* Header */}
       <div className="mb-8">
-        <p style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--cor-icone)', letterSpacing: '0.15em', textTransform: 'uppercase' }}>
+        <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--cor-icone)', letterSpacing: '0.15em', textTransform: 'uppercase' }}>
           Hoje
         </p>
-        <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '28px', color: 'var(--text-primary)', letterSpacing: '0.04em' }}>
+        <h1 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '28px', color: 'var(--text-primary)', letterSpacing: '0.04em' }}>
           Olá, {barbeiro?.nome.split(' ')[0]}
         </h1>
       </div>
@@ -69,14 +69,14 @@ export function BarbeiroHoje() {
         <>
           {/* Pendentes */}
           <div className="mb-8">
-            <h2 style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--cor-icone)', marginBottom: '12px' }}>
+            <h2 style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--cor-icone)', marginBottom: '12px' }}>
               Próximos Atendimentos ({pendentes.length})
             </h2>
             
             {pendentes.length === 0 ? (
               <div className="p-6 text-center" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
                 <Scissors size={24} style={{ color: 'var(--text-disabled)', margin: '0 auto 8px' }} />
-                <p style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--text-muted)' }}>Sua agenda está livre.</p>
+                <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '14px', color: 'var(--text-muted)' }}>Sua agenda está livre.</p>
               </div>
             ) : (
               <div className="flex flex-col gap-3">
@@ -85,7 +85,7 @@ export function BarbeiroHoje() {
                     <div className="flex justify-between items-start mb-3">
                       <div className="flex items-center gap-2">
                         <Clock size={14} style={{ color: 'var(--cor-icone)' }} />
-                        <span style={{ fontFamily: 'var(--font-display)', fontSize: '20px', color: 'var(--cor-icone)' }}>
+                        <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '20px', color: 'var(--cor-icone)' }}>
                           {fmtHora(a.dataHora)}
                         </span>
                       </div>
@@ -93,10 +93,10 @@ export function BarbeiroHoje() {
                     </div>
                     
                     <div className="mb-4">
-                      <p style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: '16px', color: 'var(--text-primary)' }}>
+                      <p style={{ fontFamily: 'var(--fonte-interface)', fontWeight: 700, fontSize: '16px', color: 'var(--text-primary)' }}>
                         {a.cliente.usuario.nome}
                       </p>
-                      <p style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--text-muted)' }}>
+                      <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--text-muted)' }}>
                         {a.servico.nome} — R$ {Number(a.valorCobrado).toFixed(2)}
                       </p>
                     </div>
@@ -118,21 +118,21 @@ export function BarbeiroHoje() {
           {/* Concluídos */}
           {concluidos.length > 0 && (
             <div>
-              <h2 style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '12px' }}>
+              <h2 style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '12px' }}>
                 Concluídos ({concluidos.length})
               </h2>
               <div className="flex flex-col gap-2">
                 {concluidos.map(a => (
                   <div key={a.id} className="flex justify-between items-center p-3" style={{ background: 'var(--bg-surface2)', border: '1px solid var(--border)', opacity: 0.7 }}>
                     <div className="flex items-center gap-3">
-                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--text-muted)' }}>
+                      <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '12px', color: 'var(--text-muted)' }}>
                         {fmtHora(a.dataHora)}
                       </span>
                       <div>
-                        <p style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--text-primary)' }}>
+                        <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '13px', color: 'var(--text-primary)' }}>
                           {a.cliente.usuario.nome}
                         </p>
-                        <p style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--text-muted)' }}>
+                        <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--text-muted)' }}>
                           {a.servico.nome}
                         </p>
                       </div>

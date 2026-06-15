@@ -1,30 +1,23 @@
 import os
+import glob
 
-files = [
-    "frontend/src/index.css",
-    "frontend/src/layouts/BarbeiroLayout.tsx",
-    "frontend/src/layouts/ClienteLayout.tsx",
-    "frontend/src/layouts/DashboardLayout.tsx",
-    "frontend/src/pages/Clientes.tsx",
-    "frontend/src/pages/Login.tsx",
-    "frontend/src/pages/cliente/ClienteHome.tsx",
-    "frontend/src/pages/cliente/barbearia/ClienteBarbeariaAgendar.tsx",
-    "frontend/src/pages/publico/Agendar.tsx",
-    "frontend/src/pages/publico/Fidelidade.tsx"
-]
+files = glob.glob('frontend/src/**/*.tsx', recursive=True) + \
+        glob.glob('frontend/src/**/*.ts', recursive=True) + \
+        glob.glob('frontend/src/**/*.css', recursive=True)
 
 replacements = {
-    "--bg-primary": "--fundo-pagina",
-    "--background": "--fundo-pagina",
-    "--surface": "--fundo-card",
-    "--card-bg": "--fundo-card"
+    "--font-display": "--fonte-interface",
+    "--font-body": "--fonte-interface",
+    "--fonte-titulo": "--fonte-interface",
+    "--fonte-corpo": "--fonte-interface",
+    "--font-mono": "--fonte-numeros",
+    "'Syne'": "var(--fonte-interface)",
+    "'DM Mono'": "var(--fonte-numeros)"
 }
 
 for filepath in files:
-    if not os.path.exists(filepath):
-        print(f"{filepath}: 0 trocas (Arquivo não encontrado)")
+    if not os.path.isfile(filepath):
         continue
-        
     with open(filepath, 'r', encoding='utf-8') as f:
         content = f.read()
         
@@ -39,5 +32,4 @@ for filepath in files:
     if total_trocas > 0:
         with open(filepath, 'w', encoding='utf-8') as f:
             f.write(new_content)
-            
-    print(f"{filepath}: {total_trocas} trocas")
+        print(f"{filepath}: {total_trocas} trocas")

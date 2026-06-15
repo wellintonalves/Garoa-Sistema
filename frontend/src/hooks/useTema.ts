@@ -51,10 +51,10 @@ export function useTema() {
     };
 
     if (tema.fonte) {
-      carregarFonte(tema.fonte, '--fonte-titulo');
+      carregarFonte(tema.fonte, '--fonte-interface');
     }
     if (tema.fonteCorpo) {
-      carregarFonte(tema.fonteCorpo, '--fonte-corpo');
+      carregarFonte(tema.fonteCorpo, '--fonte-interface');
     }
     if (tema.fonteNumeros) {
       // Para números, as fontes podem ser diferentes, mas a URL do google fonts é similar
@@ -71,11 +71,11 @@ export function useTema() {
     root.style.removeProperty('--cor-secundaria');
     root.style.removeProperty('--cor-texto');
     root.style.removeProperty('--cor-fundo');
-    root.style.removeProperty('--fonte-titulo');
-    root.style.removeProperty('--fonte-corpo');
+    root.style.removeProperty('--fonte-interface');
+    root.style.removeProperty('--fonte-interface');
     root.style.removeProperty('--fonte-numeros');
     root.style.removeProperty('--amber');
-    root.style.removeProperty('--font-display');
+    root.style.removeProperty('--fonte-interface');
     root.style.removeProperty('--cor-primaria-rgb');
     root.style.removeProperty('--cor-icone');
   }, []);

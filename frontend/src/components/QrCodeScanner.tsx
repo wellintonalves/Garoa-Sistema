@@ -134,7 +134,7 @@ export function QrCodeScanner({ onResult, onClose }: QrCodeScannerProps) {
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <Camera size={18} style={{ color: 'var(--cor-icone)' }} />
           <span style={{
-            fontFamily: 'var(--font-mono)',
+            fontFamily: 'var(--fonte-numeros)',
             fontSize: '11px',
             color: 'var(--cor-icone)',
             letterSpacing: '0.15em',
@@ -180,14 +180,14 @@ export function QrCodeScanner({ onResult, onClose }: QrCodeScannerProps) {
               margin: '0 auto 16px',
             }} />
             <p style={{
-              fontFamily: 'var(--font-body)',
+              fontFamily: 'var(--fonte-interface)',
               fontSize: '14px',
               color: '#fff',
             }}>
               Abrindo câmera...
             </p>
             <p style={{
-              fontFamily: 'var(--font-mono)',
+              fontFamily: 'var(--fonte-numeros)',
               fontSize: '10px',
               color: 'rgba(255,255,255,0.5)',
               marginTop: '4px',
@@ -204,7 +204,7 @@ export function QrCodeScanner({ onResult, onClose }: QrCodeScannerProps) {
           }}>
             <AlertCircle size={40} style={{ color: '#ef4444', margin: '0 auto 16px' }} />
             <p style={{
-              fontFamily: 'var(--font-body)',
+              fontFamily: 'var(--fonte-interface)',
               fontSize: '14px',
               color: '#ef4444',
               marginBottom: '16px',
@@ -214,7 +214,7 @@ export function QrCodeScanner({ onResult, onClose }: QrCodeScannerProps) {
             <button
               onClick={onClose}
               style={{
-                fontFamily: 'var(--font-mono)',
+                fontFamily: 'var(--fonte-numeros)',
                 fontSize: '11px',
                 color: 'var(--cor-icone)',
                 background: 'rgba(var(--cor-primaria-rgb), 0.10)',
@@ -243,7 +243,7 @@ export function QrCodeScanner({ onResult, onClose }: QrCodeScannerProps) {
         {!erro && !iniciando && (
           <p style={{
             textAlign: 'center',
-            fontFamily: 'var(--font-mono)',
+            fontFamily: 'var(--fonte-numeros)',
             fontSize: '11px',
             color: 'rgba(255,255,255,0.6)',
             marginTop: '16px',

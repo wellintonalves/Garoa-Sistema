@@ -98,7 +98,7 @@ export function AdminLogin() {
             />
 
             <h1 style={{
-              fontFamily: 'var(--font-display)',
+              fontFamily: 'var(--fonte-interface)',
               fontSize: '32px',
               letterSpacing: '0.06em',
               color: '#FFFFFF',
@@ -108,7 +108,7 @@ export function AdminLogin() {
             </h1>
 
             <p style={{
-              fontFamily: 'var(--font-mono)',
+              fontFamily: 'var(--fonte-numeros)',
               fontSize: '10px',
               letterSpacing: '0.2em',
               textTransform: 'uppercase' as const,
@@ -140,7 +140,7 @@ export function AdminLogin() {
                 background: 'var(--success)',
                 border: '1px solid var(--success-text)',
                 color: 'var(--success-text)',
-                fontFamily: 'var(--font-mono)',
+                fontFamily: 'var(--fonte-numeros)',
                 fontSize: '11px',
                 letterSpacing: '0.04em',
               }}
@@ -178,7 +178,7 @@ export function AdminLogin() {
                   <ChevronLeft size={14} strokeWidth={1.5} />
                 </button>
                 <h2 style={{
-                  fontFamily: 'var(--font-body)',
+                  fontFamily: 'var(--fonte-interface)',
                   fontSize: '14px',
                   fontWeight: 700,
                   color: '#FFFFFF',
@@ -251,7 +251,7 @@ export function AdminLogin() {
                       background: 'var(--error)',
                       border: '1px solid var(--error-text)',
                       color: 'var(--error-text)',
-                      fontFamily: 'var(--font-mono)',
+                      fontFamily: 'var(--fonte-numeros)',
                       fontSize: '11px',
                     }}
                   >
@@ -319,7 +319,7 @@ export function AdminLogin() {
                       background: 'var(--error)',
                       border: '1px solid var(--error-text)',
                       color: 'var(--error-text)',
-                      fontFamily: 'var(--font-mono)',
+                      fontFamily: 'var(--fonte-numeros)',
                       fontSize: '11px',
                     }}
                   >
@@ -369,7 +369,7 @@ export function AdminLogin() {
               display: 'inline-flex',
               alignItems: 'center',
               gap: '6px',
-              fontFamily: 'var(--font-mono)',
+              fontFamily: 'var(--fonte-numeros)',
               fontSize: '11px',
               letterSpacing: '0.1em',
               color: '#94A3B8',

@@ -57,7 +57,7 @@ export function Servicos() {
       <div className="flex items-center justify-between flex-wrap gap-4">
         <h1
           style={{
-            fontFamily: 'var(--font-display)',
+            fontFamily: 'var(--fonte-interface)',
             fontSize: '32px',
             color: 'var(--text-primary)',
             letterSpacing: '0.04em',
@@ -85,13 +85,13 @@ export function Servicos() {
               <tr key={s.id}>
                 <td>
                   <p style={{ fontWeight: 500, color: 'var(--text-primary)' }}>{s.nome}</p>
-                  {s.descricao && <p style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px', letterSpacing: '0.04em' }}>{s.descricao}</p>}
+                  {s.descricao && <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px', letterSpacing: '0.04em' }}>{s.descricao}</p>}
                 </td>
                 <td>
                   {editandoId === s.id ? (
                     <input type="number" step="0.01" value={editForm.preco} onChange={e => setEditForm({...editForm, preco: e.target.value})} className="ds-input" style={{ width: '100px', minHeight: '32px', padding: '6px 8px' }} />
                   ) : (
-                    <span style={{ fontFamily: 'var(--font-display)', fontSize: '20px', color: 'var(--cor-icone)' }}>
+                    <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '20px', color: 'var(--cor-icone)' }}>
                       R$ {Number(s.preco).toFixed(2)}
                     </span>
                   )}
@@ -100,12 +100,12 @@ export function Servicos() {
                   {editandoId === s.id ? (
                     <input type="number" value={editForm.duracaoMinutos} onChange={e => setEditForm({...editForm, duracaoMinutos: e.target.value})} className="ds-input" style={{ width: '80px', minHeight: '32px', padding: '6px 8px' }} />
                   ) : (
-                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--text-muted)', letterSpacing: '0.04em' }}>
+                    <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--text-muted)', letterSpacing: '0.04em' }}>
                       {s.duracaoMinutos} min
                     </span>
                   )}
                 </td>
-                <td style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--text-muted)' }}>{s.comissaoPercent}%</td>
+                <td style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--text-muted)' }}>{s.comissaoPercent}%</td>
                 <td style={{ textAlign: 'right' }}>
                   {editandoId === s.id ? (
                     <div className="flex items-center justify-end gap-1">

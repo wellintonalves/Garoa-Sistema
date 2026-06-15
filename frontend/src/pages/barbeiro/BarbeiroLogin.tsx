@@ -38,7 +38,7 @@ export function BarbeiroLogin() {
           <Scissors size={36} style={{ color: '#F59E0B' }} />
         </div>
         <h1 style={{
-          fontFamily: 'var(--font-display)',
+          fontFamily: 'var(--fonte-interface)',
           fontSize: '28px',
           letterSpacing: '0.04em',
           color: '#FFFFFF',
@@ -46,7 +46,7 @@ export function BarbeiroLogin() {
           Portal do Barbeiro
         </h1>
         <p style={{
-          fontFamily: 'var(--font-mono)',
+          fontFamily: 'var(--fonte-numeros)',
           fontSize: '11px',
           letterSpacing: '0.1em',
           color: '#94A3B8',
@@ -64,7 +64,7 @@ export function BarbeiroLogin() {
             background: 'var(--error)',
             color: 'var(--error-text)',
             padding: '10px 14px',
-            fontFamily: 'var(--font-mono)',
+            fontFamily: 'var(--fonte-numeros)',
             fontSize: '11px',
           }}>{erro}</div>
         )}

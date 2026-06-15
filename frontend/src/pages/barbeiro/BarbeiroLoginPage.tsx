@@ -69,7 +69,7 @@ export function BarbeiroLoginPage() {
             </div>
 
             <h1 style={{
-              fontFamily: 'var(--font-display)',
+              fontFamily: 'var(--fonte-interface)',
               fontSize: '32px',
               letterSpacing: '0.06em',
               color: '#FFFFFF',
@@ -79,7 +79,7 @@ export function BarbeiroLoginPage() {
             </h1>
 
             <p style={{
-              fontFamily: 'var(--font-mono)',
+              fontFamily: 'var(--fonte-numeros)',
               fontSize: '10px',
               letterSpacing: '0.2em',
               textTransform: 'uppercase' as const,
@@ -146,7 +146,7 @@ export function BarbeiroLoginPage() {
                   background: 'var(--error)',
                   border: '1px solid var(--error-text)',
                   color: 'var(--error-text)',
-                  fontFamily: 'var(--font-mono)',
+                  fontFamily: 'var(--fonte-numeros)',
                   fontSize: '11px',
                 }}
               >
@@ -179,7 +179,7 @@ export function BarbeiroLoginPage() {
               display: 'inline-flex',
               alignItems: 'center',
               gap: '6px',
-              fontFamily: 'var(--font-mono)',
+              fontFamily: 'var(--fonte-numeros)',
               fontSize: '11px',
               letterSpacing: '0.1em',
               color: '#94A3B8',

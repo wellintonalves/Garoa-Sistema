@@ -23,12 +23,7 @@
   --texto-placeholder: #404040;
   --texto-label:       #525252;
 
-  /* Aliases de compatibilidade — mapeiam variáveis antigas para as novas */
-  --font-body:     var(--fonte-interface);
-  --font-display:  var(--fonte-interface);
-  --font-mono:     var(--fonte-numeros);
-  --fonte-titulo:  var(--fonte-interface);
-  --fonte-corpo:   var(--fonte-interface);
+  /* Aliases legados de fontes removidos */
 
   /* Aliases de compatibilidade — vocabulário antigo → novos tokens */
   --bg-primary:     var(--fundo-pagina);
@@ -46,7 +41,6 @@
   --border:         var(--borda);
   --border-hover:   var(--borda-input);
 
-  --font-display:   var(--fonte-interface);
   --font-heading:   var(--fonte-interface);
 
   --error-text:     #EF4444;
@@ -67,12 +61,7 @@
   --texto-placeholder: #A0A0A0;
   --texto-label:       #A0A0A0;
 
-  /* Aliases de compatibilidade — mapeiam variáveis antigas para as novas */
-  --font-body:     var(--fonte-interface);
-  --font-display:  var(--fonte-interface);
-  --font-mono:     var(--fonte-numeros);
-  --fonte-titulo:  var(--fonte-interface);
-  --fonte-corpo:   var(--fonte-interface);
+  /* Aliases legados de fontes removidos */
 }
 
 /* Aplicação global das fontes */
@@ -91,9 +80,9 @@ body {
 
 /* === TAILWIND THEME OVERRIDE === */
 @theme {
-  --font-sans: 'Syne', sans-serif;
-  --font-display: var(--fonte-titulo), sans-serif;
-  --font-mono: 'DM Mono', monospace;
+  --font-sans: var(--fonte-interface), sans-serif;
+  --font-display: var(--fonte-interface), sans-serif;
+  --font-mono: var(--fonte-numeros), monospace;
   
   --color-primaria: var(--cor-primaria);
   --color-secundaria: var(--cor-secundaria);
@@ -150,7 +139,7 @@ body {
 
 /* === RESET BASE === */
 body {
-  font-family: var(--fonte-corpo);
+  font-family: var(--fonte-interface);
   background-color: var(--fundo-pagina);
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
@@ -158,7 +147,7 @@ body {
 }
 
 h1, h2, h3, h4, .titulo {
-  font-family: var(--fonte-titulo);
+  font-family: var(--fonte-interface);
 }
 
 .valor, .numero, .horario, .contador {
@@ -167,14 +156,14 @@ h1, h2, h3, h4, .titulo {
 
 /* === TIPOGRAFIA === */
 .heading-display {
-  font-family: var(--font-display);
+  font-family: var(--fonte-interface);
   color: var(--text-primary);
   letter-spacing: 0.04em;
   line-height: 1.1;
 }
 
 .text-body {
-  font-family: var(--font-body);
+  font-family: var(--fonte-interface);
   color: var(--text-muted);
 }
 
@@ -385,7 +374,7 @@ h1, h2, h3, h4, .titulo {
   white-space: nowrap;
 }
 .ds-table td {
-  font-family: var(--font-body);
+  font-family: var(--fonte-interface);
   font-size: 13px;
   color: var(--text-primary);
   padding: 12px 12px;
@@ -404,7 +393,7 @@ h1, h2, h3, h4, .titulo {
 }
 
 .nav-logo {
-  font-family: var(--font-display);
+  font-family: var(--fonte-interface);
   font-size: 24px;
   letter-spacing: 0.06em;
   color: var(--text-primary);
@@ -450,7 +439,7 @@ h1, h2, h3, h4, .titulo {
   padding: 1rem 1.25rem;
 }
 .metric-value {
-  font-family: var(--font-display);
+  font-family: var(--fonte-interface);
   font-size: 32px;
   color: var(--text-primary);
   letter-spacing: 0.02em;
@@ -512,7 +501,7 @@ h1, h2, h3, h4, .titulo {
 }
 
 .modal-header h2 {
-  font-family: var(--font-body);
+  font-family: var(--fonte-interface);
   font-size: 16px;
   font-weight: 700;
   color: var(--text-primary);

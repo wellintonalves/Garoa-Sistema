@@ -28,7 +28,7 @@ export function BarbeiroAgenda() {
 
   return (
     <div className="px-5 py-6 animate-fade-in">
-      <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '24px', color: 'var(--text-primary)', marginBottom: '20px', letterSpacing: '0.04em' }}>
+      <h1 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '24px', color: 'var(--text-primary)', marginBottom: '20px', letterSpacing: '0.04em' }}>
         Agenda
       </h1>
 
@@ -48,7 +48,7 @@ export function BarbeiroAgenda() {
         <p style={{ textAlign: 'center', color: 'var(--text-muted)', marginTop: '2rem' }}>Carregando...</p>
       ) : agendamentos.length === 0 ? (
         <div className="p-6 text-center" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
-          <p style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--text-muted)' }}>Nenhum agendamento para esta data.</p>
+          <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '14px', color: 'var(--text-muted)' }}>Nenhum agendamento para esta data.</p>
         </div>
       ) : (
         <div className="flex flex-col gap-3">
@@ -57,7 +57,7 @@ export function BarbeiroAgenda() {
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-2">
                   <Clock size={14} style={{ color: 'var(--text-muted)' }} />
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', color: 'var(--text-primary)' }}>
+                  <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '14px', color: 'var(--text-primary)' }}>
                     {fmtHora(a.dataHora)}
                   </span>
                 </div>
@@ -66,10 +66,10 @@ export function BarbeiroAgenda() {
                 </span>
               </div>
               <div>
-                <p style={{ fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: '15px', color: 'var(--text-primary)' }}>
+                <p style={{ fontFamily: 'var(--fonte-interface)', fontWeight: 600, fontSize: '15px', color: 'var(--text-primary)' }}>
                   {a.cliente.usuario.nome}
                 </p>
-                <p style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--text-muted)' }}>
+                <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--text-muted)' }}>
                   {a.servico.nome}
                 </p>
               </div>

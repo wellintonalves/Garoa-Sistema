@@ -99,7 +99,7 @@ export function ClienteLoginPrincipal() {
           padding: '8px 12px',
           cursor: 'pointer',
           color: 'var(--text-disabled)',
-          fontFamily: 'var(--font-mono)',
+          fontFamily: 'var(--fonte-numeros)',
           fontSize: '9px',
           letterSpacing: '0.12em',
           textTransform: 'uppercase' as const,
@@ -173,7 +173,7 @@ export function ClienteLoginPrincipal() {
 
           {/* Nome da barbearia */}
           <h1 style={{
-            fontFamily: 'var(--font-display)',
+            fontFamily: 'var(--fonte-interface)',
             fontSize: '52px',
             letterSpacing: '0.08em',
             color: '#FFFFFF',
@@ -185,7 +185,7 @@ export function ClienteLoginPrincipal() {
 
           {/* Subtítulo */}
           <p style={{
-            fontFamily: 'var(--font-mono)',
+            fontFamily: 'var(--fonte-numeros)',
             fontSize: '10px',
             letterSpacing: '0.35em',
             color: '#F59E0B',
@@ -229,7 +229,7 @@ export function ClienteLoginPrincipal() {
                 border: '1px solid rgba(226, 75, 74, 0.3)',
                 borderRadius: '8px',
                 color: 'var(--error-text)',
-                fontFamily: 'var(--font-mono)',
+                fontFamily: 'var(--fonte-numeros)',
                 fontSize: '11px',
               }}
             >
@@ -241,7 +241,7 @@ export function ClienteLoginPrincipal() {
           {/* Campo Email */}
           <div>
             <label style={{
-              fontFamily: 'var(--font-mono)',
+              fontFamily: 'var(--fonte-numeros)',
               fontSize: '9px',
               letterSpacing: '0.18em',
               textTransform: 'uppercase' as const,
@@ -273,7 +273,7 @@ export function ClienteLoginPrincipal() {
                   borderRadius: '10px',
                   padding: '14px 14px 14px 42px',
                   color: '#FFFFFF',
-                  fontFamily: 'var(--font-mono)',
+                  fontFamily: 'var(--fonte-numeros)',
                   fontSize: '13px',
                   letterSpacing: '0.02em',
                   outline: 'none',
@@ -295,7 +295,7 @@ export function ClienteLoginPrincipal() {
           {/* Campo Senha */}
           <div>
             <label style={{
-              fontFamily: 'var(--font-mono)',
+              fontFamily: 'var(--fonte-numeros)',
               fontSize: '9px',
               letterSpacing: '0.18em',
               textTransform: 'uppercase' as const,
@@ -327,7 +327,7 @@ export function ClienteLoginPrincipal() {
                   borderRadius: '10px',
                   padding: '14px 14px 14px 42px',
                   color: '#FFFFFF',
-                  fontFamily: 'var(--font-mono)',
+                  fontFamily: 'var(--fonte-numeros)',
                   fontSize: '13px',
                   letterSpacing: '0.1em',
                   outline: 'none',
@@ -359,7 +359,7 @@ export function ClienteLoginPrincipal() {
               border: 'none',
               borderRadius: '10px',
               color: '#0F172A',
-              fontFamily: 'var(--font-body)',
+              fontFamily: 'var(--fonte-interface)',
               fontSize: '14px',
               fontWeight: 700,
               letterSpacing: '0.1em',
@@ -394,7 +394,7 @@ export function ClienteLoginPrincipal() {
               background: 'none',
               border: 'none',
               cursor: 'pointer',
-              fontFamily: 'var(--font-mono)',
+              fontFamily: 'var(--fonte-numeros)',
               fontSize: '12px',
               letterSpacing: '0.08em',
               color: '#F59E0B',
@@ -416,7 +416,7 @@ export function ClienteLoginPrincipal() {
       {/* Footer */}
       <p style={{
         padding: '1.5rem',
-        fontFamily: 'var(--font-mono)',
+        fontFamily: 'var(--fonte-numeros)',
         fontSize: '9px',
         color: 'var(--text-disabled)',
         letterSpacing: '0.15em',
@@ -508,7 +508,7 @@ export function ClienteLoginPrincipal() {
                 <Settings size={20} style={{ color: '#F59E0B' }} />
               </div>
               <h2 style={{
-                fontFamily: 'var(--font-body)',
+                fontFamily: 'var(--fonte-interface)',
                 fontSize: '16px',
                 fontWeight: 700,
                 color: '#FFFFFF',
@@ -517,7 +517,7 @@ export function ClienteLoginPrincipal() {
                 Acesso da Equipe
               </h2>
               <p style={{
-                fontFamily: 'var(--font-mono)',
+                fontFamily: 'var(--fonte-numeros)',
                 fontSize: '10px',
                 color: '#94A3B8',
                 letterSpacing: '0.1em',
@@ -576,7 +576,7 @@ export function ClienteLoginPrincipal() {
                 </div>
                 <div>
                   <p style={{
-                    fontFamily: 'var(--font-body)',
+                    fontFamily: 'var(--fonte-interface)',
                     fontSize: '14px',
                     fontWeight: 600,
                     color: '#FFFFFF',
@@ -585,7 +585,7 @@ export function ClienteLoginPrincipal() {
                     Sou Administrador
                   </p>
                   <p style={{
-                    fontFamily: 'var(--font-mono)',
+                    fontFamily: 'var(--fonte-numeros)',
                     fontSize: '10px',
                     color: '#94A3B8',
                     letterSpacing: '0.06em',
@@ -639,7 +639,7 @@ export function ClienteLoginPrincipal() {
                 </div>
                 <div>
                   <p style={{
-                    fontFamily: 'var(--font-body)',
+                    fontFamily: 'var(--fonte-interface)',
                     fontSize: '14px',
                     fontWeight: 600,
                     color: '#FFFFFF',
@@ -648,7 +648,7 @@ export function ClienteLoginPrincipal() {
                     Sou Barbeiro
                   </p>
                   <p style={{
-                    fontFamily: 'var(--font-mono)',
+                    fontFamily: 'var(--fonte-numeros)',
                     fontSize: '10px',
                     color: '#94A3B8',
                     letterSpacing: '0.06em',

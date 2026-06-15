@@ -54,7 +54,7 @@ export function ClienteCadastro() {
     borderRadius: '10px',
     padding: '14px 14px 14px 42px',
     color: '#FFFFFF',
-    fontFamily: 'var(--font-mono)',
+    fontFamily: 'var(--fonte-numeros)',
     fontSize: '13px',
     letterSpacing: '0.02em',
     outline: 'none',
@@ -63,7 +63,7 @@ export function ClienteCadastro() {
   };
 
   const labelStyle: React.CSSProperties = {
-    fontFamily: 'var(--font-mono)',
+    fontFamily: 'var(--fonte-numeros)',
     fontSize: '9px',
     letterSpacing: '0.18em',
     textTransform: 'uppercase' as const,
@@ -132,7 +132,7 @@ export function ClienteCadastro() {
             display: 'inline-flex',
             alignItems: 'center',
             gap: '6px',
-            fontFamily: 'var(--font-mono)',
+            fontFamily: 'var(--fonte-numeros)',
             fontSize: '10px',
             letterSpacing: '0.1em',
             color: '#94A3B8',
@@ -187,7 +187,7 @@ export function ClienteCadastro() {
           </div>
 
           <h1 style={{
-            fontFamily: 'var(--font-display)',
+            fontFamily: 'var(--fonte-interface)',
             fontSize: '36px',
             letterSpacing: '0.06em',
             color: '#FFFFFF',
@@ -197,7 +197,7 @@ export function ClienteCadastro() {
           </h1>
 
           <p style={{
-            fontFamily: 'var(--font-mono)',
+            fontFamily: 'var(--fonte-numeros)',
             fontSize: '10px',
             letterSpacing: '0.2em',
             color: '#94A3B8',
@@ -233,7 +233,7 @@ export function ClienteCadastro() {
                 border: '1px solid rgba(226, 75, 74, 0.3)',
                 borderRadius: '8px',
                 color: 'var(--error-text)',
-                fontFamily: 'var(--font-mono)',
+                fontFamily: 'var(--fonte-numeros)',
                 fontSize: '11px',
               }}
             >
@@ -330,7 +330,7 @@ export function ClienteCadastro() {
               border: 'none',
               borderRadius: '10px',
               color: '#0A0A0A',
-              fontFamily: 'var(--font-body)',
+              fontFamily: 'var(--fonte-interface)',
               fontSize: '14px',
               fontWeight: 700,
               letterSpacing: '0.1em',
@@ -365,7 +365,7 @@ export function ClienteCadastro() {
               background: 'none',
               border: 'none',
               cursor: 'pointer',
-              fontFamily: 'var(--font-mono)',
+              fontFamily: 'var(--fonte-numeros)',
               fontSize: '12px',
               letterSpacing: '0.08em',
               color: '#F59E0B',

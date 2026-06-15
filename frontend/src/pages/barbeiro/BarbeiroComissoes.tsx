@@ -38,7 +38,7 @@ export function BarbeiroComissoes() {
 
   return (
     <div className="px-5 py-6 animate-fade-in">
-      <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '24px', color: 'var(--text-primary)', marginBottom: '20px', letterSpacing: '0.04em' }}>
+      <h1 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '24px', color: 'var(--text-primary)', marginBottom: '20px', letterSpacing: '0.04em' }}>
         Comissões
       </h1>
 
@@ -65,32 +65,32 @@ export function BarbeiroComissoes() {
           }}>
             <div className="flex items-center gap-3 mb-4">
               <DollarSign size={20} style={{ color: 'rgba(var(--cor-primaria-rgb), 0.15)' }} />
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--cor-icone)' }}>
+              <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--cor-icone)' }}>
                 Sua Comissão ({dados.percentualComissao}%)
               </span>
             </div>
-            <p style={{ fontFamily: 'var(--font-display)', fontSize: '40px', color: 'rgba(var(--cor-primaria-rgb), 0.15)', lineHeight: 1 }}>
+            <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '40px', color: 'rgba(var(--cor-primaria-rgb), 0.15)', lineHeight: 1 }}>
               {fmt(dados.valorComissao)}
             </p>
             <div className="flex justify-between mt-6 pt-4" style={{ borderTop: '1px solid rgba(212, 130, 10, 0.2)' }}>
               <div>
-                <p style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '4px' }}>Valor Bruto</p>
-                <p style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--text-primary)', fontWeight: 600 }}>{fmt(dados.valorBruto)}</p>
+                <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '4px' }}>Valor Bruto</p>
+                <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '14px', color: 'var(--text-primary)', fontWeight: 600 }}>{fmt(dados.valorBruto)}</p>
               </div>
               <div style={{ textAlign: 'right' }}>
-                <p style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '4px' }}>Atendimentos</p>
-                <p style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--text-primary)', fontWeight: 600 }}>{dados.totalAtendimentos}</p>
+                <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '4px' }}>Atendimentos</p>
+                <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '14px', color: 'var(--text-primary)', fontWeight: 600 }}>{dados.totalAtendimentos}</p>
               </div>
             </div>
           </div>
 
           {/* Histórico */}
           <div>
-            <h2 style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--cor-icone)', marginBottom: '12px' }}>
+            <h2 style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--cor-icone)', marginBottom: '12px' }}>
               <TrendingUp size={12} className="inline mr-1" /> Histórico no Período
             </h2>
             {dados.lancamentos.length === 0 ? (
-              <p style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--text-muted)', textAlign: 'center', padding: '2rem 0' }}>
+              <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--text-muted)', textAlign: 'center', padding: '2rem 0' }}>
                 Nenhum lançamento no período.
               </p>
             ) : (
@@ -98,18 +98,18 @@ export function BarbeiroComissoes() {
                 {dados.lancamentos.map(l => (
                   <div key={l.id} className="p-3" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
                     <div className="flex justify-between items-start mb-2">
-                      <p style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--text-primary)', fontWeight: 600 }}>
+                      <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '13px', color: 'var(--text-primary)', fontWeight: 600 }}>
                         {l.cliente}
                       </p>
-                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'var(--cor-icone)' }}>
+                      <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '13px', color: 'var(--cor-icone)' }}>
                         +{fmt(l.valorComissao)}
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <p style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--text-muted)' }}>
+                      <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--text-muted)' }}>
                         {l.servico}
                       </p>
-                      <p style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', color: 'var(--text-disabled)' }}>
+                      <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '9px', color: 'var(--text-disabled)' }}>
                         {new Date(l.data).toLocaleDateString('pt-BR')}
                       </p>
                     </div>

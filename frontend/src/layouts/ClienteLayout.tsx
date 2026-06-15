@@ -73,7 +73,7 @@ export function ClienteLayout() {
             >
               <Icon size={22} style={{ marginBottom: '4px', opacity: isActive ? 1 : 0.7 }} />
               <span style={{
-                fontFamily: 'var(--font-mono)',
+                fontFamily: 'var(--fonte-numeros)',
                 fontSize: '9px',
                 letterSpacing: '0.08em',
                 fontWeight: isActive ? 600 : 400,
