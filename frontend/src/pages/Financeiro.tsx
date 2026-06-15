@@ -121,19 +121,21 @@ export function Financeiro() {
         <div className="metric-card" style={{ borderLeft: '2px solid var(--success-text)' }}>
           <div className="flex items-center gap-2 mb-2" style={{ color: 'var(--success-text)' }}>
             <TrendingUp size={14} strokeWidth={1.5} />
-            <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '9px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Entradas</span>
+            <span className="metric-label !mt-0 uppercase tracking-widest" style={{ color: 'var(--success-text)' }}>Entradas</span>
           </div>
           <p className="metric-value">{fmt(resumo?.totalEntradas || 0)}</p>
         </div>
         <div className="metric-card" style={{ borderLeft: '2px solid var(--error-text)' }}>
           <div className="flex items-center gap-2 mb-2" style={{ color: 'var(--error-text)' }}>
             <TrendingDown size={14} strokeWidth={1.5} />
-            <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '9px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Saídas</span>
+            <span className="metric-label !mt-0 uppercase tracking-widest" style={{ color: 'var(--error-text)' }}>Saídas</span>
           </div>
           <p className="metric-value">{fmt(resumo?.totalSaidas || 0)}</p>
         </div>
         <div className="metric-card" style={{ borderLeft: '2px solid var(--amber)' }}>
-          <p className="metric-label" style={{ color: 'var(--cor-icone)', marginBottom: '8px' }}>Saldo</p>
+          <div className="flex items-center gap-2 mb-2" style={{ color: 'var(--cor-icone)' }}>
+            <span className="metric-label !mt-0 uppercase tracking-widest">Saldo</span>
+          </div>
           <p className="metric-value">{fmt(resumo?.saldo || 0)}</p>
           {resumo?.porFormaPagamento && (
             <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
@@ -172,9 +174,9 @@ export function Financeiro() {
             </div>
           ))}
         </div>
-        <div className="flex gap-4 mt-4" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
-          <div className="flex items-center gap-1.5"><div style={{ width: '10px', height: '10px', background: 'var(--amber)' }} /><span style={{ color: 'var(--text-muted)' }}>Entradas</span></div>
-          <div className="flex items-center gap-1.5"><div style={{ width: '10px', height: '10px', background: 'var(--bg-surface2)' }} /><span style={{ color: 'var(--text-muted)' }}>Saídas</span></div>
+        <div className="flex gap-4 mt-4">
+          <div className="flex items-center gap-1.5"><div style={{ width: '10px', height: '10px', background: 'var(--amber)' }} /><span className="metric-label !mt-0 uppercase tracking-widest">Entradas</span></div>
+          <div className="flex items-center gap-1.5"><div style={{ width: '10px', height: '10px', background: 'var(--bg-surface2)' }} /><span className="metric-label !mt-0 uppercase tracking-widest">Saídas</span></div>
         </div>
       </div>
 
