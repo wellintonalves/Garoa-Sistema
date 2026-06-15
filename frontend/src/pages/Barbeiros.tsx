@@ -407,7 +407,9 @@ export function Barbeiros() {
           const formData = new FormData();
           formData.append('file', croppedBlob, 'avatar.jpeg');
           try {
-            const res = await api.post('/upload/barbeiro', formData);
+            const res = await api.post('/upload/barbeiro', formData, {
+              headers: { 'Content-Type': 'multipart/form-data' }
+            });
             setForm({ ...form, foto: res.data.url });
           } catch (error: any) { 
             console.error(error);
