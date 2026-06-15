@@ -179,28 +179,27 @@ h1, h2, h3, h4, .titulo {
 }
 
 .text-data {
-  font-family: var(--font-mono);
-  letter-spacing: 0.04em;
+  font-family: var(--fonte-numeros);
+  letter-spacing: 0.02em;
 }
 
 /* === BOTÕES === */
 .btn-primary {
-  background: var(--amber);
-  color: var(--fundo-pagina);
-  font-family: var(--font-body);
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  padding: 11px 24px;
+  background: var(--cor-primaria);
+  color: #0A0A0A;
+  font-family: var(--fonte-interface);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+  padding: 10px 20px;
   border: none;
-  border-radius: 0;
+  border-radius: 6px;
   cursor: pointer;
   transition: all 0.15s ease;
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  box-shadow: 0 4px 0 0 rgba(0,0,0,0.3), 0 6px 12px rgba(0,0,0,0.2);
 }
 .btn-primary:hover {
   background: rgba(var(--cor-primaria-rgb), 0.15);
@@ -220,15 +219,15 @@ h1, h2, h3, h4, .titulo {
 
 .btn-secondary {
   background: transparent;
-  color: var(--text-primary);
-  font-family: var(--font-body);
-  font-size: 12px;
+  color: var(--texto-principal);
+  font-family: var(--fonte-interface);
+  font-size: 13px;
   font-weight: 500;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  padding: 10px 24px;
-  border: 1px solid var(--border);
-  border-radius: 0;
+  letter-spacing: 0;
+  text-transform: none;
+  padding: 9px 20px;
+  border: 1px solid var(--borda);
+  border-radius: 6px;
   cursor: pointer;
   transition: border-color 0.2s, color 0.2s;
   display: inline-flex;
@@ -244,14 +243,14 @@ h1, h2, h3, h4, .titulo {
 .input,
 .ds-input {
   width: 100%;
-  background: var(--bg-surface2);
-  border: 1px solid var(--border);
-  border-radius: 0;
+  background: var(--fundo-input);
+  border: 1px solid var(--borda-input);
+  border-radius: 6px;
   padding: 10px 14px;
-  color: var(--text-primary);
-  font-family: var(--font-mono);
-  font-size: 12px;
-  letter-spacing: 0.04em;
+  color: var(--texto-principal);
+  font-family: var(--fonte-interface);
+  font-size: 13px;
+  letter-spacing: 0;
   outline: none;
   transition: border-color 0.2s;
   min-height: 40px;
@@ -267,14 +266,14 @@ h1, h2, h3, h4, .titulo {
 
 .ds-select {
   width: 100%;
-  background: var(--bg-surface2);
-  border: 1px solid var(--border);
-  border-radius: 0;
+  background: var(--fundo-input);
+  border: 1px solid var(--borda-input);
+  border-radius: 6px;
   padding: 10px 14px;
-  color: var(--text-primary);
-  font-family: var(--font-mono);
-  font-size: 12px;
-  letter-spacing: 0.04em;
+  color: var(--texto-principal);
+  font-family: var(--fonte-interface);
+  font-size: 13px;
+  letter-spacing: 0;
   outline: none;
   transition: border-color 0.2s;
   min-height: 40px;
@@ -286,14 +285,14 @@ h1, h2, h3, h4, .titulo {
 
 .ds-textarea {
   width: 100%;
-  background: var(--bg-surface2);
-  border: 1px solid var(--border);
-  border-radius: 0;
+  background: var(--fundo-input);
+  border: 1px solid var(--borda-input);
+  border-radius: 6px;
   padding: 10px 14px;
-  color: var(--text-primary);
-  font-family: var(--font-mono);
-  font-size: 12px;
-  letter-spacing: 0.04em;
+  color: var(--texto-principal);
+  font-family: var(--fonte-interface);
+  font-size: 13px;
+  letter-spacing: 0;
   outline: none;
   transition: border-color 0.2s;
   resize: none;
@@ -303,11 +302,11 @@ h1, h2, h3, h4, .titulo {
 }
 
 .input-label {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--amber);
+  font-family: var(--fonte-interface);
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  color: var(--texto-secundario);
   margin-bottom: 6px;
   display: block;
   font-weight: 500;
@@ -331,13 +330,13 @@ h1, h2, h3, h4, .titulo {
 
 /* === BADGES === */
 .badge {
-  font-family: var(--font-mono);
-  font-size: 9px;
+  font-family: var(--fonte-interface);
+  font-size: 11px;
   font-weight: 500;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  padding: 3px 8px;
-  border-radius: 0;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  padding: 3px 10px;
+  border-radius: 4px;
   display: inline-block;
   white-space: nowrap;
 }
@@ -375,11 +374,11 @@ h1, h2, h3, h4, .titulo {
   border-bottom: 1px solid var(--border);
 }
 .ds-table th {
-  font-family: var(--font-mono);
-  font-size: 9px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--amber);
+  font-family: var(--fonte-interface);
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  color: var(--texto-secundario);
   padding: 10px 12px;
   text-align: left;
   font-weight: 500;
@@ -461,11 +460,11 @@ h1, h2, h3, h4, .titulo {
   color: var(--amber);
 }
 .metric-label {
-  font-family: var(--font-mono);
-  font-size: 9px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--text-muted);
+  font-family: var(--fonte-interface);
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  color: var(--texto-secundario);
   margin-top: 6px;
 }
 
@@ -617,11 +616,11 @@ h1, h2, h3, h4, .titulo {
   border-bottom: 1px solid var(--border);
 }
 .tab-item {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--text-muted);
+  font-family: var(--fonte-interface);
+  font-size: 13px;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--texto-secundario);
   padding: 12px 20px;
   border: none;
   background: transparent;
@@ -641,13 +640,14 @@ h1, h2, h3, h4, .titulo {
 .btn-whatsapp {
   background: #25D366;
   color: #fff;
-  font-family: var(--font-body);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  font-family: var(--fonte-interface);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
   padding: 8px 16px;
   border: none;
+  border-radius: 6px;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -660,12 +660,12 @@ h1, h2, h3, h4, .titulo {
 
 /* === SECTION DIVIDER === */
 .section-divider {
-  font-family: var(--font-mono);
-  font-size: 9px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--amber);
+  font-family: var(--fonte-interface);
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  color: var(--texto-secundario);
   padding: 12px 0 8px;
   margin-top: 16px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--borda);
 }
