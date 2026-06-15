@@ -266,9 +266,7 @@ export function Configuracoes() {
                         setBarbearia({
                           ...barbearia,
                           logo: sugestaoCores.logoBase64,
-                          corPrimaria: sugestaoCores.primaria,
-                          corSecundaria: sugestaoCores.secundaria,
-                          corFundo: sugestaoCores.fundo
+                          corPrimaria: sugestaoCores.primaria
                         });
                         setSugestaoCores(null);
                       }} className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded">
@@ -285,63 +283,14 @@ export function Configuracoes() {
                 )}
               </div>
 
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 gap-4">
                 <div>
-                  <label className="block text-xs text-zinc-400 mb-1">Cor Primária</label>
+                  <label className="block text-xs text-zinc-400 mb-1">Cor Primária (Destaques)</label>
                   <input type="color" className="w-full h-10 bg-transparent rounded cursor-pointer" value={barbearia.corPrimaria || '#ff6b00'} onChange={e => setBarbearia({...barbearia, corPrimaria: e.target.value})} required />
                 </div>
-                <div>
-                  <label className="block text-xs text-zinc-400 mb-1">Cor Secundária</label>
-                  <input type="color" className="w-full h-10 bg-transparent rounded cursor-pointer" value={barbearia.corSecundaria || '#1a1a1a'} onChange={e => setBarbearia({...barbearia, corSecundaria: e.target.value})} required />
-                </div>
-                <div>
-                  <label className="block text-xs text-zinc-400 mb-1">Cor de Fundo</label>
-                  <input type="color" className="w-full h-10 bg-transparent rounded cursor-pointer" value={barbearia.corFundo || '#0f0f1a'} onChange={e => setBarbearia({...barbearia, corFundo: e.target.value})} required />
-                </div>
-                <div>
-                  <label className="block text-xs text-zinc-400 mb-1">Cor do Texto</label>
-                  <input type="color" className="w-full h-10 bg-transparent rounded cursor-pointer" value={barbearia.corTexto || '#ffffff'} onChange={e => setBarbearia({...barbearia, corTexto: e.target.value})} required />
-                </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Fonte dos Títulos</label>
-                  <select className="form-select w-full p-2 bg-black/50 border border-[var(--border)] rounded text-white" value={barbearia.fonte || 'Inter'} onChange={e => setBarbearia({...barbearia, fonte: e.target.value})}>
-                    <option value="Inter">Inter (Neutro)</option>
-                    <option value="Bebas Neue">Bebas Neue (Clássica)</option>
-                    <option value="Syne">Syne (Moderno)</option>
-                    <option value="Oswald">Oswald (Impactante)</option>
-                    <option value="Playfair Display">Playfair Display (Elegante)</option>
-                    <option value="Montserrat">Montserrat (Profissional)</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Fonte do Corpo</label>
-                  <select className="form-select w-full p-2 bg-black/50 border border-[var(--border)] rounded text-white" value={barbearia.fonteCorpo || 'Inter'} onChange={e => setBarbearia({...barbearia, fonteCorpo: e.target.value})}>
-                    <option value="Inter">Inter</option>
-                    <option value="Roboto">Roboto</option>
-                    <option value="Open Sans">Open Sans</option>
-                    <option value="Lato">Lato</option>
-                    <option value="Nunito">Nunito</option>
-                    <option value="Poppins">Poppins</option>
-                    <option value="Source Sans Pro">Source Sans Pro</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Fonte dos Números</label>
-                  <select className="form-select w-full p-2 bg-black/50 border border-[var(--border)] rounded text-white" value={barbearia.fonteNumeros || 'DM Mono'} onChange={e => setBarbearia({...barbearia, fonteNumeros: e.target.value})}>
-                    <option value="DM Mono">DM Mono</option>
-                    <option value="Roboto Mono">Roboto Mono</option>
-                    <option value="JetBrains Mono">JetBrains Mono</option>
-                    <option value="Space Mono">Space Mono</option>
-                    <option value="Courier Prime">Courier Prime</option>
-                    <option value="Oswald">Oswald</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="mt-4 p-4 rounded border border-zinc-700" style={{ backgroundColor: barbearia.corSecundaria || '#1a1a1a', color: barbearia.corTexto || '#ffffff' }}>
+              <div className="mt-4 p-4 rounded border border-zinc-700 bg-black/20 text-white">
                 <p className="text-xs opacity-70 mb-2 uppercase tracking-widest">Preview no App</p>
                 
                 <div className="flex items-center justify-between">
@@ -351,18 +300,18 @@ export function Configuracoes() {
                     ) : (
                        <div className="h-8 w-8 bg-black/20 rounded flex items-center justify-center">L</div>
                     )}
-                    <h1 className="text-2xl m-0 font-bold" style={{ fontFamily: barbearia.fonte || 'Inter' }}>
+                    <h1 className="text-2xl m-0 font-bold" style={{ fontFamily: 'var(--fonte-interface)' }}>
                       {barbearia.nome || 'GAROA BARBEARIA'}
                     </h1>
                   </div>
                 </div>
 
                 <div className="mb-4">
-                  <p style={{ fontFamily: barbearia.fonteCorpo || 'Inter' }}>Corte Social — João Silva</p>
-                  <p className="mt-1" style={{ fontFamily: barbearia.fonteNumeros || 'DM Mono' }}>R$ 45,00 — 10:30</p>
+                  <p style={{ fontFamily: 'var(--fonte-interface)' }}>Corte Social — João Silva</p>
+                  <p className="mt-1" style={{ fontFamily: 'var(--fonte-numeros)' }}>R$ 45,00 — 10:30</p>
                 </div>
 
-                <button type="button" className="px-4 py-2 rounded font-bold text-black text-sm" style={{ backgroundColor: barbearia.corPrimaria || '#ff6b00', fontFamily: barbearia.fonteCorpo || 'Inter' }}>
+                <button type="button" className="px-4 py-2 rounded font-bold text-black text-sm" style={{ backgroundColor: barbearia.corPrimaria || '#ff6b00', fontFamily: 'var(--fonte-interface)' }}>
                   Agendar Horário
                 </button>
               </div>
