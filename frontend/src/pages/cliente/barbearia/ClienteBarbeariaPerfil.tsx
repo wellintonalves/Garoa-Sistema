@@ -82,7 +82,7 @@ export function ClienteBarbeariaPerfil() {
         </div>
 
         {mensagem && (
-          <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: mensagem.includes('Erro') ? 'var(--error-text)' : 'var(--success-text)' }}>
+          <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', color: mensagem.includes('Erro') ? 'var(--error-text)' : 'var(--success-text)' }}>
             {mensagem}
           </p>
         )}
@@ -94,7 +94,7 @@ export function ClienteBarbeariaPerfil() {
 
       {/* Barbearias conectadas */}
       <div className="mb-8">
-        <h2 style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase' as const, color: 'var(--cor-icone)', marginBottom: '12px' }}>
+        <h2 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase' as const, color: 'var(--cor-icone)', marginBottom: '12px' }}>
           Barbearias Conectadas
         </h2>
         <div className="flex flex-col gap-2">

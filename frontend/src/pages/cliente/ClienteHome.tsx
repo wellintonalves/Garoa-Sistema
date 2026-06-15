@@ -99,7 +99,7 @@ export function ClienteHome() {
       <div className="px-5 pt-8 pb-4" style={{ borderBottom: '1px solid var(--border)' }}>
         <div className="flex items-center justify-between mb-6">
           <div>
-            <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--cor-icone)', letterSpacing: '0.15em', textTransform: 'uppercase' as const }}>
+            <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--cor-icone)', letterSpacing: '0.15em', textTransform: 'uppercase' as const }}>
               Olá,
             </p>
             <h1 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '28px', color: 'var(--text-primary)', letterSpacing: '0.04em' }}>
@@ -151,12 +151,12 @@ export function ClienteHome() {
                 <div className="min-w-0 flex-1">
                   <p style={{ fontFamily: 'var(--fonte-interface)', fontWeight: 700, color: 'var(--text-primary)', fontSize: '13px' }}>{b.nome}</p>
                   {b.endereco && (
-                    <p className="flex items-center gap-1 truncate" style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--text-muted)' }}>
+                    <p className="flex items-center gap-1 truncate" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--text-muted)' }}>
                       <MapPin size={10} /> {b.endereco}
                     </p>
                   )}
                 </div>
-                <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '9px', color: 'var(--cor-icone)', letterSpacing: '0.1em', textTransform: 'uppercase' as const }}>
+                <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '9px', color: 'var(--cor-icone)', letterSpacing: '0.1em', textTransform: 'uppercase' as const }}>
                   Conectar
                 </span>
               </button>
@@ -165,7 +165,7 @@ export function ClienteHome() {
         )}
 
         {buscando && (
-          <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--text-muted)', textAlign: 'center', padding: '12px 0' }}>
+          <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', color: 'var(--text-muted)', textAlign: 'center', padding: '12px 0' }}>
             Buscando...
           </p>
         )}
@@ -173,12 +173,12 @@ export function ClienteHome() {
 
       {/* Minhas Barbearias */}
       <div className="flex-1 px-5 py-6">
-        <h2 style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase' as const, color: 'var(--cor-icone)', marginBottom: '16px' }}>
+        <h2 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase' as const, color: 'var(--cor-icone)', marginBottom: '16px' }}>
           Minhas Barbearias
         </h2>
 
         {carregando ? (
-          <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--text-muted)', textAlign: 'center', padding: '2rem 0' }}>
+          <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', color: 'var(--text-muted)', textAlign: 'center', padding: '2rem 0' }}>
             Carregando...
           </p>
         ) : minhasBarbearias.length === 0 ? (
@@ -187,7 +187,7 @@ export function ClienteHome() {
             <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '14px', color: 'var(--text-muted)', textAlign: 'center' }}>
               Nenhuma barbearia conectada
             </p>
-            <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--text-disabled)', textAlign: 'center', marginTop: '4px' }}>
+            <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', color: 'var(--text-disabled)', textAlign: 'center', marginTop: '4px' }}>
               Busque acima ou escaneie um QR Code
             </p>
           </div>
@@ -216,7 +216,7 @@ export function ClienteHome() {
                     {b.nome}
                   </p>
                   {b.endereco && (
-                    <p className="flex items-center gap-1 truncate" style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                    <p className="flex items-center gap-1 truncate" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px' }}>
                       <MapPin size={10} /> {b.endereco}
                     </p>
                   )}

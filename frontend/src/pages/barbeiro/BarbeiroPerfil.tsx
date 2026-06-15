@@ -44,7 +44,7 @@ export function BarbeiroPerfil() {
         <h2 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '20px', fontWeight: 700, color: 'var(--text-primary)' }}>
           {perfil.usuario.nome}
         </h2>
-        <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>
+        <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>
           {perfil.usuario.email}
         </p>
       </div>
@@ -54,7 +54,7 @@ export function BarbeiroPerfil() {
         <div className="p-4" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
           <div className="flex items-center gap-3 mb-2">
             <User size={16} style={{ color: 'var(--cor-icone)' }} />
-            <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Comissão Padrão</span>
+            <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Comissão Padrão</span>
           </div>
           <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '16px', color: 'var(--text-primary)' }}>
             {perfil.comissaoPercent}%
@@ -64,7 +64,7 @@ export function BarbeiroPerfil() {
         <div className="p-4" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
           <div className="flex items-center gap-3 mb-3">
             <Scissors size={16} style={{ color: 'var(--cor-icone)' }} />
-            <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Especialidades</span>
+            <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Especialidades</span>
           </div>
           <div className="flex flex-wrap gap-2">
             {perfil.especialidades.map((e, i) => (
@@ -82,7 +82,7 @@ export function BarbeiroPerfil() {
 
       {/* Footer Info */}
       <div className="mt-8 text-center">
-        <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--text-disabled)' }}>
+        <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--text-disabled)' }}>
           Vinculado a: <br />
           <strong style={{ color: 'var(--text-muted)' }}>{perfil.barbearia.nome}</strong>
         </p>

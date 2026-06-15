@@ -46,7 +46,7 @@ export function BarbeiroLogin() {
           Portal do Barbeiro
         </h1>
         <p style={{
-          fontFamily: 'var(--fonte-numeros)',
+          fontFamily: 'var(--fonte-interface)',
           fontSize: '11px',
           letterSpacing: '0.1em',
           color: '#94A3B8',
@@ -64,7 +64,7 @@ export function BarbeiroLogin() {
             background: 'var(--error)',
             color: 'var(--error-text)',
             padding: '10px 14px',
-            fontFamily: 'var(--fonte-numeros)',
+            fontFamily: 'var(--fonte-interface)',
             fontSize: '11px',
           }}>{erro}</div>
         )}

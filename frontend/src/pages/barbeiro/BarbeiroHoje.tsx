@@ -55,7 +55,7 @@ export function BarbeiroHoje() {
     <div className="px-5 py-6 animate-fade-in">
       {/* Header */}
       <div className="mb-8">
-        <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--cor-icone)', letterSpacing: '0.15em', textTransform: 'uppercase' }}>
+        <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--cor-icone)', letterSpacing: '0.15em', textTransform: 'uppercase' }}>
           Hoje
         </p>
         <h1 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '28px', color: 'var(--text-primary)', letterSpacing: '0.04em' }}>
@@ -69,7 +69,7 @@ export function BarbeiroHoje() {
         <>
           {/* Pendentes */}
           <div className="mb-8">
-            <h2 style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--cor-icone)', marginBottom: '12px' }}>
+            <h2 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--cor-icone)', marginBottom: '12px' }}>
               Próximos Atendimentos ({pendentes.length})
             </h2>
             
@@ -118,7 +118,7 @@ export function BarbeiroHoje() {
           {/* Concluídos */}
           {concluidos.length > 0 && (
             <div>
-              <h2 style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '12px' }}>
+              <h2 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '12px' }}>
                 Concluídos ({concluidos.length})
               </h2>
               <div className="flex flex-col gap-2">
@@ -132,7 +132,7 @@ export function BarbeiroHoje() {
                         <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '13px', color: 'var(--text-primary)' }}>
                           {a.cliente.usuario.nome}
                         </p>
-                        <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--text-muted)' }}>
+                        <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--text-muted)' }}>
                           {a.servico.nome}
                         </p>
                       </div>

@@ -104,7 +104,7 @@ export function ClienteBarbeariaFidelidade() {
       }}>
         <div className="flex items-center gap-3 mb-4">
           <Star size={24} style={{ color: 'rgba(var(--cor-primaria-rgb), 0.15)' }} />
-          <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--cor-icone)' }}>
+          <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--cor-icone)' }}>
             Seu Saldo
           </span>
         </div>
@@ -118,7 +118,7 @@ export function ClienteBarbeariaFidelidade() {
 
       {/* Recompensas Disponíveis */}
       <div className="mb-8">
-        <h2 style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--cor-icone)', marginBottom: '12px' }}>
+        <h2 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--cor-icone)', marginBottom: '12px' }}>
           <Gift size={12} className="inline mr-1" /> Recompensas
         </h2>
         {dados.recompensas.length === 0 ? (
@@ -164,11 +164,11 @@ export function ClienteBarbeariaFidelidade() {
 
       {/* Histórico */}
       <div>
-        <h2 style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--cor-icone)', marginBottom: '12px' }}>
+        <h2 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--cor-icone)', marginBottom: '12px' }}>
           <TrendingUp size={12} className="inline mr-1" /> Histórico
         </h2>
         {dados.historico.length === 0 ? (
-          <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--text-muted)', textAlign: 'center', padding: '2rem 0' }}>
+          <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', color: 'var(--text-muted)', textAlign: 'center', padding: '2rem 0' }}>
             Nenhum registro ainda.
           </p>
         ) : (

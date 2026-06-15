@@ -58,7 +58,7 @@ export function ClienteBarbeariaInicio() {
           <h1 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '24px', color: 'var(--text-primary)', letterSpacing: '0.04em' }}>
             {barbearia?.nome || 'Barbearia'}
           </h1>
-          <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.1em', textTransform: 'uppercase' as const }}>
+          <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.1em', textTransform: 'uppercase' as const }}>
             Seu espaço
           </p>
         </div>
@@ -67,7 +67,7 @@ export function ClienteBarbeariaInicio() {
       {/* Agendamentos Futuros */}
       {agendamentosFuturos.length > 0 ? (
         <div className="mb-6">
-          <h2 style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase' as const, color: 'var(--cor-icone)', marginBottom: '12px' }}>
+          <h2 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase' as const, color: 'var(--cor-icone)', marginBottom: '12px' }}>
             Agendamentos Futuros
           </h2>
           <div className="flex flex-col gap-3">
@@ -75,7 +75,7 @@ export function ClienteBarbeariaInicio() {
               <div key={ag.id} className="p-4" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderLeft: '3px solid var(--amber)', borderRadius: '4px' }}>
                 <div className="flex items-center gap-3 mb-3">
                   <Calendar size={16} style={{ color: 'var(--cor-icone)' }} />
-                  <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '13px', color: 'var(--text-primary)' }}>
+                  <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '13px', color: 'var(--text-primary)' }}>
                     {fmtData(ag.dataHora)}
                   </span>
                   <Clock size={14} style={{ color: 'var(--text-muted)', marginLeft: '8px' }} />
@@ -88,7 +88,7 @@ export function ClienteBarbeariaInicio() {
                     <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '14px', color: 'var(--text-primary)', fontWeight: 600 }}>
                       {ag.servico.nome}
                     </p>
-                    <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>
+                    <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>
                       com {ag.barbeiro.usuario.nome}
                     </p>
                   </div>
@@ -133,7 +133,7 @@ export function ClienteBarbeariaInicio() {
       {/* Últimos Serviços */}
       {agendamentosPassados.length > 0 && (
         <div>
-          <h2 style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase' as const, color: 'var(--text-muted)', marginBottom: '12px' }}>
+          <h2 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase' as const, color: 'var(--text-muted)', marginBottom: '12px' }}>
             Histórico
           </h2>
           <div className="flex flex-col gap-2">
@@ -144,7 +144,7 @@ export function ClienteBarbeariaInicio() {
                   <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '13px', color: 'var(--text-primary)', fontWeight: 600 }}>
                     {a.servico.nome}
                   </p>
-                  <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--text-muted)' }}>
+                  <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--text-muted)' }}>
                     {fmtData(a.dataHora)} — {a.barbeiro.usuario.nome}
                   </p>
                 </div>

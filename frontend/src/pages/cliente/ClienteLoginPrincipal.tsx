@@ -99,7 +99,7 @@ export function ClienteLoginPrincipal() {
           padding: '8px 12px',
           cursor: 'pointer',
           color: 'var(--text-disabled)',
-          fontFamily: 'var(--fonte-numeros)',
+          fontFamily: 'var(--fonte-interface)',
           fontSize: '9px',
           letterSpacing: '0.12em',
           textTransform: 'uppercase' as const,
@@ -185,7 +185,7 @@ export function ClienteLoginPrincipal() {
 
           {/* Subtítulo */}
           <p style={{
-            fontFamily: 'var(--fonte-numeros)',
+            fontFamily: 'var(--fonte-interface)',
             fontSize: '10px',
             letterSpacing: '0.35em',
             color: '#F59E0B',
@@ -229,7 +229,7 @@ export function ClienteLoginPrincipal() {
                 border: '1px solid rgba(226, 75, 74, 0.3)',
                 borderRadius: '8px',
                 color: 'var(--error-text)',
-                fontFamily: 'var(--fonte-numeros)',
+                fontFamily: 'var(--fonte-interface)',
                 fontSize: '11px',
               }}
             >
@@ -241,7 +241,7 @@ export function ClienteLoginPrincipal() {
           {/* Campo Email */}
           <div>
             <label style={{
-              fontFamily: 'var(--fonte-numeros)',
+              fontFamily: 'var(--fonte-interface)',
               fontSize: '9px',
               letterSpacing: '0.18em',
               textTransform: 'uppercase' as const,
@@ -273,7 +273,7 @@ export function ClienteLoginPrincipal() {
                   borderRadius: '10px',
                   padding: '14px 14px 14px 42px',
                   color: '#FFFFFF',
-                  fontFamily: 'var(--fonte-numeros)',
+                  fontFamily: 'var(--fonte-interface)',
                   fontSize: '13px',
                   letterSpacing: '0.02em',
                   outline: 'none',
@@ -295,7 +295,7 @@ export function ClienteLoginPrincipal() {
           {/* Campo Senha */}
           <div>
             <label style={{
-              fontFamily: 'var(--fonte-numeros)',
+              fontFamily: 'var(--fonte-interface)',
               fontSize: '9px',
               letterSpacing: '0.18em',
               textTransform: 'uppercase' as const,
@@ -327,7 +327,7 @@ export function ClienteLoginPrincipal() {
                   borderRadius: '10px',
                   padding: '14px 14px 14px 42px',
                   color: '#FFFFFF',
-                  fontFamily: 'var(--fonte-numeros)',
+                  fontFamily: 'var(--fonte-interface)',
                   fontSize: '13px',
                   letterSpacing: '0.1em',
                   outline: 'none',
@@ -394,7 +394,7 @@ export function ClienteLoginPrincipal() {
               background: 'none',
               border: 'none',
               cursor: 'pointer',
-              fontFamily: 'var(--fonte-numeros)',
+              fontFamily: 'var(--fonte-interface)',
               fontSize: '12px',
               letterSpacing: '0.08em',
               color: '#F59E0B',
@@ -416,7 +416,7 @@ export function ClienteLoginPrincipal() {
       {/* Footer */}
       <p style={{
         padding: '1.5rem',
-        fontFamily: 'var(--fonte-numeros)',
+        fontFamily: 'var(--fonte-interface)',
         fontSize: '9px',
         color: 'var(--text-disabled)',
         letterSpacing: '0.15em',
@@ -517,7 +517,7 @@ export function ClienteLoginPrincipal() {
                 Acesso da Equipe
               </h2>
               <p style={{
-                fontFamily: 'var(--fonte-numeros)',
+                fontFamily: 'var(--fonte-interface)',
                 fontSize: '10px',
                 color: '#94A3B8',
                 letterSpacing: '0.1em',
@@ -585,7 +585,7 @@ export function ClienteLoginPrincipal() {
                     Sou Administrador
                   </p>
                   <p style={{
-                    fontFamily: 'var(--fonte-numeros)',
+                    fontFamily: 'var(--fonte-interface)',
                     fontSize: '10px',
                     color: '#94A3B8',
                     letterSpacing: '0.06em',
@@ -648,7 +648,7 @@ export function ClienteLoginPrincipal() {
                     Sou Barbeiro
                   </p>
                   <p style={{
-                    fontFamily: 'var(--fonte-numeros)',
+                    fontFamily: 'var(--fonte-interface)',
                     fontSize: '10px',
                     color: '#94A3B8',
                     letterSpacing: '0.06em',

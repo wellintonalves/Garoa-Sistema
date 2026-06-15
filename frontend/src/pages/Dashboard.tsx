@@ -109,7 +109,7 @@ export function Dashboard() {
         </h1>
         <p
           style={{
-            fontFamily: 'var(--fonte-numeros)',
+            fontFamily: 'var(--fonte-interface)',
             fontSize: '11px',
             color: 'var(--text-muted)',
             marginTop: '8px',
@@ -193,7 +193,7 @@ export function Dashboard() {
           <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)' }}>
             Erro ao carregar dados do dashboard
           </p>
-          <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>
+          <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>
             {erro}
           </p>
         </div>
@@ -316,7 +316,7 @@ export function Dashboard() {
                 })}
               </div>
             ) : (
-              <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--text-muted)' }}>Nenhum dado para este período.</p>
+              <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', color: 'var(--text-muted)' }}>Nenhum dado para este período.</p>
             )}
           </div>
         </>

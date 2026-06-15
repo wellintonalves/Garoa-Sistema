@@ -352,10 +352,10 @@ export function Clientes() {
                       {/* Contato */}
                       <td>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                          <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
                             <Mail size={10} /> {c.usuario?.email || '—'}
                           </span>
-                          <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
                             <Phone size={10} /> {c.telefone || '—'}
                           </span>
                         </div>
@@ -386,7 +386,7 @@ export function Clientes() {
                           onClick={() => abrirPerfil(c.id)}
                           className="transition-colors"
                           style={{
-                            fontFamily: 'var(--fonte-numeros)',
+                            fontFamily: 'var(--fonte-interface)',
                             fontSize: '9px',
                             letterSpacing: '0.12em',
                             textTransform: 'uppercase',
@@ -405,7 +405,7 @@ export function Clientes() {
                   ))}
                   {clientes.length === 0 && (
                     <tr>
-                      <td colSpan={8} style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)', fontFamily: 'var(--fonte-numeros)', fontSize: '11px' }}>
+                      <td colSpan={8} style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)', fontFamily: 'var(--fonte-interface)', fontSize: '11px' }}>
                         {carregando ? 'Buscando clientes...' : 'Nenhum cliente encontrado'}
                       </td>
                     </tr>
@@ -424,7 +424,7 @@ export function Clientes() {
             <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '14px', color: 'var(--text-primary)', fontWeight: 600 }}>
               🎂 Aniversariantes de {mesAtual}
             </p>
-            <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--text-muted)', marginTop: '4px' }}>
+            <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--text-muted)', marginTop: '4px' }}>
               {aniversariantes.length} cliente{aniversariantes.length !== 1 ? 's' : ''} fazendo aniversário este mês
             </p>
           </div>
@@ -475,7 +475,7 @@ export function Clientes() {
               </div>
             ))}
             {aniversariantes.length === 0 && (
-              <p style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)', fontFamily: 'var(--fonte-numeros)', fontSize: '11px' }}>
+              <p style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)', fontFamily: 'var(--fonte-interface)', fontSize: '11px' }}>
                 Nenhum aniversariante encontrado este mês
               </p>
             )}
@@ -552,14 +552,14 @@ export function Clientes() {
                         ].map((item, i) => (
                           <div key={i} style={{ padding: '10px', background: 'var(--bg-surface2)', border: '1px solid var(--border)' }}>
                             <span className="input-label" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>{item.icon} {item.label}</span>
-                            <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '12px', color: 'var(--text-primary)', marginTop: '4px' }}>{item.value}</p>
+                            <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '12px', color: 'var(--text-primary)', marginTop: '4px' }}>{item.value}</p>
                           </div>
                         ))}
                       </div>
                       {clienteSelecionado.observacoes && (
                         <div style={{ padding: '10px', background: 'var(--bg-surface2)', border: '1px solid var(--border)' }}>
                           <span className="input-label">Observações</span>
-                          <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>{clienteSelecionado.observacoes}</p>
+                          <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>{clienteSelecionado.observacoes}</p>
                         </div>
                       )}
 
@@ -611,7 +611,7 @@ export function Clientes() {
                             {clienteSelecionado.nivel}
                           </span>
                           {clienteSelecionado.pontosParaProximo > 0 && (
-                            <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--text-muted)' }}>
+                            <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--text-muted)' }}>
                               Faltam {clienteSelecionado.pontosParaProximo} pts
                             </span>
                           )}
@@ -690,7 +690,7 @@ export function Clientes() {
                               </div>
                             ))}
                             {recompensas.length === 0 && (
-                              <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--text-muted)', textAlign: 'center', padding: '12px' }}>
+                              <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', color: 'var(--text-muted)', textAlign: 'center', padding: '12px' }}>
                                 Nenhuma recompensa cadastrada
                               </p>
                             )}
@@ -726,14 +726,14 @@ export function Clientes() {
                           </div>
                           <div style={{ textAlign: 'right' }}>
                             <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '16px', color: 'var(--cor-icone)' }}>R$ {Number(ag.valorCobrado).toFixed(2)}</p>
-                            <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '9px', letterSpacing: '0.1em', textTransform: 'uppercase', color: statusStyles[ag.status] || 'var(--text-muted)', marginTop: '2px' }}>
+                            <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '9px', letterSpacing: '0.1em', textTransform: 'uppercase', color: statusStyles[ag.status] || 'var(--text-muted)', marginTop: '2px' }}>
                               {ag.status}
                             </p>
                           </div>
                         </div>
                       ))}
                       {clienteSelecionado.agendamentos.length === 0 && (
-                        <p style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)', fontFamily: 'var(--fonte-numeros)', fontSize: '11px' }}>
+                        <p style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)', fontFamily: 'var(--fonte-interface)', fontSize: '11px' }}>
                           Nenhum agendamento encontrado
                         </p>
                       )}
@@ -765,7 +765,7 @@ export function Clientes() {
                             </div>
                           ))}
                           {clienteSelecionado.historicoPontos.length === 0 && (
-                            <p style={{ textAlign: 'center', padding: '1rem', color: 'var(--text-muted)', fontFamily: 'var(--fonte-numeros)', fontSize: '11px' }}>
+                            <p style={{ textAlign: 'center', padding: '1rem', color: 'var(--text-muted)', fontFamily: 'var(--fonte-interface)', fontSize: '11px' }}>
                               Nenhum ponto registrado
                             </p>
                           )}
@@ -794,7 +794,7 @@ export function Clientes() {
                             </div>
                           ))}
                           {clienteSelecionado.historicoResgates.length === 0 && (
-                            <p style={{ textAlign: 'center', padding: '1rem', color: 'var(--text-muted)', fontFamily: 'var(--fonte-numeros)', fontSize: '11px' }}>
+                            <p style={{ textAlign: 'center', padding: '1rem', color: 'var(--text-muted)', fontFamily: 'var(--fonte-interface)', fontSize: '11px' }}>
                               Nenhum resgate realizado
                             </p>
                           )}

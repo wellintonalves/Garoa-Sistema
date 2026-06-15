@@ -149,7 +149,7 @@ export function Sidebar({ mobileOpen, onCloseMobile }: SidebarProps) {
               <p
                 className="truncate"
                 style={{
-                  fontFamily: 'var(--fonte-numeros)',
+                  fontFamily: 'var(--fonte-interface)',
                   fontSize: '10px',
                   color: 'var(--text-muted)',
                   letterSpacing: '0.04em',
@@ -163,7 +163,7 @@ export function Sidebar({ mobileOpen, onCloseMobile }: SidebarProps) {
             onClick={logout}
             className="flex items-center gap-3 w-full px-3 py-2 transition-colors"
             style={{
-              fontFamily: 'var(--fonte-numeros)',
+              fontFamily: 'var(--fonte-interface)',
               fontSize: '10px',
               letterSpacing: '0.14em',
               textTransform: 'uppercase',

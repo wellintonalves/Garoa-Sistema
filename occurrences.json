@@ -1,0 +1,902 @@
+[
+  {
+    "file": "frontend/src\\components\\QrCodeScanner.tsx",
+    "line": 136,
+    "context": "fontFamily: 'var(--fonte-numeros)', fontSize: '11px',"
+  },
+  {
+    "file": "frontend/src\\components\\QrCodeScanner.tsx",
+    "line": 189,
+    "context": "fontFamily: 'var(--fonte-numeros)', fontSize: '10px',"
+  },
+  {
+    "file": "frontend/src\\components\\QrCodeScanner.tsx",
+    "line": 216,
+    "context": "fontFamily: 'var(--fonte-numeros)', fontSize: '11px',"
+  },
+  {
+    "file": "frontend/src\\components\\QrCodeScanner.tsx",
+    "line": 245,
+    "context": "fontFamily: 'var(--fonte-numeros)', fontSize: '11px',"
+  },
+  {
+    "file": "frontend/src\\components\\Sidebar.tsx",
+    "line": 151,
+    "context": "fontFamily: 'var(--fonte-numeros)', fontSize: '10px',"
+  },
+  {
+    "file": "frontend/src\\components\\Sidebar.tsx",
+    "line": 165,
+    "context": "fontFamily: 'var(--fonte-numeros)', fontSize: '10px',"
+  },
+  {
+    "file": "frontend/src\\components\\StatCard.tsx",
+    "line": 33,
+    "context": "fontFamily: 'var(--fonte-numeros)', fontSize: '10px',"
+  },
+  {
+    "file": "frontend/src\\layouts\\BarbeiroLayout.tsx",
+    "line": 44,
+    "context": "fontFamily: 'var(--fonte-numeros)', fontSize: '9px',"
+  },
+  {
+    "file": "frontend/src\\layouts\\ClienteLayout.tsx",
+    "line": 75,
+    "context": "fontFamily: 'var(--fonte-numeros)', fontSize: '9px',"
+  },
+  {
+    "file": "frontend/src\\pages\\Agenda.tsx",
+    "line": 181,
+    "context": "fontFamily: 'var(--fonte-numeros)', fontSize: '11px',"
+  },
+  {
+    "file": "frontend/src\\pages\\Agenda.tsx",
+    "line": 223,
+    "context": "<span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Barbeiros:</span> {barbeiros.map(b => ("
+  },
+  {
+    "file": "frontend/src\\pages\\Agenda.tsx",
+    "line": 227,
+    "context": "<span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--text-primary)' }}>{b.usuario.nome}</span> </div>"
+  },
+  {
+    "file": "frontend/src\\pages\\Agenda.tsx",
+    "line": 253,
+    "context": "fontFamily: 'var(--fonte-numeros)', fontSize: '9px',"
+  },
+  {
+    "file": "frontend/src\\pages\\Agenda.tsx",
+    "line": 284,
+    "context": "fontFamily: 'var(--fonte-numeros)', fontSize: '10px',"
+  },
+  {
+    "file": "frontend/src\\pages\\Agenda.tsx",
+    "line": 339,
+    "context": "fontFamily: 'var(--fonte-numeros)', fontSize: '9px',"
+  },
+  {
+    "file": "frontend/src\\pages\\Agenda.tsx",
+    "line": 368,
+    "context": "fontFamily: 'var(--fonte-numeros)', fontSize: '9px',"
+  },
+  {
+    "file": "frontend/src\\pages\\Barbeiros.tsx",
+    "line": 187,
+    "context": "fontFamily: 'var(--fonte-numeros)', fontSize: '10px',"
+  },
+  {
+    "file": "frontend/src\\pages\\Barbeiros.tsx",
+    "line": 239,
+    "context": "<div className=\"flex items-center gap-1.5\" style={{ color: 'var(--cor-icone)', fontFamily: 'var(--fonte-numeros)', fontSize: '11px', letterSpacing: '0.04em' }}> <Star size={14} strokeWidth={1.5} /> <span>Comiss\u00e3o: {b.comissaoPercent}%</span>"
+  },
+  {
+    "file": "frontend/src\\pages\\Barbeiros.tsx",
+    "line": 246,
+    "context": "fontFamily: 'var(--fonte-numeros)', fontSize: '9px',"
+  },
+  {
+    "file": "frontend/src\\pages\\Barbeiros.tsx",
+    "line": 324,
+    "context": "<span style={{ color: 'var(--text-muted)', fontFamily: 'var(--fonte-numeros)', fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Produzido</span> <span style={{ color: 'var(--text-primary)', fontFamily: 'var(--fonte-numeros)', fontSize: '12px' }}>{fmt(b.bruto)}</span>"
+  },
+  {
+    "file": "frontend/src\\pages\\Barbeiros.tsx",
+    "line": 325,
+    "context": "<span style={{ color: 'var(--text-primary)', fontFamily: 'var(--fonte-numeros)', fontSize: '12px' }}>{fmt(b.bruto)}</span> </div>"
+  },
+  {
+    "file": "frontend/src\\pages\\Barbeiros.tsx",
+    "line": 328,
+    "context": "<span style={{ color: 'var(--text-muted)', fontFamily: 'var(--fonte-numeros)', fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Comiss\u00e3o</span> <span style={{ color: 'var(--cor-icone)', fontFamily: 'var(--fonte-numeros)', fontSize: '12px', fontWeight: 500 }}>{fmt(b.comissao)}</span>"
+  },
+  {
+    "file": "frontend/src\\pages\\Barbeiros.tsx",
+    "line": 329,
+    "context": "<span style={{ color: 'var(--cor-icone)', fontFamily: 'var(--fonte-numeros)', fontSize: '12px', fontWeight: 500 }}>{fmt(b.comissao)}</span> </div>"
+  },
+  {
+    "file": "frontend/src\\pages\\Barbeiros.tsx",
+    "line": 332,
+    "context": "<span style={{ color: 'var(--text-muted)', fontFamily: 'var(--fonte-numeros)', fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>L\u00edquido</span> <span style={{ color: 'var(--success-text)', fontFamily: 'var(--fonte-numeros)', fontSize: '12px', fontWeight: 500 }}>{fmt(b.liquido)}</span>"
+  },
+  {
+    "file": "frontend/src\\pages\\Barbeiros.tsx",
+    "line": 333,
+    "context": "<span style={{ color: 'var(--success-text)', fontFamily: 'var(--fonte-numeros)', fontSize: '12px', fontWeight: 500 }}>{fmt(b.liquido)}</span> </div>"
+  },
+  {
+    "file": "frontend/src\\pages\\Barbeiros.tsx",
+    "line": 340,
+    "context": "<p style={{ textAlign: 'center', color: 'var(--text-muted)', fontFamily: 'var(--fonte-numeros)', fontSize: '11px', padding: '2rem 0' }}> Nenhuma comiss\u00e3o encontrada para o per\u00edodo selecionado."
+  },
+  {
+    "file": "frontend/src\\pages\\Clientes.tsx",
+    "line": 354,
+    "context": "<span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}> <Mail size={10} /> {c.usuario?.email || '\u2014'}"
+  },
+  {
+    "file": "frontend/src\\pages\\Clientes.tsx",
+    "line": 357,
+    "context": "<span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}> <Phone size={10} /> {c.telefone || '\u2014'}"
+  },
+  {
+    "file": "frontend/src\\pages\\Clientes.tsx",
+    "line": 363,
+    "context": "<td style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--text-muted)' }}> {formatarData(c.ultimoAtendimento)}"
+  },
+  {
+    "file": "frontend/src\\pages\\Clientes.tsx",
+    "line": 371,
+    "context": "<td style={{ textAlign: 'right', fontFamily: 'var(--fonte-numeros)', fontSize: '12px', color: 'rgba(var(--cor-primaria-rgb), 0.15)' }}> {formatarMoeda(c.totalGasto)}"
+  },
+  {
+    "file": "frontend/src\\pages\\Clientes.tsx",
+    "line": 388,
+    "context": "fontFamily: 'var(--fonte-numeros)', fontSize: '9px',"
+  },
+  {
+    "file": "frontend/src\\pages\\Clientes.tsx",
+    "line": 407,
+    "context": "<td colSpan={8} style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)', fontFamily: 'var(--fonte-numeros)', fontSize: '11px' }}> {carregando ? 'Buscando clientes...' : 'Nenhum cliente encontrado'}"
+  },
+  {
+    "file": "frontend/src\\pages\\Clientes.tsx",
+    "line": 426,
+    "context": "<p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--text-muted)', marginTop: '4px' }}> {aniversariantes.length} cliente{aniversariantes.length !== 1 ? 's' : ''} fazendo anivers\u00e1rio este m\u00eas"
+  },
+  {
+    "file": "frontend/src\\pages\\Clientes.tsx",
+    "line": 459,
+    "context": "<p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--text-muted)' }}> {formatarData(a.dataNascimento)} \u2014 Dia {a.diaAniversario}"
+  },
+  {
+    "file": "frontend/src\\pages\\Clientes.tsx",
+    "line": 477,
+    "context": "<p style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)', fontFamily: 'var(--fonte-numeros)', fontSize: '11px' }}> Nenhum aniversariante encontrado este m\u00eas"
+  },
+  {
+    "file": "frontend/src\\pages\\Clientes.tsx",
+    "line": 554,
+    "context": "<p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '12px', color: 'var(--text-primary)', marginTop: '4px' }}>{item.value}</p> </div>"
+  },
+  {
+    "file": "frontend/src\\pages\\Clientes.tsx",
+    "line": 561,
+    "context": "<p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>{clienteSelecionado.observacoes}</p> </div>"
+  },
+  {
+    "file": "frontend/src\\pages\\Clientes.tsx",
+    "line": 587,
+    "context": "<span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--text-muted)' }}> {clienteSelecionado.pontosAtuais} pts"
+  },
+  {
+    "file": "frontend/src\\pages\\Clientes.tsx",
+    "line": 591,
+    "context": "<span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--text-muted)' }}> {clienteSelecionado.proximoNivel} pts (pr\u00f3ximo n\u00edvel)"
+  },
+  {
+    "file": "frontend/src\\pages\\Clientes.tsx",
+    "line": 613,
+    "context": "<span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--text-muted)' }}> Faltam {clienteSelecionado.pontosParaProximo} pts"
+  },
+  {
+    "file": "frontend/src\\pages\\Clientes.tsx",
+    "line": 667,
+    "context": "<p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--text-muted)', margin: '8px 0' }}> Saldo atual: <strong style={{ color: clienteSelecionado.cor }}>{clienteSelecionado.pontosAtuais} pts</strong>"
+  },
+  {
+    "file": "frontend/src\\pages\\Clientes.tsx",
+    "line": 679,
+    "context": "<p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--text-muted)' }}>{r.pontosNecessarios} pts necess\u00e1rios</p> </div>"
+  },
+  {
+    "file": "frontend/src\\pages\\Clientes.tsx",
+    "line": 692,
+    "context": "<p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--text-muted)', textAlign: 'center', padding: '12px' }}> Nenhuma recompensa cadastrada"
+  },
+  {
+    "file": "frontend/src\\pages\\Clientes.tsx",
+    "line": 721,
+    "context": "<p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px' }}> {formatarData(ag.dataHora)} \u2014 {ag.barbeiro}"
+  },
+  {
+    "file": "frontend/src\\pages\\Clientes.tsx",
+    "line": 728,
+    "context": "<p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '9px', letterSpacing: '0.1em', textTransform: 'uppercase', color: statusStyles[ag.status] || 'var(--text-muted)', marginTop: '2px' }}> {ag.status}"
+  },
+  {
+    "file": "frontend/src\\pages\\Clientes.tsx",
+    "line": 735,
+    "context": "<p style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)', fontFamily: 'var(--fonte-numeros)', fontSize: '11px' }}> Nenhum agendamento encontrado"
+  },
+  {
+    "file": "frontend/src\\pages\\Clientes.tsx",
+    "line": 757,
+    "context": "<p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px' }}> {formatarData(p.data)}"
+  },
+  {
+    "file": "frontend/src\\pages\\Clientes.tsx",
+    "line": 767,
+    "context": "<p style={{ textAlign: 'center', padding: '1rem', color: 'var(--text-muted)', fontFamily: 'var(--fonte-numeros)', fontSize: '11px' }}> Nenhum ponto registrado"
+  },
+  {
+    "file": "frontend/src\\pages\\Clientes.tsx",
+    "line": 786,
+    "context": "<p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px' }}> {formatarData(r.data)}"
+  },
+  {
+    "file": "frontend/src\\pages\\Clientes.tsx",
+    "line": 796,
+    "context": "<p style={{ textAlign: 'center', padding: '1rem', color: 'var(--text-muted)', fontFamily: 'var(--fonte-numeros)', fontSize: '11px' }}> Nenhum resgate realizado"
+  },
+  {
+    "file": "frontend/src\\pages\\Dashboard.tsx",
+    "line": 111,
+    "context": "fontFamily: 'var(--fonte-numeros)', fontSize: '11px',"
+  },
+  {
+    "file": "frontend/src\\pages\\Dashboard.tsx",
+    "line": 195,
+    "context": "<p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}> {erro}"
+  },
+  {
+    "file": "frontend/src\\pages\\Dashboard.tsx",
+    "line": 248,
+    "context": "<p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--text-muted)', marginTop: '4px', letterSpacing: '0.04em' }}> {dados.servicoMaisRealizado.count} vezes ({formatarMoeda(dados.servicoMaisRealizado.total)})"
+  },
+  {
+    "file": "frontend/src\\pages\\Dashboard.tsx",
+    "line": 281,
+    "context": "<p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--text-muted)' }}>{dataObj.toLocaleDateString('pt-BR')}</p> <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '12px', fontWeight: 700, color: 'var(--text-primary)' }}>{formatarMoeda(dia.entradas)}</p>"
+  },
+  {
+    "file": "frontend/src\\pages\\Dashboard.tsx",
+    "line": 307,
+    "context": "<span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '9px', color: 'var(--text-muted)', marginTop: '8px', transform: 'rotate(-45deg)', whiteSpace: 'nowrap' }}> {dataObj.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}"
+  },
+  {
+    "file": "frontend/src\\pages\\Dashboard.tsx",
+    "line": 318,
+    "context": "<p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--text-muted)' }}>Nenhum dado para este per\u00edodo.</p> )}"
+  },
+  {
+    "file": "frontend/src\\pages\\Estoque.tsx",
+    "line": 83,
+    "context": "<span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '12px', color: baixo ? 'var(--error-text)' : 'var(--text-primary)' }}> {item.quantidade} <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>{item.unidade}</span>"
+  },
+  {
+    "file": "frontend/src\\pages\\Estoque.tsx",
+    "line": 88,
+    "context": "<td style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--text-muted)' }}>{item.quantidadeMinima}</td> <td style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '12px', color: 'var(--text-muted)' }}>R$ {Number(item.custo).toFixed(2)}</td>"
+  },
+  {
+    "file": "frontend/src\\pages\\Estoque.tsx",
+    "line": 89,
+    "context": "<td style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '12px', color: 'var(--text-muted)' }}>R$ {Number(item.custo).toFixed(2)}</td> <td>"
+  },
+  {
+    "file": "frontend/src\\pages\\Financeiro.tsx",
+    "line": 123,
+    "context": "<span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '9px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Entradas</span> </div>"
+  },
+  {
+    "file": "frontend/src\\pages\\Financeiro.tsx",
+    "line": 130,
+    "context": "<span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '9px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Sa\u00eddas</span> </div>"
+  },
+  {
+    "file": "frontend/src\\pages\\Financeiro.tsx",
+    "line": 140,
+    "context": "<div key={k} className=\"flex justify-between\" style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px' }}> <span style={{ color: 'var(--text-muted)' }}>{labelsForma[k] || k}</span>"
+  },
+  {
+    "file": "frontend/src\\pages\\Financeiro.tsx",
+    "line": 168,
+    "context": "<span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '9px', color: 'var(--text-muted)' }}> {new Date(d.data + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}"
+  },
+  {
+    "file": "frontend/src\\pages\\Financeiro.tsx",
+    "line": 174,
+    "context": "<div className=\"flex gap-4 mt-4\" style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.1em' }}> <div className=\"flex items-center gap-1.5\"><div style={{ width: '10px', height: '10px', background: 'var(--amber)' }} /><span style={{ color: 'var(--text-muted)' }}>Entradas</span></div>"
+  },
+  {
+    "file": "frontend/src\\pages\\Financeiro.tsx",
+    "line": 202,
+    "context": "<p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px' }}> {l.servico ? `${l.servico.nome}` : l.descricao}"
+  },
+  {
+    "file": "frontend/src\\pages\\Financeiro.tsx",
+    "line": 209,
+    "context": "<p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '14px', fontWeight: 500, color: l.tipo === 'ENTRADA' ? 'var(--success-text)' : 'var(--error-text)' }}> {l.tipo === 'ENTRADA' ? '+' : '-'} {fmt(Number(l.valor))}"
+  },
+  {
+    "file": "frontend/src\\pages\\Financeiro.tsx",
+    "line": 212,
+    "context": "<p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '9px', letterSpacing: '0.04em', color: 'var(--text-muted)', marginTop: '2px' }}> {labelsForma[l.formaPagamento] || l.formaPagamento}"
+  },
+  {
+    "file": "frontend/src\\pages\\Financeiro.tsx",
+    "line": 219,
+    "context": "<p style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)', fontFamily: 'var(--fonte-numeros)', fontSize: '11px' }}> Nenhum lan\u00e7amento hoje"
+  },
+  {
+    "file": "frontend/src\\pages\\Financeiro.tsx",
+    "line": 238,
+    "context": "fontFamily: 'var(--fonte-numeros)', fontSize: '11px',"
+  },
+  {
+    "file": "frontend/src\\pages\\Financeiro.tsx",
+    "line": 290,
+    "context": "<div style={{ padding: '12px', background: 'var(--bg-surface2)', border: '1px solid var(--border)', fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--text-primary)', display: 'flex', flexDirection: 'column', gap: '4px' }}> <p>Comiss\u00e3o do Barbeiro: <strong style={{ color: 'var(--cor-icone)' }}>{fmt(previaComissao)}</strong></p>"
+  },
+  {
+    "file": "frontend/src\\pages\\Login.tsx",
+    "line": 110,
+    "context": "fontFamily: 'var(--fonte-numeros)', fontSize: '10px',"
+  },
+  {
+    "file": "frontend/src\\pages\\Login.tsx",
+    "line": 140,
+    "context": "fontFamily: 'var(--fonte-numeros)', fontSize: '11px',"
+  },
+  {
+    "file": "frontend/src\\pages\\Login.tsx",
+    "line": 246,
+    "context": "fontFamily: 'var(--fonte-numeros)', fontSize: '11px',"
+  },
+  {
+    "file": "frontend/src\\pages\\Login.tsx",
+    "line": 315,
+    "context": "fontFamily: 'var(--fonte-numeros)', fontSize: '11px',"
+  },
+  {
+    "file": "frontend/src\\pages\\Login.tsx",
+    "line": 357,
+    "context": "fontFamily: 'var(--fonte-numeros)', fontSize: '9px',"
+  },
+  {
+    "file": "frontend/src\\pages\\Relatorios.tsx",
+    "line": 174,
+    "context": "<p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}> {erro}"
+  },
+  {
+    "file": "frontend/src\\pages\\Relatorios.tsx",
+    "line": 224,
+    "context": "<div className=\"flex justify-between\" style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px' }}><span style={{ color: 'var(--text-muted)' }}>Produzido:</span><span style={{ color: 'var(--text-primary)' }}>{fmt(b.bruto)}</span></div> <div className=\"flex justify-between\" style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px' }}><span style={{ color: 'var(--text-muted)' }}>Comiss\u00e3o:</span><span style={{ color: 'var(--error-text)' }}>{fmt(b.comissao)}</span></div>"
+  },
+  {
+    "file": "frontend/src\\pages\\Relatorios.tsx",
+    "line": 225,
+    "context": "<div className=\"flex justify-between\" style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px' }}><span style={{ color: 'var(--text-muted)' }}>Comiss\u00e3o:</span><span style={{ color: 'var(--error-text)' }}>{fmt(b.comissao)}</span></div> <div className=\"flex justify-between\" style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', borderTop: '1px solid var(--border)', paddingTop: '8px', marginTop: '4px' }}><span style={{ color: 'var(--text-muted)' }}>L\u00edquido:</span><span style={{ color: 'var(--success-text)', fontWeight: 500 }}>{fmt(b.liquido)}</span></div>"
+  },
+  {
+    "file": "frontend/src\\pages\\Relatorios.tsx",
+    "line": 226,
+    "context": "<div className=\"flex justify-between\" style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', borderTop: '1px solid var(--border)', paddingTop: '8px', marginTop: '4px' }}><span style={{ color: 'var(--text-muted)' }}>L\u00edquido:</span><span style={{ color: 'var(--success-text)', fontWeight: 500 }}>{fmt(b.liquido)}</span></div> </div>"
+  },
+  {
+    "file": "frontend/src\\pages\\Relatorios.tsx",
+    "line": 238,
+    "context": "<span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--text-muted)', marginLeft: '12px', fontWeight: 400 }}> {entradas.length} {entradas.length === 1 ? 'registro' : 'registros'}"
+  },
+  {
+    "file": "frontend/src\\pages\\Relatorios.tsx",
+    "line": 257,
+    "context": "<td style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--text-muted)' }}> {new Date(l.data + 'T12:00:00').toLocaleDateString('pt-BR')}"
+  },
+  {
+    "file": "frontend/src\\pages\\Relatorios.tsx",
+    "line": 262,
+    "context": "<p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px' }}> {l.barbeiro ? l.barbeiro.usuario.nome : 'Sem Barbeiro'}"
+  },
+  {
+    "file": "frontend/src\\pages\\Relatorios.tsx",
+    "line": 274,
+    "context": "<td style={{ textAlign: 'right', fontFamily: 'var(--fonte-numeros)', fontSize: '12px', color: 'var(--text-primary)' }}>{fmt(l.valor)}</td> <td style={{ textAlign: 'right', fontFamily: 'var(--fonte-numeros)', fontSize: '12px', color: 'var(--error-text)' }}>{l.valorComissao ? fmt(l.valorComissao) : '\u2014'}</td>"
+  },
+  {
+    "file": "frontend/src\\pages\\Relatorios.tsx",
+    "line": 275,
+    "context": "<td style={{ textAlign: 'right', fontFamily: 'var(--fonte-numeros)', fontSize: '12px', color: 'var(--error-text)' }}>{l.valorComissao ? fmt(l.valorComissao) : '\u2014'}</td> <td style={{ textAlign: 'right', fontFamily: 'var(--fonte-numeros)', fontSize: '12px', color: 'var(--success-text)', fontWeight: 500 }}>{l.valorLiquido ? fmt(l.valorLiquido) : fmt(l.valor)}</td>"
+  },
+  {
+    "file": "frontend/src\\pages\\Relatorios.tsx",
+    "line": 276,
+    "context": "<td style={{ textAlign: 'right', fontFamily: 'var(--fonte-numeros)', fontSize: '12px', color: 'var(--success-text)', fontWeight: 500 }}>{l.valorLiquido ? fmt(l.valorLiquido) : fmt(l.valor)}</td> </tr>"
+  },
+  {
+    "file": "frontend/src\\pages\\Relatorios.tsx",
+    "line": 281,
+    "context": "<td colSpan={6} style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)', fontFamily: 'var(--fonte-numeros)', fontSize: '11px' }}> Nenhum lan\u00e7amento de entrada encontrado para o per\u00edodo selecionado."
+  },
+  {
+    "file": "frontend/src\\pages\\Servicos.tsx",
+    "line": 87,
+    "context": "{s.descricao && <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px', letterSpacing: '0.04em' }}>{s.descricao}</p>} </td>"
+  },
+  {
+    "file": "frontend/src\\pages\\Servicos.tsx",
+    "line": 102,
+    "context": "<span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--text-muted)', letterSpacing: '0.04em' }}> {s.duracaoMinutos} min"
+  },
+  {
+    "file": "frontend/src\\pages\\Servicos.tsx",
+    "line": 107,
+    "context": "<td style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--text-muted)' }}>{s.comissaoPercent}%</td> <td style={{ textAlign: 'right' }}>"
+  },
+  {
+    "file": "frontend/src\\pages\\admin\\AdminLogin.tsx",
+    "line": 110,
+    "context": "fontFamily: 'var(--fonte-numeros)', fontSize: '10px',"
+  },
+  {
+    "file": "frontend/src\\pages\\admin\\AdminLogin.tsx",
+    "line": 142,
+    "context": "fontFamily: 'var(--fonte-numeros)', fontSize: '11px',"
+  },
+  {
+    "file": "frontend/src\\pages\\admin\\AdminLogin.tsx",
+    "line": 253,
+    "context": "fontFamily: 'var(--fonte-numeros)', fontSize: '11px',"
+  },
+  {
+    "file": "frontend/src\\pages\\admin\\AdminLogin.tsx",
+    "line": 321,
+    "context": "fontFamily: 'var(--fonte-numeros)', fontSize: '11px',"
+  },
+  {
+    "file": "frontend/src\\pages\\admin\\AdminLogin.tsx",
+    "line": 371,
+    "context": "fontFamily: 'var(--fonte-numeros)', fontSize: '11px',"
+  },
+  {
+    "file": "frontend/src\\pages\\barbeiro\\BarbeiroAgenda.tsx",
+    "line": 59,
+    "context": "<span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '14px', color: 'var(--text-primary)' }}> {fmtHora(a.dataHora)}"
+  },
+  {
+    "file": "frontend/src\\pages\\barbeiro\\BarbeiroAgenda.tsx",
+    "line": 71,
+    "context": "<p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--text-muted)' }}> {a.servico.nome}"
+  },
+  {
+    "file": "frontend/src\\pages\\barbeiro\\BarbeiroComissoes.tsx",
+    "line": 67,
+    "context": "<span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--cor-icone)' }}> Sua Comiss\u00e3o ({dados.percentualComissao}%)"
+  },
+  {
+    "file": "frontend/src\\pages\\barbeiro\\BarbeiroComissoes.tsx",
+    "line": 76,
+    "context": "<p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '4px' }}>Valor Bruto</p> <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '14px', color: 'var(--text-primary)', fontWeight: 600 }}>{fmt(dados.valorBruto)}</p>"
+  },
+  {
+    "file": "frontend/src\\pages\\barbeiro\\BarbeiroComissoes.tsx",
+    "line": 80,
+    "context": "<p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '4px' }}>Atendimentos</p> <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '14px', color: 'var(--text-primary)', fontWeight: 600 }}>{dados.totalAtendimentos}</p>"
+  },
+  {
+    "file": "frontend/src\\pages\\barbeiro\\BarbeiroComissoes.tsx",
+    "line": 88,
+    "context": "<h2 style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--cor-icone)', marginBottom: '12px' }}> <TrendingUp size={12} className=\"inline mr-1\" /> Hist\u00f3rico no Per\u00edodo"
+  },
+  {
+    "file": "frontend/src\\pages\\barbeiro\\BarbeiroComissoes.tsx",
+    "line": 92,
+    "context": "<p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--text-muted)', textAlign: 'center', padding: '2rem 0' }}> Nenhum lan\u00e7amento no per\u00edodo."
+  },
+  {
+    "file": "frontend/src\\pages\\barbeiro\\BarbeiroComissoes.tsx",
+    "line": 103,
+    "context": "<span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '13px', color: 'var(--cor-icone)' }}> +{fmt(l.valorComissao)}"
+  },
+  {
+    "file": "frontend/src\\pages\\barbeiro\\BarbeiroComissoes.tsx",
+    "line": 108,
+    "context": "<p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--text-muted)' }}> {l.servico}"
+  },
+  {
+    "file": "frontend/src\\pages\\barbeiro\\BarbeiroComissoes.tsx",
+    "line": 111,
+    "context": "<p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '9px', color: 'var(--text-disabled)' }}> {new Date(l.data).toLocaleDateString('pt-BR')}"
+  },
+  {
+    "file": "frontend/src\\pages\\barbeiro\\BarbeiroHoje.tsx",
+    "line": 57,
+    "context": "<p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--cor-icone)', letterSpacing: '0.15em', textTransform: 'uppercase' }}> Hoje"
+  },
+  {
+    "file": "frontend/src\\pages\\barbeiro\\BarbeiroHoje.tsx",
+    "line": 71,
+    "context": "<h2 style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--cor-icone)', marginBottom: '12px' }}> Pr\u00f3ximos Atendimentos ({pendentes.length})"
+  },
+  {
+    "file": "frontend/src\\pages\\barbeiro\\BarbeiroHoje.tsx",
+    "line": 98,
+    "context": "<p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--text-muted)' }}> {a.servico.nome} \u2014 R$ {Number(a.valorCobrado).toFixed(2)}"
+  },
+  {
+    "file": "frontend/src\\pages\\barbeiro\\BarbeiroHoje.tsx",
+    "line": 120,
+    "context": "<h2 style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '12px' }}> Conclu\u00eddos ({concluidos.length})"
+  },
+  {
+    "file": "frontend/src\\pages\\barbeiro\\BarbeiroHoje.tsx",
+    "line": 127,
+    "context": "<span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '12px', color: 'var(--text-muted)' }}> {fmtHora(a.dataHora)}"
+  },
+  {
+    "file": "frontend/src\\pages\\barbeiro\\BarbeiroHoje.tsx",
+    "line": 134,
+    "context": "<p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--text-muted)' }}> {a.servico.nome}"
+  },
+  {
+    "file": "frontend/src\\pages\\barbeiro\\BarbeiroLogin.tsx",
+    "line": 48,
+    "context": "fontFamily: 'var(--fonte-numeros)', fontSize: '11px',"
+  },
+  {
+    "file": "frontend/src\\pages\\barbeiro\\BarbeiroLogin.tsx",
+    "line": 66,
+    "context": "fontFamily: 'var(--fonte-numeros)', fontSize: '11px',"
+  },
+  {
+    "file": "frontend/src\\pages\\barbeiro\\BarbeiroLoginPage.tsx",
+    "line": 81,
+    "context": "fontFamily: 'var(--fonte-numeros)', fontSize: '10px',"
+  },
+  {
+    "file": "frontend/src\\pages\\barbeiro\\BarbeiroLoginPage.tsx",
+    "line": 148,
+    "context": "fontFamily: 'var(--fonte-numeros)', fontSize: '11px',"
+  },
+  {
+    "file": "frontend/src\\pages\\barbeiro\\BarbeiroLoginPage.tsx",
+    "line": 181,
+    "context": "fontFamily: 'var(--fonte-numeros)', fontSize: '11px',"
+  },
+  {
+    "file": "frontend/src\\pages\\barbeiro\\BarbeiroPerfil.tsx",
+    "line": 46,
+    "context": "<p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}> {perfil.usuario.email}"
+  },
+  {
+    "file": "frontend/src\\pages\\barbeiro\\BarbeiroPerfil.tsx",
+    "line": 56,
+    "context": "<span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Comiss\u00e3o Padr\u00e3o</span> </div>"
+  },
+  {
+    "file": "frontend/src\\pages\\barbeiro\\BarbeiroPerfil.tsx",
+    "line": 66,
+    "context": "<span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Especialidades</span> </div>"
+  },
+  {
+    "file": "frontend/src\\pages\\barbeiro\\BarbeiroPerfil.tsx",
+    "line": 84,
+    "context": "<p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--text-disabled)' }}> Vinculado a: <br />"
+  },
+  {
+    "file": "frontend/src\\pages\\cliente\\ClienteCadastro.tsx",
+    "line": 56,
+    "context": "fontFamily: 'var(--fonte-numeros)', fontSize: '13px',"
+  },
+  {
+    "file": "frontend/src\\pages\\cliente\\ClienteCadastro.tsx",
+    "line": 65,
+    "context": "fontFamily: 'var(--fonte-numeros)', fontSize: '9px',"
+  },
+  {
+    "file": "frontend/src\\pages\\cliente\\ClienteCadastro.tsx",
+    "line": 134,
+    "context": "fontFamily: 'var(--fonte-numeros)', fontSize: '10px',"
+  },
+  {
+    "file": "frontend/src\\pages\\cliente\\ClienteCadastro.tsx",
+    "line": 199,
+    "context": "fontFamily: 'var(--fonte-numeros)', fontSize: '10px',"
+  },
+  {
+    "file": "frontend/src\\pages\\cliente\\ClienteCadastro.tsx",
+    "line": 235,
+    "context": "fontFamily: 'var(--fonte-numeros)', fontSize: '11px',"
+  },
+  {
+    "file": "frontend/src\\pages\\cliente\\ClienteCadastro.tsx",
+    "line": 367,
+    "context": "fontFamily: 'var(--fonte-numeros)', fontSize: '12px',"
+  },
+  {
+    "file": "frontend/src\\pages\\cliente\\ClienteHome.tsx",
+    "line": 101,
+    "context": "<p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--cor-icone)', letterSpacing: '0.15em', textTransform: 'uppercase' as const }}> Ol\u00e1,"
+  },
+  {
+    "file": "frontend/src\\pages\\cliente\\ClienteHome.tsx",
+    "line": 153,
+    "context": "<p className=\"flex items-center gap-1 truncate\" style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--text-muted)' }}> <MapPin size={10} /> {b.endereco}"
+  },
+  {
+    "file": "frontend/src\\pages\\cliente\\ClienteHome.tsx",
+    "line": 158,
+    "context": "<span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '9px', color: 'var(--cor-icone)', letterSpacing: '0.1em', textTransform: 'uppercase' as const }}> Conectar"
+  },
+  {
+    "file": "frontend/src\\pages\\cliente\\ClienteHome.tsx",
+    "line": 167,
+    "context": "<p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--text-muted)', textAlign: 'center', padding: '12px 0' }}> Buscando..."
+  },
+  {
+    "file": "frontend/src\\pages\\cliente\\ClienteHome.tsx",
+    "line": 175,
+    "context": "<h2 style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase' as const, color: 'var(--cor-icone)', marginBottom: '16px' }}> Minhas Barbearias"
+  },
+  {
+    "file": "frontend/src\\pages\\cliente\\ClienteHome.tsx",
+    "line": 180,
+    "context": "<p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--text-muted)', textAlign: 'center', padding: '2rem 0' }}> Carregando..."
+  },
+  {
+    "file": "frontend/src\\pages\\cliente\\ClienteHome.tsx",
+    "line": 189,
+    "context": "<p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--text-disabled)', textAlign: 'center', marginTop: '4px' }}> Busque acima ou escaneie um QR Code"
+  },
+  {
+    "file": "frontend/src\\pages\\cliente\\ClienteHome.tsx",
+    "line": 218,
+    "context": "<p className=\"flex items-center gap-1 truncate\" style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px' }}> <MapPin size={10} /> {b.endereco}"
+  },
+  {
+    "file": "frontend/src\\pages\\cliente\\ClienteLogin.tsx",
+    "line": 36,
+    "context": "style={{ color: '#94A3B8', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--fonte-numeros)', fontSize: '11px', letterSpacing: '0.1em', textTransform: 'uppercase' as const }}> <ArrowLeft size={16} /> Voltar"
+  },
+  {
+    "file": "frontend/src\\pages\\cliente\\ClienteLogin.tsx",
+    "line": 63,
+    "context": "fontFamily: 'var(--fonte-numeros)', fontSize: '11px',"
+  },
+  {
+    "file": "frontend/src\\pages\\cliente\\ClienteLogin.tsx",
+    "line": 102,
+    "context": "fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: '#F59E0B', letterSpacing: '0.08em',"
+  },
+  {
+    "file": "frontend/src\\pages\\cliente\\ClienteLoginPrincipal.tsx",
+    "line": 101,
+    "context": "fontFamily: 'var(--fonte-numeros)', fontSize: '9px',"
+  },
+  {
+    "file": "frontend/src\\pages\\cliente\\ClienteLoginPrincipal.tsx",
+    "line": 187,
+    "context": "fontFamily: 'var(--fonte-numeros)', fontSize: '10px',"
+  },
+  {
+    "file": "frontend/src\\pages\\cliente\\ClienteLoginPrincipal.tsx",
+    "line": 231,
+    "context": "fontFamily: 'var(--fonte-numeros)', fontSize: '11px',"
+  },
+  {
+    "file": "frontend/src\\pages\\cliente\\ClienteLoginPrincipal.tsx",
+    "line": 243,
+    "context": "fontFamily: 'var(--fonte-numeros)', fontSize: '9px',"
+  },
+  {
+    "file": "frontend/src\\pages\\cliente\\ClienteLoginPrincipal.tsx",
+    "line": 275,
+    "context": "fontFamily: 'var(--fonte-numeros)', fontSize: '13px',"
+  },
+  {
+    "file": "frontend/src\\pages\\cliente\\ClienteLoginPrincipal.tsx",
+    "line": 297,
+    "context": "fontFamily: 'var(--fonte-numeros)', fontSize: '9px',"
+  },
+  {
+    "file": "frontend/src\\pages\\cliente\\ClienteLoginPrincipal.tsx",
+    "line": 329,
+    "context": "fontFamily: 'var(--fonte-numeros)', fontSize: '13px',"
+  },
+  {
+    "file": "frontend/src\\pages\\cliente\\ClienteLoginPrincipal.tsx",
+    "line": 396,
+    "context": "fontFamily: 'var(--fonte-numeros)', fontSize: '12px',"
+  },
+  {
+    "file": "frontend/src\\pages\\cliente\\ClienteLoginPrincipal.tsx",
+    "line": 418,
+    "context": "fontFamily: 'var(--fonte-numeros)', fontSize: '9px',"
+  },
+  {
+    "file": "frontend/src\\pages\\cliente\\ClienteLoginPrincipal.tsx",
+    "line": 519,
+    "context": "fontFamily: 'var(--fonte-numeros)', fontSize: '10px',"
+  },
+  {
+    "file": "frontend/src\\pages\\cliente\\ClienteLoginPrincipal.tsx",
+    "line": 587,
+    "context": "fontFamily: 'var(--fonte-numeros)', fontSize: '10px',"
+  },
+  {
+    "file": "frontend/src\\pages\\cliente\\ClienteLoginPrincipal.tsx",
+    "line": 650,
+    "context": "fontFamily: 'var(--fonte-numeros)', fontSize: '10px',"
+  },
+  {
+    "file": "frontend/src\\pages\\cliente\\ClienteRegister.tsx",
+    "line": 44,
+    "context": "style={{ color: '#94A3B8', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--fonte-numeros)', fontSize: '11px', letterSpacing: '0.1em', textTransform: 'uppercase' as const }}> <ArrowLeft size={16} /> Voltar"
+  },
+  {
+    "file": "frontend/src\\pages\\cliente\\ClienteRegister.tsx",
+    "line": 71,
+    "context": "fontFamily: 'var(--fonte-numeros)', fontSize: '11px',"
+  },
+  {
+    "file": "frontend/src\\pages\\cliente\\ClienteRegister.tsx",
+    "line": 133,
+    "context": "fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: '#F59E0B', letterSpacing: '0.08em',"
+  },
+  {
+    "file": "frontend/src\\pages\\cliente\\ClienteWelcome.tsx",
+    "line": 42,
+    "context": "fontFamily: 'var(--fonte-numeros)', fontSize: '11px',"
+  },
+  {
+    "file": "frontend/src\\pages\\cliente\\ClienteWelcome.tsx",
+    "line": 75,
+    "context": "fontFamily: 'var(--fonte-numeros)', fontSize: '9px',"
+  },
+  {
+    "file": "frontend/src\\pages\\cliente\\barbearia\\ClienteBarbeariaAgendar.tsx",
+    "line": 99,
+    "context": "fontFamily: 'var(--fonte-numeros)', fontSize: '10px',"
+  },
+  {
+    "file": "frontend/src\\pages\\cliente\\barbearia\\ClienteBarbeariaAgendar.tsx",
+    "line": 130,
+    "context": "<p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--text-muted)' }}>{s.duracaoMinutos} min</p> </div>"
+  },
+  {
+    "file": "frontend/src\\pages\\cliente\\barbearia\\ClienteBarbeariaAgendar.tsx",
+    "line": 133,
+    "context": "<span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '13px', color: 'var(--cor-icone)', fontWeight: 600 }}>{fmt(s.preco)}</span> </button>"
+  },
+  {
+    "file": "frontend/src\\pages\\cliente\\barbearia\\ClienteBarbeariaAgendar.tsx",
+    "line": 144,
+    "context": "style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontFamily: 'var(--fonte-numeros)', fontSize: '11px' }}> <ArrowLeft size={14} /> Voltar"
+  },
+  {
+    "file": "frontend/src\\pages\\cliente\\barbearia\\ClienteBarbeariaAgendar.tsx",
+    "line": 181,
+    "context": "style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontFamily: 'var(--fonte-numeros)', fontSize: '11px' }}> <ArrowLeft size={14} /> Voltar"
+  },
+  {
+    "file": "frontend/src\\pages\\cliente\\barbearia\\ClienteBarbeariaAgendar.tsx",
+    "line": 204,
+    "context": "fontFamily: 'var(--fonte-numeros)', fontSize: '12px',"
+  },
+  {
+    "file": "frontend/src\\pages\\cliente\\barbearia\\ClienteBarbeariaAgendar.tsx",
+    "line": 226,
+    "context": "style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontFamily: 'var(--fonte-numeros)', fontSize: '11px' }}> <ArrowLeft size={14} /> Voltar"
+  },
+  {
+    "file": "frontend/src\\pages\\cliente\\barbearia\\ClienteBarbeariaAgendar.tsx",
+    "line": 237,
+    "context": "<span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--cor-icone)', letterSpacing: '0.12em', textTransform: 'uppercase' as const }}>Servi\u00e7o</span> </div>"
+  },
+  {
+    "file": "frontend/src\\pages\\cliente\\barbearia\\ClienteBarbeariaAgendar.tsx",
+    "line": 240,
+    "context": "<p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '12px', color: 'var(--cor-icone)', marginTop: '4px' }}>{fmt(servicoSel?.preco || '0')}</p> </div>"
+  },
+  {
+    "file": "frontend/src\\pages\\cliente\\barbearia\\ClienteBarbeariaAgendar.tsx",
+    "line": 246,
+    "context": "<span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--cor-icone)', letterSpacing: '0.12em', textTransform: 'uppercase' as const }}>Barbeiro</span> </div>"
+  },
+  {
+    "file": "frontend/src\\pages\\cliente\\barbearia\\ClienteBarbeariaAgendar.tsx",
+    "line": 254,
+    "context": "<span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--cor-icone)', letterSpacing: '0.12em', textTransform: 'uppercase' as const }}>Data e Hora</span> </div>"
+  },
+  {
+    "file": "frontend/src\\pages\\cliente\\barbearia\\ClienteBarbeariaAgendar.tsx",
+    "line": 259,
+    "context": "<p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '14px', color: 'var(--cor-icone)', marginTop: '4px' }}>{horarioSel}</p> </div>"
+  },
+  {
+    "file": "frontend/src\\pages\\cliente\\barbearia\\ClienteBarbeariaFidelidade.tsx",
+    "line": 106,
+    "context": "<span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--cor-icone)' }}> Seu Saldo"
+  },
+  {
+    "file": "frontend/src\\pages\\cliente\\barbearia\\ClienteBarbeariaFidelidade.tsx",
+    "line": 113,
+    "context": "<p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--text-muted)', marginTop: '8px' }}> Voc\u00ea j\u00e1 acumulou {dados.totalGanhos} pts no total"
+  },
+  {
+    "file": "frontend/src\\pages\\cliente\\barbearia\\ClienteBarbeariaFidelidade.tsx",
+    "line": 120,
+    "context": "<h2 style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--cor-icone)', marginBottom: '12px' }}> <Gift size={12} className=\"inline mr-1\" /> Recompensas"
+  },
+  {
+    "file": "frontend/src\\pages\\cliente\\barbearia\\ClienteBarbeariaFidelidade.tsx",
+    "line": 166,
+    "context": "<h2 style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--cor-icone)', marginBottom: '12px' }}> <TrendingUp size={12} className=\"inline mr-1\" /> Hist\u00f3rico"
+  },
+  {
+    "file": "frontend/src\\pages\\cliente\\barbearia\\ClienteBarbeariaFidelidade.tsx",
+    "line": 170,
+    "context": "<p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--text-muted)', textAlign: 'center', padding: '2rem 0' }}> Nenhum registro ainda."
+  },
+  {
+    "file": "frontend/src\\pages\\cliente\\barbearia\\ClienteBarbeariaFidelidade.tsx",
+    "line": 180,
+    "context": "<p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--text-muted)' }}> {new Date(h.data).toLocaleDateString('pt-BR')}"
+  },
+  {
+    "file": "frontend/src\\pages\\cliente\\barbearia\\ClienteBarbeariaInicio.tsx",
+    "line": 60,
+    "context": "<p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.1em', textTransform: 'uppercase' as const }}> Seu espa\u00e7o"
+  },
+  {
+    "file": "frontend/src\\pages\\cliente\\barbearia\\ClienteBarbeariaInicio.tsx",
+    "line": 69,
+    "context": "<h2 style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase' as const, color: 'var(--cor-icone)', marginBottom: '12px' }}> Agendamentos Futuros"
+  },
+  {
+    "file": "frontend/src\\pages\\cliente\\barbearia\\ClienteBarbeariaInicio.tsx",
+    "line": 77,
+    "context": "<span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '13px', color: 'var(--text-primary)' }}> {fmtData(ag.dataHora)}"
+  },
+  {
+    "file": "frontend/src\\pages\\cliente\\barbearia\\ClienteBarbeariaInicio.tsx",
+    "line": 81,
+    "context": "<span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '13px', color: 'var(--text-primary)' }}> {fmtHora(ag.dataHora)}"
+  },
+  {
+    "file": "frontend/src\\pages\\cliente\\barbearia\\ClienteBarbeariaInicio.tsx",
+    "line": 90,
+    "context": "<p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}> com {ag.barbeiro.usuario.nome}"
+  },
+  {
+    "file": "frontend/src\\pages\\cliente\\barbearia\\ClienteBarbeariaInicio.tsx",
+    "line": 135,
+    "context": "<h2 style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase' as const, color: 'var(--text-muted)', marginBottom: '12px' }}> Hist\u00f3rico"
+  },
+  {
+    "file": "frontend/src\\pages\\cliente\\barbearia\\ClienteBarbeariaInicio.tsx",
+    "line": 146,
+    "context": "<p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--text-muted)' }}> {fmtData(a.dataHora)} \u2014 {a.barbeiro.usuario.nome}"
+  },
+  {
+    "file": "frontend/src\\pages\\cliente\\barbearia\\ClienteBarbeariaPerfil.tsx",
+    "line": 84,
+    "context": "<p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: mensagem.includes('Erro') ? 'var(--error-text)' : 'var(--success-text)' }}> {mensagem}"
+  },
+  {
+    "file": "frontend/src\\pages\\cliente\\barbearia\\ClienteBarbeariaPerfil.tsx",
+    "line": 96,
+    "context": "<h2 style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase' as const, color: 'var(--cor-icone)', marginBottom: '12px' }}> Barbearias Conectadas"
+  }
+]

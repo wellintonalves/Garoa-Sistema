@@ -121,14 +121,14 @@ export function Financeiro() {
         <div className="metric-card" style={{ borderLeft: '2px solid var(--success-text)' }}>
           <div className="flex items-center gap-2 mb-2" style={{ color: 'var(--success-text)' }}>
             <TrendingUp size={14} strokeWidth={1.5} />
-            <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '9px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Entradas</span>
+            <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '9px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Entradas</span>
           </div>
           <p className="metric-value">{fmt(resumo?.totalEntradas || 0)}</p>
         </div>
         <div className="metric-card" style={{ borderLeft: '2px solid var(--error-text)' }}>
           <div className="flex items-center gap-2 mb-2" style={{ color: 'var(--error-text)' }}>
             <TrendingDown size={14} strokeWidth={1.5} />
-            <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '9px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Saídas</span>
+            <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '9px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Saídas</span>
           </div>
           <p className="metric-value">{fmt(resumo?.totalSaidas || 0)}</p>
         </div>
@@ -138,7 +138,7 @@ export function Financeiro() {
           {resumo?.porFormaPagamento && (
             <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
               {Object.entries(resumo.porFormaPagamento).map(([k, v]) => (
-                <div key={k} className="flex justify-between" style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px' }}>
+                <div key={k} className="flex justify-between" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px' }}>
                   <span style={{ color: 'var(--text-muted)' }}>{labelsForma[k] || k}</span>
                   <span style={{ color: 'var(--text-primary)' }}>{fmt(v)}</span>
                 </div>
@@ -172,7 +172,7 @@ export function Financeiro() {
             </div>
           ))}
         </div>
-        <div className="flex gap-4 mt-4" style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+        <div className="flex gap-4 mt-4" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
           <div className="flex items-center gap-1.5"><div style={{ width: '10px', height: '10px', background: 'var(--amber)' }} /><span style={{ color: 'var(--text-muted)' }}>Entradas</span></div>
           <div className="flex items-center gap-1.5"><div style={{ width: '10px', height: '10px', background: 'var(--bg-surface2)' }} /><span style={{ color: 'var(--text-muted)' }}>Saídas</span></div>
         </div>
@@ -200,7 +200,7 @@ export function Financeiro() {
                 <div style={{ width: '8px', height: '8px', background: l.tipo === 'ENTRADA' ? 'var(--success-text)' : 'var(--error-text)' }} />
                 <div>
                   <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '13px', fontWeight: 500, color: 'var(--text-primary)' }}>{l.categoria}</p>
-                  <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                  <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px' }}>
                     {l.servico ? `${l.servico.nome}` : l.descricao} 
                     {l.barbeiro && ` • ${l.barbeiro.usuario.nome}`}
                   </p>
@@ -210,14 +210,14 @@ export function Financeiro() {
                 <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '14px', fontWeight: 500, color: l.tipo === 'ENTRADA' ? 'var(--success-text)' : 'var(--error-text)' }}>
                   {l.tipo === 'ENTRADA' ? '+' : '-'} {fmt(Number(l.valor))}
                 </p>
-                <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '9px', letterSpacing: '0.04em', color: 'var(--text-muted)', marginTop: '2px' }}>
+                <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '9px', letterSpacing: '0.04em', color: 'var(--text-muted)', marginTop: '2px' }}>
                   {labelsForma[l.formaPagamento] || l.formaPagamento}
                 </p>
               </div>
             </div>
           ))}
           {lancamentos.length === 0 && (
-            <p style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)', fontFamily: 'var(--fonte-numeros)', fontSize: '11px' }}>
+            <p style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)', fontFamily: 'var(--fonte-interface)', fontSize: '11px' }}>
               Nenhum lançamento hoje
             </p>
           )}
@@ -236,7 +236,7 @@ export function Financeiro() {
                   onClick={() => setForm({...form, tipo: t})}
                   style={{
                     padding: '8px',
-                    fontFamily: 'var(--fonte-numeros)',
+                    fontFamily: 'var(--fonte-interface)',
                     fontSize: '11px',
                     letterSpacing: '0.1em',
                     textTransform: 'uppercase',
@@ -288,7 +288,7 @@ export function Financeiro() {
           </div>
 
           {form.tipo === 'ENTRADA' && form.barbeiroId && form.valor && (
-            <div style={{ padding: '12px', background: 'var(--bg-surface2)', border: '1px solid var(--border)', fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--text-primary)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+            <div style={{ padding: '12px', background: 'var(--bg-surface2)', border: '1px solid var(--border)', fontFamily: 'var(--fonte-interface)', fontSize: '11px', color: 'var(--text-primary)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
               <p>Comissão do Barbeiro: <strong style={{ color: 'var(--cor-icone)' }}>{fmt(previaComissao)}</strong></p>
               <p>Líquido Barbearia: <strong style={{ color: 'var(--success-text)' }}>{fmt(previaLiquido)}</strong></p>
             </div>

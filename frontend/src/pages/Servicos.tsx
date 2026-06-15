@@ -85,7 +85,7 @@ export function Servicos() {
               <tr key={s.id}>
                 <td>
                   <p style={{ fontWeight: 500, color: 'var(--text-primary)' }}>{s.nome}</p>
-                  {s.descricao && <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px', letterSpacing: '0.04em' }}>{s.descricao}</p>}
+                  {s.descricao && <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px', letterSpacing: '0.04em' }}>{s.descricao}</p>}
                 </td>
                 <td>
                   {editandoId === s.id ? (

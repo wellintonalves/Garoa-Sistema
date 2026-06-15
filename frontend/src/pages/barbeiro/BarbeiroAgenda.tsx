@@ -69,7 +69,7 @@ export function BarbeiroAgenda() {
                 <p style={{ fontFamily: 'var(--fonte-interface)', fontWeight: 600, fontSize: '15px', color: 'var(--text-primary)' }}>
                   {a.cliente.usuario.nome}
                 </p>
-                <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--text-muted)' }}>
+                <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', color: 'var(--text-muted)' }}>
                   {a.servico.nome}
                 </p>
               </div>

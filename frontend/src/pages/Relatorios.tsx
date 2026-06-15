@@ -172,7 +172,7 @@ export function Relatorios() {
             <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)' }}>
               Erro ao carregar relatório
             </p>
-            <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>
+            <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>
               {erro}
             </p>
           </div>
@@ -222,9 +222,9 @@ export function Relatorios() {
                   <div key={i} style={{ padding: '16px', background: 'var(--bg-surface2)', border: '1px solid var(--border)' }}>
                     <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '12px' }}>{b.nome}</p>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                      <div className="flex justify-between" style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px' }}><span style={{ color: 'var(--text-muted)' }}>Produzido:</span><span style={{ color: 'var(--text-primary)' }}>{fmt(b.bruto)}</span></div>
-                      <div className="flex justify-between" style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px' }}><span style={{ color: 'var(--text-muted)' }}>Comissão:</span><span style={{ color: 'var(--error-text)' }}>{fmt(b.comissao)}</span></div>
-                      <div className="flex justify-between" style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', borderTop: '1px solid var(--border)', paddingTop: '8px', marginTop: '4px' }}><span style={{ color: 'var(--text-muted)' }}>Líquido:</span><span style={{ color: 'var(--success-text)', fontWeight: 500 }}>{fmt(b.liquido)}</span></div>
+                      <div className="flex justify-between" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px' }}><span style={{ color: 'var(--text-muted)' }}>Produzido:</span><span style={{ color: 'var(--text-primary)' }}>{fmt(b.bruto)}</span></div>
+                      <div className="flex justify-between" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px' }}><span style={{ color: 'var(--text-muted)' }}>Comissão:</span><span style={{ color: 'var(--error-text)' }}>{fmt(b.comissao)}</span></div>
+                      <div className="flex justify-between" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', borderTop: '1px solid var(--border)', paddingTop: '8px', marginTop: '4px' }}><span style={{ color: 'var(--text-muted)' }}>Líquido:</span><span style={{ color: 'var(--success-text)', fontWeight: 500 }}>{fmt(b.liquido)}</span></div>
                     </div>
                   </div>
                 ))}
@@ -236,7 +236,7 @@ export function Relatorios() {
           <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
             <h3 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)', padding: '1.25rem', borderBottom: '1px solid var(--border)' }}>
               Detalhamento dos Lançamentos
-              <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--text-muted)', marginLeft: '12px', fontWeight: 400 }}>
+              <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--text-muted)', marginLeft: '12px', fontWeight: 400 }}>
                 {entradas.length} {entradas.length === 1 ? 'registro' : 'registros'}
               </span>
             </h3>
@@ -260,7 +260,7 @@ export function Relatorios() {
                       </td>
                       <td>
                         <p style={{ fontWeight: 500, color: 'var(--text-primary)' }}>{l.servico ? l.servico.nome : l.categoria}</p>
-                        <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                        <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px' }}>
                           {l.barbeiro ? l.barbeiro.usuario.nome : 'Sem Barbeiro'}
                         </p>
                       </td>
@@ -279,7 +279,7 @@ export function Relatorios() {
                   ))}
                   {entradas.length === 0 && (
                     <tr>
-                      <td colSpan={6} style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)', fontFamily: 'var(--fonte-numeros)', fontSize: '11px' }}>
+                      <td colSpan={6} style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)', fontFamily: 'var(--fonte-interface)', fontSize: '11px' }}>
                         Nenhum lançamento de entrada encontrado para o período selecionado.
                       </td>
                     </tr>

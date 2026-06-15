@@ -97,7 +97,7 @@ export function ClienteBarbeariaAgendar() {
               style={{
                 background: i <= etapaIdx ? 'var(--amber)' : 'var(--bg-surface2)',
                 color: i <= etapaIdx ? 'var(--fundo-pagina)' : 'var(--text-disabled)',
-                fontFamily: 'var(--fonte-numeros)',
+                fontFamily: 'var(--fonte-interface)',
                 fontSize: '10px',
               }}>
               {i + 1}
@@ -142,7 +142,7 @@ export function ClienteBarbeariaAgendar() {
       {etapa === 'barbeiro' && (
         <div>
           <button onClick={() => setEtapa('servico')} className="flex items-center gap-1 mb-4"
-            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontFamily: 'var(--fonte-numeros)', fontSize: '11px' }}>
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontFamily: 'var(--fonte-interface)', fontSize: '11px' }}>
             <ArrowLeft size={14} /> Voltar
           </button>
           <h2 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '22px', color: 'var(--text-primary)', marginBottom: '16px' }}>
@@ -179,7 +179,7 @@ export function ClienteBarbeariaAgendar() {
       {etapa === 'data' && (
         <div>
           <button onClick={() => setEtapa('barbeiro')} className="flex items-center gap-1 mb-4"
-            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontFamily: 'var(--fonte-numeros)', fontSize: '11px' }}>
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontFamily: 'var(--fonte-interface)', fontSize: '11px' }}>
             <ArrowLeft size={14} /> Voltar
           </button>
           <h2 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '22px', color: 'var(--text-primary)', marginBottom: '16px' }}>
@@ -202,7 +202,7 @@ export function ClienteBarbeariaAgendar() {
                     onClick={() => { setHorarioSel(s.horario); setEtapa('confirmacao'); }}
                     style={{
                       padding: '10px 4px',
-                      fontFamily: 'var(--fonte-numeros)',
+                      fontFamily: 'var(--fonte-interface)',
                       fontSize: '12px',
                       textAlign: 'center',
                       cursor: s.disponivel ? 'pointer' : 'not-allowed',
@@ -224,7 +224,7 @@ export function ClienteBarbeariaAgendar() {
       {etapa === 'confirmacao' && (
         <div>
           <button onClick={() => setEtapa('data')} className="flex items-center gap-1 mb-4"
-            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontFamily: 'var(--fonte-numeros)', fontSize: '11px' }}>
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontFamily: 'var(--fonte-interface)', fontSize: '11px' }}>
             <ArrowLeft size={14} /> Voltar
           </button>
           <h2 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '22px', color: 'var(--text-primary)', marginBottom: '20px' }}>
@@ -235,7 +235,7 @@ export function ClienteBarbeariaAgendar() {
             <div className="p-4" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
               <div className="flex items-center gap-3 mb-3">
                 <Scissors size={16} style={{ color: 'var(--cor-icone)' }} />
-                <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--cor-icone)', letterSpacing: '0.12em', textTransform: 'uppercase' as const }}>Serviço</span>
+                <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--cor-icone)', letterSpacing: '0.12em', textTransform: 'uppercase' as const }}>Serviço</span>
               </div>
               <p style={{ fontFamily: 'var(--fonte-interface)', fontWeight: 700, color: 'var(--text-primary)', fontSize: '15px' }}>{servicoSel?.nome}</p>
               <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '12px', color: 'var(--cor-icone)', marginTop: '4px' }}>{fmt(servicoSel?.preco || '0')}</p>
@@ -244,7 +244,7 @@ export function ClienteBarbeariaAgendar() {
             <div className="p-4" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
               <div className="flex items-center gap-3 mb-3">
                 <User size={16} style={{ color: 'var(--cor-icone)' }} />
-                <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--cor-icone)', letterSpacing: '0.12em', textTransform: 'uppercase' as const }}>Barbeiro</span>
+                <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--cor-icone)', letterSpacing: '0.12em', textTransform: 'uppercase' as const }}>Barbeiro</span>
               </div>
               <p style={{ fontFamily: 'var(--fonte-interface)', fontWeight: 700, color: 'var(--text-primary)', fontSize: '15px' }}>{barbeiroSel?.usuario.nome}</p>
             </div>
@@ -252,12 +252,12 @@ export function ClienteBarbeariaAgendar() {
             <div className="p-4" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
               <div className="flex items-center gap-3 mb-3">
                 <Calendar size={16} style={{ color: 'var(--cor-icone)' }} />
-                <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--cor-icone)', letterSpacing: '0.12em', textTransform: 'uppercase' as const }}>Data e Hora</span>
+                <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--cor-icone)', letterSpacing: '0.12em', textTransform: 'uppercase' as const }}>Data e Hora</span>
               </div>
               <p style={{ fontFamily: 'var(--fonte-interface)', fontWeight: 700, color: 'var(--text-primary)', fontSize: '15px' }}>
                 {new Date(dataSel + 'T00:00').toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' })}
               </p>
-              <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '14px', color: 'var(--cor-icone)', marginTop: '4px' }}>{horarioSel}</p>
+              <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '14px', color: 'var(--cor-icone)', marginTop: '4px' }}>{horarioSel}</p>
             </div>
           </div>
 

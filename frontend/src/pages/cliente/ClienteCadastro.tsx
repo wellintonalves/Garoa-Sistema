@@ -54,7 +54,7 @@ export function ClienteCadastro() {
     borderRadius: '10px',
     padding: '14px 14px 14px 42px',
     color: '#FFFFFF',
-    fontFamily: 'var(--fonte-numeros)',
+    fontFamily: 'var(--fonte-interface)',
     fontSize: '13px',
     letterSpacing: '0.02em',
     outline: 'none',
@@ -63,7 +63,7 @@ export function ClienteCadastro() {
   };
 
   const labelStyle: React.CSSProperties = {
-    fontFamily: 'var(--fonte-numeros)',
+    fontFamily: 'var(--fonte-interface)',
     fontSize: '9px',
     letterSpacing: '0.18em',
     textTransform: 'uppercase' as const,
@@ -132,7 +132,7 @@ export function ClienteCadastro() {
             display: 'inline-flex',
             alignItems: 'center',
             gap: '6px',
-            fontFamily: 'var(--fonte-numeros)',
+            fontFamily: 'var(--fonte-interface)',
             fontSize: '10px',
             letterSpacing: '0.1em',
             color: '#94A3B8',
@@ -197,7 +197,7 @@ export function ClienteCadastro() {
           </h1>
 
           <p style={{
-            fontFamily: 'var(--fonte-numeros)',
+            fontFamily: 'var(--fonte-interface)',
             fontSize: '10px',
             letterSpacing: '0.2em',
             color: '#94A3B8',
@@ -233,7 +233,7 @@ export function ClienteCadastro() {
                 border: '1px solid rgba(226, 75, 74, 0.3)',
                 borderRadius: '8px',
                 color: 'var(--error-text)',
-                fontFamily: 'var(--fonte-numeros)',
+                fontFamily: 'var(--fonte-interface)',
                 fontSize: '11px',
               }}
             >
@@ -365,7 +365,7 @@ export function ClienteCadastro() {
               background: 'none',
               border: 'none',
               cursor: 'pointer',
-              fontFamily: 'var(--fonte-numeros)',
+              fontFamily: 'var(--fonte-interface)',
               fontSize: '12px',
               letterSpacing: '0.08em',
               color: '#F59E0B',

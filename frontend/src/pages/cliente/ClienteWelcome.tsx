@@ -40,7 +40,7 @@ export function ClienteWelcome() {
           GAROA
         </h1>
         <p style={{
-          fontFamily: 'var(--fonte-numeros)',
+          fontFamily: 'var(--fonte-interface)',
           fontSize: '11px',
           letterSpacing: '0.3em',
           color: '#F59E0B',
@@ -73,7 +73,7 @@ export function ClienteWelcome() {
       <p style={{
         position: 'absolute',
         bottom: '2rem',
-        fontFamily: 'var(--fonte-numeros)',
+        fontFamily: 'var(--fonte-interface)',
         fontSize: '9px',
         color: 'var(--text-disabled)',
         letterSpacing: '0.15em',

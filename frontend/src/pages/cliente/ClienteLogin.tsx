@@ -34,7 +34,7 @@ export function ClienteLogin() {
       {/* Header */}
       <button onClick={() => navigate('/cliente')}
         className="flex items-center gap-2 mb-8"
-        style={{ color: '#94A3B8', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--fonte-numeros)', fontSize: '11px', letterSpacing: '0.1em', textTransform: 'uppercase' as const }}>
+        style={{ color: '#94A3B8', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--fonte-interface)', fontSize: '11px', letterSpacing: '0.1em', textTransform: 'uppercase' as const }}>
         <ArrowLeft size={16} /> Voltar
       </button>
 
@@ -61,7 +61,7 @@ export function ClienteLogin() {
             background: 'var(--error)',
             color: 'var(--error-text)',
             padding: '10px 14px',
-            fontFamily: 'var(--fonte-numeros)',
+            fontFamily: 'var(--fonte-interface)',
             fontSize: '11px',
           }}>{erro}</div>
         )}
@@ -100,7 +100,7 @@ export function ClienteLogin() {
           <button type="button" onClick={() => navigate('/cliente/register')}
             style={{
               background: 'none', border: 'none', cursor: 'pointer',
-              fontFamily: 'var(--fonte-numeros)', fontSize: '11px',
+              fontFamily: 'var(--fonte-interface)', fontSize: '11px',
               color: '#F59E0B', letterSpacing: '0.08em',
             }}>
             Criar conta

@@ -185,7 +185,7 @@ export function Barbeiros() {
                 <p
                   className="truncate"
                   style={{
-                    fontFamily: 'var(--fonte-numeros)',
+                    fontFamily: 'var(--fonte-interface)',
                     fontSize: '10px',
                     color: 'var(--text-muted)',
                     letterSpacing: '0.04em',
@@ -237,14 +237,14 @@ export function Barbeiros() {
               className="flex items-center justify-between mt-4 pt-3"
               style={{ borderTop: '1px solid var(--border)' }}
             >
-              <div className="flex items-center gap-1.5" style={{ color: 'var(--cor-icone)', fontFamily: 'var(--fonte-numeros)', fontSize: '11px', letterSpacing: '0.04em' }}>
+              <div className="flex items-center gap-1.5" style={{ color: 'var(--cor-icone)', fontFamily: 'var(--fonte-interface)', fontSize: '11px', letterSpacing: '0.04em' }}>
                 <Star size={14} strokeWidth={1.5} /> <span>Comissão: {b.comissaoPercent}%</span>
               </div>
               <button
                 onClick={() => navigate(`/relatorios?barbeiroId=${b.id}`)}
                 className="flex items-center gap-1 transition-colors"
                 style={{
-                  fontFamily: 'var(--fonte-numeros)',
+                  fontFamily: 'var(--fonte-interface)',
                   fontSize: '9px',
                   letterSpacing: '0.12em',
                   textTransform: 'uppercase',
@@ -322,15 +322,15 @@ export function Barbeiros() {
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '13px' }}>
                     <div className="flex justify-between items-center">
-                      <span style={{ color: 'var(--text-muted)', fontFamily: 'var(--fonte-numeros)', fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Produzido</span>
+                      <span style={{ color: 'var(--text-muted)', fontFamily: 'var(--fonte-interface)', fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Produzido</span>
                       <span style={{ color: 'var(--text-primary)', fontFamily: 'var(--fonte-numeros)', fontSize: '12px' }}>{fmt(b.bruto)}</span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span style={{ color: 'var(--text-muted)', fontFamily: 'var(--fonte-numeros)', fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Comissão</span>
+                      <span style={{ color: 'var(--text-muted)', fontFamily: 'var(--fonte-interface)', fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Comissão</span>
                       <span style={{ color: 'var(--cor-icone)', fontFamily: 'var(--fonte-numeros)', fontSize: '12px', fontWeight: 500 }}>{fmt(b.comissao)}</span>
                     </div>
                     <div className="flex justify-between items-center" style={{ borderTop: '1px solid var(--border)', paddingTop: '8px', marginTop: '4px' }}>
-                      <span style={{ color: 'var(--text-muted)', fontFamily: 'var(--fonte-numeros)', fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Líquido</span>
+                      <span style={{ color: 'var(--text-muted)', fontFamily: 'var(--fonte-interface)', fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Líquido</span>
                       <span style={{ color: 'var(--success-text)', fontFamily: 'var(--fonte-numeros)', fontSize: '12px', fontWeight: 500 }}>{fmt(b.liquido)}</span>
                     </div>
                   </div>
@@ -338,7 +338,7 @@ export function Barbeiros() {
               ))}
             </div>
           ) : (
-            <p style={{ textAlign: 'center', color: 'var(--text-muted)', fontFamily: 'var(--fonte-numeros)', fontSize: '11px', padding: '2rem 0' }}>
+            <p style={{ textAlign: 'center', color: 'var(--text-muted)', fontFamily: 'var(--fonte-interface)', fontSize: '11px', padding: '2rem 0' }}>
               Nenhuma comissão encontrada para o período selecionado.
             </p>
           )}

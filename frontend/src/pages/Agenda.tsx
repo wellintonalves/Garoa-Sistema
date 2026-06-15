@@ -179,7 +179,7 @@ export function Agenda() {
             <span
               className="px-3 min-w-[180px] text-center"
               style={{
-                fontFamily: 'var(--fonte-numeros)',
+                fontFamily: 'var(--fonte-interface)',
                 fontSize: '11px',
                 color: 'var(--text-muted)',
                 letterSpacing: '0.04em',
@@ -221,11 +221,11 @@ export function Agenda() {
           ))}
         </div>
         <div className="flex flex-wrap gap-4">
-          <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Barbeiros:</span>
+          <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Barbeiros:</span>
           {barbeiros.map(b => (
             <div key={b.id} className="flex items-center gap-1.5">
               <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: b.cor || '#F97316' }} />
-              <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--text-primary)' }}>{b.usuario.nome}</span>
+              <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--text-primary)' }}>{b.usuario.nome}</span>
             </div>
           ))}
         </div>
@@ -251,7 +251,7 @@ export function Agenda() {
                 >
                   <p
                     style={{
-                      fontFamily: 'var(--fonte-numeros)',
+                      fontFamily: 'var(--fonte-interface)',
                       fontSize: '9px',
                       letterSpacing: '0.14em',
                       textTransform: 'uppercase',
@@ -282,7 +282,7 @@ export function Agenda() {
                 className="text-right pr-3 pt-3"
                 style={{
                   padding: '8px',
-                  fontFamily: 'var(--fonte-numeros)',
+                  fontFamily: 'var(--fonte-interface)',
                   fontSize: '10px',
                   color: 'var(--text-disabled)',
                   letterSpacing: '0.04em',
@@ -337,7 +337,7 @@ export function Agenda() {
                             )}
                           </div>
                           <p className="truncate" style={{ 
-                            fontFamily: 'var(--fonte-numeros)', 
+                            fontFamily: 'var(--fonte-interface)', 
                             fontSize: '9px', 
                             background: bgS, 
                             color: 'var(--text-primary)',
@@ -366,7 +366,7 @@ export function Agenda() {
             <div style={{ width: '12px', height: '12px', background: st.bg, borderLeft: `2px solid ${st.border}` }} />
             <span
               style={{
-                fontFamily: 'var(--fonte-numeros)',
+                fontFamily: 'var(--fonte-interface)',
                 fontSize: '9px',
                 letterSpacing: '0.1em',
                 textTransform: 'uppercase',

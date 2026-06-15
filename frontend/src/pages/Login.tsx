@@ -108,7 +108,7 @@ export function Login() {
             )}
             <p
               style={{
-                fontFamily: 'var(--fonte-numeros)',
+                fontFamily: 'var(--fonte-interface)',
                 fontSize: '10px',
                 letterSpacing: '0.2em',
                 textTransform: 'uppercase',
@@ -138,7 +138,7 @@ export function Login() {
                 background: 'var(--success)',
                 border: '1px solid var(--success-text)',
                 color: 'var(--success-text)',
-                fontFamily: 'var(--fonte-numeros)',
+                fontFamily: 'var(--fonte-interface)',
                 fontSize: '11px',
                 letterSpacing: '0.04em',
               }}
@@ -244,7 +244,7 @@ export function Login() {
                       background: 'var(--error)',
                       border: '1px solid var(--error-text)',
                       color: 'var(--error-text)',
-                      fontFamily: 'var(--fonte-numeros)',
+                      fontFamily: 'var(--fonte-interface)',
                       fontSize: '11px',
                     }}
                   >
@@ -313,7 +313,7 @@ export function Login() {
                       background: 'var(--error)',
                       border: '1px solid var(--error-text)',
                       color: 'var(--error-text)',
-                      fontFamily: 'var(--fonte-numeros)',
+                      fontFamily: 'var(--fonte-interface)',
                       fontSize: '11px',
                     }}
                   >
@@ -355,7 +355,7 @@ export function Login() {
         <p
           className="text-center mt-4"
           style={{
-            fontFamily: 'var(--fonte-numeros)',
+            fontFamily: 'var(--fonte-interface)',
             fontSize: '9px',
             letterSpacing: '0.14em',
             textTransform: 'uppercase',
