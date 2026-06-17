@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Mail, Lock, AlertCircle, UserPlus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../api/client';
@@ -9,6 +9,14 @@ export function AdminLogin() {
   const [senha, setSenha] = useState('');
   const [erro, setErro] = useState('');
   const [carregando, setCarregando] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -29,10 +37,11 @@ export function AdminLogin() {
   return (
     <div style={{
       display: 'flex',
-      height: '100vh',
+      flexDirection: isMobile ? 'column' : 'row',
+      minHeight: '100vh',
       width: '100vw',
       fontFamily: "'Inter', -apple-system, sans-serif",
-      overflow: 'hidden',
+      overflow: isMobile ? 'auto' : 'hidden',
     }}>
 
       {/* PAINEL ESQUERDO — Formulário */}
@@ -43,7 +52,8 @@ export function AdminLogin() {
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '48px',
+        padding: isMobile ? '40px 24px' : '48px',
+        order: isMobile ? 1 : 0,
       }}>
         <div style={{ width: '100%', maxWidth: '360px' }}>
 
@@ -163,16 +173,18 @@ export function AdminLogin() {
 
       {/* PAINEL DIREITO — Identidade visual */}
       <div style={{
-        width: '420px',
+        width: isMobile ? '100%' : '420px',
+        height: isMobile ? 'auto' : '100vh',
         flexShrink: 0,
         background: '#F59E0B',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '48px',
+        padding: isMobile ? '40px 32px' : '48px',
         position: 'relative',
         overflow: 'hidden',
+        order: isMobile ? 0 : 1,
       }}>
 
         {/* Padrão de pontos decorativo */}
@@ -191,7 +203,7 @@ export function AdminLogin() {
         </div>
 
         <h2 style={{
-          fontSize: '28px', fontWeight: 700, color: '#0A0A0A',
+          fontSize: isMobile ? '22px' : '28px', fontWeight: 700, color: '#0A0A0A',
           textAlign: 'center', lineHeight: 1.25, margin: '0 0 12px',
           position: 'relative', zIndex: 2, maxWidth: '280px',
         }}>

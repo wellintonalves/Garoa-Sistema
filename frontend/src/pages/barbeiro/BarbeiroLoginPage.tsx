@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Mail, Lock, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useBarbeiroAuth } from '../../hooks/useBarbeiroAuth';
@@ -10,6 +10,14 @@ export function BarbeiroLoginPage() {
   const [senha, setSenha] = useState('');
   const [erro, setErro] = useState('');
   const [carregando, setCarregando] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -27,14 +35,19 @@ export function BarbeiroLoginPage() {
 
   return (
     <div style={{
-      display: 'flex', height: '100vh', width: '100vw',
-      fontFamily: "'Inter', -apple-system, sans-serif", overflow: 'hidden',
+      display: 'flex',
+      flexDirection: isMobile ? 'column' : 'row',
+      minHeight: '100vh', width: '100vw',
+      fontFamily: "'Inter', -apple-system, sans-serif",
+      overflow: isMobile ? 'auto' : 'hidden',
     }}>
 
       {/* PAINEL ESQUERDO — Formulário */}
       <div style={{
         flex: 1, background: '#0A0A0A', display: 'flex',
-        flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '48px',
+        flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+        padding: isMobile ? '40px 24px' : '48px',
+        order: isMobile ? 1 : 0,
       }}>
         <div style={{ width: '100%', maxWidth: '360px' }}>
 
@@ -133,9 +146,13 @@ export function BarbeiroLoginPage() {
 
       {/* PAINEL DIREITO — Identidade barbeiro */}
       <div style={{
-        width: '420px', flexShrink: 0, background: '#141414',
+        width: isMobile ? '100%' : '420px',
+        height: isMobile ? 'auto' : '100vh',
+        flexShrink: 0, background: '#141414',
         display: 'flex', flexDirection: 'column', alignItems: 'center',
-        justifyContent: 'center', padding: '48px', position: 'relative', overflow: 'hidden',
+        justifyContent: 'center', padding: isMobile ? '40px 32px' : '48px',
+        position: 'relative', overflow: 'hidden',
+        order: isMobile ? 0 : 1,
       }}>
 
         <svg style={{ position: 'absolute', inset: 0, opacity: 0.06 }} width="420" height="100%" viewBox="0 0 420 600" preserveAspectRatio="xMidYMid slice">
@@ -173,7 +190,7 @@ export function BarbeiroLoginPage() {
         </div>
 
         <h2 style={{
-          fontSize: '28px', fontWeight: 700, color: '#F5F5F5',
+          fontSize: isMobile ? '22px' : '28px', fontWeight: 700, color: '#F5F5F5',
           textAlign: 'center', lineHeight: 1.25, margin: '0 0 12px',
           position: 'relative', zIndex: 2, maxWidth: '280px',
         }}>
