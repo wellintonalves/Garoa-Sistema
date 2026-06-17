@@ -211,7 +211,7 @@ export function ClienteLoginPrincipal() {
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', marginTop: '16px' }}>
             <Star size={12} color="#525252" />
             <button
-              onClick={() => navigate('/cliente/cadastro')}
+              onClick={() => navigate('/cadastro')}
               style={{
                 background: 'none', border: 'none', cursor: 'pointer',
                 fontSize: '12px', color: '#525252', fontFamily: 'inherit',
@@ -221,16 +221,41 @@ export function ClienteLoginPrincipal() {
             </button>
           </div>
 
-          <button
-            onClick={() => navigate('/')}
-            style={{
-              display: 'block', margin: '12px auto 0', background: 'none',
-              border: 'none', cursor: 'pointer', fontSize: '12px',
-              color: '#404040', fontFamily: 'inherit',
-            }}
-          >
-            ← Voltar
-          </button>
+          <div style={{
+            borderTop: '1px solid #1F1F1F',
+            marginTop: '32px',
+            paddingTop: '20px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '8px',
+            alignItems: 'center',
+          }}>
+            <p style={{ fontSize: '11px', color: '#404040', margin: 0, letterSpacing: '0.02em' }}>
+              Acesso para profissionais
+            </p>
+            <div style={{ display: 'flex', gap: '16px' }}>
+              <button
+                onClick={() => navigate('/barbeiro/login')}
+                style={{
+                  background: 'none', border: '1px solid #2A2A2A', borderRadius: '6px',
+                  cursor: 'pointer', fontSize: '12px', color: '#737373',
+                  fontFamily: 'inherit', padding: '6px 14px', transition: 'all 0.15s',
+                }}
+              >
+                Sou barbeiro
+              </button>
+              <button
+                onClick={() => navigate('/admin/login')}
+                style={{
+                  background: 'none', border: '1px solid #2A2A2A', borderRadius: '6px',
+                  cursor: 'pointer', fontSize: '12px', color: '#737373',
+                  fontFamily: 'inherit', padding: '6px 14px', transition: 'all 0.15s',
+                }}
+              >
+                Painel administrativo
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>

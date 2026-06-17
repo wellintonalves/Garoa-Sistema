@@ -141,6 +141,36 @@ export function BarbeiroLoginPage() {
           >
             ← Voltar
           </button>
+
+          <div style={{
+            borderTop: '1px solid #1F1F1F',
+            marginTop: '24px',
+            paddingTop: '16px',
+            display: 'flex',
+            justifyContent: 'center',
+            gap: '16px',
+          }}>
+            <button
+              onClick={() => navigate('/')}
+              style={{
+                background: 'none', border: '1px solid #2A2A2A', borderRadius: '6px',
+                cursor: 'pointer', fontSize: '12px', color: '#737373',
+                fontFamily: 'inherit', padding: '6px 14px',
+              }}
+            >
+              Área do cliente
+            </button>
+            <button
+              onClick={() => navigate('/admin/login')}
+              style={{
+                background: 'none', border: '1px solid #2A2A2A', borderRadius: '6px',
+                cursor: 'pointer', fontSize: '12px', color: '#737373',
+                fontFamily: 'inherit', padding: '6px 14px',
+              }}
+            >
+              Painel administrativo
+            </button>
+          </div>
         </div>
       </div>
 
