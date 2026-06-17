@@ -5,7 +5,12 @@ import { Check, ArrowLeft, Calendar, Clock, Scissors, User } from 'lucide-react'
 import clienteApi from '../../../api/clienteApi';
 
 interface Servico { id: string; nome: string; preco: string; duracaoMinutos: number; }
-interface Barbeiro { id: string; usuario: { nome: string }; especialidades: string[]; }
+interface Barbeiro { 
+  id: string; 
+  foto: string | null; 
+  usuario: { nome: string }; 
+  especialidades: string[]; 
+}
 interface Slot { horario: string; disponivel: boolean; }
 
 type Etapa = 'servico' | 'barbeiro' | 'data' | 'confirmacao';
@@ -157,10 +162,25 @@ export function ClienteBarbeariaAgendar() {
                   border: barbeiroSel?.id === b.id ? '1px solid var(--amber)' : '1px solid var(--border)',
                   cursor: 'pointer',
                 }}>
-                <div className="w-11 h-11 flex items-center justify-center"
-                  style={{ background: 'rgba(var(--cor-primaria-rgb), 0.10)', fontFamily: 'var(--fonte-interface)', fontSize: '18px', color: 'rgba(var(--cor-primaria-rgb), 0.15)' }}>
-                  {b.usuario.nome.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
-                </div>
+                {b.foto ? (
+                  <img 
+                    src={b.foto} 
+                    alt={b.usuario.nome} 
+                    className="w-11 h-11 rounded-full object-cover"
+                    style={{ border: '2px solid rgba(var(--cor-primaria-rgb), 0.30)' }} 
+                  />
+                ) : (
+                  <div 
+                    className="w-11 h-11 flex items-center justify-center rounded-full"
+                    style={{ 
+                      background: 'rgba(var(--cor-primaria-rgb), 0.10)', 
+                      fontFamily: 'var(--fonte-interface)', 
+                      fontSize: '18px', 
+                      color: 'var(--cor-primaria)' 
+                    }}>
+                    {b.usuario.nome.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)}
+                  </div>
+                )}
                 <div>
                   <p style={{ fontFamily: 'var(--fonte-interface)', fontWeight: 700, color: 'var(--text-primary)', fontSize: '14px' }}>{b.usuario.nome}</p>
                   <div className="flex gap-1 mt-1">

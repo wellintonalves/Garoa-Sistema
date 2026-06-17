@@ -7,6 +7,7 @@ import barbeiroApi from '../../api/barbeiroApi';
 
 interface PerfilBarbeiro {
   id: string;
+  foto: string | null;
   especialidades: string[];
   comissaoPercent: number;
   usuario: { nome: string; email: string };
@@ -37,10 +38,26 @@ export function BarbeiroPerfil() {
 
       {/* Avatar e Nome */}
       <div className="flex flex-col items-center mb-8">
-        <div className="w-24 h-24 rounded-full flex items-center justify-center mb-4"
-          style={{ background: 'rgba(var(--cor-primaria-rgb), 0.10)', border: '2px solid var(--amber)', fontFamily: 'var(--fonte-interface)', fontSize: '32px', color: 'rgba(var(--cor-primaria-rgb), 0.15)' }}>
-          {perfil.usuario.nome.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
-        </div>
+        {perfil.foto ? (
+          <img 
+            src={perfil.foto} 
+            alt={perfil.usuario.nome} 
+            className="w-24 h-24 rounded-full object-cover mb-4"
+            style={{ border: '2px solid rgba(var(--cor-primaria-rgb), 0.30)' }} 
+          />
+        ) : (
+          <div 
+            className="w-24 h-24 rounded-full flex items-center justify-center mb-4"
+            style={{ 
+              background: 'rgba(var(--cor-primaria-rgb), 0.10)', 
+              border: '2px solid rgba(var(--cor-primaria-rgb), 0.30)', 
+              fontFamily: 'var(--fonte-interface)', 
+              fontSize: '32px', 
+              color: 'var(--cor-primaria)' 
+            }}>
+            {perfil.usuario.nome.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)}
+          </div>
+        )}
         <h2 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '20px', fontWeight: 700, color: 'var(--text-primary)' }}>
           {perfil.usuario.nome}
         </h2>
