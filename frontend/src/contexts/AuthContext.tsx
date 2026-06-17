@@ -24,15 +24,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Carrega dados salvos ao iniciar
   useEffect(() => {
-    const tokenSalvo = localStorage.getItem('@barbearia:token');
-    const usuarioSalvo = localStorage.getItem('@barbearia:usuario');
+    const tokenSalvo = localStorage.getItem('@garoa:token');
+    const usuarioSalvo = localStorage.getItem('@garoa:usuario');
 
     if (tokenSalvo && usuarioSalvo) {
       try {
         setUsuario(JSON.parse(usuarioSalvo) as Usuario);
       } catch {
-        localStorage.removeItem('@barbearia:token');
-        localStorage.removeItem('@barbearia:usuario');
+        localStorage.removeItem('@garoa:token');
+        localStorage.removeItem('@garoa:usuario');
       }
     }
     setCarregando(false);
@@ -42,14 +42,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const response = await api.post<{ token: string; usuario: Usuario }>('/auth/login', { email, senha });
     const { token, usuario: usr } = response.data;
 
-    localStorage.setItem('@barbearia:token', token);
-    localStorage.setItem('@barbearia:usuario', JSON.stringify(usr));
+    localStorage.setItem('@garoa:token', token);
+    localStorage.setItem('@garoa:usuario', JSON.stringify(usr));
     setUsuario(usr);
   }, []);
 
   const logout = useCallback(() => {
-    localStorage.removeItem('@barbearia:token');
-    localStorage.removeItem('@barbearia:usuario');
+    localStorage.removeItem('@garoa:token');
+    localStorage.removeItem('@garoa:usuario');
     setUsuario(null);
   }, []);
 

@@ -20,7 +20,7 @@ const api = axios.create({
 
 // Interceptor — adiciona token JWT automaticamente
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('@barbearia:token');
+  const token = localStorage.getItem('@garoa:token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -32,9 +32,9 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('@barbearia:token');
-      localStorage.removeItem('@barbearia:usuario');
-      window.location.href = '/login';
+      localStorage.removeItem('@garoa:token');
+      localStorage.removeItem('@garoa:usuario');
+      window.location.href = '/admin/login';
     }
     return Promise.reject(error);
   }
