@@ -1,26 +1,34 @@
 import { useState } from 'react';
-import { Mail, Lock, AlertCircle, UserPlus } from 'lucide-react';
+import { User, Mail, Lock, AlertCircle, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../api/client';
 
-export function AdminLogin() {
+export function AdminPrimeiroAcesso() {
   const navigate = useNavigate();
+  const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [erro, setErro] = useState('');
+  const [sucesso, setSucesso] = useState(false);
   const [carregando, setCarregando] = useState(false);
 
-  async function handleLogin(e: React.FormEvent) {
+  async function handleRegistro(e: React.FormEvent) {
     e.preventDefault();
     setErro('');
     setCarregando(true);
     try {
-      const res = await api.post('/auth/login', { email, senha, papel: 'ADMIN' });
-      localStorage.setItem('@garoa:token', res.data.token);
-      localStorage.setItem('@garoa:usuario', JSON.stringify(res.data.usuario));
-      navigate('/admin');
-    } catch (err: any) {
-      setErro(err?.response?.data?.erro || 'Email ou senha incorretos.');
+      await api.post('/auth/register', {
+        nome,
+        email,
+        senha,
+        papel: 'ADMIN',
+      });
+      setSucesso(true);
+      setTimeout(() => {
+        navigate('/admin/login');
+      }, 2000);
+    } catch (error: any) {
+      setErro(error?.response?.data?.erro || 'Erro ao criar administrador.');
     } finally {
       setCarregando(false);
     }
@@ -60,10 +68,10 @@ export function AdminLogin() {
           </div>
 
           <h1 style={{ fontSize: '22px', fontWeight: 600, color: '#F5F5F5', margin: '0 0 4px' }}>
-            Bem-vindo de volta
+            Primeiro Acesso
           </h1>
           <p style={{ fontSize: '13px', color: '#737373', margin: '0 0 32px' }}>
-            Acesse o painel administrativo
+            Crie o usuário administrador inicial
           </p>
 
           {erro && (
@@ -77,7 +85,38 @@ export function AdminLogin() {
             </div>
           )}
 
-          <form onSubmit={handleLogin}>
+          {sucesso && (
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: '8px',
+              background: 'rgba(16,185,129,0.10)', border: '1px solid rgba(16,185,129,0.25)',
+              borderRadius: '8px', padding: '10px 14px', marginBottom: '20px',
+            }}>
+              <span style={{ fontSize: '13px', color: '#10B981' }}>Administrador criado! Redirecionando...</span>
+            </div>
+          )}
+
+          <form onSubmit={handleRegistro}>
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ fontSize: '11px', fontWeight: 500, color: '#737373', display: 'block', marginBottom: '6px', letterSpacing: '0.02em' }}>
+                Nome
+              </label>
+              <div style={{ position: 'relative' }}>
+                <User size={14} color="#525252" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
+                <input
+                  type="text"
+                  value={nome}
+                  onChange={e => setNome(e.target.value)}
+                  placeholder="Nome do administrador"
+                  required
+                  style={{
+                    width: '100%', background: '#1A1A1A', border: '1px solid #2A2A2A',
+                    borderRadius: '8px', padding: '10px 14px 10px 36px', color: '#F5F5F5',
+                    fontFamily: 'inherit', fontSize: '13px', outline: 'none', boxSizing: 'border-box',
+                  }}
+                />
+              </div>
+            </div>
+
             <div style={{ marginBottom: '16px' }}>
               <label style={{ fontSize: '11px', fontWeight: 500, color: '#737373', display: 'block', marginBottom: '6px', letterSpacing: '0.02em' }}>
                 Email
@@ -88,7 +127,7 @@ export function AdminLogin() {
                   type="email"
                   value={email}
                   onChange={e => setEmail(e.target.value)}
-                  placeholder="seu@email.com"
+                  placeholder="admin@email.com"
                   required
                   style={{
                     width: '100%', background: '#1A1A1A', border: '1px solid #2A2A2A',
@@ -111,6 +150,7 @@ export function AdminLogin() {
                   onChange={e => setSenha(e.target.value)}
                   placeholder="••••••••"
                   required
+                  minLength={6}
                   style={{
                     width: '100%', background: '#1A1A1A', border: '1px solid #2A2A2A',
                     borderRadius: '8px', padding: '10px 14px 10px 36px', color: '#F5F5F5',
@@ -122,41 +162,28 @@ export function AdminLogin() {
 
             <button
               type="submit"
-              disabled={carregando}
+              disabled={carregando || sucesso}
               style={{
                 width: '100%', background: '#F59E0B', color: '#0A0A0A',
                 fontFamily: 'inherit', fontSize: '13px', fontWeight: 600,
                 padding: '12px', border: 'none', borderRadius: '8px',
-                cursor: carregando ? 'not-allowed' : 'pointer',
-                opacity: carregando ? 0.7 : 1, transition: 'opacity 0.15s',
+                cursor: (carregando || sucesso) ? 'not-allowed' : 'pointer',
+                opacity: (carregando || sucesso) ? 0.7 : 1, transition: 'opacity 0.15s',
               }}
             >
-              {carregando ? 'Entrando...' : 'Entrar como administrador'}
+              {carregando ? 'Criando...' : 'Criar Administrador'}
             </button>
           </form>
 
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', marginTop: '20px' }}>
-            <UserPlus size={13} color="#525252" />
-            <button
-              onClick={() => navigate('/admin/primeiro-acesso')}
-              style={{
-                background: 'none', border: 'none', cursor: 'pointer',
-                fontSize: '12px', color: '#525252', fontFamily: 'inherit',
-              }}
-            >
-              Primeiro acesso
-            </button>
-          </div>
-
           <button
-            onClick={() => navigate('/')}
+            onClick={() => navigate('/admin/login')}
             style={{
-              display: 'block', margin: '12px auto 0', background: 'none',
-              border: 'none', cursor: 'pointer', fontSize: '12px',
-              color: '#404040', fontFamily: 'inherit',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+              margin: '20px auto 0', background: 'none', border: 'none', cursor: 'pointer',
+              fontSize: '12px', color: '#525252', fontFamily: 'inherit',
             }}
           >
-            ← Voltar
+            <ArrowLeft size={13} /> Voltar para o login
           </button>
         </div>
       </div>

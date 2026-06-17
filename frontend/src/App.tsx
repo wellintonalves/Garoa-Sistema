@@ -51,6 +51,7 @@ import { ClienteBarbeariaPerfil } from './pages/cliente/barbearia/ClienteBarbear
 
 // Admin Login
 import { AdminLogin } from './pages/admin/AdminLogin';
+import { AdminPrimeiroAcesso } from './pages/admin/AdminPrimeiroAcesso';
 
 // Barber App
 import { BarbeiroAuthProvider } from './contexts/BarbeiroAuthContext';
@@ -92,6 +93,7 @@ export function App() {
 
                 {/* === Login do Administrador === */}
                 <Route path="/admin/login" element={<AdminLogin />} />
+                <Route path="/admin/primeiro-acesso" element={<AdminPrimeiroAcesso />} />
 
                 {/* === Login do Barbeiro === */}
                 <Route path="/barbeiro/login" element={<BarbeiroLoginPage />} />
