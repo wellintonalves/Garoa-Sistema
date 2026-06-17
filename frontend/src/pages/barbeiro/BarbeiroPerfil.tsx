@@ -23,7 +23,7 @@ export function BarbeiroPerfil() {
 
   function handleLogout() {
     logout();
-    window.location.href = '/barbeiro';
+    window.location.href = '/barbeiro/login';
   }
 
   if (!perfil) return <div className="p-6 text-center text-gray-500">Carregando...</div>;
