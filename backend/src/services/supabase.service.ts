@@ -1,5 +1,4 @@
 import { createClient } from '@supabase/supabase-js';
-import ws from 'ws';
 
 export class SupabaseService {
   private static getClient() {
@@ -7,12 +6,16 @@ export class SupabaseService {
     const supabaseKey = process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
 
     if (!supabaseUrl || !supabaseKey) {
-      throw new Error('Supabase URL ou Key não configuradas no ambiente (SUPABASE_URL e SUPABASE_ANON_KEY).');
+      throw new Error('Supabase URL ou Key não configuradas no ambiente.');
     }
+
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const ws = require('ws');
 
     return createClient(supabaseUrl, supabaseKey, {
       realtime: {
-        transport: ws,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        transport: ws as any,
       },
     });
   }
