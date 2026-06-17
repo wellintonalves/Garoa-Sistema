@@ -251,32 +251,3 @@ export function AdminLogin() {
   );
 }
 
-function ScissorAnimation() {
-  return (
-    <svg
-      width="140" height="140" viewBox="0 0 140 140"
-      style={{ animation: 'none' }}
-    >
-      <style>{`
-        @keyframes bladetop { 0%,100%{transform:rotate(-20deg)} 50%{transform:rotate(0deg)} }
-        @keyframes bladebottom { 0%,100%{transform:rotate(20deg)} 50%{transform:rotate(0deg)} }
-        #bt { transform-origin: 52px 70px; animation: bladetop 1.4s ease-in-out infinite; }
-        #bb { transform-origin: 52px 70px; animation: bladebottom 1.4s ease-in-out infinite; }
-      `}</style>
-      <g id="bt">
-        <path d="M52 70 Q70 58 100 42 Q108 38 112 40 Q116 43 113 47 Q110 50 102 50 Q88 52 70 62 Z" fill="#0A0A0A"/>
-        <circle cx="52" cy="70" r="13" fill="none" stroke="#0A0A0A" stroke-width="4"/>
-        <circle cx="52" cy="70" r="5" fill="#0A0A0A"/>
-        <line x1="39" y1="62" x2="26" y2="54" stroke="#0A0A0A" stroke-width="3.5" stroke-linecap="round"/>
-        <line x1="39" y1="70" x2="24" y2="70" stroke="#0A0A0A" stroke-width="3.5" stroke-linecap="round"/>
-      </g>
-      <g id="bb">
-        <path d="M52 70 Q70 82 100 98 Q108 102 112 100 Q116 97 113 93 Q110 90 102 90 Q88 88 70 78 Z" fill="#0A0A0A"/>
-        <circle cx="52" cy="70" r="13" fill="none" stroke="#0A0A0A" stroke-width="4"/>
-        <circle cx="52" cy="70" r="5" fill="#7C5A00"/>
-        <line x1="39" y1="70" x2="24" y2="70" stroke="#0A0A0A" stroke-width="3.5" stroke-linecap="round"/>
-        <line x1="39" y1="78" x2="26" y2="86" stroke="#0A0A0A" stroke-width="3.5" stroke-linecap="round"/>
-      </g>
-    </svg>
-  );
-}
