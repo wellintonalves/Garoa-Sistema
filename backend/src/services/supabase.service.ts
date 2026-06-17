@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import ws from 'ws';
 
 export class SupabaseService {
   private static getClient() {
@@ -9,7 +10,11 @@ export class SupabaseService {
       throw new Error('Supabase URL ou Key não configuradas no ambiente (SUPABASE_URL e SUPABASE_ANON_KEY).');
     }
 
-    return createClient(supabaseUrl, supabaseKey);
+    return createClient(supabaseUrl, supabaseKey, {
+      realtime: {
+        transport: ws,
+      },
+    });
   }
 
   /**
