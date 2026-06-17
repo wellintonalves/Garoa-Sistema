@@ -1,6 +1,5 @@
 // Aba Perfil do barbeiro — dados do profissional e logout
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useBarbeiroAuth } from '../../hooks/useBarbeiroAuth';
 import { User, Scissors, LogOut } from 'lucide-react';
 import barbeiroApi from '../../api/barbeiroApi';
@@ -15,7 +14,6 @@ interface PerfilBarbeiro {
 }
 
 export function BarbeiroPerfil() {
-  const navigate = useNavigate();
   const { logout } = useBarbeiroAuth();
   const [perfil, setPerfil] = useState<PerfilBarbeiro | null>(null);
 
