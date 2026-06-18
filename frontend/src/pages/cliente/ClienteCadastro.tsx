@@ -36,8 +36,14 @@ export function ClienteCadastro() {
 
     setEnviando(true);
     try {
-      await registrar(nome, email, senha, telefone);
-      navigate('/cliente/home');
+      const token = await registrar(nome, email, senha, telefone);
+      navigate('/verificar-email', {
+        state: {
+          email,
+          token,
+          destino: '/cliente/home',
+        }
+      });
     } catch (error) {
       const msg = (error as { response?: { data?: { erro?: string } } })?.response?.data?.erro || 'Erro ao criar conta';
       setErro(msg);

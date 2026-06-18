@@ -62,6 +62,8 @@ import { BarbeiroAgenda } from './pages/barbeiro/BarbeiroAgenda';
 import { BarbeiroComissoes } from './pages/barbeiro/BarbeiroComissoes';
 import { BarbeiroPerfil } from './pages/barbeiro/BarbeiroPerfil';
 
+import { VerificarEmail } from './pages/VerificarEmail';
+
 export function App() {
   useModoTema();
   const { carregarTemaCache } = useTema();
@@ -80,6 +82,7 @@ export function App() {
                 {/* === Tela Principal — Login do Cliente === */}
                 <Route path="/" element={<ClienteLoginPrincipal />} />
                 <Route path="/cadastro" element={<ClienteCadastro />} />
+                <Route path="/verificar-email" element={<VerificarEmail />} />
 
                 {/* === App do Cliente (após login) === */}
                 <Route path="/cliente/home" element={<ClienteHome />} />

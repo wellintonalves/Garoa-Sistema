@@ -25,9 +25,16 @@ export function AdminPrimeiroAcesso() {
     setErro('');
     setCarregando(true);
     try {
-      await api.post('/auth/register', { nome, email, senha, papel: 'ADMIN' });
+      const res = await api.post('/auth/register', { nome, email, senha, papel: 'ADMIN' });
       setSucesso(true);
-      setTimeout(() => navigate('/admin/login'), 2000);
+      const token = res.data.token;
+      setTimeout(() => navigate('/verificar-email', {
+        state: {
+          email,
+          token,
+          destino: '/admin/login',
+        }
+      }), 2000);
     } catch (error: any) {
       setErro(error?.response?.data?.erro || 'Erro ao criar administrador.');
     } finally {
