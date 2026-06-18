@@ -3,6 +3,7 @@ import { Response } from 'express';
 import { ClienteAppService } from '../services/clienteApp.service';
 import { ClienteAuthRequest } from '../types';
 import { Request } from 'express';
+import { VerificacaoService } from '../services/verificacao.service';
 
 export class ClienteAppController {
   /** POST /cliente/register */
@@ -21,6 +22,14 @@ export class ClienteAppController {
       }
 
       const resultado = await ClienteAppService.registrar({ nome, email, senha, telefone });
+
+      // Tenta enviar o email mas não bloqueia o cadastro se falhar
+      try {
+        await VerificacaoService.enviarCodigo(resultado.cliente.usuarioId, email, nome);
+      } catch (emailErro) {
+        console.error('[Registro Cliente] Erro ao enviar email de verificação:', emailErro);
+      }
+
       res.status(201).json(resultado);
     } catch (error) {
       const mensagem = error instanceof Error ? error.message : 'Erro ao registrar';
