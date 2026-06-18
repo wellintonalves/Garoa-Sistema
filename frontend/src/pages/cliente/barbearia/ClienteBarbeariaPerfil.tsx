@@ -2,7 +2,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useClienteAuth } from '../../../hooks/useClienteAuth';
-import { User, Phone, Mail, LogOut, Unlink, Scissors, Save } from 'lucide-react';
+import { useModoTema } from '../../../hooks/useModoTema';
+import { User, Phone, Mail, LogOut, Unlink, Scissors, Save, Moon, Sun, Monitor } from 'lucide-react';
 import clienteApi from '../../../api/clienteApi';
 
 interface PerfilData {
@@ -20,6 +21,7 @@ interface BarbeariaConectada {
 export function ClienteBarbeariaPerfil() {
   const navigate = useNavigate();
   const { logout } = useClienteAuth();
+  const { modo, setModo } = useModoTema();
   const [perfil, setPerfil] = useState<PerfilData | null>(null);
   const [barbearias, setBarbearias] = useState<BarbeariaConectada[]>([]);
   const [nome, setNome] = useState('');
@@ -112,6 +114,38 @@ export function ClienteBarbeariaPerfil() {
               </button>
             </div>
           ))}
+        </div>
+      </div>
+
+      {/* Aparência */}
+      <div className="mb-8">
+        <h2 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase' as const, color: 'var(--cor-icone)', marginBottom: '12px' }}>
+          Aparência
+        </h2>
+        <div className="flex bg-surface border border-borda rounded">
+          <button 
+            onClick={() => setModo('light')}
+            className={`flex-1 py-2 flex flex-col items-center justify-center gap-1 transition-colors ${modo === 'light' ? 'text-amber bg-[rgba(var(--cor-primaria-rgb),0.1)]' : 'text-muted hover:text-primary'}`}
+          >
+            <Sun size={18} />
+            <span style={{ fontSize: '10px' }}>Claro</span>
+          </button>
+          <div className="w-[1px] bg-borda" />
+          <button 
+            onClick={() => setModo('dark')}
+            className={`flex-1 py-2 flex flex-col items-center justify-center gap-1 transition-colors ${modo === 'dark' ? 'text-amber bg-[rgba(var(--cor-primaria-rgb),0.1)]' : 'text-muted hover:text-primary'}`}
+          >
+            <Moon size={18} />
+            <span style={{ fontSize: '10px' }}>Escuro</span>
+          </button>
+          <div className="w-[1px] bg-borda" />
+          <button 
+            onClick={() => setModo('auto')}
+            className={`flex-1 py-2 flex flex-col items-center justify-center gap-1 transition-colors ${modo === 'auto' ? 'text-amber bg-[rgba(var(--cor-primaria-rgb),0.1)]' : 'text-muted hover:text-primary'}`}
+          >
+            <Monitor size={18} />
+            <span style={{ fontSize: '10px' }}>Sistema</span>
+          </button>
         </div>
       </div>
 

@@ -1,7 +1,8 @@
 // Aba Perfil do barbeiro — dados do profissional e logout
 import { useState, useEffect } from 'react';
 import { useBarbeiroAuth } from '../../hooks/useBarbeiroAuth';
-import { User, Scissors, LogOut } from 'lucide-react';
+import { useModoTema } from '../../hooks/useModoTema';
+import { User, Scissors, LogOut, Sun, Moon, Monitor } from 'lucide-react';
 import barbeiroApi from '../../api/barbeiroApi';
 
 interface PerfilBarbeiro {
@@ -15,6 +16,7 @@ interface PerfilBarbeiro {
 
 export function BarbeiroPerfil() {
   const { logout } = useBarbeiroAuth();
+  const { modo, setModo } = useModoTema();
   const [perfil, setPerfil] = useState<PerfilBarbeiro | null>(null);
 
   useEffect(() => {
@@ -86,6 +88,38 @@ export function BarbeiroPerfil() {
               <span key={i} className="badge badge-info">{e}</span>
             ))}
           </div>
+        </div>
+      </div>
+
+      {/* Aparência */}
+      <div className="mb-8">
+        <h2 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase' as const, color: 'var(--cor-icone)', marginBottom: '12px' }}>
+          Aparência
+        </h2>
+        <div className="flex bg-surface border border-borda rounded">
+          <button 
+            onClick={() => setModo('light')}
+            className={`flex-1 py-2 flex flex-col items-center justify-center gap-1 transition-colors ${modo === 'light' ? 'text-amber bg-[rgba(var(--cor-primaria-rgb),0.1)]' : 'text-muted hover:text-primary'}`}
+          >
+            <Sun size={18} />
+            <span style={{ fontSize: '10px' }}>Claro</span>
+          </button>
+          <div className="w-[1px] bg-borda" />
+          <button 
+            onClick={() => setModo('dark')}
+            className={`flex-1 py-2 flex flex-col items-center justify-center gap-1 transition-colors ${modo === 'dark' ? 'text-amber bg-[rgba(var(--cor-primaria-rgb),0.1)]' : 'text-muted hover:text-primary'}`}
+          >
+            <Moon size={18} />
+            <span style={{ fontSize: '10px' }}>Escuro</span>
+          </button>
+          <div className="w-[1px] bg-borda" />
+          <button 
+            onClick={() => setModo('auto')}
+            className={`flex-1 py-2 flex flex-col items-center justify-center gap-1 transition-colors ${modo === 'auto' ? 'text-amber bg-[rgba(var(--cor-primaria-rgb),0.1)]' : 'text-muted hover:text-primary'}`}
+          >
+            <Monitor size={18} />
+            <span style={{ fontSize: '10px' }}>Sistema</span>
+          </button>
         </div>
       </div>
 
