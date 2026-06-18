@@ -4,6 +4,9 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 export class EmailService {
   static async enviarCodigoVerificacao(email: string, nome: string, codigo: string): Promise<void> {
+    console.log('[EmailService] Tentando enviar para:', email);
+    console.log('[EmailService] API Key presente:', !!process.env.RESEND_API_KEY);
+    
     await resend.emails.send({
       from: 'Garoa Sistema <onboarding@resend.dev>',
       to: email,

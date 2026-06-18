@@ -9,6 +9,7 @@ export class VerificacaoService {
   }
 
   static async enviarCodigo(usuarioId: string, email: string, nome: string): Promise<void> {
+    console.log('[VerificacaoService] Enviando código para usuário:', usuarioId);
     const codigo = this.gerarCodigo();
     const expiracao = new Date(Date.now() + 10 * 60 * 1000); // 10 minutos
 
