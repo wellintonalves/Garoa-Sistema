@@ -15,6 +15,7 @@ import tenantRoutes from './tenantRoutes';
 import clienteAppRoutes from './clienteApp.routes';
 import barbeiroAppRoutes from './barbeiroApp.routes';
 import uploadRoutes from './upload.routes';
+import verificacaoRoutes from './verificacao.routes';
 
 const router = Router();
 
@@ -38,5 +39,6 @@ router.use('/relatorios', relatorioRoutes);
 router.use('/configuracoes', configuracaoRoutes);
 router.use('/fidelidade', fidelidadeRoutes);
 router.use('/upload', uploadRoutes);
+router.use('/verificacao', verificacaoRoutes);
 
 export default router;

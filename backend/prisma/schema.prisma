@@ -86,13 +86,16 @@ model Barbearia {
 }
 
 model Usuario {
-  id          String   @id @default(uuid())
-  nome        String
-  email       String
-  senha       String
-  papel       Papel    @default(CLIENTE)
-  barbeariaId String?
-  createdAt   DateTime @default(now())
+  id                String   @id @default(uuid())
+  nome              String
+  email             String
+  senha             String
+  papel             Papel    @default(CLIENTE)
+  barbeariaId       String?
+  emailVerificado   Boolean  @default(false)
+  codigoVerificacao String?
+  codigoExpiracao   DateTime?
+  createdAt         DateTime @default(now())
 
   barbearia Barbearia? @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
   barbeiro  Barbeiro?

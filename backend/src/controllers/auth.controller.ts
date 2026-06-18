@@ -1,6 +1,7 @@
 // Controller de autenticação
 import { Request, Response } from 'express';
 import { AuthService } from '../services/auth.service';
+import { VerificacaoService } from '../services/verificacao.service';
 
 export class AuthController {
   /** POST /auth/login */
@@ -56,6 +57,10 @@ export class AuthController {
       }
 
       const resultado = await AuthService.registrar({ nome, email, senha, papel, barbeariaId: bId });
+      
+      // Envia o código de verificação após criar o usuário
+      await VerificacaoService.enviarCodigo(resultado.usuario.id, resultado.usuario.email, resultado.usuario.nome);
+
       res.status(201).json(resultado);
     } catch (error) {
       const mensagem = error instanceof Error ? error.message : 'Erro ao registrar';
