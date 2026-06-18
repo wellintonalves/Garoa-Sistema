@@ -19,6 +19,8 @@ export function VerificarEmail() {
   const email = location.state?.email || '';
   const token = location.state?.token || '';
   const destino = location.state?.destino || '/';
+  const usuarioId = location.state?.usuarioId || '';
+  const nome = location.state?.nome || '';
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
@@ -76,7 +78,7 @@ export function VerificarEmail() {
     setErro('');
     setCarregando(true);
     try {
-      await api.post('/verificacao/confirmar', { codigo });
+      await api.post('/verificacao/confirmar', { usuarioId, codigo });
       setSucesso(true);
       setTimeout(() => navigate(destino), 2000);
     } catch (err: any) {
@@ -93,7 +95,7 @@ export function VerificarEmail() {
     setReenviando(true);
     setErro('');
     try {
-      await api.post('/verificacao/reenviar');
+      await api.post('/verificacao/reenviar', { usuarioId, email, nome });
       setPodeReenviar(false);
       setCountdown(60);
     } catch (err: any) {

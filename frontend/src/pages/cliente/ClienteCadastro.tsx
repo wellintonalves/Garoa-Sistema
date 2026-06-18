@@ -36,11 +36,13 @@ export function ClienteCadastro() {
 
     setEnviando(true);
     try {
-      const token = await registrar(nome, email, senha, telefone);
+      const { token, usuarioId } = await registrar(nome, email, senha, telefone);
       navigate('/verificar-email', {
         state: {
           email,
+          nome,
           token,
+          usuarioId,
           destino: '/cliente/home',
         }
       });

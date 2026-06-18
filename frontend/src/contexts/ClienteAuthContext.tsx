@@ -13,7 +13,7 @@ interface ClienteAuthContextData {
   cliente: DadosCliente | null;
   carregando: boolean;
   login: (email: string, senha: string) => Promise<void>;
-  registrar: (nome: string, email: string, senha: string, telefone: string) => Promise<string>;
+  registrar: (nome: string, email: string, senha: string, telefone: string) => Promise<{ token: string; usuarioId: string }>;
   logout: () => void;
 }
 
@@ -56,7 +56,7 @@ export function ClienteAuthProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('@garoa:cliente_token', token);
     localStorage.setItem('@garoa:cliente_dados', JSON.stringify(dados));
     setCliente(dados);
-    return token;
+    return { token, usuarioId: dados.usuarioId };
   }, []);
 
   const logout = useCallback(() => {
