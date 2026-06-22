@@ -6,25 +6,16 @@ import { errorMiddleware } from './middlewares/error.middleware';
 
 const app = express();
 
-// CORS — aceita frontend local e Railway
-const allowedOrigins = [
-  process.env.FRONTEND_URL,
-  'http://localhost:5173',
-  'http://localhost:4173',
-].filter(Boolean) as string[];
+const allowedOrigins = ['https://valenbarber.com.br', 'http://localhost:5173'];
 
 app.use(cors({
-  origin: (origin, callback) => {
-    // Permite requisições sem origin (Postman, curl, health checks)
-    if (!origin) return callback(null, true);
-    // Permite origens configuradas
-    if (allowedOrigins.includes(origin)) return callback(null, true);
-    // Permite qualquer subdomínio do Railway
-    if (origin.endsWith('.up.railway.app')) return callback(null, true);
-    callback(new Error('Bloqueado pelo CORS'));
-  },
+  origin: allowedOrigins,
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
+app.options('*', cors());
 
 // Parse de JSON com limite estendido para suportar imagens em Base64
 app.use(express.json({ limit: '10mb' }));

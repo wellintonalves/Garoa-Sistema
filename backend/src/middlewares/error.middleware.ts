@@ -8,7 +8,7 @@ export function errorMiddleware(
   res: Response,
   _next: NextFunction
 ): void {
-  console.error('[ERRO]', err.message);
+  console.error('[ERRO]', err);
 
   // Erro de validação do Prisma
   if (err.name === 'PrismaClientKnownRequestError') {
