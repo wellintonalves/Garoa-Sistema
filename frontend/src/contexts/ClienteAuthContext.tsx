@@ -13,7 +13,7 @@ interface ClienteAuthContextData {
   cliente: DadosCliente | null;
   carregando: boolean;
   login: (email: string, senha: string) => Promise<void>;
-  registrar: (nome: string, email: string, senha: string, telefone: string) => Promise<{ token: string; usuarioId: string }>;
+  registrar: (nome: string, email: string, senha: string, telefone: string) => Promise<{ usuarioId: string }>;
   logout: () => void;
 }
 
@@ -39,24 +39,28 @@ export function ClienteAuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = useCallback(async (email: string, senha: string) => {
-    const response = await clienteApi.post<{ token: string; cliente: DadosCliente }>('/cliente/login', { email, senha });
-    const { token, cliente: dados } = response.data;
+    try {
+      const response = await clienteApi.post<{ token: string; cliente: DadosCliente }>('/cliente/login', { email, senha });
+      const { token, cliente: dados } = response.data;
 
-    localStorage.setItem('@garoa:cliente_token', token);
-    localStorage.setItem('@garoa:cliente_dados', JSON.stringify(dados));
-    setCliente(dados);
+      localStorage.setItem('@garoa:cliente_token', token);
+      localStorage.setItem('@garoa:cliente_dados', JSON.stringify(dados));
+      setCliente(dados);
+    } catch (error: any) {
+      if (error.response?.status === 403 && error.response?.data?.emailNaoVerificado) {
+        window.location.href = '/verificar-email';
+        throw new Error('Redirecionando para verificação de email...');
+      }
+      throw error;
+    }
   }, []);
 
   const registrar = useCallback(async (nome: string, email: string, senha: string, telefone: string) => {
-    const response = await clienteApi.post<{ token: string; cliente: DadosCliente }>('/cliente/register', {
+    const response = await clienteApi.post<{ mensagem: string; usuarioId: string }>('/cliente/register', {
       nome, email, senha, telefone,
     });
-    const { token, cliente: dados } = response.data;
-
-    localStorage.setItem('@garoa:cliente_token', token);
-    localStorage.setItem('@garoa:cliente_dados', JSON.stringify(dados));
-    setCliente(dados);
-    return { token, usuarioId: dados.usuarioId };
+    
+    return { usuarioId: response.data.usuarioId };
   }, []);
 
   const logout = useCallback(() => {

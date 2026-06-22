@@ -86,6 +86,10 @@ export class ClienteAppService {
       throw new Error('Email ou senha incorretos');
     }
 
+    if (!usuario.emailVerificado) {
+      throw new Error('Email não verificado');
+    }
+
     const senhaValida = await bcrypt.compare(senha, usuario.senha);
     if (!senhaValida) {
       throw new Error('Email ou senha incorretos');

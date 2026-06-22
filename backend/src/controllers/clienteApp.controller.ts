@@ -30,7 +30,10 @@ export class ClienteAppController {
         console.error('[Registro Cliente] Erro ao enviar email de verificação:', emailErro);
       }
 
-      res.status(201).json(resultado);
+      res.status(201).json({
+        mensagem: 'Código enviado para seu email',
+        usuarioId: resultado.cliente.usuarioId
+      });
     } catch (error) {
       const mensagem = error instanceof Error ? error.message : 'Erro ao registrar';
       res.status(400).json({ erro: mensagem });
@@ -51,6 +54,10 @@ export class ClienteAppController {
       res.json(resultado);
     } catch (error) {
       const mensagem = error instanceof Error ? error.message : 'Erro ao fazer login';
+      if (mensagem === 'Email não verificado') {
+        res.status(403).json({ erro: mensagem, emailNaoVerificado: true });
+        return;
+      }
       res.status(401).json({ erro: mensagem });
     }
   }

@@ -36,7 +36,7 @@ export function ClienteCadastro() {
 
     setEnviando(true);
     try {
-      const { token, usuarioId } = await registrar(nome, email, senha, telefone);
+      const { usuarioId } = await registrar(nome, email, senha, telefone);
       navigate('/verificar-email', {
         state: {
           email,
