@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Mail, Lock, AlertCircle, Star } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useClienteAuth } from '../../hooks/useClienteAuth';
 
 export function ClienteLoginPrincipal() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const mensagemSucesso = location.state?.mensagemSucesso;
   const { login } = useClienteAuth();
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
@@ -145,6 +147,17 @@ export function ClienteLoginPrincipal() {
           <p style={{ fontSize: '13px', color: '#737373', margin: '0 0 32px' }}>
             Acesse sua conta para agendar
           </p>
+
+          {mensagemSucesso && (
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: '8px',
+              background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.25)',
+              borderRadius: '8px', padding: '10px 14px', marginBottom: '20px',
+            }}>
+              <AlertCircle size={14} color="#10B981" />
+              <span style={{ fontSize: '13px', color: '#10B981' }}>{mensagemSucesso}</span>
+            </div>
+          )}
 
           {erro && (
             <div style={{

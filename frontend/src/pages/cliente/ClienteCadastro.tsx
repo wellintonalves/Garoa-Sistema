@@ -41,7 +41,6 @@ export function ClienteCadastro() {
         state: {
           email,
           nome,
-          token,
           usuarioId,
           destino: '/cliente/home',
         }

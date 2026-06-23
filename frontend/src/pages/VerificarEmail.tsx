@@ -80,7 +80,7 @@ export function VerificarEmail() {
     try {
       await api.post('/verificacao/confirmar', { usuarioId, codigo });
       setSucesso(true);
-      setTimeout(() => navigate(destino), 2000);
+      setTimeout(() => navigate('/', { state: { mensagemSucesso: 'Email verificado com sucesso! Faça login para continuar.' } }), 2000);
     } catch (err: any) {
       setErro(err?.response?.data?.erro || 'Código inválido ou expirado.');
       setCodigos(['', '', '', '', '', '']);
