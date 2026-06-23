@@ -16,6 +16,7 @@ import clienteAppRoutes from './clienteApp.routes';
 import barbeiroAppRoutes from './barbeiroApp.routes';
 import uploadRoutes from './upload.routes';
 import verificacaoRoutes from './verificacao.routes';
+import recuperacaoRoutes from './recuperacao.routes';
 
 const router = Router();
 
@@ -40,5 +41,6 @@ router.use('/configuracoes', configuracaoRoutes);
 router.use('/fidelidade', fidelidadeRoutes);
 router.use('/upload', uploadRoutes);
 router.use('/verificacao', verificacaoRoutes);
+router.use('/recuperacao', recuperacaoRoutes);
 
 export default router;
