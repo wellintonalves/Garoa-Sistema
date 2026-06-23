@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import { EmailService } from './email.service';
+import * as bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
 
@@ -91,7 +92,6 @@ export class VerificacaoService {
       throw new Error('Código expirado. Solicite um novo.');
     }
 
-    const bcrypt = await import('bcrypt');
     const senhaHash = await bcrypt.hash(novaSenha, 10);
 
     await prisma.usuario.update({
