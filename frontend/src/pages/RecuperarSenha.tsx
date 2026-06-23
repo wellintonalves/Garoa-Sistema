@@ -17,7 +17,6 @@ export function RecuperarSenha() {
   const [countdown, setCountdown] = useState(60);
   const [podeReenviar, setPodeReenviar] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const inputs = Array.from({ length: 6 }, () => null) as (HTMLInputElement | null)[];
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
