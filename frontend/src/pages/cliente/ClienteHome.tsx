@@ -1,6 +1,6 @@
 // Tela inicial do cliente — buscar e gerenciar barbearias conectadas
 import { useState, useEffect, useCallback } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, Navigate } from 'react-router-dom';
 import { useClienteAuth } from '../../hooks/useClienteAuth';
 import { Search, QrCode, MapPin, ChevronRight, LogOut, Scissors, CheckCircle, XCircle } from 'lucide-react';
 import clienteApi from '../../api/clienteApi';
@@ -17,7 +17,7 @@ interface BarbeariaItem {
 
 export function ClienteHome() {
   const navigate = useNavigate();
-  const { cliente, logout } = useClienteAuth();
+  const { cliente, logout, carregando: authCarregando } = useClienteAuth();
   const [searchParams] = useSearchParams();
   const [busca, setBusca] = useState('');
   const [resultados, setResultados] = useState<BarbeariaItem[]>([]);
@@ -92,6 +92,11 @@ export function ClienteHome() {
     setScannerAberto(false);
     conectarPorSlug(slug);
   }, []);
+
+  // Route guard — bloqueia acesso sem autenticação de cliente (após todos os hooks)
+  if (!authCarregando && !cliente) {
+    return <Navigate to="/" replace />;
+  }
 
   return (
     <div className="min-h-screen flex flex-col" style={{ background: 'var(--fundo-pagina)' }}>
@@ -287,11 +292,4 @@ export function ClienteHome() {
       )}
 
       <style>{`
-        @keyframes slideUp {
-          from { opacity: 0; transform: translateX(-50%) translateY(20px); }
-          to { opacity: 1; transform: translateX(-50%) translateY(0); }
-        }
-      `}</style>
-    </div>
-  );
-}
+        @keyfram

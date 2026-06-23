@@ -1,9 +1,10 @@
 // Layout do app do cliente dentro de uma barbearia — menu inferior com 4 abas
-import { Outlet, useNavigate, useLocation, useParams } from 'react-router-dom';
+import { Outlet, useNavigate, useLocation, useParams, Navigate } from 'react-router-dom';
 import { Home, Calendar, Star, User } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import clienteApi from '../api/clienteApi';
 import { useTema } from '../hooks/useTema';
+import { useClienteAuth } from '../hooks/useClienteAuth';
 
 interface BarbeariaInfo {
   id: string;
@@ -17,7 +18,7 @@ export function ClienteLayout() {
   const location = useLocation();
   const { barbeariaId } = useParams<{ barbeariaId: string }>();
   const [barbearia, setBarbearia] = useState<BarbeariaInfo | null>(null);
-
+  const { cliente, carregando: authCarregando } = useClienteAuth();
   const { carregarTemaCliente } = useTema();
 
   useEffect(() => {
@@ -35,6 +36,11 @@ export function ClienteLayout() {
       });
     }
   }, [barbeariaId, carregarTemaCliente]);
+
+  // Route guard — bloqueia acesso sem autenticação de cliente (após todos os hooks)
+  if (!authCarregando && !cliente) {
+    return <Navigate to="/" replace />;
+  }
 
   const basePath = `/cliente/barbearia/${barbeariaId}`;
 
@@ -73,17 +79,4 @@ export function ClienteLayout() {
             >
               <Icon size={22} style={{ marginBottom: '4px', opacity: isActive ? 1 : 0.7 }} />
               <span style={{
-                fontFamily: 'var(--fonte-interface)',
-                fontSize: '9px',
-                letterSpacing: '0.08em',
-                fontWeight: isActive ? 600 : 400,
-              }}>
-                {tab.name}
-              </span>
-            </button>
-          );
-        })}
-      </nav>
-    </div>
-  );
-}
+                fontFami
