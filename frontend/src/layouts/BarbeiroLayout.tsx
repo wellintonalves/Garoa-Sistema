@@ -1,12 +1,16 @@
 // Layout do app do barbeiro com navegação inferior
-import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { Outlet, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { Clock, Calendar, DollarSign, User } from 'lucide-react';
 import { useBarbeiroAuth } from '../hooks/useBarbeiroAuth';
 
 export function BarbeiroLayout() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { barbeiro } = useBarbeiroAuth();
+  const { barbeiro, carregando } = useBarbeiroAuth();
+
+  if (!carregando && !barbeiro) {
+    return <Navigate to="/barbeiro/login" replace />;
+  }
 
   const tabs = [
     { name: 'Hoje', path: '/barbeiro/hoje', icon: Clock },

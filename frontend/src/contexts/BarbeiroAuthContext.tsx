@@ -51,6 +51,7 @@ export function BarbeiroAuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem('@garoa:barbeiro_token');
     localStorage.removeItem('@garoa:barbeiro_dados');
     setBarbeiro(null);
+    window.location.href = '/barbeiro/login';
   }, []);
 
   return (

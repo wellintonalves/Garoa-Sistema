@@ -33,7 +33,7 @@ barbeiroApi.interceptors.response.use(
       if (window.location.pathname.startsWith('/barbeiro')) {
         localStorage.removeItem('@garoa:barbeiro_token');
         localStorage.removeItem('@garoa:barbeiro_dados');
-        window.location.href = '/barbeiro';
+        window.location.href = '/barbeiro/login';
       }
     }
     return Promise.reject(error);
