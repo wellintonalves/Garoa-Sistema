@@ -7,8 +7,13 @@ export class EmailService {
     console.log('[EmailService] Tentando enviar para:', email);
     console.log('[EmailService] API Key presente:', !!process.env.RESEND_API_KEY);
     
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      throw new Error(`Email inválido: ${email}`);
+    }
+
     await resend.emails.send({
-      from: 'Garoa Sistema <onboarding@resend.dev>',
+      from: 'Garoa Sistema <noreply@valenbarber.com.br>',
       to: email,
       subject: 'Seu código de verificação — Garoa Sistema',
       html: `
