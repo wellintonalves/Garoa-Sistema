@@ -18,7 +18,7 @@ export function VerificarEmail() {
 
   const email = location.state?.email || '';
   const token = location.state?.token || '';
-  const destino = location.state?.destino || '/';
+
   const usuarioId = location.state?.usuarioId || '';
   const nome = location.state?.nome || '';
 
