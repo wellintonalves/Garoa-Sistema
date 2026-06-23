@@ -207,6 +207,19 @@ export function ClienteLoginPrincipal() {
               </div>
             </div>
 
+            <div style={{ textAlign: 'right', marginBottom: '24px', marginTop: '-8px' }}>
+              <button
+                type="button"
+                onClick={() => navigate('/recuperar-senha')}
+                style={{
+                  background: 'none', border: 'none', cursor: 'pointer',
+                  fontSize: '12px', color: '#737373', fontFamily: 'inherit',
+                }}
+              >
+                Esqueci minha senha
+              </button>
+            </div>
+
             <button
               type="submit" disabled={carregando}
               style={{

@@ -63,6 +63,7 @@ import { BarbeiroComissoes } from './pages/barbeiro/BarbeiroComissoes';
 import { BarbeiroPerfil } from './pages/barbeiro/BarbeiroPerfil';
 
 import { VerificarEmail } from './pages/VerificarEmail';
+import { RecuperarSenha } from './pages/RecuperarSenha';
 
 export function App() {
   useModoTema();
@@ -83,6 +84,7 @@ export function App() {
                 <Route path="/" element={<ClienteLoginPrincipal />} />
                 <Route path="/cadastro" element={<ClienteCadastro />} />
                 <Route path="/verificar-email" element={<VerificarEmail />} />
+                <Route path="/recuperar-senha" element={<RecuperarSenha />} />
 
                 {/* === App do Cliente (após login) === */}
                 <Route path="/cliente/home" element={<ClienteHome />} />
