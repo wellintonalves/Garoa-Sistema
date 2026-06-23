@@ -67,6 +67,7 @@ export function ClienteAuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem('@garoa:cliente_token');
     localStorage.removeItem('@garoa:cliente_dados');
     setCliente(null);
+    window.location.href = '/';
   }, []);
 
   return (
