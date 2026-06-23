@@ -30,8 +30,8 @@ export class ClienteAppController {
         console.error('[Registro Cliente] Erro ao enviar email de verificação:', emailErro);
       }
 
-      res.status(201).json({
-        mensagem: 'Código enviado para seu email',
+      res.status(resultado.isNovo ? 201 : 200).json({
+        mensagem: resultado.isNovo ? 'Código enviado para seu email' : 'Código reenviado para seu email',
         usuarioId: resultado.cliente.usuarioId
       });
     } catch (error) {

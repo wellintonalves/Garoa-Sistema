@@ -23,18 +23,64 @@ interface DadosCadastroCliente {
 interface RespostaAuthCliente {
   token: string;
   cliente: ClienteJWT;
+  isNovo?: boolean;
 }
 
 export class ClienteAppService {
   /** Cadastro global de cliente (sem barbearia fixa) */
   static async registrar(dados: DadosCadastroCliente): Promise<RespostaAuthCliente> {
+    // Bônus: Limpeza automática de registros pendentes antigos (> 24h)
+    const dataLimite = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    try {
+      await prisma.usuario.deleteMany({
+        where: {
+          papel: 'CLIENTE',
+          emailVerificado: false,
+          createdAt: { lt: dataLimite },
+        },
+      });
+    } catch (e) {
+      console.error('[Registro Cliente] Erro na limpeza de pendentes antigos:', e);
+    }
     // Verifica se email já existe como cliente global (barbeariaId null)
     const existente = await prisma.usuario.findFirst({
       where: { email: dados.email, barbeariaId: null, papel: 'CLIENTE' },
+      include: { cliente: true }
     });
 
     if (existente) {
-      throw new Error('Este email já está cadastrado');
+      if (existente.emailVerificado) {
+        throw new Error('Este email já está cadastrado');
+      } else {
+        // Atualiza a senha e dados do usuário existente não verificado
+        const senhaHash = await bcrypt.hash(dados.senha, authConfig.saltRounds);
+        await prisma.usuario.update({
+          where: { id: existente.id },
+          data: { nome: dados.nome, senha: senhaHash }
+        });
+
+        if (dados.telefone && existente.cliente) {
+          await prisma.cliente.update({
+            where: { id: existente.cliente.id },
+            data: { telefone: dados.telefone }
+          });
+        }
+
+        const payload: ClienteJWT = {
+          clienteId: existente.cliente!.id,
+          usuarioId: existente.id,
+          nome: dados.nome,
+          email: existente.email,
+        };
+
+        const token = jwt.sign(
+          { ...payload },
+          authConfig.secretCliente as jwt.Secret,
+          { expiresIn: authConfig.expiresIn } as jwt.SignOptions
+        );
+
+        return { token, cliente: payload, isNovo: false };
+      }
     }
 
     const senhaHash = await bcrypt.hash(dados.senha, authConfig.saltRounds);
@@ -72,7 +118,7 @@ export class ClienteAppService {
       { expiresIn: authConfig.expiresIn } as jwt.SignOptions
     );
 
-    return { token, cliente: payload };
+    return { token, cliente: payload, isNovo: true };
   }
 
   /** Login do cliente */
