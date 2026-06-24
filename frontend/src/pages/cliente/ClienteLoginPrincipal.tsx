@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Mail, Lock, AlertCircle, Star } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import Lottie from 'lottie-react';
 import { useClienteAuth } from '../../hooks/useClienteAuth';
+import clienteAnimation from '../../assets/lotties/cliente-animation.json';
 
 export function ClienteLoginPrincipal() {
   const navigate = useNavigate();
@@ -70,33 +72,13 @@ export function ClienteLoginPrincipal() {
           <rect width="420" height="600" fill="url(#dots-c)"/>
         </svg>
 
-        {/* Animação de estrela pulsando */}
+        {/* Animação Lottie — barbeiro com cliente */}
         <div style={{ position: 'relative', zIndex: 2, marginBottom: isMobile ? '20px' : '32px' }}>
-          <svg width="120" height="120" viewBox="0 0 120 120">
-            <style>{`
-              @keyframes pulse-ring {
-                0% { r: 42; opacity: 0.3; }
-                50% { r: 52; opacity: 0.1; }
-                100% { r: 42; opacity: 0.3; }
-              }
-              @keyframes pulse-star {
-                0%,100% { transform: scale(1); }
-                50% { transform: scale(1.08); }
-              }
-              #ring1 { animation: pulse-ring 2s ease-in-out infinite; transform-origin: 60px 60px; }
-              #ring2 { animation: pulse-ring 2s ease-in-out infinite 0.4s; transform-origin: 60px 60px; }
-              #star-g { animation: pulse-star 2s ease-in-out infinite; transform-origin: 60px 60px; }
-            `}</style>
-            <circle id="ring2" cx="60" cy="60" r="48" fill="none" stroke="#0A0A0A" stroke-width="1"/>
-            <circle id="ring1" cx="60" cy="60" r="42" fill="none" stroke="#0A0A0A" stroke-width="1.5"/>
-            <circle cx="60" cy="60" r="34" fill="rgba(0,0,0,0.08)"/>
-            <g id="star-g">
-              <polygon
-                points="60,32 66,50 86,50 70,62 76,80 60,68 44,80 50,62 34,50 54,50"
-                fill="#0A0A0A"
-              />
-            </g>
-          </svg>
+          <Lottie
+            animationData={clienteAnimation}
+            loop={true}
+            style={{ width: '220px', height: '220px' }}
+          />
         </div>
 
         <h2 style={{
