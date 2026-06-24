@@ -1,8 +1,10 @@
 // Tela de login do cliente
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Lottie from 'lottie-react';
 import { useClienteAuth } from '../../hooks/useClienteAuth';
-import { Scissors, ArrowLeft } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
+import clienteAnimation from '../../assets/lotties/cliente-animation.json';
 
 export function ClienteLogin() {
   const navigate = useNavigate();
@@ -39,11 +41,12 @@ export function ClienteLogin() {
       </button>
 
       {/* Logo */}
-      <div className="flex flex-col items-center mb-10">
-        <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4"
-          style={{ background: 'rgba(245, 158, 11, 0.10)' }}>
-          <Scissors size={28} style={{ color: '#F59E0B' }} />
-        </div>
+      <div className="flex flex-col items-center mb-8">
+        <Lottie
+          animationData={clienteAnimation}
+          loop={true}
+          style={{ width: '180px', height: '180px' }}
+        />
         <h1 style={{
           fontFamily: 'var(--fonte-interface)',
           fontSize: '28px',

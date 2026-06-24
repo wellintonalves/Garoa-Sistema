@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Mail, Lock, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import Lottie from 'lottie-react';
 import { useBarbeiroAuth } from '../../hooks/useBarbeiroAuth';
+import barbeiroAnimation from '../../assets/lotties/barbeiro-animation.json';
 
 export function BarbeiroLoginPage() {
   const navigate = useNavigate();
@@ -195,28 +197,11 @@ export function BarbeiroLoginPage() {
         </svg>
 
         <div style={{ position: 'relative', zIndex: 2, marginBottom: '32px' }}>
-          <svg width="140" height="140" viewBox="0 0 140 140">
-            <style>{`
-              @keyframes bt2 { 0%,100%{transform:rotate(-20deg)} 50%{transform:rotate(0deg)} }
-              @keyframes bb2 { 0%,100%{transform:rotate(20deg)} 50%{transform:rotate(0deg)} }
-              #bt2 { transform-origin:52px 70px; animation:bt2 1.4s ease-in-out infinite; }
-              #bb2 { transform-origin:52px 70px; animation:bb2 1.4s ease-in-out infinite; }
-            `}</style>
-            <g id="bt2">
-              <path d="M52 70 Q70 58 100 42 Q108 38 112 40 Q116 43 113 47 Q110 50 102 50 Q88 52 70 62 Z" fill="#F59E0B"/>
-              <circle cx="52" cy="70" r="13" fill="none" stroke="#F59E0B" stroke-width="4"/>
-              <circle cx="52" cy="70" r="5" fill="#F59E0B"/>
-              <line x1="39" y1="62" x2="26" y2="54" stroke="#F59E0B" stroke-width="3.5" stroke-linecap="round"/>
-              <line x1="39" y1="70" x2="24" y2="70" stroke="#F59E0B" stroke-width="3.5" stroke-linecap="round"/>
-            </g>
-            <g id="bb2">
-              <path d="M52 70 Q70 82 100 98 Q108 102 112 100 Q116 97 113 93 Q110 90 102 90 Q88 88 70 78 Z" fill="#F59E0B"/>
-              <circle cx="52" cy="70" r="13" fill="none" stroke="#F59E0B" stroke-width="4"/>
-              <circle cx="52" cy="70" r="5" fill="#D97706"/>
-              <line x1="39" y1="70" x2="24" y2="70" stroke="#F59E0B" stroke-width="3.5" stroke-linecap="round"/>
-              <line x1="39" y1="78" x2="26" y2="86" stroke="#F59E0B" stroke-width="3.5" stroke-linecap="round"/>
-            </g>
-          </svg>
+          <Lottie
+            animationData={barbeiroAnimation}
+            loop={true}
+            style={{ width: '260px', height: '260px' }}
+          />
         </div>
 
         <h2 style={{
