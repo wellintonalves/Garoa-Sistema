@@ -89,6 +89,7 @@ export function Configuracoes() {
     fundo: string;
     logoBase64: string;
   } | null>(null);
+  const [nomeArquivo, setNomeArquivo] = useState<string | null>(null);
 
   async function carregarMinhaBarbearia() {
     try {
@@ -171,14 +172,24 @@ export function Configuracoes() {
               
               <div>
                 <label className="block text-sm font-medium mb-1">Logo da Barbearia (Max 2MB)</label>
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-4 max-w-full overflow-hidden">
                   {barbearia.logo && (
-                    <img src={barbearia.logo} alt="Logo" className="w-16 h-16 object-cover rounded bg-black/50 border border-[var(--border)]" />
+                    <img src={barbearia.logo} alt="Logo" className="w-16 h-16 object-cover rounded bg-black/50 border border-[var(--border)] flex-shrink-0" />
                   )}
-                  <input type="file" accept="image/png, image/jpeg, image/webp, image/svg+xml" onChange={(e) => {
-                    if (e.target.files && e.target.files[0]) {
-                      const file = e.target.files[0];
-                      if (file.size > 2 * 1024 * 1024) { alert('Arquivo muito grande (Max 2MB)'); return; }
+                  <div className="flex flex-col gap-2 min-w-0 flex-1">
+                    <div className="flex items-center gap-2 max-w-full overflow-hidden">
+                      <label htmlFor="logo-upload" className="cursor-pointer bg-[var(--cor-primaria)] text-black font-bold px-4 py-2 rounded text-sm whitespace-nowrap flex-shrink-0 hover:opacity-90 transition-opacity">
+                        Escolher Arquivo
+                      </label>
+                      <span className="text-sm text-zinc-400 truncate">
+                        {nomeArquivo ? nomeArquivo : 'Nenhum arquivo selecionado'}
+                      </span>
+                    </div>
+                    <input id="logo-upload" type="file" accept="image/png, image/jpeg, image/webp, image/svg+xml" className="hidden" onChange={(e) => {
+                      if (e.target.files && e.target.files[0]) {
+                        const file = e.target.files[0];
+                        setNomeArquivo(file.name);
+                        if (file.size > 2 * 1024 * 1024) { alert('Arquivo muito grande (Max 2MB)'); return; }
                       
                       const reader = new FileReader();
                       reader.onload = (event) => {
@@ -241,7 +252,8 @@ export function Configuracoes() {
                       };
                       reader.readAsDataURL(file);
                     }
-                  }} className="text-sm text-zinc-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-bold file:bg-[var(--cor-primaria)] file:text-black hover:file:bg-[var(--cor-primaria)] cursor-pointer" />
+                  }} />
+                  </div>
                 </div>
                 
                 {sugestaoCores && (
