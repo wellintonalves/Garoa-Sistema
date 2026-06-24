@@ -345,7 +345,7 @@ export function Configuracoes() {
             {/* Horário de Abertura e Fechamento */}
             <div className="p-4 bg-fundo border border-zinc-800 rounded space-y-3">
               <h3 className="text-sm font-bold text-[var(--cor-primaria)] uppercase tracking-wider">Horário de Funcionamento</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 px-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 px-6">
                 <div>
                   <label className="block text-xs text-zinc-400 mb-1">Horário de Abertura</label>
                   <input type="time" className="form-input w-full px-3 py-2 bg-black/50 border border-[var(--border)] rounded" value={barbearia.horarioAbertura || '08:00'} onChange={e => setBarbearia({...barbearia, horarioAbertura: e.target.value})} />
@@ -382,7 +382,7 @@ export function Configuracoes() {
 
               {/* Campos de almoço (visíveis apenas quando toggle ativado) */}
               {barbearia.temAlmoco && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 animate-fade-in px-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 animate-fade-in px-6">
                   <div>
                     <label className="block text-xs text-zinc-400 mb-1">Início do Almoço</label>
                     <input type="time" className="form-input w-full px-3 py-2 bg-black/50 border border-[var(--border)] rounded" value={barbearia.horarioAlmocoInicio || '12:00'} onChange={e => setBarbearia({...barbearia, horarioAlmocoInicio: e.target.value})} />
