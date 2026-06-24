@@ -284,16 +284,16 @@ export function Barbeiros() {
                 Comissões por Barbeiro
               </h2>
             </div>
-            <div className="flex flex-wrap items-end gap-3 ml-auto">
+            <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-end gap-3 w-full sm:w-auto sm:ml-auto mt-3 sm:mt-0">
               <div>
                 <label className="input-label">De</label>
-                <input type="date" value={comissaoInicio} onChange={e => setComissaoInicio(e.target.value)} className="ds-input" />
+                <input type="date" value={comissaoInicio} onChange={e => setComissaoInicio(e.target.value)} className="ds-input w-full" />
               </div>
               <div>
                 <label className="input-label">Até</label>
-                <input type="date" value={comissaoFim} onChange={e => setComissaoFim(e.target.value)} className="ds-input" />
+                <input type="date" value={comissaoFim} onChange={e => setComissaoFim(e.target.value)} className="ds-input w-full" />
               </div>
-              <button onClick={carregarComissoes} className="btn-primary">
+              <button onClick={carregarComissoes} className="btn-primary w-full sm:w-auto">
                 <Calendar size={14} strokeWidth={1.5} /> Buscar
               </button>
             </div>
