@@ -228,7 +228,7 @@ export function Financeiro() {
 
       <Modal aberto={modalAberto} onFechar={() => setModalAberto(false)} titulo="Novo Lançamento">
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {(['ENTRADA', 'SAIDA'] as const).map(t => {
               const isSelected = form.tipo === t;
               const activeColor = t === 'ENTRADA' ? 'var(--success-text)' : 'var(--error-text)';

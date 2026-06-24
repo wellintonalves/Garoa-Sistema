@@ -71,7 +71,7 @@ export function Servicos() {
       </div>
 
       <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-        <div className="table-wrapper">
+        <div className="table-wrapper overflow-x-auto">
           <table className="ds-table">
           <thead><tr>
             <th>Serviço</th>
@@ -149,7 +149,7 @@ export function Servicos() {
           <input value={form.nome} onChange={e => setForm({...form, nome: e.target.value})} className="ds-input" /></div>
           <div><label className="input-label">Descrição</label>
           <input value={form.descricao} onChange={e => setForm({...form, descricao: e.target.value})} className="ds-input" /></div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div><label className="input-label">Preço (R$)</label>
             <input type="number" step="0.01" value={form.preco} onChange={e => setForm({...form, preco: e.target.value})} className="ds-input" /></div>
             <div><label className="input-label">Duração (min)</label>

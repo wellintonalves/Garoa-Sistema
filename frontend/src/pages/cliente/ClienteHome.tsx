@@ -292,4 +292,11 @@ export function ClienteHome() {
       )}
 
       <style>{`
-        @keyfram
+        @keyframes slideUp {
+          from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+          to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+      `}</style>
+    </div>
+  );
+}

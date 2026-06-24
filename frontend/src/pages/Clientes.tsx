@@ -309,7 +309,7 @@ export function Clientes() {
 
           {/* Tabela de clientes */}
           <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-            <div className="table-wrapper">
+            <div className="table-wrapper overflow-x-auto">
               <table className="ds-table" style={{ minWidth: '900px' }}>
                 <thead>
                   <tr>
@@ -544,7 +544,7 @@ export function Clientes() {
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                       {/* Dados pessoais */}
                       <div className="section-divider">Dados pessoais</div>
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         {[
                           { label: 'Email', value: clienteSelecionado.usuario.email, icon: <Mail size={12} /> },
                           { label: 'Telefone', value: clienteSelecionado.telefone || '—', icon: <Phone size={12} /> },
@@ -565,7 +565,7 @@ export function Clientes() {
 
                       {/* Estatísticas */}
                       <div className="section-divider">Estatísticas</div>
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         {[
                           { label: 'Total visitas', value: String(clienteSelecionado.totalVisitas) },
                           { label: 'Total gasto', value: formatarMoeda(clienteSelecionado.totalGasto) },
@@ -619,7 +619,7 @@ export function Clientes() {
                       </div>
 
                       {/* Ações */}
-                      <div className="flex gap-2" style={{ marginTop: '8px' }}>
+                      <div className="flex flex-wrap gap-2" style={{ marginTop: '8px' }}>
                         <button className="btn-primary" onClick={() => setMostrarFormPontos(true)}>
                           <Plus size={14} /> Adicionar pontos
                         </button>
@@ -632,7 +632,7 @@ export function Clientes() {
                       {mostrarFormPontos && (
                         <div style={{ padding: '14px', background: 'var(--fundo-pagina)', border: '1px solid rgba(var(--cor-primaria-rgb), 0.10)' }}>
                           <p className="section-divider" style={{ marginTop: 0 }}>Adicionar pontos manualmente</p>
-                          <div className="flex gap-2" style={{ marginTop: '10px' }}>
+                          <div className="flex flex-col sm:flex-row gap-2" style={{ marginTop: '10px' }}>
                             <div style={{ flex: 1 }}>
                               <label className="input-label">Pontos</label>
                               <input
@@ -654,7 +654,7 @@ export function Clientes() {
                               />
                             </div>
                           </div>
-                          <div className="flex gap-2" style={{ marginTop: '10px' }}>
+                          <div className="flex flex-wrap gap-2" style={{ marginTop: '10px' }}>
                             <button className="btn-primary" onClick={handleAdicionarPontos}>Confirmar</button>
                             <button className="btn-secondary" onClick={() => setMostrarFormPontos(false)}>Cancelar</button>
                           </div>

@@ -240,7 +240,7 @@ export function Relatorios() {
                 {entradas.length} {entradas.length === 1 ? 'registro' : 'registros'}
               </span>
             </h3>
-            <div className="table-wrapper">
+            <div className="table-wrapper overflow-x-auto">
               <table className="ds-table">
                 <thead>
                   <tr>

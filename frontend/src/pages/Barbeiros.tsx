@@ -385,7 +385,7 @@ export function Barbeiros() {
           </div>
           <div><label className="input-label">Especialidades (vírgula)</label>
           <input value={form.especialidades} onChange={e => setForm({...form, especialidades: e.target.value})} placeholder="Corte, Barba" className="ds-input" /></div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div><label className="input-label">Comissão (%)</label>
             <input type="number" value={form.comissaoPercent} onChange={e => setForm({...form, comissaoPercent: e.target.value})} className="ds-input" /></div>
             <div><label className="input-label">Cor</label>

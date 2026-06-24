@@ -319,7 +319,7 @@ export function Configuracoes() {
             <div>
               <label className="block text-sm font-medium mb-1">Slug (URL)</label>
               <input type="text" className="form-input w-full p-2 bg-black/50 border border-[var(--border)] rounded" value={barbearia.slug || ''} onChange={e => setBarbearia({...barbearia, slug: e.target.value})} required />
-              <p className="text-xs text-zinc-500 mt-1">Sua url será: {window.location.origin}/cliente/home?slug={barbearia.slug || '...'}</p>
+              <p className="text-xs text-zinc-500 mt-1 break-all">Sua url será: {window.location.origin}/cliente/home?slug={barbearia.slug || '...'}</p>
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Endereço</label>
@@ -333,7 +333,7 @@ export function Configuracoes() {
             {/* Horário de Abertura e Fechamento */}
             <div className="p-4 bg-fundo border border-zinc-800 rounded space-y-3">
               <h3 className="text-sm font-bold text-[var(--cor-primaria)] uppercase tracking-wider">Horário de Funcionamento</h3>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs text-zinc-400 mb-1">Horário de Abertura</label>
                   <input type="time" className="form-input w-full p-2 bg-black/50 border border-[var(--border)] rounded" value={barbearia.horarioAbertura || '08:00'} onChange={e => setBarbearia({...barbearia, horarioAbertura: e.target.value})} />
@@ -370,7 +370,7 @@ export function Configuracoes() {
 
               {/* Campos de almoço (visíveis apenas quando toggle ativado) */}
               {barbearia.temAlmoco && (
-                <div className="grid grid-cols-2 gap-3 pt-2 animate-fade-in">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 animate-fade-in">
                   <div>
                     <label className="block text-xs text-zinc-400 mb-1">Início do Almoço</label>
                     <input type="time" className="form-input w-full p-2 bg-black/50 border border-[var(--border)] rounded" value={barbearia.horarioAlmocoInicio || '12:00'} onChange={e => setBarbearia({...barbearia, horarioAlmocoInicio: e.target.value})} />
@@ -407,8 +407,8 @@ export function Configuracoes() {
               const configDia = horarios[dia.key] || { fechado: true, abertura: '', fechamento: '' };
               
               return (
-                <div key={dia.key} className="flex items-center gap-4 p-3 bg-black/20 rounded">
-                  <div className="w-32 flex items-center gap-2">
+                <div key={dia.key} className="flex flex-wrap items-center gap-3 p-3 bg-black/20 rounded">
+                  <div className="min-w-[120px] flex items-center gap-2">
                     <input
                       type="checkbox"
                       id={`check-${dia.key}`}

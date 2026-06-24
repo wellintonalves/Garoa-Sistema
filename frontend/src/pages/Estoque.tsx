@@ -59,7 +59,7 @@ export function Estoque() {
       </div>
 
       <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-        <div className="table-wrapper">
+        <div className="table-wrapper overflow-x-auto">
           <table className="ds-table">
           <thead>
             <tr>
@@ -137,13 +137,13 @@ export function Estoque() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <div><label className="input-label">Nome</label>
           <input value={form.nome} onChange={e => setForm({...form, nome: e.target.value})} className="ds-input" /></div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div><label className="input-label">Quantidade</label>
             <input type="number" value={form.quantidade} onChange={e => setForm({...form, quantidade: e.target.value})} className="ds-input" /></div>
             <div><label className="input-label">Unidade</label>
             <input value={form.unidade} onChange={e => setForm({...form, unidade: e.target.value})} className="ds-input" /></div>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div><label className="input-label">Qtd. Mínima</label>
             <input type="number" value={form.quantidadeMinima} onChange={e => setForm({...form, quantidadeMinima: e.target.value})} className="ds-input" /></div>
             <div><label className="input-label">Custo (R$)</label>
