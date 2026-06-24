@@ -293,7 +293,7 @@ export function Barbeiros() {
                 <label className="input-label">Até</label>
                 <input type="date" value={comissaoFim} onChange={e => setComissaoFim(e.target.value)} className="ds-input w-full" />
               </div>
-              <button onClick={carregarComissoes} className="btn-primary w-full sm:w-auto">
+              <button onClick={carregarComissoes} className="btn-primary w-auto">
                 <Calendar size={14} strokeWidth={1.5} /> Buscar
               </button>
             </div>
