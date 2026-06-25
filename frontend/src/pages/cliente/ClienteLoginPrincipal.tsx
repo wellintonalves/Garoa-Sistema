@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 import { Mail, Lock, AlertCircle, Star } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Lottie from 'lottie-react';
+import premiumAnimation from '../../assets/animations/premium.json';
 import { useClienteAuth } from '../../hooks/useClienteAuth';
-import clienteAnimation from '../../assets/lotties/cliente-animation.json';
 
 export function ClienteLoginPrincipal() {
   const navigate = useNavigate();
@@ -75,9 +75,14 @@ export function ClienteLoginPrincipal() {
         {/* Animação Lottie — barbeiro com cliente */}
         <div style={{ position: 'relative', zIndex: 2, marginBottom: isMobile ? '20px' : '32px' }}>
           <Lottie
-            animationData={clienteAnimation}
+            animationData={premiumAnimation}
             loop={true}
-            style={{ width: '220px', height: '220px' }}
+            autoplay={true}
+            style={{ 
+              width: '200px', 
+              height: '200px',
+              filter: 'hue-rotate(200deg) saturate(1.5)'
+            }}
           />
         </div>
 
@@ -88,7 +93,7 @@ export function ClienteLoginPrincipal() {
           margin: '0 0 10px', position: 'relative', zIndex: 2,
           maxWidth: '260px',
         }}>
-          Agende, acumule pontos e seja sempre bem atendido.
+          Feito para o homem de valor.
         </h2>
         <p style={{
           fontSize: '13px', color: '#7C5A00', textAlign: 'center',
