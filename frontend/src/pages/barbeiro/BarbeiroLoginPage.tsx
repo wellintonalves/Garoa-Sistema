@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Mail, Lock, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Lottie from 'lottie-react';
-import mustacheAnimation from '/animations/mustache-amber.json';
+import mustacheAnimation from '../../assets/animations/mustache-amber.json';
 import { useBarbeiroAuth } from '../../hooks/useBarbeiroAuth';
 
 export function BarbeiroLoginPage() {
