@@ -104,7 +104,7 @@ export class BarbeiroService {
             email: dados.email,
             senha: senhaHash,
             papel: 'BARBEIRO',
-            barbeariaId: barbeariaId || null,
+            ...(barbeariaId ? { barbearia: { connect: { id: barbeariaId } } } : {}),
           },
         },
       } as any,
