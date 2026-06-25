@@ -93,10 +93,11 @@ export class BarbeiroService {
 
     return prisma.barbeiro.create({
       data: {
-        foto: dados.foto,
+        foto: dados.foto || null,
         especialidades: dados.especialidades || [],
         comissaoPercent: dados.comissaoPercent || 50,
         cor: dados.cor || '#F97316',
+        ...(barbeariaId ? { barbearia: { connect: { id: barbeariaId } } } : {}),
         usuario: {
           create: {
             nome: dados.nome,
@@ -106,7 +107,6 @@ export class BarbeiroService {
             barbeariaId: barbeariaId || null,
           },
         },
-        barbeariaId: barbeariaId || null,
       } as any,
       include: {
         usuario: {
@@ -138,7 +138,7 @@ export class BarbeiroService {
 
     // Atualiza dados do barbeiro
     const updateBarbeiro: Record<string, unknown> = {};
-    if (dados.foto !== undefined) updateBarbeiro.foto = dados.foto;
+    if (dados.foto !== undefined) updateBarbeiro.foto = dados.foto || null;
     if (dados.especialidades !== undefined) updateBarbeiro.especialidades = dados.especialidades;
     if (dados.comissaoPercent !== undefined) updateBarbeiro.comissaoPercent = dados.comissaoPercent;
     if (dados.cor !== undefined) updateBarbeiro.cor = dados.cor;
