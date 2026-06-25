@@ -52,7 +52,7 @@ export function ClienteLoginPrincipal() {
         width: isMobile ? '100%' : '420px',
         height: isMobile ? 'auto' : '100vh',
         flexShrink: 0,
-        background: '#F59E0B',
+        background: '#141414',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -66,7 +66,7 @@ export function ClienteLoginPrincipal() {
         <svg style={{ position: 'absolute', inset: 0, opacity: 0.1 }} width="100%" height="100%" viewBox="0 0 420 600" preserveAspectRatio="xMidYMid slice">
           <defs>
             <pattern id="dots-c" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
-              <circle cx="2" cy="2" r="1.5" fill="#0A0A0A"/>
+              <circle cx="2" cy="2" r="1.5" fill="#F59E0B"/>
             </pattern>
           </defs>
           <rect width="420" height="600" fill="url(#dots-c)"/>
@@ -78,17 +78,13 @@ export function ClienteLoginPrincipal() {
             animationData={premiumAnimation}
             loop={true}
             autoplay={true}
-            style={{ 
-              width: '200px', 
-              height: '200px',
-              filter: 'hue-rotate(200deg) saturate(1.5)'
-            }}
+            style={{ width: '200px', height: '200px' }}
           />
         </div>
 
         <h2 style={{
           fontSize: isMobile ? '22px' : '26px',
-          fontWeight: 700, color: '#0A0A0A',
+          fontWeight: 700, color: '#F5F5F5',
           textAlign: 'center', lineHeight: 1.25,
           margin: '0 0 10px', position: 'relative', zIndex: 2,
           maxWidth: '260px',
@@ -96,7 +92,7 @@ export function ClienteLoginPrincipal() {
           Feito para o homem de valor.
         </h2>
         <p style={{
-          fontSize: '13px', color: '#7C5A00', textAlign: 'center',
+          fontSize: '13px', color: '#737373', textAlign: 'center',
           lineHeight: 1.6, margin: 0, position: 'relative', zIndex: 2,
           maxWidth: '220px',
         }}>
