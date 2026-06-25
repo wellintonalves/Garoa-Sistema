@@ -97,14 +97,14 @@ export class BarbeiroService {
         especialidades: dados.especialidades || [],
         comissaoPercent: dados.comissaoPercent || 50,
         cor: dados.cor || '#F97316',
-        ...(barbeariaId ? { barbearia: { connect: { id: barbeariaId } } } : {}),
+        barbearia: barbeariaId ? { connect: { id: barbeariaId } } : undefined,
         usuario: {
           create: {
             nome: dados.nome,
             email: dados.email,
             senha: senhaHash,
             papel: 'BARBEIRO',
-            ...(barbeariaId ? { barbearia: { connect: { id: barbeariaId } } } : {}),
+            barbearia: barbeariaId ? { connect: { id: barbeariaId } } : undefined,
           },
         },
       } as any,
