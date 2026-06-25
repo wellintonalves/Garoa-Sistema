@@ -61,12 +61,13 @@ export function AdminLogin() {
           {/* Logo */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '40px' }}>
             <div style={{
-              width: '32px', height: '32px', borderRadius: '7px',
-              background: '#F59E0B', display: 'flex', alignItems: 'center',
-              justifyContent: 'center', fontSize: '16px', fontWeight: 700, color: '#0A0A0A',
-            }}>G</div>
-            <span style={{ fontSize: '16px', fontWeight: 600, color: '#F5F5F5', letterSpacing: '0.02em' }}>
-              Garoa Sistema
+              width: '32px', height: '32px', borderRadius: '7px', background: '#F59E0B',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: '16px', fontWeight: 700, color: '#0A0A0A',
+            }}>V</div>
+            <span style={{ letterSpacing: '0.02em', color: '#F5F5F5' }}>
+              <strong style={{ fontSize: '18px', fontWeight: 700 }}>Valen</strong>
+              <span style={{ fontSize: '13px', fontWeight: 400, color: '#737373' }}> Barber</span>
             </span>
           </div>
 
@@ -131,7 +132,7 @@ export function AdminLogin() {
               </div>
             </div>
 
-            <div style={{ textAlign: 'right', marginBottom: '24px', marginTop: '-8px' }}>
+            <div style={{ textAlign: 'center', marginBottom: '24px', marginTop: '-8px', width: '100%' }}>
               <button
                 type="button"
                 onClick={() => navigate('/recuperar-senha')}
