@@ -243,12 +243,12 @@ export function RecuperarSenha() {
             <div style={{
               width: '32px', height: '32px', borderRadius: '7px', background: '#F59E0B',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: '16px', fontWeight: 700, color: '#0A0A0A',
+              fontSize: '16px', fontWeight: 700, color: '#0A0A0A', flexShrink: 0,
             }}>V</div>
-            <span style={{ letterSpacing: '0.02em', color: '#F5F5F5' }}>
-              <strong style={{ fontSize: '18px', fontWeight: 700 }}>Valen</strong>
-              <span style={{ fontSize: '13px', fontWeight: 400, color: '#737373' }}> Barber</span>
-            </span>
+            <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.1 }}>
+              <strong style={{ fontSize: '18px', fontWeight: 700, color: '#F5F5F5' }}>Valen</strong>
+              <span style={{ fontSize: '11px', fontWeight: 400, color: '#737373', letterSpacing: '0.08em' }}>BARBER</span>
+            </div>
           </div>
 
           <h1 style={{ fontSize: '22px', fontWeight: 600, color: '#F5F5F5', margin: '0 0 4px' }}>
