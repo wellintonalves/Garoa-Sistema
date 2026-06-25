@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 import { Mail, Lock, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Lottie from 'lottie-react';
+import mustacheAnimation from '/animations/mustache-amber.json';
 import { useBarbeiroAuth } from '../../hooks/useBarbeiroAuth';
-import barbeiroAnimation from '../../assets/lotties/barbeiro-animation.json';
 
 export function BarbeiroLoginPage() {
   const navigate = useNavigate();
@@ -198,9 +198,10 @@ export function BarbeiroLoginPage() {
 
         <div style={{ position: 'relative', zIndex: 2, marginBottom: '32px' }}>
           <Lottie
-            animationData={barbeiroAnimation}
+            animationData={mustacheAnimation}
             loop={true}
-            style={{ width: '260px', height: '260px' }}
+            autoplay={true}
+            style={{ width: '180px', height: '180px' }}
           />
         </div>
 
