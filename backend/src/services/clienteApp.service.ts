@@ -432,16 +432,6 @@ export class ClienteAppService {
       },
     });
 
-    // Adiciona pontos de fidelidade (10 pontos por agendamento)
-    await prisma.pontoFidelidade.create({
-      data: {
-        clienteId,
-        barbeariaId,
-        pontos: 10,
-        descricao: `Agendamento: ${servico.nome}`,
-      },
-    });
-
     return agendamento;
   }
 

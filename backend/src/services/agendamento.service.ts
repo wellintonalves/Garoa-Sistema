@@ -102,7 +102,7 @@ export class AgendamentoService {
 
   /** Atualiza status ou dados do agendamento */
   static async atualizar(id: string, dados: Partial<DadosAgendamento & { status: StatusAgendamento }>) {
-    return prisma.agendamento.update({
+    const agendamento = await prisma.agendamento.update({
       where: { id },
       data: {
         ...dados,
@@ -111,9 +111,67 @@ export class AgendamentoService {
       include: {
         cliente: { include: { usuario: { select: { nome: true } } } },
         barbeiro: { include: { usuario: { select: { nome: true } } } },
-        servico: { select: { nome: true, duracaoMinutos: true, cor: true } },
+        servico: { select: { nome: true, duracaoMinutos: true, cor: true, preco: true } },
       },
     });
+
+    // Lógica de pontuação — só executa quando o status muda para CONCLUIDO
+    if (dados.status === 'CONCLUIDO' && agendamento.clienteId && agendamento.barbeariaId) {
+      const config = await prisma.configuracaoFidelidade.findUnique({
+        where: { barbeariaId: agendamento.barbeariaId },
+      });
+
+      // Só pontua se o programa de fidelidade estiver ativo
+      if (config && config.ativo) {
+        let pontos = 0;
+        let descricao = '';
+
+        // Calcula pontos por real gasto (prioridade)
+        if (config.pontosPorReal > 0 && agendamento.servico?.preco) {
+          pontos = Math.floor(Number(agendamento.servico.preco) * config.pontosPorReal);
+          descricao = `${agendamento.servico.nome} — ${config.pontosPorReal} ponto(s) por R$1,00`;
+        }
+        // Se pontosPorReal não configurado, usa pontos por visita
+        else if (config.pontosPorVisita > 0) {
+          pontos = config.pontosPorVisita;
+          descricao = `${agendamento.servico?.nome} — visita concluída`;
+        }
+
+        // Dobra pontos no aniversário do cliente
+        if (pontos > 0 && config.pontosDobroAniversario && agendamento.clienteId) {
+          const cliente = await prisma.cliente.findUnique({
+            where: { id: agendamento.clienteId },
+            select: { dataNascimento: true },
+          });
+
+          if (cliente?.dataNascimento) {
+            const hoje = new Date();
+            const nasc = new Date(cliente.dataNascimento);
+            if (
+              nasc.getDate() === hoje.getDate() &&
+              nasc.getMonth() === hoje.getMonth()
+            ) {
+              pontos = pontos * 2;
+              descricao += ' (dobro — aniversário!)';
+            }
+          }
+        }
+
+        // Só cria o registro se gerou algum ponto
+        if (pontos > 0) {
+          await prisma.pontoFidelidade.create({
+            data: {
+              clienteId: agendamento.clienteId,
+              barbeariaId: agendamento.barbeariaId,
+              pontos,
+              descricao,
+            },
+          });
+        }
+      }
+    }
+
+    return agendamento;
   }
 
   /** Cancela um agendamento */
