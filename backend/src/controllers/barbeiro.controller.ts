@@ -40,7 +40,15 @@ export class BarbeiroController {
         nome, email, senha, foto, especialidades, comissaoPercent, cor,
       }, req.usuario?.barbeariaId || undefined);
       res.status(201).json(barbeiro);
-    } catch (error) {
+    } catch (error: any) {
+      console.error('[BarbeiroController.criar]', error);
+      
+      // Erro de email duplicado
+      if (error?.code === 'P2002') {
+        res.status(400).json({ erro: 'Este e-mail já está cadastrado nesta barbearia.' });
+        return;
+      }
+      
       const msg = error instanceof Error ? error.message : 'Erro ao criar barbeiro';
       res.status(400).json({ erro: msg });
     }
