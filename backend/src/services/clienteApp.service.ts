@@ -318,7 +318,7 @@ export class ClienteAppService {
       where: { barbeariaId: null },
       data: { barbeariaId }
     });
-    
+
     // Atualiza o usuário atrelado ao barbeiro órfão se necessário
     const barbeirosOrfaos = await prisma.barbeiro.findMany({
       where: { barbeariaId },
@@ -441,7 +441,7 @@ export class ClienteAppService {
       _sum: { pontos: true },
       where: { clienteId, barbeariaId },
     });
-    
+
     const resgatesAgregados = await prisma.resgateRecompensa.aggregate({
       _sum: { pontosUsados: true },
       where: { clienteId, barbeariaId },
@@ -517,7 +517,7 @@ export class ClienteAppService {
       _sum: { pontos: true },
       where: { clienteId, barbeariaId },
     });
-    
+
     const resgatesAgregados = await prisma.resgateRecompensa.aggregate({
       _sum: { pontosUsados: true },
       where: { clienteId, barbeariaId },
