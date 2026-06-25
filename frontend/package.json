@@ -13,6 +13,7 @@
     "start": "serve dist -s -l tcp://0.0.0.0:${PORT:-4173}"
   },
   "dependencies": {
+    "@lottiefiles/dotlottie-react": "^0.19.5",
     "@types/qrcode.react": "^1.0.5",
     "axios": "^1.7.9",
     "colorthief": "^3.3.1",

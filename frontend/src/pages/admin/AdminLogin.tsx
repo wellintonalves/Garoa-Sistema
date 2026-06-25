@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Mail, Lock, AlertCircle, UserPlus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import Lottie from 'lottie-react';
+import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 import api from '../../api/client';
-import adminAnimation from '../../assets/lotties/admin-animation.json';
 
 export function AdminLogin() {
   const navigate = useNavigate();
@@ -244,10 +243,11 @@ export function AdminLogin() {
 
         {/* Animação Admin */}
         <div style={{ position: 'relative', zIndex: 2, marginBottom: '32px' }}>
-          <Lottie
-            animationData={adminAnimation}
-            loop={true}
-            style={{ width: '260px', height: '260px' }}
+          <DotLottieReact
+            src="/animations/barbers-pole.lottie"
+            loop
+            autoplay
+            style={{ width: '200px', height: '200px' }}
           />
         </div>
 
