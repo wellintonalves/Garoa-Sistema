@@ -115,7 +115,11 @@ export function Barbeiros() {
       setEditandoId(null);
       setForm({ nome: '', email: '', senha: '', foto: '', especialidades: '', comissaoPercent: '50', cor: '#F97316' });
       carregar();
-    } catch (err) { console.error(err); }
+    } catch (err: any) {
+      console.error(err);
+      const mensagem = err?.response?.data?.erro || err?.message || 'Erro ao salvar barbeiro.';
+      alert(mensagem);
+    }
   }
 
   const fmt = (v: number) => Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
