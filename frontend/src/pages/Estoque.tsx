@@ -382,10 +382,10 @@ export function Estoque() {
                                 <BarChart2 size={13} strokeWidth={1.5} />
                               </IconBtn>
                               <IconBtn
-                                onClick={() => abrirVenda(item)}
-                                color={semPreco || item.quantidade === 0 ? 'var(--text-muted)' : 'var(--amber)'}
-                                title={semPreco ? 'Cadastre um preço de venda' : item.quantidade === 0 ? 'Sem estoque' : 'Registrar venda'}
-                                disabled={semPreco || item.quantidade === 0}
+                                onClick={() => { if (semPreco) { abrirModalEditar(item); } else { abrirVenda(item); } }}
+                                color={semPreco ? 'var(--text-muted)' : item.quantidade === 0 ? 'var(--text-muted)' : 'var(--amber)'}
+                                title={semPreco ? 'Definir preço de venda' : item.quantidade === 0 ? 'Sem estoque' : 'Registrar venda'}
+                                disabled={item.quantidade === 0 && !semPreco}
                               >
                                 <ShoppingCart size={13} strokeWidth={1.5} />
                               </IconBtn>
