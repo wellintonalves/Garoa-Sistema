@@ -1,6 +1,6 @@
 // Página de Barbeiros — listagem com cards + seção de comissões por período
 import { useEffect, useState } from 'react';
-import { Star, Plus, DollarSign, TrendingUp, Calendar, Edit2 } from 'lucide-react';
+import { Star, Plus, DollarSign, TrendingUp, Calendar, Edit2, Trash2 } from 'lucide-react';
 import { Modal } from '../components/Modal';
 import { ImageCropperModal } from '../components/ImageCropperModal';
 import { LoadingSpinner } from '../components/LoadingSpinner';
@@ -31,6 +31,7 @@ export function Barbeiros() {
   const [cropModalAberto, setCropModalAberto] = useState(false);
   const [imagemParaCortar, setImagemParaCortar] = useState<string>('');
   const [editandoId, setEditandoId] = useState<string | null>(null);
+  const [confirmandoExclusao, setConfirmandoExclusao] = useState<Barbeiro | null>(null);
   const [form, setForm] = useState({ nome: '', email: '', senha: '', foto: '', especialidades: '', comissaoPercent: '50', cor: '#F97316' });
   const navigate = useNavigate();
 
@@ -122,6 +123,16 @@ export function Barbeiros() {
     }
   }
 
+  async function apagarBarbeiro(id: string) {
+    try {
+      await api.delete(`/barbeiros/${id}`);
+      setConfirmandoExclusao(null);
+      carregar();
+    } catch (err: any) {
+      alert(err?.response?.data?.erro || 'Erro ao apagar barbeiro.');
+    }
+  }
+
   const fmt = (v: number) => Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
   // Pega iniciais do nome para avatar
@@ -150,7 +161,7 @@ export function Barbeiros() {
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '12px' }}>
-        {barbeiros.map(b => (
+        {barbeiros.filter(b => b.ativo).map(b => (
           <div
             key={b.id}
             className="card"
@@ -212,22 +223,43 @@ export function Barbeiros() {
                 >
                   {b.ativo ? 'Ativo' : 'Inativo'}
                 </div>
-                <button
-                  onClick={() => abrirModalEditar(b)}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    cursor: 'pointer',
-                    color: 'var(--cor-icone)',
-                    padding: '4px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}
-                  title="Editar Barbeiro"
-                >
-                  <Edit2 size={14} />
-                </button>
+                <div className="flex gap-1">
+                  <button
+                    onClick={() => abrirModalEditar(b)}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      color: 'var(--cor-icone)',
+                      padding: '4px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}
+                    title="Editar Barbeiro"
+                  >
+                    <Edit2 size={14} />
+                  </button>
+                  <button
+                    onClick={() => setConfirmandoExclusao(b)}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      color: 'var(--error, #ef4444)',
+                      padding: '4px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      opacity: 0.6,
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.opacity = '1'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.opacity = '0.6'; }}
+                    title="Apagar Barbeiro"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
               </div>
             </div>
             <div className="flex flex-wrap gap-1.5 mb-3">
@@ -399,6 +431,49 @@ export function Barbeiros() {
             </div></div>
           </div>
           <button onClick={salvarBarbeiro} className="btn-primary w-full justify-center">{editandoId ? "Salvar Alterações" : "Cadastrar"}</button>
+        </div>
+      </Modal>
+
+      {/* Modal de confirmação de exclusão */}
+      <Modal aberto={!!confirmandoExclusao} onFechar={() => setConfirmandoExclusao(null)} titulo="Apagar Barbeiro">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '14px', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+            Tem certeza que deseja apagar <strong style={{ color: 'var(--text-primary)' }}>{confirmandoExclusao?.usuario.nome}</strong>?
+            <br />Esta ação não pode ser desfeita.
+          </p>
+          <div className="flex gap-3 justify-end">
+            <button
+              onClick={() => setConfirmandoExclusao(null)}
+              style={{
+                background: 'var(--bg-surface2)',
+                border: '1px solid var(--border)',
+                color: 'var(--text-secondary)',
+                padding: '8px 20px',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                fontFamily: 'var(--fonte-interface)',
+                fontSize: '13px',
+              }}
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={() => confirmandoExclusao && apagarBarbeiro(confirmandoExclusao.id)}
+              style={{
+                background: 'var(--error, #ef4444)',
+                border: 'none',
+                color: '#fff',
+                padding: '8px 20px',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                fontFamily: 'var(--fonte-interface)',
+                fontSize: '13px',
+                fontWeight: 600,
+              }}
+            >
+              Apagar
+            </button>
+          </div>
         </div>
       </Modal>
 
