@@ -25,7 +25,13 @@ export const prisma = basePrisma.$extends({
             (args as any).where = { ...(args as any).where, barbeariaId };
           } else if (['create', 'createMany'].includes(operation)) {
             if (operation === 'create') {
-              (args as any).data = { ...(args as any).data, barbeariaId };
+              // Barbeiro usa BarbeiroCreateInput (modo relação, por causa de usuario: { create })
+              // Nesse modo, barbeariaId escalar é inválido — deve usar barbearia: { connect }
+              if (model === 'Barbeiro') {
+                (args as any).data = { ...(args as any).data, barbearia: { connect: { id: barbeariaId } } };
+              } else {
+                (args as any).data = { ...(args as any).data, barbeariaId };
+              }
             } else if (operation === 'createMany' && Array.isArray((args as any).data)) {
               (args as any).data = (args as any).data.map((d: any) => ({ ...d, barbeariaId }));
             }
