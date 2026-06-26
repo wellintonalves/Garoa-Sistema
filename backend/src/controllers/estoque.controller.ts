@@ -1,39 +1,53 @@
-// Controller de estoque
+// Controller de estoque — CRUD + vendas
 import { Response } from 'express';
 import { EstoqueService } from '../services/estoque.service';
 import { AuthRequest } from '../types';
+import { FormaPagamento } from '@prisma/client';
 
 export class EstoqueController {
   /** GET /estoque */
   static async listar(_req: AuthRequest, res: Response): Promise<void> {
     try {
-      const itens = await EstoqueService.listarTodos();
-      res.json(itens);
+      res.json(await EstoqueService.listarTodos());
     } catch (error) {
-      const msg = error instanceof Error ? error.message : 'Erro ao listar estoque';
-      res.status(500).json({ erro: msg });
+      res.status(500).json({ erro: error instanceof Error ? error.message : 'Erro ao listar estoque' });
+    }
+  }
+
+  /** GET /estoque/kpis */
+  static async kpis(_req: AuthRequest, res: Response): Promise<void> {
+    try {
+      res.json(await EstoqueService.valorEstoque());
+    } catch (error) {
+      res.status(500).json({ erro: error instanceof Error ? error.message : 'Erro ao calcular KPIs' });
     }
   }
 
   /** GET /estoque/baixo */
   static async estoqueBaixo(_req: AuthRequest, res: Response): Promise<void> {
     try {
-      const itens = await EstoqueService.estoqueBaixo();
-      res.json(itens);
+      res.json(await EstoqueService.estoqueBaixo());
     } catch (error) {
-      const msg = error instanceof Error ? error.message : 'Erro ao verificar estoque';
-      res.status(500).json({ erro: msg });
+      res.status(500).json({ erro: error instanceof Error ? error.message : 'Erro ao verificar estoque' });
+    }
+  }
+
+  /** GET /estoque/vendas */
+  static async listarVendas(req: AuthRequest, res: Response): Promise<void> {
+    try {
+      const { inicio, fim } = req.query as { inicio?: string; fim?: string };
+      res.json(await EstoqueService.resumoVendas(inicio, fim));
+    } catch (error) {
+      res.status(500).json({ erro: error instanceof Error ? error.message : 'Erro ao listar vendas' });
     }
   }
 
   /** GET /estoque/:id */
   static async buscar(req: AuthRequest, res: Response): Promise<void> {
     try {
-      const item = await EstoqueService.buscarPorId(req.params.id);
-      res.json(item);
+      res.json(await EstoqueService.buscarPorId(req.params.id));
     } catch (error) {
-      const msg = error instanceof Error ? error.message : 'Erro ao buscar item';
-      res.status(404).json({ erro: msg });
+      res.status(404).json({ erro: error instanceof Error ? error.message : 'Item não encontrado' });
     }
   }
 
@@ -41,28 +55,22 @@ export class EstoqueController {
   static async criar(req: AuthRequest, res: Response): Promise<void> {
     try {
       const { nome, quantidade, unidade, custo } = req.body;
-
       if (!nome || quantidade === undefined || !unidade || custo === undefined) {
         res.status(400).json({ erro: 'Nome, quantidade, unidade e custo são obrigatórios' });
         return;
       }
-
-      const item = await EstoqueService.criar(req.body);
-      res.status(201).json(item);
+      res.status(201).json(await EstoqueService.criar(req.body));
     } catch (error) {
-      const msg = error instanceof Error ? error.message : 'Erro ao criar item';
-      res.status(400).json({ erro: msg });
+      res.status(400).json({ erro: error instanceof Error ? error.message : 'Erro ao criar item' });
     }
   }
 
   /** PUT /estoque/:id */
   static async atualizar(req: AuthRequest, res: Response): Promise<void> {
     try {
-      const item = await EstoqueService.atualizar(req.params.id, req.body);
-      res.json(item);
+      res.json(await EstoqueService.atualizar(req.params.id, req.body));
     } catch (error) {
-      const msg = error instanceof Error ? error.message : 'Erro ao atualizar item';
-      res.status(400).json({ erro: msg });
+      res.status(400).json({ erro: error instanceof Error ? error.message : 'Erro ao atualizar item' });
     }
   }
 
@@ -72,8 +80,30 @@ export class EstoqueController {
       await EstoqueService.remover(req.params.id);
       res.json({ mensagem: 'Item removido com sucesso' });
     } catch (error) {
-      const msg = error instanceof Error ? error.message : 'Erro ao remover item';
-      res.status(400).json({ erro: msg });
+      res.status(400).json({ erro: error instanceof Error ? error.message : 'Erro ao remover item' });
+    }
+  }
+
+  /** POST /estoque/:id/vender */
+  static async vender(req: AuthRequest, res: Response): Promise<void> {
+    try {
+      const { quantidade, formaPagamento } = req.body;
+      if (!quantidade || quantidade <= 0) {
+        res.status(400).json({ erro: 'Quantidade inválida' });
+        return;
+      }
+      if (!formaPagamento || !Object.values(FormaPagamento).includes(formaPagamento)) {
+        res.status(400).json({ erro: 'Forma de pagamento inválida' });
+        return;
+      }
+      const resultado = await EstoqueService.vender(
+        req.params.id,
+        Number(quantidade),
+        formaPagamento as FormaPagamento,
+      );
+      res.status(201).json(resultado);
+    } catch (error) {
+      res.status(400).json({ erro: error instanceof Error ? error.message : 'Erro ao registrar venda' });
     }
   }
 }

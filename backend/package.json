@@ -7,7 +7,7 @@
   },
   "scripts": {
     "dev": "tsx watch src/server.ts",
-    "build": "npx prisma generate && tsc",
+    "build": "npx prisma generate && npx prisma db push --skip-generate && tsc",
     "start": "node dist/server.js",
     "seed": "tsx prisma/seed.ts",
     "fix:admin": "tsx fix_admin_barbearia.ts"

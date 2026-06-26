@@ -75,6 +75,7 @@ model Barbearia {
   agendamentos           Agendamento[]
   lancamentosFinanceiros LancamentoFinanceiro[]
   estoque                Estoque[]
+  vendasProdutos         VendaProduto[]
   configuracoes          Configuracao[]
   clientesBarbearias     ClienteBarbearia[]
   pontosFidelidade       PontoFidelidade[]
@@ -237,17 +238,37 @@ model LancamentoFinanceiro {
 }
 
 model Estoque {
-  id               String  @id @default(uuid())
+  id               String   @id @default(uuid())
   barbeariaId      String?
   nome             String
   quantidade       Int
   unidade          String
-  quantidadeMinima Int     @default(5)
-  custo            Decimal @db.Decimal(10, 2)
+  quantidadeMinima Int      @default(5)
+  custo            Decimal  @db.Decimal(10, 2)
+  precoVenda       Decimal? @db.Decimal(10, 2)
 
-  barbearia Barbearia? @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
+  barbearia Barbearia?     @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
+  vendas    VendaProduto[]
 
   @@map("estoque")
+}
+
+model VendaProduto {
+  id             String         @id @default(uuid())
+  barbeariaId    String?
+  estoqueId      String?
+  nomeProduto    String
+  quantidade     Int
+  precoVenda     Decimal        @db.Decimal(10, 2)
+  custoUnitario  Decimal        @db.Decimal(10, 2)
+  lucro          Decimal        @db.Decimal(10, 2)
+  formaPagamento FormaPagamento
+  data           DateTime       @default(now())
+
+  barbearia Barbearia? @relation(fields: [barbeariaId], references: [id], onDelete: SetNull)
+  estoque   Estoque?   @relation(fields: [estoqueId], references: [id], onDelete: SetNull)
+
+  @@map("vendas_produtos")
 }
 
 model Configuracao {
