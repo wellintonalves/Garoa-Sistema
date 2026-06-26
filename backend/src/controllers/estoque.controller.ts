@@ -84,6 +84,25 @@ export class EstoqueController {
     }
   }
 
+  /** POST /estoque/vender-carrinho */
+  static async venderCarrinho(req: AuthRequest, res: Response): Promise<void> {
+    try {
+      const { itens, formaPagamento } = req.body;
+      if (!Array.isArray(itens) || itens.length === 0) {
+        res.status(400).json({ erro: 'Carrinho vazio ou inválido' });
+        return;
+      }
+      if (!formaPagamento || !Object.values(FormaPagamento).includes(formaPagamento)) {
+        res.status(400).json({ erro: 'Forma de pagamento inválida' });
+        return;
+      }
+      const resultado = await EstoqueService.venderCarrinho(itens, formaPagamento as FormaPagamento);
+      res.status(201).json(resultado);
+    } catch (error) {
+      res.status(400).json({ erro: error instanceof Error ? error.message : 'Erro ao fechar venda do carrinho' });
+    }
+  }
+
   /** POST /estoque/:id/vender */
   static async vender(req: AuthRequest, res: Response): Promise<void> {
     try {

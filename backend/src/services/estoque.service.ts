@@ -129,6 +129,81 @@ export class EstoqueService {
     return { venda, totalVenda, lucro, estoqueRestante: item.quantidade - quantidade };
   }
 
+  /**
+   * Registra venda de múltiplos produtos (carrinho):
+   * 1. Valida estoque de todos os itens
+   * 2. Cria VendaProduto para cada item
+   * 3. Reduz quantidade de cada produto
+   * 4. Cria um único lançamento financeiro para o carrinho todo
+   */
+  static async venderCarrinho(
+    itens: { estoqueId: string; quantidade: number }[],
+    formaPagamento: FormaPagamento,
+  ) {
+    // 1. Buscar e validar todos os produtos
+    const produtos = await Promise.all(
+      itens.map(async ({ estoqueId, quantidade }) => {
+        const item = await prisma.estoque.findUnique({ where: { id: estoqueId } });
+        if (!item) throw new Error('Produto não encontrado no estoque');
+        if (!(item as any).precoVenda) throw new Error(`Produto "${item.nome}" sem preço de venda`);
+        if (item.quantidade < quantidade) {
+          throw new Error(`Estoque insuficiente para "${item.nome}". Disponível: ${item.quantidade} ${item.unidade}`);
+        }
+        return { item, quantidade };
+      }),
+    );
+
+    let totalVendaGeral = 0;
+    const resultados: { nomeProduto: string; quantidade: number; totalVenda: number; lucro: number }[] = [];
+
+    // 2 & 3. Criar vendas e dar baixa no estoque
+    for (const { item, quantidade } of produtos) {
+      const precoUnit = Number((item as any).precoVenda);
+      const custoUnit = Number(item.custo);
+      const totalVenda = precoUnit * quantidade;
+      const lucro = totalVenda - custoUnit * quantidade;
+      totalVendaGeral += totalVenda;
+
+      await (prisma as any).vendaProduto.create({
+        data: {
+          estoqueId: item.id,
+          nomeProduto: item.nome,
+          quantidade,
+          precoVenda: precoUnit,
+          custoUnitario: custoUnit,
+          lucro,
+          formaPagamento,
+          data: new Date(),
+        },
+      });
+
+      await prisma.estoque.update({
+        where: { id: item.id },
+        data: { quantidade: item.quantidade - quantidade },
+      });
+
+      resultados.push({ nomeProduto: item.nome, quantidade, totalVenda, lucro });
+    }
+
+    // 4. Lançamento financeiro único para o carrinho inteiro
+    const descricao = produtos
+      .map(p => `${p.quantidade}x ${p.item.nome}`)
+      .join(', ');
+
+    await (prisma as any).lancamentoFinanceiro.create({
+      data: {
+        tipo: 'ENTRADA',
+        categoria: 'Venda de Produto',
+        descricao,
+        valor: totalVendaGeral,
+        formaPagamento,
+        data: new Date(),
+      },
+    });
+
+    return { resultados, totalVenda: totalVendaGeral };
+  }
+
   /** Histórico e resumo de vendas de produtos */
   static async resumoVendas(inicio?: string, fim?: string) {
     const where: any = {};
