@@ -250,7 +250,7 @@ export function Estoque() {
       setModalCarrinho(false);
       setFormaPagCart('PIX');
       carregarEstoque();
-      if (aba === 'vendas') carregarVendas();
+      carregarVendas();
     } catch (e: any) {
       alert(e?.response?.data?.erro || 'Erro ao fechar venda');
     } finally {

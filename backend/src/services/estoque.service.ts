@@ -219,9 +219,6 @@ export class EstoqueService {
 
     const vendas = await (prisma as any).vendaProduto.findMany({
       where,
-      include: {
-        estoque: { select: { nome: true, unidade: true } },
-      },
       orderBy: { data: 'desc' },
     });
 
