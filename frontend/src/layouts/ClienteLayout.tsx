@@ -19,7 +19,7 @@ export function ClienteLayout() {
   const { barbeariaId } = useParams<{ barbeariaId: string }>();
   const [barbearia, setBarbearia] = useState<BarbeariaInfo | null>(null);
   const { cliente, carregando: authCarregando } = useClienteAuth();
-  const { carregarTemaCliente } = useTema();
+  const { carregarTemaCliente, limparTema } = useTema();
 
   useEffect(() => {
     if (barbeariaId) {
@@ -28,14 +28,16 @@ export function ClienteLayout() {
         const found = res.data.find((b: BarbeariaInfo) => b.id === barbeariaId);
         if (found) {
           setBarbearia(found);
-          // Busca identidade visual
+          // Busca identidade visual da barbearia e aplica o tema
           carregarTemaCliente(found.slug);
         }
       }).catch(() => {
         navigate('/cliente/home');
       });
     }
-  }, [barbeariaId, carregarTemaCliente]);
+    // Cleanup: ao sair do contexto da barbearia, restaura tema padrão
+    return () => { limparTema(); };
+  }, [barbeariaId, carregarTemaCliente, limparTema]);
 
   // Route guard — bloqueia acesso sem autenticação de cliente (após todos os hooks)
   if (!authCarregando && !cliente) {

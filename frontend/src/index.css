@@ -46,6 +46,14 @@
   --error-text:     #EF4444;
   --success-text:   #22C55E;
   --warning-text:   #F59E0B;
+
+  /* Cor de destaque padrão do sistema (sobrescrita pelo tema da barbearia) */
+  --amber:              #F59E0B;
+  --cor-primaria:       #F59E0B;
+  --cor-primaria-rgb:   245, 158, 11;
+  --cor-icone:          #F59E0B;
+  --bg-surface2:        #1A1A1A;
+  --text-disabled:      #404040;
 }
 
 :root.light {
@@ -55,6 +63,8 @@
   --fundo-input:       #F0F0F0;
   --fundo-sidebar:     #FFFFFF;
   --borda:             #E5E5E5;
+  --bg-surface2:       #E5E5E5;
+  --text-disabled:     #A0A0A0;
   --borda-input:       #D4D4D4;
   --texto-principal:   #0A0A0A;
   --texto-secundario:  #737373;

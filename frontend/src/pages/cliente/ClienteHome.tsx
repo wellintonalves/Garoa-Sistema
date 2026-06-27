@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useSearchParams, Navigate } from 'react-router-dom';
 import { useClienteAuth } from '../../hooks/useClienteAuth';
+import { useTema } from '../../hooks/useTema';
 import { Search, QrCode, MapPin, ChevronRight, LogOut, Scissors, CheckCircle, XCircle } from 'lucide-react';
 import clienteApi from '../../api/clienteApi';
 import { QrCodeScanner } from '../../components/QrCodeScanner';
@@ -18,6 +19,7 @@ interface BarbeariaItem {
 export function ClienteHome() {
   const navigate = useNavigate();
   const { cliente, logout, carregando: authCarregando } = useClienteAuth();
+  const { limparTema } = useTema();
   const [searchParams] = useSearchParams();
   const [busca, setBusca] = useState('');
   const [resultados, setResultados] = useState<BarbeariaItem[]>([]);
@@ -27,6 +29,11 @@ export function ClienteHome() {
   const [scannerAberto, setScannerAberto] = useState(false);
   const [mensagemSucesso, setMensagemSucesso] = useState<string | null>(null);
   const [mensagemErro, setMensagemErro] = useState<string | null>(null);
+
+  // Resetar para o tema padrão do sistema ao entrar na tela principal
+  useEffect(() => {
+    limparTema();
+  }, [limparTema]);
 
   // Conectar automaticamente se veio de um slug
   useEffect(() => {

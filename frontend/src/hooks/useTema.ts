@@ -13,7 +13,8 @@ export function useTema() {
 
     if (tema.corPrimaria) {
       root.style.setProperty('--cor-primaria', tema.corPrimaria);
-      
+      root.style.setProperty('--amber', tema.corPrimaria);
+
       const r = parseInt(tema.corPrimaria.slice(1,3), 16);
       const g = parseInt(tema.corPrimaria.slice(3,5), 16);
       const b = parseInt(tema.corPrimaria.slice(5,7), 16);
@@ -21,16 +22,21 @@ export function useTema() {
       root.style.setProperty('--cor-icone', gerarCorIcone(tema.corPrimaria));
     }
 
-
     // Salvar no localStorage como cache
     localStorage.setItem('temaBarbearia', JSON.stringify(tema));
   }, []);
 
+  /**
+   * Remove os overrides inline de tema — os valores padrão do :root CSS tomam conta.
+   * Também limpa o cache do localStorage para não re-aplicar no próximo carregamento.
+   */
   const limparTema = useCallback(() => {
     const root = document.documentElement;
     root.style.removeProperty('--cor-primaria');
+    root.style.removeProperty('--amber');
     root.style.removeProperty('--cor-primaria-rgb');
     root.style.removeProperty('--cor-icone');
+    localStorage.removeItem('temaBarbearia');
   }, []);
 
   const carregarTemaCache = useCallback(() => {
