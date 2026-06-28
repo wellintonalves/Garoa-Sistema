@@ -1,7 +1,7 @@
 // Aba Início da barbearia — visão geral para o cliente
 import { useState, useEffect } from 'react';
 import { useNavigate, useOutletContext, useParams } from 'react-router-dom';
-import { Calendar, Clock, Scissors, Plus, CalendarPlus, Navigation, RefreshCw, Clock4, MessageCircle, Star, MapPin } from 'lucide-react';
+import { Calendar, Plus, CalendarPlus, Navigation, RefreshCw, Clock4, MessageCircle, Star, MapPin } from 'lucide-react';
 import clienteApi from '../../../api/clienteApi';
 import { useClienteAuth } from '../../../hooks/useClienteAuth';
 

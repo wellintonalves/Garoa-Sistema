@@ -1,7 +1,7 @@
 // Aba Fidelidade — pontos, progresso e histórico
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { Star, Gift, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { Gift, CheckCircle, XCircle, Clock } from 'lucide-react';
 import clienteApi from '../../../api/clienteApi';
 
 interface FidelidadeData {
@@ -172,7 +172,6 @@ export function ClienteBarbeariaFidelidade() {
           <div className="flex flex-col gap-3">
             {dados.recompensas.sort((a,b) => a.pontosNecessarios - b.pontosNecessarios).map(rec => {
               const podeResgatar = dados.saldo >= rec.pontosNecessarios;
-              const falta = rec.pontosNecessarios - dados.saldo;
               return (
                 <div key={rec.id} className="p-4 rounded-md flex items-center justify-between" style={{
                   background: 'var(--fundo-sidebar)',

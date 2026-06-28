@@ -1,7 +1,7 @@
 // Aba Agendar — fluxo em etapas: serviço → barbeiro → data/horário → confirmação
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Check, ArrowLeft, Calendar, Clock, Scissors, User, Star } from 'lucide-react';
+import { Check, ArrowLeft, Scissors, Star } from 'lucide-react';
 import clienteApi from '../../../api/clienteApi';
 
 interface Servico { id: string; nome: string; preco: string; duracaoMinutos: number; }
