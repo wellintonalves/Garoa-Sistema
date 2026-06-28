@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Settings, Save, QrCode } from 'lucide-react';
+import { Settings, Save, QrCode, Star } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import api from '../api/client';
 import { QRCodeSVG } from 'qrcode.react';
-import { FidelidadeConfig } from '../components/admin/FidelidadeConfig';
 import { useTema } from '../hooks/useTema';
 // @ts-ignore
 import { getPalette } from 'colorthief';
@@ -34,6 +34,7 @@ const diasSemana = [
 
 export function Configuracoes() {
   const { aplicarTema } = useTema();
+  const navigate = useNavigate();
   const [horarios, setHorarios] = useState<any>({});
   const [carregando, setCarregando] = useState(true);
   const [salvando, setSalvando] = useState(false);
@@ -509,8 +510,28 @@ export function Configuracoes() {
           </button>
         </div>
         
-        {/* Programa de Fidelidade */}
-        <FidelidadeConfig />
+        {/* Programa de Fidelidade — link para a página dedicada */}
+        <div className="bg-[var(--bg-surface)] border border-[var(--border)] rounded p-6 shadow col-span-1 lg:col-span-2 mt-6">
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <div className="flex items-center gap-3">
+              <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(245,158,11,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Star size={20} color="#F59E0B" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-white">Programa de Fidelidade</h3>
+                <p className="text-sm text-zinc-400 mt-0.5">Configure pontos, recompensas e acompanhe clientes</p>
+              </div>
+            </div>
+            <button
+              onClick={() => navigate('/admin/fidelidade')}
+              className="flex items-center gap-2 px-5 py-2.5 rounded font-semibold text-sm transition-colors"
+              style={{ background: '#F59E0B', color: '#000', border: 'none', cursor: 'pointer' }}
+            >
+              <Star size={16} />
+              Gerenciar Fidelidade
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );

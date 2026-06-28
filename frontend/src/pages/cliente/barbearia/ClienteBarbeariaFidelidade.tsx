@@ -1,7 +1,7 @@
 // Aba Fidelidade — pontos, progresso e histórico
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { Gift, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { Gift, CheckCircle, XCircle, Clock, Share2, Copy } from 'lucide-react';
 import clienteApi from '../../../api/clienteApi';
 
 interface FidelidadeData {
@@ -27,9 +27,15 @@ export function ClienteBarbeariaFidelidade() {
   const [resgatando, setResgatando] = useState<string | null>(null);
   const [mensagemSucesso, setMensagemSucesso] = useState<string | null>(null);
   const [mensagemErro, setMensagemErro] = useState<string | null>(null);
+  const [codigoIndicacao, setCodigoIndicacao] = useState<string | null>(null);
+  const [copiado, setCopiado] = useState(false);
 
   useEffect(() => {
     carregarFidelidade();
+    // Busca código de indicação
+    clienteApi.get('/cliente/meu-codigo-indicacao')
+      .then(res => setCodigoIndicacao(res.data.codigo))
+      .catch(() => {});
   }, [barbeariaId]);
 
   function carregarFidelidade() {
@@ -38,6 +44,15 @@ export function ClienteBarbeariaFidelidade() {
         .then(res => setDados(res.data))
         .catch(() => { /* empty */ })
         .finally(() => setCarregando(false));
+    }
+  }
+
+  function copiarCodigo() {
+    if (codigoIndicacao) {
+      navigator.clipboard.writeText(codigoIndicacao).then(() => {
+        setCopiado(true);
+        setTimeout(() => setCopiado(false), 2000);
+      });
     }
   }
 
@@ -204,6 +219,41 @@ export function ClienteBarbeariaFidelidade() {
           </div>
         )}
       </div>
+
+      {/* Código de Indicação */}
+      {codigoIndicacao && (
+        <div className="mb-10 p-5 rounded-xl" style={{ background: 'var(--fundo-sidebar)', border: '1px solid var(--borda)' }}>
+          <div className="flex items-center gap-2 mb-3">
+            <Share2 size={16} style={{ color: 'var(--amber)' }} />
+            <h2 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>
+              Indique um amigo
+            </h2>
+          </div>
+          <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '12px', color: 'var(--text-muted)', marginBottom: '14px' }}>
+            Compartilhe seu código. Quando seu amigo se conectar à barbearia usando ele e concluir o primeiro agendamento, você ganha pontos!
+          </p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={{
+              flex: 1, padding: '12px 16px', background: 'var(--bg-surface)',
+              border: '1px solid var(--amber)', borderRadius: '8px',
+              fontFamily: 'var(--fonte-numeros)', fontSize: '20px', fontWeight: 700,
+              color: 'var(--amber)', letterSpacing: '0.2em', textAlign: 'center',
+            }}>
+              {codigoIndicacao}
+            </div>
+            <button onClick={copiarCodigo} style={{
+              padding: '12px 16px', background: copiado ? 'rgba(34,197,94,0.15)' : 'rgba(245,158,11,0.12)',
+              border: `1px solid ${copiado ? '#22C55E' : 'var(--amber)'}`,
+              borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px',
+              color: copiado ? '#22C55E' : 'var(--amber)', fontSize: '12px', fontFamily: 'var(--fonte-interface)',
+              fontWeight: 600, transition: 'all 0.2s',
+            }}>
+              {copiado ? <CheckCircle size={14} /> : <Copy size={14} />}
+              {copiado ? 'Copiado!' : 'Copiar'}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Histórico Timeline */}
       <div>

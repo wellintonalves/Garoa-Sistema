@@ -94,17 +94,30 @@ export class ClienteAppController {
       const clienteId = req.cliente?.clienteId;
       if (!clienteId) { res.status(401).json({ erro: 'Não autorizado' }); return; }
 
-      const { barbeariaId } = req.body;
+      const { barbeariaId, codigoIndicacao } = req.body;
       if (!barbeariaId) {
         res.status(400).json({ erro: 'barbeariaId é obrigatório' });
         return;
       }
 
-      const conexao = await ClienteAppService.conectarBarbearia(clienteId, barbeariaId);
+      const conexao = await ClienteAppService.conectarBarbearia(clienteId, barbeariaId, codigoIndicacao);
       res.status(201).json(conexao);
     } catch (error) {
       const msg = error instanceof Error ? error.message : 'Erro ao conectar';
       res.status(400).json({ erro: msg });
+    }
+  }
+
+  /** GET /cliente/meu-codigo-indicacao */
+  static async meuCodigoIndicacao(req: ClienteAuthRequest, res: Response): Promise<void> {
+    try {
+      const clienteId = req.cliente?.clienteId;
+      if (!clienteId) { res.status(401).json({ erro: 'Não autorizado' }); return; }
+
+      const codigo = await ClienteAppService.meuCodigoIndicacao(clienteId);
+      res.json({ codigo });
+    } catch (error) {
+      res.status(500).json({ erro: 'Erro ao obter código de indicação' });
     }
   }
 

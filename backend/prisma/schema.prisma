@@ -88,6 +88,7 @@ model Barbearia {
   recompensas            Recompensa[]
   resgatesRecompensa     ResgateRecompensa[]
   chatMensagens          ChatMensagem[]
+  indicacoes             Indicacao[]
 
   @@map("barbearias")
 }
@@ -131,12 +132,13 @@ model Barbeiro {
 }
 
 model Cliente {
-  id             String    @id @default(uuid())
-  usuarioId      String    @unique
-  barbeariaId    String?
-  telefone       String?
-  dataNascimento DateTime?
-  observacoes    String?
+  id               String    @id @default(uuid())
+  usuarioId        String    @unique
+  barbeariaId      String?
+  telefone         String?
+  dataNascimento   DateTime?
+  observacoes      String?
+  codigoIndicacao  String?   @unique
 
   barbearia          Barbearia?          @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
   usuario            Usuario             @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
@@ -145,6 +147,8 @@ model Cliente {
   pontosFidelidade   PontoFidelidade[]
   resgatesRecompensa ResgateRecompensa[]
   chatMensagens      ChatMensagem[]
+  indicacoesFeitas   Indicacao[]         @relation("Indicador")
+  indicacaoRecebida  Indicacao[]         @relation("Indicado")
 
   @@map("clientes")
 }
@@ -296,6 +300,9 @@ model ConfiguracaoFidelidade {
   pontosPorReal          Int      @default(0)
   pontosPorVisita        Int      @default(0)
   pontosDobroAniversario Boolean  @default(false)
+  pontosPorIndicacao     Int      @default(0)
+  pontosBoasVindas       Int      @default(0)
+  regrasPorServico       Json?
   createdAt              DateTime @default(now())
   updatedAt              DateTime @updatedAt
 
@@ -350,4 +357,19 @@ model ChatMensagem {
   cliente   Cliente    @relation(fields: [clienteId], references: [id], onDelete: Cascade)
 
   @@map("chat_mensagens")
+}
+
+model Indicacao {
+  id              String   @id @default(uuid())
+  barbeariaId     String?
+  indicadorId     String
+  indicadoId      String
+  pontosAwardados Boolean  @default(false)
+  createdAt       DateTime @default(now())
+
+  barbearia Barbearia? @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
+  indicador Cliente    @relation("Indicador", fields: [indicadorId], references: [id], onDelete: Cascade)
+  indicado  Cliente    @relation("Indicado", fields: [indicadoId], references: [id], onDelete: Cascade)
+
+  @@map("indicacoes")
 }

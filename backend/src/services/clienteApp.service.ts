@@ -193,8 +193,8 @@ export class ClienteAppService {
     return barbearia;
   }
 
-  /** Conecta cliente a uma barbearia */
-  static async conectarBarbearia(clienteId: string, barbeariaId: string) {
+  /** Conecta cliente a uma barbearia (opcionalmente com código de indicação) */
+  static async conectarBarbearia(clienteId: string, barbeariaId: string, codigoIndicacao?: string) {
     // Verifica se barbearia existe
     const barbearia = await prisma.barbearia.findUnique({ where: { id: barbeariaId } });
     if (!barbearia || !barbearia.ativo) {
@@ -210,9 +210,90 @@ export class ClienteAppService {
       return existente;
     }
 
-    return prisma.clienteBarbearia.create({
+    const conexao = await prisma.clienteBarbearia.create({
       data: { clienteId, barbeariaId },
     });
+
+    // Processamento pós-conexão: boas-vindas e indicação
+    try {
+      const config = await prisma.configuracaoFidelidade.findUnique({ where: { barbeariaId } });
+
+      if (config && config.ativo) {
+        // Pontos de boas-vindas para o novo cliente
+        const pontosBoasVindas = (config as any).pontosBoasVindas as number ?? 0;
+        if (pontosBoasVindas > 0) {
+          await prisma.pontoFidelidade.create({
+            data: {
+              clienteId,
+              barbeariaId,
+              pontos: pontosBoasVindas,
+              descricao: 'Bem-vindo! Pontos de boas-vindas',
+            },
+          });
+        }
+
+        // Processa código de indicação
+        if (codigoIndicacao) {
+          const indicador = await prisma.cliente.findUnique({
+            where: { codigoIndicacao },
+          });
+
+          // Não pode se auto-indicar
+          if (indicador && indicador.id !== clienteId) {
+            // Verifica se o indicado já tem indicação nesta barbearia
+            const indicacaoExistente = await (prisma as any).indicacao.findFirst({
+              where: { indicadoId: clienteId, barbeariaId },
+            });
+
+            if (!indicacaoExistente) {
+              await (prisma as any).indicacao.create({
+                data: {
+                  barbeariaId,
+                  indicadorId: indicador.id,
+                  indicadoId: clienteId,
+                  pontosAwardados: false,
+                },
+              });
+            }
+          }
+        }
+      }
+    } catch (e) {
+      console.error('[conectarBarbearia] Erro pós-conexão:', e);
+      // Não bloqueia a conexão em caso de erro nos pontos
+    }
+
+    return conexao;
+  }
+
+  /** Retorna ou gera o código de indicação do cliente */
+  static async meuCodigoIndicacao(clienteId: string): Promise<string> {
+    const cliente = await prisma.cliente.findUnique({
+      where: { id: clienteId },
+      select: { codigoIndicacao: true },
+    });
+
+    if (cliente?.codigoIndicacao) {
+      return cliente.codigoIndicacao;
+    }
+
+    // Gera código único de 8 caracteres alfanuméricos
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let codigo = '';
+    let tentativas = 0;
+    while (tentativas < 20) {
+      codigo = Array.from({ length: 8 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+      const existente = await prisma.cliente.findUnique({ where: { codigoIndicacao: codigo } });
+      if (!existente) break;
+      tentativas++;
+    }
+
+    await prisma.cliente.update({
+      where: { id: clienteId },
+      data: { codigoIndicacao: codigo },
+    });
+
+    return codigo;
   }
 
   /** Desconecta cliente de uma barbearia */

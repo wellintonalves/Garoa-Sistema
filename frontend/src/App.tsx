@@ -54,6 +54,7 @@ import { ClienteBarbeariaChat } from './pages/cliente/barbearia/ClienteBarbearia
 import { AdminLogin } from './pages/admin/AdminLogin';
 import { AdminPrimeiroAcesso } from './pages/admin/AdminPrimeiroAcesso';
 import { AdminChat } from './pages/admin/AdminChat';
+import { Fidelidade as AdminFidelidade } from './pages/admin/Fidelidade';
 
 // Barber App
 import { BarbeiroAuthProvider } from './contexts/BarbeiroAuthContext';
@@ -142,6 +143,7 @@ export function App() {
                   <Route path="relatorios" element={<Relatorios />} />
                   <Route path="estoque" element={<Estoque />} />
                   <Route path="configuracoes" element={<Configuracoes />} />
+                  <Route path="fidelidade" element={<AdminFidelidade />} />
                   <Route path="chat" element={<AdminChat />} />
                 </Route>
 

@@ -37,17 +37,36 @@ export class FidelidadeController {
         return;
       }
 
-      const { ativo, pontosPorReal, pontosPorVisita, pontosDobroAniversario } = req.body;
+      const {
+        ativo,
+        pontosPorReal,
+        pontosPorVisita,
+        pontosDobroAniversario,
+        pontosPorIndicacao,
+        pontosBoasVindas,
+        regrasPorServico,
+      } = req.body;
 
       const config = await prisma.configuracaoFidelidade.upsert({
         where: { barbeariaId },
-        update: { ativo, pontosPorReal, pontosPorVisita, pontosDobroAniversario },
+        update: {
+          ativo,
+          pontosPorReal,
+          pontosPorVisita,
+          pontosDobroAniversario,
+          pontosPorIndicacao: pontosPorIndicacao ?? 0,
+          pontosBoasVindas: pontosBoasVindas ?? 0,
+          regrasPorServico: regrasPorServico ?? null,
+        },
         create: {
           barbeariaId,
           ativo,
           pontosPorReal,
           pontosPorVisita,
           pontosDobroAniversario,
+          pontosPorIndicacao: pontosPorIndicacao ?? 0,
+          pontosBoasVindas: pontosBoasVindas ?? 0,
+          regrasPorServico: regrasPorServico ?? null,
         },
       });
 
@@ -119,7 +138,6 @@ export class FidelidadeController {
         return;
       }
 
-      // Validar se a recompensa pertence a barbearia
       const recompensaExistente = await prisma.recompensa.findUnique({ where: { id } });
       if (!recompensaExistente || recompensaExistente.barbeariaId !== barbeariaId) {
         res.status(404).json({ erro: 'Recompensa não encontrada.' });
@@ -174,7 +192,6 @@ export class FidelidadeController {
         return;
       }
 
-      // Pegar os filtros de período e cliente
       const { clienteId, dataInicio, dataFim } = req.query;
 
       const resgates = await prisma.resgateRecompensa.findMany({
@@ -220,8 +237,6 @@ export class FidelidadeController {
         return;
       }
 
-      // Validar os pontos do cliente (soma de entradas - saídas ou um saldo consolidado).
-      // Como não existe uma coluna de "saldo_total" explícita, podemos calcular.
       const pontosAgregados = await prisma.pontoFidelidade.aggregate({
         _sum: { pontos: true },
         where: { clienteId, barbeariaId },
@@ -254,6 +269,162 @@ export class FidelidadeController {
     } catch (error) {
       console.error('Erro ao resgatar recompensa:', error);
       res.status(500).json({ erro: 'Erro ao resgatar recompensa.' });
+    }
+  }
+
+  // Ajuste manual de pontos (admin)
+  static async ajustarPontos(req: AuthRequest, res: Response): Promise<void> {
+    try {
+      const barbeariaId = req.usuario?.barbeariaId;
+      const { clienteId } = req.params;
+      const { pontos, descricao } = req.body;
+
+      if (!barbeariaId) {
+        res.status(400).json({ erro: 'Barbearia ID não encontrado.' });
+        return;
+      }
+
+      if (!pontos || pontos === 0) {
+        res.status(400).json({ erro: 'Pontos não podem ser zero.' });
+        return;
+      }
+
+      if (!descricao) {
+        res.status(400).json({ erro: 'Descrição é obrigatória.' });
+        return;
+      }
+
+      // Verifica se o cliente pertence a esta barbearia
+      const clienteBarbearia = await prisma.clienteBarbearia.findUnique({
+        where: { clienteId_barbeariaId: { clienteId, barbeariaId } },
+      });
+
+      if (!clienteBarbearia) {
+        res.status(404).json({ erro: 'Cliente não encontrado nesta barbearia.' });
+        return;
+      }
+
+      const registro = await prisma.pontoFidelidade.create({
+        data: {
+          clienteId,
+          barbeariaId,
+          pontos: Number(pontos),
+          descricao: `[Ajuste manual] ${descricao}`,
+        },
+      });
+
+      res.status(201).json(registro);
+    } catch (error) {
+      console.error('Erro ao ajustar pontos:', error);
+      res.status(500).json({ erro: 'Erro ao ajustar pontos.' });
+    }
+  }
+
+  // Histórico de pontos de um cliente (admin)
+  static async historicoCliente(req: AuthRequest, res: Response): Promise<void> {
+    try {
+      const barbeariaId = req.usuario?.barbeariaId;
+      const { clienteId } = req.params;
+
+      if (!barbeariaId) {
+        res.status(400).json({ erro: 'Barbearia ID não encontrado.' });
+        return;
+      }
+
+      const [pontos, resgates] = await Promise.all([
+        prisma.pontoFidelidade.findMany({
+          where: { clienteId, barbeariaId },
+          orderBy: { data: 'desc' },
+        }),
+        prisma.resgateRecompensa.findMany({
+          where: { clienteId, barbeariaId },
+          include: { recompensa: { select: { nome: true } } },
+          orderBy: { createdAt: 'desc' },
+        }),
+      ]);
+
+      // Mescla os dois arrays numa linha do tempo
+      const historico = [
+        ...pontos.map(p => ({
+          id: p.id,
+          tipo: 'GANHO' as const,
+          pontos: p.pontos,
+          descricao: p.descricao,
+          data: p.data.toISOString(),
+        })),
+        ...resgates.map(r => ({
+          id: r.id,
+          tipo: 'RESGATE' as const,
+          pontos: -r.pontosUsados,
+          descricao: `Resgate: ${r.recompensa.nome}`,
+          data: r.createdAt.toISOString(),
+        })),
+      ].sort((a, b) => new Date(b.data).getTime() - new Date(a.data).getTime());
+
+      const totalGanho = pontos.reduce((s, p) => s + p.pontos, 0);
+      const totalGasto = resgates.reduce((s, r) => s + r.pontosUsados, 0);
+      const saldo = totalGanho - totalGasto;
+
+      res.json({ saldo, totalGanho, totalGasto, historico });
+    } catch (error) {
+      console.error('Erro ao buscar histórico:', error);
+      res.status(500).json({ erro: 'Erro ao buscar histórico.' });
+    }
+  }
+
+  // Lista clientes com saldo de pontos (admin)
+  static async listarClientesComPontos(req: AuthRequest, res: Response): Promise<void> {
+    try {
+      const barbeariaId = req.usuario?.barbeariaId;
+      if (!barbeariaId) {
+        res.status(400).json({ erro: 'Barbearia ID não encontrado.' });
+        return;
+      }
+
+      // Busca todos os clientes conectados à barbearia
+      const conexoes = await prisma.clienteBarbearia.findMany({
+        where: { barbeariaId },
+        include: {
+          cliente: {
+            include: {
+              usuario: { select: { nome: true, email: true } },
+              pontosFidelidade: {
+                where: { barbeariaId },
+                select: { pontos: true },
+              },
+              resgatesRecompensa: {
+                where: { barbeariaId },
+                select: { pontosUsados: true },
+              },
+            },
+          },
+        },
+        orderBy: { conectadoEm: 'desc' },
+      });
+
+      const clientes = conexoes.map(c => {
+        const totalGanho = c.cliente.pontosFidelidade.reduce((s, p) => s + p.pontos, 0);
+        const totalGasto = c.cliente.resgatesRecompensa.reduce((s, r) => s + r.pontosUsados, 0);
+        const saldo = totalGanho - totalGasto;
+        return {
+          id: c.cliente.id,
+          nome: c.cliente.usuario.nome,
+          email: c.cliente.usuario.email,
+          saldo,
+          totalGanho,
+          totalGasto,
+          codigoIndicacao: c.cliente.codigoIndicacao,
+          conectadoEm: c.conectadoEm,
+        };
+      });
+
+      // Ordena por saldo (maior primeiro)
+      clientes.sort((a, b) => b.saldo - a.saldo);
+
+      res.json(clientes);
+    } catch (error) {
+      console.error('Erro ao listar clientes com pontos:', error);
+      res.status(500).json({ erro: 'Erro ao listar clientes.' });
     }
   }
 }

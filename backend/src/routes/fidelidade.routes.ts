@@ -20,4 +20,9 @@ router.delete('/recompensas/:id', FidelidadeController.removerRecompensa);
 router.get('/resgates', FidelidadeController.listarResgates);
 router.post('/resgatar/:clienteId/:recompensaId', FidelidadeController.resgatarRecompensa);
 
+// Pontos — ajuste manual e histórico por cliente
+router.post('/ajuste/:clienteId', FidelidadeController.ajustarPontos);
+router.get('/historico/:clienteId', FidelidadeController.historicoCliente);
+router.get('/clientes', FidelidadeController.listarClientesComPontos);
+
 export default router;

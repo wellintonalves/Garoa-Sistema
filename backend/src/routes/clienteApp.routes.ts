@@ -20,6 +20,7 @@ router.delete('/desconectar-barbearia/:barbeariaId', ClienteAppController.descon
 router.get('/minhas-barbearias', ClienteAppController.minhasBarbearias);
 router.get('/perfil', ClienteAppController.perfil);
 router.put('/perfil', ClienteAppController.atualizarPerfil);
+router.get('/meu-codigo-indicacao', ClienteAppController.meuCodigoIndicacao);
 
 // Rotas de barbearia específica
 router.get('/barbearia/:barbeariaId/agendamentos', ClienteAppController.agendamentos);

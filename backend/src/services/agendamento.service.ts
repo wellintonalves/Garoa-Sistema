@@ -126,12 +126,20 @@ export class AgendamentoService {
         let pontos = 0;
         let descricao = '';
 
-        // Calcula pontos por real gasto (prioridade)
-        if (config.pontosPorReal > 0 && agendamento.servico?.preco) {
+        // 1. Regra por serviço (prioridade máxima)
+        const regrasPorServico = (config.regrasPorServico as Array<{ servicoId: string; pontos: number }> | null) ?? [];
+        const regraServico = regrasPorServico.find(r => r.servicoId === agendamento.servicoId);
+
+        if (regraServico && regraServico.pontos > 0) {
+          pontos = regraServico.pontos;
+          descricao = `${agendamento.servico?.nome} — regra específica do serviço`;
+        }
+        // 2. Pontos por real gasto
+        else if (config.pontosPorReal > 0 && agendamento.servico?.preco) {
           pontos = Math.floor(Number(agendamento.servico.preco) * config.pontosPorReal);
           descricao = `${agendamento.servico.nome} — ${config.pontosPorReal} ponto(s) por R$1,00`;
         }
-        // Se pontosPorReal não configurado, usa pontos por visita
+        // 3. Pontos fixos por visita
         else if (config.pontosPorVisita > 0) {
           pontos = config.pontosPorVisita;
           descricao = `${agendamento.servico?.nome} — visita concluída`;
@@ -157,7 +165,7 @@ export class AgendamentoService {
           }
         }
 
-        // Só cria o registro se gerou algum ponto
+        // Registra pontos do cliente
         if (pontos > 0) {
           await prisma.pontoFidelidade.create({
             data: {
@@ -167,6 +175,46 @@ export class AgendamentoService {
               descricao,
             },
           });
+        }
+
+        // Verifica se é o primeiro agendamento CONCLUIDO do cliente nesta barbearia
+        // para premiar quem o indicou
+        if ((config as any).pontosPorIndicacao > 0) {
+          const concluidosAnteriores = await prisma.agendamento.count({
+            where: {
+              clienteId: agendamento.clienteId,
+              barbeariaId: agendamento.barbeariaId,
+              status: 'CONCLUIDO',
+              id: { not: agendamento.id },
+            },
+          });
+
+          if (concluidosAnteriores === 0) {
+            // É o primeiro! Verifica se há indicação pendente
+            const indicacao = await (prisma as any).indicacao.findFirst({
+              where: {
+                indicadoId: agendamento.clienteId,
+                barbeariaId: agendamento.barbeariaId,
+                pontosAwardados: false,
+              },
+            });
+
+            if (indicacao) {
+              const pontosIndicacao = (config as any).pontosPorIndicacao as number;
+              await prisma.pontoFidelidade.create({
+                data: {
+                  clienteId: indicacao.indicadorId,
+                  barbeariaId: agendamento.barbeariaId,
+                  pontos: pontosIndicacao,
+                  descricao: 'Indicação bem-sucedida — amigo completou primeiro agendamento',
+                },
+              });
+              await (prisma as any).indicacao.update({
+                where: { id: indicacao.id },
+                data: { pontosAwardados: true },
+              });
+            }
+          }
         }
       }
     }

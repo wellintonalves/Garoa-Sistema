@@ -4,7 +4,7 @@ import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard, Calendar, Scissors, ListChecks,
   Users, DollarSign, Package, ChevronLeft, ChevronRight, LogOut,
-  BarChart3, X, Settings, MessageCircle
+  BarChart3, X, Settings, MessageCircle, Star
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import api from '../api/client';
@@ -24,6 +24,7 @@ const menuItems = [
   { path: '/admin/financeiro', label: 'Financeiro', icon: DollarSign },
   { path: '/admin/relatorios', label: 'Relatórios', icon: BarChart3 },
   { path: '/admin/estoque', label: 'Estoque', icon: Package },
+  { path: '/admin/fidelidade', label: 'Fidelidade', icon: Star },
   { path: '/admin/chat', label: 'Chat', icon: MessageCircle },
   { path: '/admin/configuracoes', label: 'Configurações', icon: Settings },
 ];
