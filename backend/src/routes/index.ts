@@ -17,6 +17,7 @@ import barbeiroAppRoutes from './barbeiroApp.routes';
 import uploadRoutes from './upload.routes';
 import verificacaoRoutes from './verificacao.routes';
 import recuperacaoRoutes from './recuperacao.routes';
+import chatRoutes from './chat.routes';
 
 const router = Router();
 
@@ -39,6 +40,7 @@ router.use('/estoque', estoqueRoutes);
 router.use('/relatorios', relatorioRoutes);
 router.use('/configuracoes', configuracaoRoutes);
 router.use('/fidelidade', fidelidadeRoutes);
+router.use('/chat', chatRoutes);
 router.use('/upload', uploadRoutes);
 router.use('/verificacao', verificacaoRoutes);
 router.use('/recuperacao', recuperacaoRoutes);

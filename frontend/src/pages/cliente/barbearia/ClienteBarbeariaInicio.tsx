@@ -326,8 +326,8 @@ export function ClienteBarbeariaInicio() {
               <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '13px', color: 'var(--text-primary)' }}>Ver horários hoje</p>
             </button>
 
-            <button className="flex items-center gap-3 w-full text-left p-3 md:p-2.5 rounded-md border border-[var(--borda)] bg-[var(--fundo-input)] hover:bg-[var(--borda)] transition-colors">
-              <div className="icon-box-disabled w-8 h-8"><MessageCircle size={14} /></div>
+            <button onClick={() => navigate(`/cliente/barbearia/${barbeariaId}/chat`)} className="flex items-center gap-3 w-full text-left p-3 md:p-2.5 rounded-md border border-[var(--borda)] bg-[var(--fundo-input)] hover:bg-[var(--borda)] transition-colors">
+              <div className="icon-box-amber w-8 h-8"><MessageCircle size={14} /></div>
               <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '13px', color: 'var(--text-primary)' }}>Falar com a barbearia</p>
             </button>
 

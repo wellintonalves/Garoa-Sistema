@@ -2,6 +2,7 @@
 import { Router } from 'express';
 import { ClienteAppController } from '../controllers/clienteApp.controller';
 import { clienteAuthMiddleware } from '../middlewares/clienteAuth.middleware';
+import { ChatController } from '../controllers/chat.controller';
 
 const router = Router();
 
@@ -28,5 +29,7 @@ router.get('/barbearia/:barbeariaId/horarios-disponiveis', ClienteAppController.
 router.post('/barbearia/:barbeariaId/agendar', ClienteAppController.agendar);
 router.get('/barbearia/:barbeariaId/fidelidade', ClienteAppController.fidelidade);
 router.post('/barbearia/:barbeariaId/fidelidade/resgatar', ClienteAppController.resgatarRecompensa);
+router.get('/barbearia/:barbeariaId/chat', ChatController.clienteGetMensagens as never);
+router.post('/barbearia/:barbeariaId/chat', ChatController.clienteEnviar as never);
 
 export default router;

@@ -44,6 +44,11 @@ enum TipoRecompensa {
   DESCONTO_REAIS
 }
 
+enum RemetenteMensagem {
+  CLIENTE
+  ADMIN
+}
+
 // --- Modelos ---
 
 model Barbearia {
@@ -82,6 +87,7 @@ model Barbearia {
   configuracaoFidelidade ConfiguracaoFidelidade?
   recompensas            Recompensa[]
   resgatesRecompensa     ResgateRecompensa[]
+  chatMensagens          ChatMensagem[]
 
   @@map("barbearias")
 }
@@ -138,6 +144,7 @@ model Cliente {
   clientesBarbearias ClienteBarbearia[]
   pontosFidelidade   PontoFidelidade[]
   resgatesRecompensa ResgateRecompensa[]
+  chatMensagens      ChatMensagem[]
 
   @@map("clientes")
 }
@@ -328,4 +335,19 @@ model ResgateRecompensa {
   barbearia  Barbearia? @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
 
   @@map("resgates_recompensa")
+}
+
+model ChatMensagem {
+  id          String             @id @default(uuid())
+  barbeariaId String?
+  clienteId   String
+  texto       String
+  remetente   RemetenteMensagem
+  lida        Boolean            @default(false)
+  createdAt   DateTime           @default(now())
+
+  barbearia Barbearia? @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
+  cliente   Cliente    @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+
+  @@map("chat_mensagens")
 }

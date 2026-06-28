@@ -48,10 +48,12 @@ import { ClienteBarbeariaInicio } from './pages/cliente/barbearia/ClienteBarbear
 import { ClienteBarbeariaAgendar } from './pages/cliente/barbearia/ClienteBarbeariaAgendar';
 import { ClienteBarbeariaFidelidade } from './pages/cliente/barbearia/ClienteBarbeariaFidelidade';
 import { ClienteBarbeariaPerfil } from './pages/cliente/barbearia/ClienteBarbeariaPerfil';
+import { ClienteBarbeariaChat } from './pages/cliente/barbearia/ClienteBarbeariaChat';
 
 // Admin Login
 import { AdminLogin } from './pages/admin/AdminLogin';
 import { AdminPrimeiroAcesso } from './pages/admin/AdminPrimeiroAcesso';
+import { AdminChat } from './pages/admin/AdminChat';
 
 // Barber App
 import { BarbeiroAuthProvider } from './contexts/BarbeiroAuthContext';
@@ -94,6 +96,7 @@ export function App() {
                   <Route path="agendar" element={<ClienteBarbeariaAgendar />} />
                   <Route path="fidelidade" element={<ClienteBarbeariaFidelidade />} />
                   <Route path="perfil" element={<ClienteBarbeariaPerfil />} />
+                  <Route path="chat" element={<ClienteBarbeariaChat />} />
                 </Route>
 
                 {/* === Login do Administrador === */}
@@ -139,6 +142,7 @@ export function App() {
                   <Route path="relatorios" element={<Relatorios />} />
                   <Route path="estoque" element={<Estoque />} />
                   <Route path="configuracoes" element={<Configuracoes />} />
+                  <Route path="chat" element={<AdminChat />} />
                 </Route>
 
                 {/* Rotas legadas — redireciona para novas rotas */}
