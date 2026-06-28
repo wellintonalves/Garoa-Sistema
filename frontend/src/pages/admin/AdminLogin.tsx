@@ -3,9 +3,11 @@ import { Mail, Lock, AlertCircle, UserPlus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 import api from '../../api/client';
+import { useAuth } from '../../hooks/useAuth';
 
 export function AdminLogin() {
   const navigate = useNavigate();
+  const { loginDireto } = useAuth();
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [erro, setErro] = useState('');
@@ -25,8 +27,7 @@ export function AdminLogin() {
     setCarregando(true);
     try {
       const res = await api.post('/auth/login', { email, senha, papel: 'ADMIN' });
-      localStorage.setItem('@garoa:token', res.data.token);
-      localStorage.setItem('@garoa:usuario', JSON.stringify(res.data.usuario));
+      loginDireto(res.data.token, res.data.usuario);
       navigate('/admin');
     } catch (err: any) {
       setErro(err?.response?.data?.erro || 'Email ou senha incorretos.');

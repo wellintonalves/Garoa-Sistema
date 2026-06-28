@@ -1,0 +1,13 @@
+feat(chat): sistema de chat em tempo real entre cliente e barbearia
+
+- Prisma: novo model ChatMensagem com enum RemetenteMensagem (CLIENTE/ADMIN)
+- Backend: ChatService + ChatController + chat.routes.ts
+  - GET/POST /cliente/barbearia/:id/chat (rotas do cliente)
+  - GET/POST /chat/conversas, GET/POST /chat/conversas/:clienteId (admin)
+  - GET /chat/nao-lidas (badge de nao lidas)
+  - Polling-based: sem WebSocket
+- Frontend cliente: ClienteBarbeariaChat.tsx -- UI de chat com polling 3s
+- Frontend admin: AdminChat.tsx -- inbox de todas as conversas + thread
+- Sidebar: novo item Chat com icone MessageCircle
+- App.tsx: rotas /admin/chat e /cliente/barbearia/:id/chat
+- ClienteBarbeariaInicio: botao Falar com a barbearia agora navega para /chat

@@ -1,6 +1,6 @@
 // Layout do app do cliente dentro de uma barbearia — menu inferior com 4 abas
 import { Outlet, useNavigate, useLocation, useParams, Navigate } from 'react-router-dom';
-import { Home, Calendar, Star, User } from 'lucide-react';
+import { Home, Calendar, Star, User, MessageCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import clienteApi from '../api/clienteApi';
 import { useTema } from '../hooks/useTema';
@@ -13,6 +13,39 @@ interface BarbeariaInfo {
   logo: string | null;
   endereco: string | null;
   createdAt: string;
+}
+
+/** Botão flutuante de chat — aparece em todas as abas exceto na própria aba de chat */
+function ChatFab({ onClick }: { onClick: () => void }) {
+  const isMobile = window.innerWidth < 768;
+  return (
+    <button
+      onClick={onClick}
+      title="Falar com a barbearia"
+      style={{
+        position: 'fixed',
+        bottom: isMobile ? '76px' : '24px',
+        right: '20px',
+        zIndex: 60,
+        width: '52px',
+        height: '52px',
+        borderRadius: '50%',
+        background: 'var(--amber)',
+        color: '#000',
+        border: 'none',
+        cursor: 'pointer',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.35)',
+        transition: 'transform 0.15s ease, box-shadow 0.15s ease',
+      }}
+      onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.1)'; }}
+      onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)'; }}
+    >
+      <MessageCircle size={22} />
+    </button>
+  );
 }
 
 export function ClienteLayout() {
@@ -121,8 +154,13 @@ export function ClienteLayout() {
           <Outlet context={{ barbearia, barbeariaId }} />
         </div>
 
+        {/* Botão flutuante de chat — visível em todas as abas */}
+        {location.pathname !== `${basePath}/chat` && (
+          <ChatFab onClick={() => navigate(`${basePath}/chat`)} />
+        )}
+
         {/* Bottom Nav Mobile (< 768px) */}
-        <nav className="md:hidden flex justify-between items-center z-50 px-2 py-2" 
+        <nav className="md:hidden flex justify-between items-center z-50 px-2 py-2"
              style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'var(--fundo-sidebar)', borderTop: '1px solid var(--borda)' }}>
           {tabs.map((tab) => {
             const Icon = tab.icon;

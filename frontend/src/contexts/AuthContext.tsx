@@ -13,6 +13,7 @@ interface AuthContextData {
   usuario: Usuario | null;
   carregando: boolean;
   login: (email: string, senha: string) => Promise<void>;
+  loginDireto: (token: string, usr: Usuario) => void;
   logout: () => void;
 }
 
@@ -47,6 +48,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUsuario(usr);
   }, []);
 
+  const loginDireto = useCallback((token: string, usr: Usuario) => {
+    localStorage.setItem('@garoa:token', token);
+    localStorage.setItem('@garoa:usuario', JSON.stringify(usr));
+    setUsuario(usr);
+  }, []);
+
   const logout = useCallback(() => {
     localStorage.removeItem('@garoa:token');
     localStorage.removeItem('@garoa:usuario');
@@ -54,7 +61,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ usuario, carregando, login, logout }}>
+    <AuthContext.Provider value={{ usuario, carregando, login, loginDireto, logout }}>
       {children}
     </AuthContext.Provider>
   );
