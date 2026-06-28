@@ -1,7 +1,7 @@
 // Aba Fidelidade — pontos, progresso e histórico
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { Star, Gift, TrendingUp, CheckCircle, XCircle } from 'lucide-react';
+import { Star, Gift, CheckCircle, XCircle, Clock } from 'lucide-react';
 import clienteApi from '../../../api/clienteApi';
 
 interface FidelidadeData {
@@ -60,99 +60,143 @@ export function ClienteBarbeariaFidelidade() {
 
   if (carregando) {
     return (
-      <div className="flex items-center justify-center py-20">
-        <div className="spinner w-8 h-8" />
+      <div className="flex items-center justify-center py-20 h-full">
+        <div className="w-8 h-8 rounded-full border-2 border-[var(--amber)] border-t-transparent animate-spin" />
       </div>
     );
   }
 
   if (!dados || !dados.config?.ativo) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 px-5 text-center">
-        <Gift size={48} className="text-zinc-600 mb-4" />
-        <h2 className="text-xl font-bold text-white mb-2">Programa Indisponível</h2>
-        <p className="text-zinc-400 text-sm">Esta barbearia não possui o programa de fidelidade ativo no momento.</p>
+      <div className="flex flex-col items-center justify-center py-20 px-5 text-center h-full">
+        <Gift size={48} className="text-[var(--text-disabled)] mb-4" />
+        <h2 className="text-xl font-bold text-[var(--text-primary)] mb-2 font-interface">Programa Indisponível</h2>
+        <p className="text-[var(--text-muted)] text-sm font-interface">Esta barbearia não possui o programa de fidelidade ativo no momento.</p>
       </div>
     );
   }
 
+  // Cálculos para o anel de progresso
+  const proximas = [...dados.recompensas].sort((a,b) => a.pontosNecessarios - b.pontosNecessarios).filter(r => r.pontosNecessarios > dados.saldo);
+  const proxima = proximas.length > 0 ? proximas[0] : null;
+  const maxPontos = proxima ? proxima.pontosNecessarios : (dados.recompensas.length > 0 ? Math.max(...dados.recompensas.map(r => r.pontosNecessarios)) : 100);
+  const progresso = Math.min((dados.saldo / maxPontos) * 100, 100);
+
+  const raio = 70;
+  const circunferencia = 2 * Math.PI * raio;
+  const dashoffset = circunferencia - (progresso / 100) * circunferencia;
+
   return (
-    <div className="px-5 py-6 animate-fade-in relative">
-      {/* Mensagens */}
+    <div className="px-5 py-6 animate-fade-in max-w-2xl mx-auto">
+      {/* Alertas */}
       {mensagemSucesso && (
-        <div className="mb-4 bg-green-900/50 border border-green-500 p-4 rounded flex items-center gap-3 animate-fade-in">
-          <CheckCircle className="text-green-400" size={24} />
-          <span className="text-green-100 text-sm">{mensagemSucesso}</span>
+        <div className="mb-6 bg-[rgba(34,197,94,0.1)] border border-[#22C55E] p-4 rounded-md flex items-center gap-3 animate-fade-in">
+          <CheckCircle color="#22C55E" size={20} />
+          <span className="text-[#22C55E] text-sm font-interface font-medium">{mensagemSucesso}</span>
         </div>
       )}
-
       {mensagemErro && (
-        <div className="mb-4 bg-red-900/50 border border-red-500 p-4 rounded flex items-center gap-3 animate-fade-in">
-          <XCircle className="text-red-400" size={24} />
-          <span className="text-red-100 text-sm">{mensagemErro}</span>
+        <div className="mb-6 bg-[rgba(239,68,68,0.1)] border border-[#EF4444] p-4 rounded-md flex items-center gap-3 animate-fade-in">
+          <XCircle color="#EF4444" size={20} />
+          <span className="text-[#EF4444] text-sm font-interface font-medium">{mensagemErro}</span>
         </div>
       )}
 
-      <h1 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '24px', color: 'var(--text-primary)', marginBottom: '24px', letterSpacing: '0.04em' }}>
-        Fidelidade
-      </h1>
-
-      {/* Card de Pontos */}
-      <div className="p-6 mb-6" style={{
-        background: 'linear-gradient(135deg, rgba(var(--cor-primaria-rgb), 0.10) 0%, var(--bg-surface) 100%)',
-        border: '1px solid var(--amber)',
-      }}>
-        <div className="flex items-center gap-3 mb-4">
-          <Star size={24} style={{ color: 'rgba(var(--cor-primaria-rgb), 0.15)' }} />
-          <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--cor-icone)' }}>
-            Seu Saldo
-          </span>
-        </div>
-        <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '48px', color: 'rgba(var(--cor-primaria-rgb), 0.15)', lineHeight: 1 }}>
-          {dados.saldo} <span className="text-lg text-[var(--cor-primaria)]/50">pts</span>
-        </p>
-        <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--text-muted)', marginTop: '8px' }}>
-          Você já acumulou {dados.totalGanhos} pts no total
+      {/* Título Principal */}
+      <div className="mb-8">
+        <h1 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '24px', fontWeight: 600, color: 'var(--text-primary)' }}>
+          Seus Pontos
+        </h1>
+        <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '13px', color: 'var(--text-muted)', marginTop: '4px' }}>
+          Acompanhe seu progresso e resgate prêmios exclusivos.
         </p>
       </div>
 
-      {/* Recompensas Disponíveis */}
-      <div className="mb-8">
-        <h2 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--cor-icone)', marginBottom: '12px' }}>
-          <Gift size={12} className="inline mr-1" /> Recompensas
+      {/* Progress Ring (SVG) */}
+      <div className="flex flex-col items-center justify-center mb-10">
+        <div className="relative flex items-center justify-center mb-4">
+          <svg className="transform -rotate-90" width="180" height="180">
+            {/* Fundo do anel */}
+            <circle
+              cx="90" cy="90" r={raio}
+              fill="transparent"
+              stroke="var(--fundo-sidebar)"
+              strokeWidth="8"
+            />
+            {/* Anel de progresso com glow */}
+            <circle
+              cx="90" cy="90" r={raio}
+              fill="transparent"
+              stroke="var(--amber)"
+              strokeWidth="8"
+              strokeDasharray={circunferencia}
+              strokeDashoffset={dashoffset}
+              strokeLinecap="round"
+              className="transition-all duration-1000 ease-out"
+              style={{ filter: 'drop-shadow(0 0 4px rgba(var(--cor-primaria-rgb), 0.5))' }}
+            />
+          </svg>
+          
+          <div className="absolute flex flex-col items-center justify-center text-center">
+            <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '42px', fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1 }}>
+              {dados.saldo}
+            </span>
+            <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--amber)', marginTop: '2px', fontWeight: 600 }}>
+              pontos
+            </span>
+          </div>
+        </div>
+        
+        {proxima ? (
+          <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '13px', color: 'var(--text-muted)' }}>
+            Faltam <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{proxima.pontosNecessarios - dados.saldo} pts</span> para o prêmio: 
+            <span style={{ color: 'var(--amber)', fontWeight: 500 }}> {proxima.nome}</span>
+          </p>
+        ) : dados.recompensas.length > 0 ? (
+          <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '13px', color: 'var(--amber)', fontWeight: 500 }}>
+            Você já tem pontos para todas as recompensas!
+          </p>
+        ) : null}
+      </div>
+
+      {/* Recompensas */}
+      <div className="mb-10">
+        <h2 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '16px', fontWeight: 600 }}>
+          Prêmios Disponíveis
         </h2>
         {dados.recompensas.length === 0 ? (
-          <p className="text-xs text-zinc-500 text-center py-4 bg-zinc-900 rounded">Nenhuma recompensa disponível no momento.</p>
+          <div className="p-6 text-center border border-dashed border-[var(--borda)] rounded-md">
+             <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '13px', color: 'var(--text-muted)' }}>Nenhum prêmio disponível.</p>
+          </div>
         ) : (
           <div className="flex flex-col gap-3">
-            {dados.recompensas.map(rec => {
+            {dados.recompensas.sort((a,b) => a.pontosNecessarios - b.pontosNecessarios).map(rec => {
               const podeResgatar = dados.saldo >= rec.pontosNecessarios;
               const falta = rec.pontosNecessarios - dados.saldo;
               return (
-                <div key={rec.id} className="p-4 rounded border" style={{
-                  background: 'var(--bg-surface)',
-                  borderColor: podeResgatar ? 'var(--amber)' : 'var(--border)',
-                  opacity: podeResgatar ? 1 : 0.7
+                <div key={rec.id} className="p-4 rounded-md flex items-center justify-between" style={{
+                  background: 'var(--fundo-sidebar)',
+                  border: podeResgatar ? '1px solid var(--amber)' : '1px solid var(--borda)',
                 }}>
-                  <div className="flex justify-between items-start mb-2">
-                    <h3 className="font-bold text-white text-sm">{rec.nome}</h3>
-                    <span className="font-bold text-[var(--cor-primaria)] text-sm">{rec.pontosNecessarios} pts</span>
+                  <div>
+                    <h3 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)' }}>{rec.nome}</h3>
+                    <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                      {rec.pontosNecessarios} pts • {rec.tipo === 'SERVICO_GRATIS' ? `Serviço: ${rec.servico?.nome}` : (rec.tipo === 'DESCONTO_PERCENTUAL' ? `Desc. ${rec.valorDesconto}%` : `Desc. R$${rec.valorDesconto}`)}
+                    </p>
                   </div>
-                  <p className="text-xs text-zinc-400 mb-4">
-                    {rec.tipo === 'SERVICO_GRATIS' ? `Serviço: ${rec.servico?.nome}` : (rec.tipo === 'DESCONTO_PERCENTUAL' ? `Desconto de ${rec.valorDesconto}%` : `Desconto de R$${rec.valorDesconto}`)}
-                  </p>
                   
                   {podeResgatar ? (
                     <button 
                       onClick={() => resgatar(rec.id)}
                       disabled={resgatando === rec.id}
-                      className="w-full py-2 bg-[var(--cor-primaria)] hover:bg-[var(--cor-primaria)] text-black font-bold text-xs rounded transition-colors"
+                      className="btn-ghost"
+                      style={{ padding: '8px 16px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.04em' }}
                     >
-                      {resgatando === rec.id ? 'Resgatando...' : 'Resgatar Recompensa'}
+                      {resgatando === rec.id ? 'Aguarde' : 'Resgatar'}
                     </button>
                   ) : (
-                    <div className="w-full py-2 bg-zinc-800 text-zinc-400 text-center font-bold text-xs rounded">
-                      Faltam {falta} pts
+                    <div className="px-3 py-1.5 rounded bg-[var(--bg-surface)] border border-[var(--borda)]" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--text-disabled)', fontWeight: 600 }}>
+                      Bloqueado
                     </div>
                   )}
                 </div>
@@ -162,29 +206,37 @@ export function ClienteBarbeariaFidelidade() {
         )}
       </div>
 
-      {/* Histórico */}
+      {/* Histórico Timeline */}
       <div>
-        <h2 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--cor-icone)', marginBottom: '12px' }}>
-          <TrendingUp size={12} className="inline mr-1" /> Histórico
+        <h2 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '20px', fontWeight: 600 }}>
+          Histórico
         </h2>
         {dados.historico.length === 0 ? (
-          <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', color: 'var(--text-muted)', textAlign: 'center', padding: '2rem 0' }}>
-            Nenhum registro ainda.
+          <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '13px', color: 'var(--text-muted)', textAlign: 'center', padding: '1rem 0' }}>
+            Nenhuma movimentação ainda.
           </p>
         ) : (
-          <div className="flex flex-col gap-2">
+          <div className="relative ml-3 border-l border-[var(--borda)] pl-6 flex flex-col gap-6">
             {dados.historico.map(h => (
-              <div key={h.id} className="flex items-center justify-between p-3"
-                style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
-                <div>
-                  <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '13px', color: 'var(--text-primary)' }}>{h.descricao}</p>
-                  <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--text-muted)' }}>
-                    {new Date(h.data).toLocaleDateString('pt-BR')}
-                  </p>
+              <div key={h.id} className="relative">
+                {/* Dot Timeline */}
+                <div className="absolute -left-[30px] top-[2px] w-3 h-3 rounded-full" 
+                     style={{ background: h.tipo === 'GANHO' ? 'var(--amber)' : 'var(--bg-surface)', border: h.tipo === 'GANHO' ? 'none' : '2px solid var(--text-muted)' }} />
+                
+                <div className="flex justify-between items-start">
+                  <div>
+                    <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '14px', fontWeight: 500, color: 'var(--text-primary)' }}>{h.descricao}</p>
+                    <div className="flex items-center gap-1.5 mt-1" style={{ color: 'var(--text-muted)' }}>
+                      <Clock size={10} />
+                      <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px' }}>
+                        {new Date(h.data).toLocaleDateString('pt-BR')}
+                      </p>
+                    </div>
+                  </div>
+                  <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '15px', fontWeight: 600, color: h.tipo === 'GANHO' ? 'var(--amber)' : 'var(--text-primary)' }}>
+                    {h.tipo === 'GANHO' ? '+' : '-'}{h.pontos}
+                  </span>
                 </div>
-                <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '20px', color: h.tipo === 'GANHO' ? 'var(--amber)' : 'var(--error-text)' }}>
-                  {h.tipo === 'GANHO' ? '+' : ''}{h.pontos}
-                </span>
               </div>
             ))}
           </div>

@@ -675,3 +675,205 @@ h1, h2, h3, h4, .titulo {
   margin-top: 16px;
   border-bottom: 1px solid var(--borda);
 }
+
+/* ================================================================
+   REDESIGN TELA DO CLIENTE (V2)
+   ================================================================ */
+
+/* Section Label (Padrão Amber) */
+.section-label-amber {
+  font-family: var(--fonte-interface);
+  font-size: 9px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--amber);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.section-label-amber::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--borda);
+}
+
+/* Card Herói (Próximo Agendamento) */
+.hero-card {
+  background: linear-gradient(180deg, #161616 0%, #0F0F0F 100%);
+  border: 1px solid #2A2A2A;
+  border-radius: 8px;
+  padding: 22px 20px;
+  position: relative;
+  overflow: hidden;
+}
+.hero-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; bottom: 0;
+  width: 3px;
+  background: var(--amber);
+}
+
+/* Botões Ghost */
+.btn-ghost {
+  background: transparent;
+  border: 1px solid #2A2A2A;
+  color: #F5F5F5;
+  padding: 10px;
+  border-radius: 6px;
+  font-family: var(--fonte-interface);
+  font-size: 12px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-ghost:hover {
+  background: #1A1A1A;
+}
+.btn-ghost-amber {
+  background: transparent;
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  color: var(--amber);
+  padding: 10px;
+  border-radius: 6px;
+  font-family: var(--fonte-interface);
+  font-size: 12px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-ghost-amber:hover {
+  background: rgba(245, 158, 11, 0.1);
+}
+
+@media (min-width: 768px) {
+  .btn-ghost, .btn-ghost-amber {
+    padding: 8px 16px;
+  }
+}
+
+/* Stat Card */
+.stat-card {
+  background: var(--fundo-sidebar);
+  border: 1px solid var(--borda);
+  border-radius: 6px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Stepper (Agendar) */
+.stepper-dot {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--fonte-interface);
+  font-size: 11px;
+  font-weight: 600;
+}
+.stepper-dot.active {
+  background: var(--amber);
+  color: #0A0A0A;
+  border: none;
+}
+.stepper-dot.inactive {
+  background: var(--fundo-input);
+  color: var(--texto-placeholder);
+  border: 1px solid var(--borda);
+}
+
+/* Icon Box */
+.icon-box-amber {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  background: rgba(var(--cor-primaria-rgb), 0.15);
+  color: var(--amber);
+}
+.icon-box-disabled {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  background: var(--fundo-input);
+  color: var(--texto-placeholder);
+}
+
+/* Timeline (Fidelidade) */
+.timeline-dot-green {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--success-text);
+  flex-shrink: 0;
+  position: relative;
+  z-index: 2;
+}
+.timeline-dot-amber {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--amber);
+  flex-shrink: 0;
+  position: relative;
+  z-index: 2;
+}
+.timeline-line {
+  position: absolute;
+  left: 3.5px;
+  top: 22px;
+  bottom: -10px;
+  width: 1px;
+  background: var(--borda);
+  z-index: 1;
+}
+
+/* Navegação Sidebar/BottomNav Redesign */
+.nav-item-v2 {
+  background: transparent;
+  color: var(--texto-secundario);
+  border: none;
+  outline: none;
+  box-shadow: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.nav-item-v2.active {
+  background: rgba(var(--cor-primaria-rgb), 0.08);
+  color: var(--amber);
+  border-radius: 6px;
+}
+.nav-item-v2:focus-visible {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+}
+
+.bottom-nav-btn {
+  background: none;
+  border: none;
+  outline: none;
+  box-shadow: none;
+  cursor: pointer;
+  color: var(--texto-placeholder);
+}
+.bottom-nav-btn.active {
+  color: var(--amber);
+}
+.bottom-nav-btn:focus-visible {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+}
