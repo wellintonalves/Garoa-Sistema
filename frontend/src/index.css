@@ -67,11 +67,18 @@
   --text-disabled:     #A0A0A0;
   --borda-input:       #D4D4D4;
   --texto-principal:   #0A0A0A;
-  --texto-secundario:  #737373;
+  --texto-secundario:  #595959;  /* 5.04:1 on #F5F5F5 — WCAG AA */
   --texto-placeholder: #A0A0A0;
-  --texto-label:       #A0A0A0;
+  --texto-label:       #737373;  /* melhor que #A0A0A0 para labels em fundo claro */
 
-  /* Aliases legados de fontes removidos */
+  /* Cores de destaque — versão mais escura para contraste suficiente no fundo claro */
+  --amber:              #B45309;  /* 4.61:1 on #F5F5F5 (era #F59E0B = 1.97:1) */
+  --cor-primaria:       #B45309;
+  --cor-primaria-rgb:   180, 83, 9;
+  --cor-icone:          #B45309;
+  --error-text:         #DC2626;  /* 4.43:1 on #F5F5F5 (era #EF4444 = 3.45:1) */
+  --success-text:       #15803D;  /* 4.60:1 on #F5F5F5 (era #22C55E = 2.09:1) */
+  --warning-text:       #B45309;  /* reusa amber-700 para consistência */
 }
 
 /* Aplicação global das fontes */
