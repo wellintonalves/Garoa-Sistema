@@ -11,6 +11,8 @@ interface BarbeariaInfo {
   nome: string;
   slug: string;
   logo: string | null;
+  endereco: string | null;
+  createdAt: string;
 }
 
 export function ClienteLayout() {
@@ -60,11 +62,13 @@ export function ClienteLayout() {
         {/* Header (Letterhead) */}
         <div className="flex flex-col items-center justify-center py-8 border-b" style={{ borderColor: 'var(--borda)' }}>
           <h1 style={{ fontFamily: 'var(--fonte-interface)', fontWeight: 600, fontSize: '14px', letterSpacing: '0.4em', textTransform: 'uppercase', color: 'var(--text-primary)' }}>
-            VALEN BARBER
+            {barbearia?.nome || 'BARBEARIA'}
           </h1>
-          <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '8px', letterSpacing: '0.4em', color: 'var(--amber)', textTransform: 'uppercase', marginTop: '4px', marginBottom: '12px' }}>
-            Estabelecida em 2024
-          </p>
+          {barbearia?.createdAt && (
+            <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '8px', letterSpacing: '0.4em', color: 'var(--amber)', textTransform: 'uppercase', marginTop: '4px', marginBottom: '12px' }}>
+              Desde {new Date(barbearia.createdAt).getFullYear()}
+            </p>
+          )}
           <div className="flex items-center w-full px-6 gap-2">
             <div className="flex-1 h-px" style={{ background: 'var(--borda)' }} />
             <div style={{ width: '6px', height: '6px', background: 'var(--amber)', transform: 'rotate(45deg)' }} />

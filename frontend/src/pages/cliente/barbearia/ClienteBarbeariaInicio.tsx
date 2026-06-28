@@ -6,7 +6,7 @@ import clienteApi from '../../../api/clienteApi';
 import { useClienteAuth } from '../../../hooks/useClienteAuth';
 
 interface BarbeariaCtx {
-  barbearia: { id: string; nome: string; logo: string | null } | null;
+  barbearia: { id: string; nome: string; logo: string | null; endereco: string | null; createdAt: string } | null;
   barbeariaId: string;
 }
 
@@ -19,18 +19,37 @@ interface AgendamentoItem {
   barbeiro: { usuario: { nome: string } };
 }
 
+interface FidelidadeResumo {
+  saldo: number;
+  proxima: number | null;
+}
+
 export function ClienteBarbeariaInicio() {
   const navigate = useNavigate();
   const { barbeariaId } = useParams<{ barbeariaId: string }>();
   const { barbearia } = useOutletContext<BarbeariaCtx>();
   const { cliente } = useClienteAuth();
   const [agendamentos, setAgendamentos] = useState<AgendamentoItem[]>([]);
+  const [fidelidade, setFidelidade] = useState<FidelidadeResumo>({ saldo: 0, proxima: null });
 
   useEffect(() => {
     if (barbeariaId) {
       clienteApi.get<AgendamentoItem[]>(`/cliente/barbearia/${barbeariaId}/agendamentos`)
         .then(res => setAgendamentos(res.data))
         .catch(() => { /* empty */ });
+
+      clienteApi.get(`/cliente/barbearia/${barbeariaId}/fidelidade`)
+        .then(res => {
+          const d = res.data;
+          const proximas = (d.recompensas as Array<{ pontosNecessarios: number }>)
+            .filter(r => r.pontosNecessarios > d.saldo)
+            .sort((a, b) => a.pontosNecessarios - b.pontosNecessarios);
+          setFidelidade({
+            saldo: d.saldo,
+            proxima: proximas.length > 0 ? proximas[0].pontosNecessarios : null,
+          });
+        })
+        .catch(() => { /* programa pode estar inativo */ });
     }
   }, [barbeariaId]);
 
@@ -62,8 +81,10 @@ export function ClienteBarbeariaInicio() {
     return `em ${min} minuto${min > 1 ? 's' : ''}`;
   };
 
-  const sessoes = agendamentosPassados.length + (prox ? 1 : 0);
-  
+  // Apenas atendimentos concluídos contam como visitas reais
+  const atendimentosConcluidos = agendamentos.filter(a => a.status === 'CONCLUIDO').length;
+  const sessoes = atendimentosConcluidos;
+
   // Barbeiro favorito
   const barbeiroCounts: Record<string, number> = {};
   agendamentosPassados.forEach(a => {
@@ -80,9 +101,18 @@ export function ClienteBarbeariaInicio() {
   const ultimoConcluido = agendamentosPassados.find(a => a.status === 'CONCLUIDO');
   const diasDesdeUltimo = ultimoConcluido ? Math.floor((Date.now() - new Date(ultimoConcluido.dataHora).getTime()) / 86400000) : null;
 
-  // Fidelidade Mock (em um app real viria da API específica)
-  const fidelidade = { saldo: 150, proxima: 300 };
-  const fidPercent = Math.min(100, Math.round((fidelidade.saldo / fidelidade.proxima) * 100));
+  // "Desde" — mês e ano do primeiro agendamento nesta barbearia
+  const primeiroAgendamento = agendamentos.length > 0
+    ? [...agendamentos].sort((a, b) => new Date(a.dataHora).getTime() - new Date(b.dataHora).getTime())[0]
+    : null;
+  const desdeStr = primeiroAgendamento
+    ? new Date(primeiroAgendamento.dataHora).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
+    : null;
+
+  // Fidelidade — progresso para próxima recompensa
+  const fidPercent = fidelidade.proxima
+    ? Math.min(100, Math.round((fidelidade.saldo / fidelidade.proxima) * 100))
+    : fidelidade.saldo > 0 ? 100 : 0;
 
   const fmtData = (d: string) => new Date(d).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
   const fmtHora = (d: string) => new Date(d).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
@@ -92,20 +122,20 @@ export function ClienteBarbeariaInicio() {
     <div className="px-5 py-6 animate-fade-in flex flex-col md:flex-row gap-6 max-w-6xl mx-auto">
       {/* Coluna Principal */}
       <div className="flex-1 flex flex-col">
-        
+
         {/* Header Responsivo */}
         <div className="mb-6 flex flex-col md:flex-row md:items-start md:justify-between gap-4">
           <div>
             <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '12px', color: 'var(--text-muted)' }}>
               {getSaudacao()}, <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{cliente?.nome.split(' ')[0] || 'Cliente'}</span>.
             </p>
-            {sessoes > 0 && (
+            {prox && (
               <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>
-                Esta será sua <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{sessoes}ª sessão</span> conosco.
+                Esta será sua <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{atendimentosConcluidos + 1}ª sessão</span> conosco.
               </p>
             )}
           </div>
-          
+
           <button onClick={() => navigate(`/cliente/barbearia/${barbeariaId}/agendar`)} className="hidden md:flex btn-primary" style={{ textTransform: 'uppercase', fontSize: '12px', fontWeight: 600 }}>
             <Plus size={16} /> Novo Agendamento
           </button>
@@ -115,13 +145,15 @@ export function ClienteBarbeariaInicio() {
         <div className="md:hidden flex flex-col items-center justify-center py-4 mb-6 relative">
           <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translate(-50%, -50%) rotate(45deg)', width: '6px', height: '6px', background: 'var(--amber)' }} />
           <div className="w-full h-px absolute top-0" style={{ background: 'var(--borda)' }} />
-          
+
           <h1 style={{ fontFamily: 'var(--fonte-interface)', fontWeight: 600, fontSize: '22px', letterSpacing: '0.4em', textTransform: 'uppercase', color: 'var(--text-primary)' }}>
-            {barbearia?.nome || 'VALEN BARBER'}
+            {barbearia?.nome || 'BARBEARIA'}
           </h1>
-          <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '9px', letterSpacing: '0.4em', color: 'var(--amber)', textTransform: 'uppercase', marginTop: '4px' }}>
-            Estabelecida em 2024
-          </p>
+          {barbearia?.createdAt && (
+            <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '9px', letterSpacing: '0.4em', color: 'var(--amber)', textTransform: 'uppercase', marginTop: '4px' }}>
+              Desde {new Date(barbearia.createdAt).getFullYear()}
+            </p>
+          )}
 
           <div style={{ position: 'absolute', bottom: 0, left: '50%', transform: 'translate(-50%, 50%) rotate(45deg)', width: '6px', height: '6px', background: 'var(--amber)' }} />
           <div className="w-full h-px absolute bottom-0" style={{ background: 'var(--borda)' }} />
@@ -152,7 +184,7 @@ export function ClienteBarbeariaInicio() {
               </div>
               <div className="hidden md:block">
                 <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '15px', color: 'var(--amber)', fontWeight: 500 }}>
-                  R$ {prox.valorCobrado || '45.00'}
+                  R$ {prox.valorCobrado || '--'}
                 </span>
               </div>
             </div>
@@ -162,13 +194,14 @@ export function ClienteBarbeariaInicio() {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-6">
                 <p className="flex items-center gap-2" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '12px', color: 'var(--text-primary)' }}>
-                  <Calendar size={14} style={{ color: 'var(--amber)' }} /> 
+                  <Calendar size={14} style={{ color: 'var(--amber)' }} />
                   <span className="capitalize">{fmtDataExt(prox.dataHora)}</span> <span className="text-muted mx-1">·</span> {fmtHora(prox.dataHora)}
                 </p>
-                <p className="flex items-center gap-2 justify-between w-full md:w-auto" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '12px', color: 'var(--text-primary)' }}>
-                  <span className="flex items-center gap-2"><MapPin size={14} style={{ color: 'var(--amber)' }} /> Av. Brasil, 100</span>
-                  <span className="md:hidden text-[11px] font-mono text-muted">2,3 km</span>
-                </p>
+                {barbearia?.endereco && (
+                  <p className="flex items-center gap-2" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '12px', color: 'var(--text-primary)' }}>
+                    <MapPin size={14} style={{ color: 'var(--amber)' }} /> {barbearia.endereco}
+                  </p>
+                )}
               </div>
 
               <div className="flex items-center gap-2 mt-2 md:mt-0">
@@ -199,16 +232,22 @@ export function ClienteBarbeariaInicio() {
           <div className="stat-card relative overflow-hidden">
             <p style={{ fontSize: '9px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Fidelidade</p>
             <p className="mt-2" style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '22px', color: 'var(--text-primary)', lineHeight: 1 }}>{fidelidade.saldo} <span className="text-sm opacity-50">pts</span></p>
-            <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--amber)', marginTop: '4px' }}>Faltam {fidelidade.proxima - fidelidade.saldo} para Corte Grátis</p>
+            <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--amber)', marginTop: '4px' }}>
+              {fidelidade.proxima
+                ? `Faltam ${fidelidade.proxima - fidelidade.saldo} pts para recompensa`
+                : fidelidade.saldo > 0 ? 'Recompensa disponível!' : 'Acumule pontos'}
+            </p>
             <div className="w-full h-[2px] mt-3 rounded overflow-hidden" style={{ background: 'var(--borda)' }}>
               <div className="h-full" style={{ background: 'var(--amber)', width: `${fidPercent}%` }} />
             </div>
           </div>
-          
+
           <div className="stat-card">
             <p style={{ fontSize: '9px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Visitas</p>
             <p className="mt-2" style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '22px', color: 'var(--text-primary)', lineHeight: 1 }}>{sessoes}</p>
-            <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--text-muted)', marginTop: '4px' }}>Desde março de 2024</p>
+            {desdeStr && (
+              <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--text-muted)', marginTop: '4px' }}>Desde {desdeStr}</p>
+            )}
           </div>
 
           <div className="stat-card">
@@ -228,7 +267,7 @@ export function ClienteBarbeariaInicio() {
         {agendamentosPassados.length > 0 && (
           <div className="mb-6 md:mb-0">
             <h2 className="section-label-amber mb-4">Histórico</h2>
-            
+
             {/* Tabela (Desktop) */}
             <div className="hidden md:block overflow-x-auto border border-[var(--borda)] rounded-md">
               <table className="w-full text-left" style={{ borderCollapse: 'collapse' }}>
@@ -237,7 +276,7 @@ export function ClienteBarbeariaInicio() {
                     <tr key={a.id} className="border-b border-[var(--borda)] last:border-0 hover:bg-[var(--bg-surface2)] transition-colors">
                       <td className="p-4" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '13px', color: 'var(--text-primary)' }}>{a.servico.nome}</td>
                       <td className="p-4" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '13px', color: 'var(--text-muted)' }}>com {a.barbeiro.usuario.nome}</td>
-                      <td className="p-4" style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '13px', color: 'var(--text-primary)' }}>R$ {a.valorCobrado || '45.00'}</td>
+                      <td className="p-4" style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '13px', color: 'var(--text-primary)' }}>R$ {a.valorCobrado || '--'}</td>
                       <td className="p-4" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '13px', color: 'var(--text-muted)' }}>{fmtData(a.dataHora)}</td>
                       <td className="p-4"><span style={{ fontSize: '10px', fontWeight: 500, padding: '3px 10px', borderRadius: '3px', background: '#1A3D2A', color: '#22C55E' }}>Concluído</span></td>
                     </tr>
@@ -301,7 +340,7 @@ export function ClienteBarbeariaInicio() {
             </button>
           </div>
         </div>
-        
+
         {/* Mobile CTA */}
         {prox && (
           <div className="md:hidden mt-6 pb-6">

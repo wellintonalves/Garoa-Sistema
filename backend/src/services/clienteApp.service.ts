@@ -235,6 +235,7 @@ export class ClienteAppService {
             logo: true,
             endereco: true,
             telefone: true,
+            createdAt: true,
           },
         },
       },
@@ -247,18 +248,39 @@ export class ClienteAppService {
     }));
   }
 
-  /** Dados do perfil do cliente */
+  /** Dados do perfil do cliente com estatísticas reais */
   static async perfil(clienteId: string) {
     const cliente = await prisma.cliente.findUnique({
       where: { id: clienteId },
       include: {
         usuario: {
-          select: { id: true, nome: true, email: true },
+          select: { id: true, nome: true, email: true, createdAt: true },
         },
       },
     });
     if (!cliente) throw new Error('Cliente não encontrado');
-    return cliente;
+
+    // Calcula estatísticas reais a partir dos agendamentos
+    const agendamentos = await prisma.agendamento.findMany({
+      where: { clienteId },
+      select: { status: true, valorCobrado: true },
+    });
+
+    const atendimentos = agendamentos.filter(a => a.status === 'CONCLUIDO').length;
+    const faltas = agendamentos.filter(a => a.status === 'CANCELADO').length;
+    const gastoTotal = agendamentos
+      .filter(a => a.status === 'CONCLUIDO')
+      .reduce((sum, a) => sum + Number(a.valorCobrado || 0), 0);
+
+    return {
+      ...cliente,
+      stats: {
+        atendimentos,
+        faltas,
+        gastoTotal,
+        dataRegistro: cliente.usuario.createdAt.toISOString(),
+      },
+    };
   }
 
   /** Atualiza perfil do cliente */
