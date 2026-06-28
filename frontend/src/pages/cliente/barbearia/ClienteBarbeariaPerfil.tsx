@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useClienteAuth } from '../../../hooks/useClienteAuth';
 import { useModoTema } from '../../../hooks/useModoTema';
-import { User, Phone, Mail, LogOut, Unlink, Scissors, Save, Moon, Sun, Monitor, CalendarCheck, CalendarX, DollarSign, Award } from 'lucide-react';
+import { User, LogOut, Unlink, Scissors, Save, Moon, Sun, Monitor, CalendarCheck, CalendarX, DollarSign, Award } from 'lucide-react';
 import clienteApi from '../../../api/clienteApi';
 
 interface PerfilData {
