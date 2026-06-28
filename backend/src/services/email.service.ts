@@ -1,6 +1,6 @@
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 export class EmailService {
   static async enviarCodigoVerificacao(email: string, nome: string, codigo: string): Promise<void> {
@@ -12,6 +12,10 @@ export class EmailService {
       throw new Error(`Email inválido: ${email}`);
     }
 
+        if (!resend) {
+                console.warn('[EmailService] RESEND_API_KEY não configurado. Email não enviado para:', email, '| Código:', codigo);
+                return;
+        }
     await resend.emails.send({
       from: 'Garoa Sistema <noreply@valenbarber.com.br>',
       to: email,
@@ -50,6 +54,10 @@ export class EmailService {
   }
 
   static async enviarCodigoRecuperacaoSenha(email: string, nome: string, codigo: string): Promise<void> {
+        if (!resend) {
+                console.warn('[EmailService] RESEND_API_KEY não configurado. Email de recuperação não enviado para:', email);
+                return;
+        }
     await resend.emails.send({
       from: 'Garoa Sistema <noreply@valenbarber.com.br>',
       to: email,
