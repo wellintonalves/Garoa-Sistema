@@ -113,13 +113,20 @@ export function ClienteRegister() {
         <div>
           <label className="input-label">Senha</label>
           <input
-            type="password"
+            type={mostrarSenha ? "text" : "password"}
             value={senha}
             onChange={(e) => setSenha(e.target.value)}
             className="w-full bg-[#1E293B] border border-[#334155] rounded text-[#FFFFFF] placeholder-[#64748B] focus:outline-none focus:border-[#F59E0B] py-2.5"
             placeholder="Mínimo 6 caracteres"
             required
           />
+                    <button
+                      type="button"
+                      onClick={() => setMostrarSenha(!mostrarSenha)}
+                      style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#525252', padding: 0 }}
+                    >
+                      {mostrarSenha ? <EyeOff size={14} strokeWidth={1.5} /> : <Eye size={14} strokeWidth={1.5} />}
+                    </button>
         </div>
 
         <button type="submit" disabled={enviando}

@@ -225,15 +225,22 @@ export function Login() {
                     <Lock size={14} strokeWidth={1.5} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }} />
                     <input
                       id="registro-senha"
-                      type="password"
+                      type={mostrarRegSenha ? "text" : "password"}
                       value={regSenha}
                       onChange={(e) => setRegSenha(e.target.value)}
                       placeholder="••••••••"
                       required
                       minLength={6}
                       className="ds-input"
-                      style={{ paddingLeft: '36px' }}
+                      style={{ paddingLeft: '36px', paddingRight: '36px' }}
                     />
+                    <button
+                      type="button"
+                      onClick={() => setMostrarRegSenha(!mostrarRegSenha)}
+                      style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#525252', padding: 0 }}
+                    >
+                      {mostrarRegSenha ? <EyeOff size={14} strokeWidth={1.5} /> : <Eye size={14} strokeWidth={1.5} />}
+                    </button>
                   </div>
                 </div>
 
@@ -295,14 +302,21 @@ export function Login() {
                     <Lock size={14} strokeWidth={1.5} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }} />
                     <input
                       id="login-senha"
-                      type="password"
+                      type={mostrarSenha ? "text" : "password"}
                       value={senha}
                       onChange={(e) => setSenha(e.target.value)}
                       placeholder="••••••••"
                       required
                       className="ds-input"
-                      style={{ paddingLeft: '36px' }}
+                      style={{ paddingLeft: '36px', paddingRight: '36px' }}
                     />
+                    <button
+                      type="button"
+                      onClick={() => setMostrarSenha(!mostrarSenha)}
+                      style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#525252', padding: 0 }}
+                    >
+                      {mostrarSenha ? <EyeOff size={14} strokeWidth={1.5} /> : <Eye size={14} strokeWidth={1.5} />}
+                    </button>
                   </div>
                 </div>
 

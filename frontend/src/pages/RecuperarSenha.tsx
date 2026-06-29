@@ -341,14 +341,21 @@ export function RecuperarSenha() {
                 <div style={{ position: 'relative' }}>
                   <Lock size={14} color="#525252" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
                   <input
-                    type="password" value={novaSenha} onChange={e => setNovaSenha(e.target.value)}
+                    type={mostrarNovaSenha ? "text" : "password"} value={novaSenha} onChange={e => setNovaSenha(e.target.value)}
                     placeholder="Mínimo 6 caracteres" required minLength={6}
                     style={{
                       width: '100%', background: '#1A1A1A', border: '1px solid #2A2A2A',
-                      borderRadius: '8px', padding: '10px 14px 10px 36px', color: '#F5F5F5',
+                      borderRadius: '8px', padding: '10px 14px 10px 36px', paddingRight: '36px', color: '#F5F5F5',
                       fontFamily: 'inherit', fontSize: '13px', outline: 'none', boxSizing: 'border-box',
                     }}
                   />
+                    <button
+                      type="button"
+                      onClick={() => setMostrarNovaSenha(!mostrarNovaSenha)}
+                      style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#525252', padding: 0 }}
+                    >
+                      {mostrarNovaSenha ? <EyeOff size={14} strokeWidth={1.5} /> : <Eye size={14} strokeWidth={1.5} />}
+                    </button>
                 </div>
               </div>
               <div style={{ marginBottom: '24px' }}>
@@ -358,14 +365,21 @@ export function RecuperarSenha() {
                 <div style={{ position: 'relative' }}>
                   <Lock size={14} color="#525252" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
                   <input
-                    type="password" value={confirmarSenha} onChange={e => setConfirmarSenha(e.target.value)}
+                    type={mostrarConfirmarSenha ? "text" : "password"} value={confirmarSenha} onChange={e => setConfirmarSenha(e.target.value)}
                     placeholder="Repita a nova senha" required
                     style={{
                       width: '100%', background: '#1A1A1A', border: '1px solid #2A2A2A',
-                      borderRadius: '8px', padding: '10px 14px 10px 36px', color: '#F5F5F5',
+                      borderRadius: '8px', padding: '10px 14px 10px 36px', paddingRight: '36px', color: '#F5F5F5',
                       fontFamily: 'inherit', fontSize: '13px', outline: 'none', boxSizing: 'border-box',
                     }}
                   />
+                    <button
+                      type="button"
+                      onClick={() => setMostrarConfirmarSenha(!mostrarConfirmarSenha)}
+                      style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#525252', padding: 0 }}
+                    >
+                      {mostrarConfirmarSenha ? <EyeOff size={14} strokeWidth={1.5} /> : <Eye size={14} strokeWidth={1.5} />}
+                    </button>
                 </div>
               </div>
               <button type="submit" disabled={carregando} style={{

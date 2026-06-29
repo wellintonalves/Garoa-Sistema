@@ -123,17 +123,24 @@ export function AdminLogin() {
               <div style={{ position: 'relative' }}>
                 <Lock size={14} color="#525252" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
                 <input
-                  type="password"
+                  type={mostrarSenha ? "text" : "password"}
                   value={senha}
                   onChange={e => setSenha(e.target.value)}
                   placeholder="••••••••"
                   required
                   style={{
                     width: '100%', background: '#1A1A1A', border: '1px solid #2A2A2A',
-                    borderRadius: '8px', padding: '10px 14px 10px 36px', color: '#F5F5F5',
+                    borderRadius: '8px', padding: '10px 14px 10px 36px', paddingRight: '36px', color: '#F5F5F5',
                     fontFamily: 'inherit', fontSize: '13px', outline: 'none', boxSizing: 'border-box',
                   }}
                 />
+                    <button
+                      type="button"
+                      onClick={() => setMostrarSenha(!mostrarSenha)}
+                      style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#525252', padding: 0 }}
+                    >
+                      {mostrarSenha ? <EyeOff size={14} strokeWidth={1.5} /> : <Eye size={14} strokeWidth={1.5} />}
+                    </button>
               </div>
             </div>
 

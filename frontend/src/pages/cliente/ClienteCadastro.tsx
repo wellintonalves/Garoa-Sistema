@@ -313,7 +313,7 @@ export function ClienteCadastro() {
               <Lock size={15} strokeWidth={1.5} style={iconStyle} />
               <input
                 id="cadastro-senha"
-                type="password"
+                type={mostrarSenha ? "text" : "password"}
                 value={senha}
                 onChange={(e) => setSenha(e.target.value)}
                 placeholder="Mínimo 6 caracteres"
@@ -322,6 +322,13 @@ export function ClienteCadastro() {
                 onFocus={handleFocus}
                 onBlur={handleBlur}
               />
+                    <button
+                      type="button"
+                      onClick={() => setMostrarSenha(!mostrarSenha)}
+                      style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#525252', padding: 0 }}
+                    >
+                      {mostrarSenha ? <EyeOff size={14} strokeWidth={1.5} /> : <Eye size={14} strokeWidth={1.5} />}
+                    </button>
             </div>
           </div>
 
