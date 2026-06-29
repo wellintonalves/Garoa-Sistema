@@ -18,6 +18,7 @@ interface DadosLogin {
   email: string;
   senha: string;
   barbeariaId?: string;
+  papel?: Papel;
 }
 
 interface RespostaAuth {
@@ -88,6 +89,11 @@ export class AuthService {
     const senhaValida = await bcrypt.compare(dados.senha, usuario.senha);
 
     if (!senhaValida) {
+      throw new Error('Email ou senha incorretos');
+    }
+
+    // Valida que o usuário tem o papel exigido pelo portal de login
+    if (dados.papel && usuario.papel !== dados.papel) {
       throw new Error('Email ou senha incorretos');
     }
 

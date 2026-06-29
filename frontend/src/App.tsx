@@ -18,11 +18,11 @@ import { type ReactNode, useEffect } from 'react';
 import { useTema } from './hooks/useTema';
 import { useModoTema } from './hooks/useModoTema';
 
-/** Rota protegida — redireciona para login se não autenticado */
+/** Rota protegida — só permite acesso a usuários com papel ADMIN */
 function RotaProtegida({ children }: { children: ReactNode }) {
   const { usuario, carregando } = useAuth();
   if (carregando) return <LoadingSpinner />;
-  if (!usuario) return <Navigate to="/admin/login" replace />;
+  if (!usuario || usuario.papel !== 'ADMIN') return <Navigate to="/admin/login" replace />;
   return <>{children}</>;
 }
 

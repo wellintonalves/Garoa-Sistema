@@ -27,6 +27,9 @@ export function AdminLogin() {
     setCarregando(true);
     try {
       const res = await api.post('/auth/login', { email, senha, papel: 'ADMIN' });
+      if (res.data.usuario?.papel !== 'ADMIN') {
+        throw new Error('Acesso não autorizado');
+      }
       loginDireto(res.data.token, res.data.usuario);
       navigate('/admin');
     } catch (err: any) {
