@@ -91,7 +91,7 @@ export function Agenda() {
 
   // Form
   const [form, setForm] = useState({ clienteId: '', barbeiroId: '', servicoId: '', dataHora: '', observacoes: '' });
-  const [formBloqueio, setFormBloqueio] = useState({ barbeiroId: '', dataInicio: '', dataFim: '', motivo: '' });
+  const [formBloqueio, setFormBloqueio] = useState({ barbeiroId: '', data: '', horaInicio: '', horaFim: '', motivo: '' });
 
   const diasDaSemana = Array.from({ length: 7 }, (_, i) => {
     const d = new Date(semanaInicio); d.setDate(semanaInicio.getDate() + i); return d;
@@ -110,6 +110,10 @@ export function Agenda() {
       // Carregar bloqueios
       const resBloq = await api.get<Bloqueio[]>('/bloqueios');
       setBloqueios(resBloq.data);
+
+      // Carregar barbeiros
+      const resBarb = await api.get<Barbeiro[]>('/barbeiros');
+      setBarbeiros(resBarb.data);
     } catch (err) {
       console.error('Erro ao carregar agenda:', err);
     } finally {
@@ -117,16 +121,7 @@ export function Agenda() {
     }
   }, [semanaInicio]);
 
-  const carregarBarbeiros = useCallback(async () => {
-    try {
-      const res = await api.get<Barbeiro[]>('/barbeiros');
-      setBarbeiros(res.data);
-    } catch (err) {
-      console.error('Erro ao carregar barbeiros:', err);
-    }
-  }, []);
-
-  useEffect(() => { carregar(); carregarBarbeiros(); }, [carregar, carregarBarbeiros]);
+  useEffect(() => { carregar(); }, [carregar]);
 
   async function abrirModal() {
     try {
@@ -156,9 +151,16 @@ export function Agenda() {
 
   async function criarBloqueio() {
     try {
-      await api.post('/bloqueios', formBloqueio);
+      const dataInicioStr = `${formBloqueio.data}T${formBloqueio.horaInicio}:00-03:00`;
+      const dataFimStr = `${formBloqueio.data}T${formBloqueio.horaFim}:00-03:00`;
+      await api.post('/bloqueios', {
+        barbeiroId: formBloqueio.barbeiroId,
+        dataInicio: dataInicioStr,
+        dataFim: dataFimStr,
+        motivo: formBloqueio.motivo
+      });
       setModalBloqueioAberto(false);
-      setFormBloqueio({ barbeiroId: '', dataInicio: '', dataFim: '', motivo: '' });
+      setFormBloqueio({ barbeiroId: '', data: '', horaInicio: '', horaFim: '', motivo: '' });
       carregar();
     } catch (err: any) {
       alert(err.response?.data?.erro || 'Erro ao criar bloqueio');
@@ -503,12 +505,18 @@ export function Agenda() {
             </select>
           </div>
           <div>
-            <label className="input-label">Início</label>
-            <input type="datetime-local" value={formBloqueio.dataInicio} onChange={(e) => setFormBloqueio({ ...formBloqueio, dataInicio: e.target.value })} className="ds-input" />
+            <label className="input-label">Data</label>
+            <input type="date" value={formBloqueio.data} onChange={(e) => setFormBloqueio({ ...formBloqueio, data: e.target.value })} className="ds-input" />
           </div>
-          <div>
-            <label className="input-label">Fim</label>
-            <input type="datetime-local" value={formBloqueio.dataFim} onChange={(e) => setFormBloqueio({ ...formBloqueio, dataFim: e.target.value })} className="ds-input" />
+          <div className="flex gap-4">
+            <div className="flex-1">
+              <label className="input-label">Hora Início</label>
+              <input type="time" value={formBloqueio.horaInicio} onChange={(e) => setFormBloqueio({ ...formBloqueio, horaInicio: e.target.value })} className="ds-input" />
+            </div>
+            <div className="flex-1">
+              <label className="input-label">Hora Fim</label>
+              <input type="time" value={formBloqueio.horaFim} onChange={(e) => setFormBloqueio({ ...formBloqueio, horaFim: e.target.value })} className="ds-input" />
+            </div>
           </div>
           <div>
             <label className="input-label">Motivo (Opcional)</label>

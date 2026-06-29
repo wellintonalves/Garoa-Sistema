@@ -25,7 +25,7 @@ export function BarbeiroAgenda() {
   const [carregando, setCarregando] = useState(false);
   
   const [modalAberto, setModalAberto] = useState(false);
-  const [form, setForm] = useState({ dataInicio: '', dataFim: '', motivo: '' });
+  const [form, setForm] = useState({ data: '', horaInicio: '', horaFim: '', motivo: '' });
 
   function carregar() {
     setCarregando(true);
@@ -46,10 +46,17 @@ export function BarbeiroAgenda() {
 
   async function criarBloqueio() {
     try {
+      const dataInicioStr = `${form.data}T${form.horaInicio}:00-03:00`;
+      const dataFimStr = `${form.data}T${form.horaFim}:00-03:00`;
       const { barbeiroId } = JSON.parse(localStorage.getItem('@garoa:barbeiro_dados') || '{}');
-      await barbeiroApi.post('/bloqueios', { ...form, barbeiroId });
+      await barbeiroApi.post('/bloqueios', { 
+        barbeiroId,
+        dataInicio: dataInicioStr,
+        dataFim: dataFimStr,
+        motivo: form.motivo 
+      });
       setModalAberto(false);
-      setForm({ dataInicio: '', dataFim: '', motivo: '' });
+      setForm({ data: '', horaInicio: '', horaFim: '', motivo: '' });
       carregar();
     } catch (err: any) {
       alert(err.response?.data?.erro || 'Erro ao bloquear horário');
@@ -144,12 +151,18 @@ export function BarbeiroAgenda() {
             <h2 className="text-lg mb-4 text-[var(--text-primary)]">Bloquear Horário</h2>
             <div className="flex flex-col gap-4">
               <div>
-                <label className="input-label">Início</label>
-                <input type="datetime-local" value={form.dataInicio} onChange={e => setForm({...form, dataInicio: e.target.value})} className="ds-input" />
+                <label className="input-label">Data</label>
+                <input type="date" value={form.data} onChange={e => setForm({...form, data: e.target.value})} className="ds-input" />
               </div>
-              <div>
-                <label className="input-label">Fim</label>
-                <input type="datetime-local" value={form.dataFim} onChange={e => setForm({...form, dataFim: e.target.value})} className="ds-input" />
+              <div className="flex gap-4">
+                <div className="flex-1">
+                  <label className="input-label">Hora Início</label>
+                  <input type="time" value={form.horaInicio} onChange={e => setForm({...form, horaInicio: e.target.value})} className="ds-input" />
+                </div>
+                <div className="flex-1">
+                  <label className="input-label">Hora Fim</label>
+                  <input type="time" value={form.horaFim} onChange={e => setForm({...form, horaFim: e.target.value})} className="ds-input" />
+                </div>
               </div>
               <div>
                 <label className="input-label">Motivo (Opcional)</label>
