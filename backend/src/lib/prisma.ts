@@ -18,7 +18,7 @@ export const prisma = basePrisma.$extends({
         const barbeariaId = store?.barbeariaId;
 
         // Modelos globais ou multi-tenant explícitos que não devem ter isolamento automático rígido
-        const ignoredModels = ['Barbearia', 'Usuario', 'Cliente', 'ClienteBarbearia'];
+        const ignoredModels = ['Barbearia', 'Usuario', 'Cliente', 'ClienteBarbearia', 'AprovacaoEdicao'];
         
         if (barbeariaId && !ignoredModels.includes(model)) {
           if (['findMany', 'findFirst', 'findUnique', 'count', 'updateMany', 'deleteMany'].includes(operation)) {
