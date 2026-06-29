@@ -29,22 +29,19 @@ export interface BarbeiroJWT {
 }
 
 /** Request com dados do usuário admin autenticado */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export interface AuthRequest extends Request<Record<string, string>, any, any> {
+export type AuthRequest = Request<any, any, any, any> & {
   usuario?: UsuarioJWT;
-}
+};
 
 /** Request com dados do cliente autenticado */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export interface ClienteAuthRequest extends Request<Record<string, string>, any, any> {
+export type ClienteAuthRequest = Request<any, any, any, any> & {
   cliente?: ClienteJWT;
-}
+};
 
 /** Request com dados do barbeiro autenticado */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export interface BarbeiroAuthRequest extends Request<Record<string, string>, any, any> {
+export type BarbeiroAuthRequest = Request<any, any, any, any> & {
   barbeiro?: BarbeiroJWT;
-}
+};
 
 /** Resposta padrão de erro */
 export interface RespostaErro {
