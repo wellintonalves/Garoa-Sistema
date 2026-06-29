@@ -101,28 +101,36 @@ export function Agenda() {
     setCarregando(true);
     
     try {
-      const promises = diasDaSemana.map((d) =>
+      const promisesAgendamentos = diasDaSemana.map((d) =>
         api.get<Agendamento[]>('/agendamentos', { params: { data: d.toISOString().split('T')[0] } })
       );
-      const resultados = await Promise.all(promises);
-      const todos = resultados.flatMap((r) => r.data);
-      setAgendamentos(todos);
-    } catch (err) {
-      console.error('Erro ao carregar agendamentos:', err);
-    }
 
-    try {
-      const resBloq = await api.get<Bloqueio[]>('/bloqueios');
-      setBloqueios(resBloq.data);
-    } catch (err) {
-      console.error('Erro ao carregar bloqueios:', err);
-    }
+      const [resAgendamentos, resBloq, resBarb] = await Promise.allSettled([
+        Promise.all(promisesAgendamentos),
+        api.get<Bloqueio[]>('/bloqueios'),
+        api.get<Barbeiro[]>('/barbeiros')
+      ]);
 
-    try {
-      const resBarb = await api.get<Barbeiro[]>('/barbeiros');
-      setBarbeiros(resBarb.data);
+      if (resAgendamentos.status === 'fulfilled') {
+        const todos = resAgendamentos.value.flatMap((r) => r.data);
+        setAgendamentos(todos);
+      } else {
+        console.error('Erro ao carregar agendamentos:', resAgendamentos.reason);
+      }
+
+      if (resBloq.status === 'fulfilled') {
+        setBloqueios(resBloq.value.data);
+      } else {
+        console.error('Erro ao carregar bloqueios:', resBloq.reason);
+      }
+
+      if (resBarb.status === 'fulfilled') {
+        setBarbeiros(resBarb.value.data);
+      } else {
+        console.error('Erro ao carregar barbeiros:', resBarb.reason);
+      }
     } catch (err) {
-      console.error('Erro ao carregar barbeiros:', err);
+      console.error('Erro inesperado no carregar:', err);
     }
 
     setCarregando(false);
