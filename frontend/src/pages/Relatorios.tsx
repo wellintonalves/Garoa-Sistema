@@ -357,21 +357,23 @@ export function Relatorios() {
                       <td style={{ textAlign: 'right', fontFamily: 'var(--fonte-numeros)', fontSize: '12px', color: 'var(--text-primary)' }}>{fmt(l.valor)}</td>
                       <td style={{ textAlign: 'right', fontFamily: 'var(--fonte-numeros)', fontSize: '12px', color: 'var(--error-text)' }}>{l.valorComissao ? fmt(l.valorComissao) : '—'}</td>
                       <td style={{ textAlign: 'right', fontFamily: 'var(--fonte-numeros)', fontSize: '12px', color: 'var(--success-text)', fontWeight: 500 }}>{l.valorLiquido ? fmt(l.valorLiquido) : fmt(l.valor)}</td>
-                      <td style={{ textAlign: 'center', display: 'flex', gap: '8px', justifyContent: 'center' }}>
-                        <button
-                          onClick={() => handleEditar(l)}
-                          style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}
-                          title="Editar lançamento"
-                        >
-                          <Pencil size={14} />
-                        </button>
-                        <button
-                          onClick={() => excluirLancamento(l.id)}
-                          style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--error-text)' }}
-                          title="Excluir lançamento"
-                        >
-                          <Trash2 size={14} />
-                        </button>
+                      <td style={{ textAlign: 'center', verticalAlign: 'middle' }}>
+                        <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', alignItems: 'center' }}>
+                          <button
+                            onClick={() => handleEditar(l)}
+                            style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}
+                            title="Editar lançamento"
+                          >
+                            <Pencil size={14} />
+                          </button>
+                          <button
+                            onClick={() => excluirLancamento(l.id)}
+                            style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--error-text)' }}
+                            title="Excluir lançamento"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
