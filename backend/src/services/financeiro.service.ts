@@ -88,7 +88,7 @@ export class FinanceiroService {
           lancamentoId: id,
           barbeiroId: lancamento.barbeiroId,
           acao: 'EDITAR',
-          dadosNovos: dados as any,
+          dadosNovos: JSON.parse(JSON.stringify(dados)),
         }
       });
       return { status: 'PENDENTE', aprovacao };
@@ -114,7 +114,7 @@ export class FinanceiroService {
           lancamentoId: lancamentoIdReferencia,
           barbeiroId: dados.barbeiroId,
           acao: 'ADICIONAR',
-          dadosNovos: dados as any,
+          dadosNovos: JSON.parse(JSON.stringify(dados)),
         }
       });
       return { status: 'PENDENTE', aprovacao };
