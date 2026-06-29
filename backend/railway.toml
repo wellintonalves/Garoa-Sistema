@@ -1,8 +1,8 @@
 [build]
 builder = "nixpacks"
-buildCommand = "npm install && npm run build -w backend"
+buildCommand = "npm install && npm run build"
 
 [deploy]
-startCommand = "npx prisma db push --skip-generate --accept-data-loss --schema=./backend/prisma/schema.prisma && node ./backend/dist/server.js"
+startCommand = "npx prisma db push --skip-generate --accept-data-loss && node dist/server.js"
 restartPolicyType = "on_failure"
 restartPolicyMaxRetries = 3
