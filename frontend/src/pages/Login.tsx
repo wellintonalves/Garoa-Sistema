@@ -1,13 +1,14 @@
 // Página de Login — estética industrial (âmbar + cantos retos + sem gradientes)
 import { useState, useEffect, type FormEvent } from 'react';
 import { useAuth } from '../hooks/useAuth';
-import { Mail, Lock, AlertCircle, UserPlus, User, CheckCircle2, ChevronLeft } from 'lucide-react';
+import { Mail, Lock, AlertCircle, UserPlus, User, CheckCircle2, ChevronLeft, Eye, EyeOff } from 'lucide-react';
 import api from '../api/client';
 
 export function Login() {
   const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
+  const [mostrarSenha, setMostrarSenha] = useState(false);
   const [erro, setErro] = useState('');
   const [carregando, setCarregando] = useState(false);
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
@@ -17,6 +18,7 @@ export function Login() {
   const [regNome, setRegNome] = useState('');
   const [regEmail, setRegEmail] = useState('');
   const [regSenha, setRegSenha] = useState('');
+  const [mostrarRegSenha, setMostrarRegSenha] = useState(false);
   const [regErro, setRegErro] = useState('');
   const [regCarregando, setRegCarregando] = useState(false);
   const [adminCriado, setAdminCriado] = useState(false);

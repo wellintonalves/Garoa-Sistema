@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Mail, Lock, AlertCircle, CheckCircle, ArrowLeft } from 'lucide-react';
+import { Mail, Lock, AlertCircle, CheckCircle, ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import api from '../api/client';
 
 type Etapa = 'email' | 'codigo' | 'nova-senha' | 'sucesso';
@@ -11,7 +11,9 @@ export function RecuperarSenha() {
   const [email, setEmail] = useState('');
   const [codigos, setCodigos] = useState(['', '', '', '', '', '']);
   const [novaSenha, setNovaSenha] = useState('');
+  const [mostrarNovaSenha, setMostrarNovaSenha] = useState(false);
   const [confirmarSenha, setConfirmarSenha] = useState('');
+  const [mostrarConfirmarSenha, setMostrarConfirmarSenha] = useState(false);
   const [erro, setErro] = useState('');
   const [carregando, setCarregando] = useState(false);
   const [countdown, setCountdown] = useState(60);

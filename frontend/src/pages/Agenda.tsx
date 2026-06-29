@@ -1,6 +1,6 @@
 // Página de Agenda — calendário semanal com estética industrial
 import { useEffect, useState, useCallback } from 'react';
-import { ChevronLeft, ChevronRight, Plus, Pencil, Trash2, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import { Modal } from '../components/Modal';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import api from '../api/client';
@@ -40,12 +40,10 @@ interface Agendamento {
   status: 'AGUARDANDO' | 'CONFIRMADO' | 'CONCLUIDO' | 'CANCELADO';
   valorCobrado: string;
   origem?: string;
-  observacoes?: string;
   cliente: { usuario: { nome: string } };
   barbeiroId: string;
   barbeiro: { usuario: { nome: string }; cor: string };
   servico: { nome: string; duracaoMinutos: number; cor: string };
-  servicosIds?: string[];
 }
 
 interface Barbeiro { id: string; usuario: { nome: string }; cor: string }
@@ -81,13 +79,7 @@ export function Agenda() {
   const [servicos, setServicos] = useState<Servico[]>([]);
   const [filtroBarbeiro, setFiltroBarbeiro] = useState('todos');
 
-  // Detalhe / Editar / Excluir
-  const [detalhe, setDetalhe] = useState<Agendamento | null>(null);
-  const [confirmarExclusao, setConfirmarExclusao] = useState<Agendamento | null>(null);
-  const [modalEditarAberto, setModalEditarAberto] = useState(false);
-  const [formEditar, setFormEditar] = useState({ status: '', dataHora: '', observacoes: '', valorCobrado: '' });
-
-  // Form novo agendamento
+  // Form
   const [form, setForm] = useState({ clienteId: '', barbeiroId: '', servicoId: '', dataHora: '', observacoes: '' });
 
   const diasDaSemana = Array.from({ length: 7 }, (_, i) => {
@@ -147,58 +139,10 @@ export function Agenda() {
     }
   }
 
-  async function excluirAgendamento() {
-    if (!confirmarExclusao) return;
-    try {
-      await api.delete(`/agendamentos/${confirmarExclusao.id}`);
-      setConfirmarExclusao(null);
-      setDetalhe(null);
-      carregar();
-    } catch (err) {
-      console.error('Erro ao excluir:', err);
-    }
-  }
-
   function mudarSemana(direcao: number) {
     const nova = new Date(semanaInicio);
     nova.setDate(nova.getDate() + direcao * 7);
     setSemanaInicio(nova);
-  }
-
-  // Para salvarEdicao ser chamada com o agendamento sendo editado,
-  // vamos guardar o id do agendamento sendo editado
-  const [editandoId, setEditandoId] = useState<string | null>(null);
-
-  function abrirEditarComId(ag: Agendamento) {
-    const local = new Date(ag.dataHora);
-    const pad = (n: number) => String(n).padStart(2, '0');
-    const localStr = `${local.getFullYear()}-${pad(local.getMonth()+1)}-${pad(local.getDate())}T${pad(local.getHours())}:${pad(local.getMinutes())}`;
-    setFormEditar({
-      status: ag.status,
-      dataHora: localStr,
-      observacoes: ag.observacoes || '',
-      valorCobrado: ag.valorCobrado,
-    });
-    setEditandoId(ag.id);
-    setDetalhe(null);
-    setModalEditarAberto(true);
-  }
-
-  async function salvarEdicaoFinal() {
-    if (!editandoId) return;
-    try {
-      await api.put(`/agendamentos/${editandoId}`, {
-        status: formEditar.status,
-        dataHora: new Date(formEditar.dataHora).toISOString(),
-        observacoes: formEditar.observacoes,
-        valorCobrado: Number(formEditar.valorCobrado),
-      });
-      setModalEditarAberto(false);
-      setEditandoId(null);
-      carregar();
-    } catch (err) {
-      console.error('Erro ao salvar edição:', err);
-    }
   }
 
   if (carregando) return <LoadingSpinner />;
@@ -353,6 +297,7 @@ export function Agenda() {
                   const diaISO = dia.toISOString().split('T')[0];
                   const hm = getHoraMinutoBrasilia(d);
                   const horarioAg = `${String(hm.hora).padStart(2, '0')}:${String(hm.minuto).padStart(2, '0')}`;
+                  
                   const checkBarbeiro = filtroBarbeiro === 'todos' || ag.barbeiroId === filtroBarbeiro;
                   return dataBR === diaISO && horarioAg === horario && checkBarbeiro;
                 });
@@ -364,14 +309,14 @@ export function Agenda() {
                       const isConcluido = ag.status === 'CONCLUIDO';
                       const corB = isCancelado ? '#ef4444' : (ag.barbeiro.cor || '#F97316');
                       const bgB = isCancelado ? '#ef444420' : (corB + '20');
+                      
                       const corS = ag.servico.cor || '#22C55E';
                       const bgS = corS + '30';
 
                       return (
                         <div
                           key={ag.id}
-                          className="group truncate cursor-pointer"
-                          onClick={() => setDetalhe(ag)}
+                          className="truncate cursor-pointer"
                           style={{
                             padding: '4px 8px',
                             background: bgB,
@@ -382,42 +327,24 @@ export function Agenda() {
                             fontSize: '11px',
                             marginBottom: '4px',
                             position: 'relative',
-                            borderRadius: '0 4px 4px 0',
+                            borderRadius: '0 4px 4px 0'
                           }}
                         >
                           <div className="flex justify-between items-start mb-1">
                             <p className="truncate pr-1" style={{ fontWeight: 600 }}>{ag.cliente.usuario.nome}</p>
-                            <div className="flex items-center gap-1">
-                              {ag.origem === 'ONLINE' && (
-                                <span className="bg-[var(--cor-primaria)] text-black px-1 rounded text-[8px] font-bold">WEB</span>
-                              )}
-                              <button
-                                onClick={(e) => { e.stopPropagation(); abrirEditarComId(ag); }}
-                                className="opacity-0 group-hover:opacity-100 transition-opacity"
-                                style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: '1px', lineHeight: 0 }}
-                                title="Editar"
-                              >
-                                <Pencil size={10} strokeWidth={1.5} />
-                              </button>
-                              <button
-                                onClick={(e) => { e.stopPropagation(); setConfirmarExclusao(ag); }}
-                                className="opacity-0 group-hover:opacity-100 transition-opacity"
-                                style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#ef4444', padding: '1px', lineHeight: 0 }}
-                                title="Excluir"
-                              >
-                                <Trash2 size={10} strokeWidth={1.5} />
-                              </button>
-                            </div>
+                            {ag.origem === 'ONLINE' && (
+                              <span className="bg-[var(--cor-primaria)] text-black px-1 rounded text-[8px] font-bold">WEB</span>
+                            )}
                           </div>
-                          <p className="truncate" style={{
-                            fontFamily: 'var(--fonte-interface)',
-                            fontSize: '9px',
-                            background: bgS,
+                          <p className="truncate" style={{ 
+                            fontFamily: 'var(--fonte-interface)', 
+                            fontSize: '9px', 
+                            background: bgS, 
                             color: 'var(--text-primary)',
-                            padding: '2px 4px',
-                            borderRadius: '2px',
-                            display: 'inline-block',
-                            border: `1px solid ${corS}50`
+                            padding: '2px 4px', 
+                            borderRadius: '2px', 
+                            display: 'inline-block', 
+                            border: `1px solid ${corS}50` 
                           }}>
                             {ag.servico.nome}
                           </p>
@@ -487,170 +414,6 @@ export function Agenda() {
           <button onClick={criarAgendamento} className="btn-primary w-full justify-center">
             Criar Agendamento
           </button>
-        </div>
-      </Modal>
-
-      {/* Painel de detalhe do agendamento */}
-      {detalhe && (
-        <div
-          style={{
-            position: 'fixed', top: 0, right: 0, bottom: 0, width: '360px',
-            background: 'var(--bg-surface)', borderLeft: '1px solid var(--border)',
-            zIndex: 50, display: 'flex', flexDirection: 'column', padding: '24px',
-            gap: '16px', overflowY: 'auto',
-          }}
-        >
-          <div className="flex justify-between items-start">
-            <h2 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '18px', color: 'var(--text-primary)', letterSpacing: '0.04em' }}>
-              Agendamento
-            </h2>
-            <button onClick={() => setDetalhe(null)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}>
-              <X size={18} strokeWidth={1.5} />
-            </button>
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <div>
-              <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-muted)', marginBottom: '4px' }}>Cliente</p>
-              <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '14px', color: 'var(--text-primary)', fontWeight: 600 }}>{detalhe.cliente.usuario.nome}</p>
-            </div>
-            <div>
-              <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-muted)', marginBottom: '4px' }}>Barbeiro</p>
-              <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '14px', color: 'var(--text-primary)' }}>{detalhe.barbeiro.usuario.nome}</p>
-            </div>
-            <div>
-              <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-muted)', marginBottom: '4px' }}>Serviço</p>
-              <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '14px', color: 'var(--text-primary)' }}>{detalhe.servico.nome} · {detalhe.servico.duracaoMinutos} min</p>
-            </div>
-            <div>
-              <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-muted)', marginBottom: '4px' }}>Data / Hora</p>
-              <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '14px', color: 'var(--text-primary)' }}>
-                {new Date(detalhe.dataHora).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
-              </p>
-            </div>
-            <div>
-              <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-muted)', marginBottom: '4px' }}>Valor</p>
-              <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '14px', color: 'var(--text-primary)' }}>R$ {Number(detalhe.valorCobrado).toFixed(2)}</p>
-            </div>
-            <div>
-              <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-muted)', marginBottom: '4px' }}>Status</p>
-              <span style={{
-                fontFamily: 'var(--fonte-interface)', fontSize: '11px', fontWeight: 600,
-                padding: '4px 10px', borderRadius: '4px',
-                background: statusStyles[detalhe.status]?.bg,
-                color: statusStyles[detalhe.status]?.border,
-                border: `1px solid ${statusStyles[detalhe.status]?.border}`,
-              }}>
-                {statusLabels[detalhe.status]}
-              </span>
-            </div>
-            {detalhe.observacoes && (
-              <div>
-                <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-muted)', marginBottom: '4px' }}>Observações</p>
-                <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '13px', color: 'var(--text-secondary)' }}>{detalhe.observacoes}</p>
-              </div>
-            )}
-            {detalhe.origem === 'ONLINE' && (
-              <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', fontWeight: 700, color: 'black', background: 'var(--cor-primaria)', padding: '2px 8px', borderRadius: '4px', width: 'fit-content' }}>
-                AGENDADO ONLINE
-              </span>
-            )}
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: 'auto' }}>
-            <button
-              onClick={() => abrirEditarComId(detalhe)}
-              className="btn-primary w-full justify-center"
-              style={{ gap: '8px' }}
-            >
-              <Pencil size={14} strokeWidth={1.5} /> Editar
-            </button>
-            <button
-              onClick={() => { setConfirmarExclusao(detalhe); setDetalhe(null); }}
-              style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-                width: '100%', padding: '10px', background: 'transparent',
-                border: '1px solid #ef4444', color: '#ef4444',
-                fontFamily: 'var(--fonte-interface)', fontSize: '12px', fontWeight: 600,
-                cursor: 'pointer', borderRadius: '4px',
-              }}
-            >
-              <Trash2 size={14} strokeWidth={1.5} /> Excluir
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Overlay para fechar painel de detalhe */}
-      {detalhe && (
-        <div
-          onClick={() => setDetalhe(null)}
-          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 49 }}
-        />
-      )}
-
-      {/* Modal Editar Agendamento */}
-      <Modal aberto={modalEditarAberto} onFechar={() => { setModalEditarAberto(false); setEditandoId(null); }} titulo="Editar Agendamento">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <div>
-            <label className="input-label">Status</label>
-            <select value={formEditar.status} onChange={(e) => setFormEditar({ ...formEditar, status: e.target.value })} className="ds-select">
-              <option value="AGUARDANDO">Aguardando</option>
-              <option value="CONFIRMADO">Confirmado</option>
-              <option value="CONCLUIDO">Concluído</option>
-              <option value="CANCELADO">Cancelado</option>
-            </select>
-          </div>
-          <div>
-            <label className="input-label">Data e Horário</label>
-            <input type="datetime-local" value={formEditar.dataHora} onChange={(e) => setFormEditar({ ...formEditar, dataHora: e.target.value })} className="ds-input" />
-          </div>
-          <div>
-            <label className="input-label">Valor Cobrado (R$)</label>
-            <input type="number" step="0.01" value={formEditar.valorCobrado} onChange={(e) => setFormEditar({ ...formEditar, valorCobrado: e.target.value })} className="ds-input" />
-          </div>
-          <div>
-            <label className="input-label">Observações</label>
-            <textarea value={formEditar.observacoes} onChange={(e) => setFormEditar({ ...formEditar, observacoes: e.target.value })} rows={2} className="ds-textarea" />
-          </div>
-          <button onClick={salvarEdicaoFinal} className="btn-primary w-full justify-center">
-            Salvar Alterações
-          </button>
-        </div>
-      </Modal>
-
-      {/* Modal Confirmar Exclusão */}
-      <Modal aberto={!!confirmarExclusao} onFechar={() => setConfirmarExclusao(null)} titulo="Excluir Agendamento">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '14px', color: 'var(--text-secondary)' }}>
-            Tem certeza que deseja excluir o agendamento de{' '}
-            <strong style={{ color: 'var(--text-primary)' }}>{confirmarExclusao?.cliente.usuario.nome}</strong>{' '}
-            — {confirmarExclusao?.servico.nome}?
-          </p>
-          <div className="flex gap-3">
-            <button
-              onClick={() => setConfirmarExclusao(null)}
-              style={{
-                flex: 1, padding: '10px', background: 'var(--bg-surface2)',
-                border: '1px solid var(--border)', color: 'var(--text-primary)',
-                fontFamily: 'var(--fonte-interface)', fontSize: '12px', fontWeight: 600,
-                cursor: 'pointer', borderRadius: '4px',
-              }}
-            >
-              Cancelar
-            </button>
-            <button
-              onClick={excluirAgendamento}
-              style={{
-                flex: 1, padding: '10px', background: '#ef4444',
-                border: '1px solid #ef4444', color: 'white',
-                fontFamily: 'var(--fonte-interface)', fontSize: '12px', fontWeight: 600,
-                cursor: 'pointer', borderRadius: '4px',
-              }}
-            >
-              Excluir
-            </button>
-          </div>
         </div>
       </Modal>
     </div>

@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Lottie from 'lottie-react';
 import { useClienteAuth } from '../../hooks/useClienteAuth';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import clienteAnimation from '../../assets/lotties/cliente-animation.json';
 
 export function ClienteLogin() {
@@ -11,6 +11,7 @@ export function ClienteLogin() {
   const { login } = useClienteAuth();
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
+  const [mostrarSenha, setMostrarSenha] = useState(false);
   const [erro, setErro] = useState('');
   const [enviando, setEnviando] = useState(false);
 

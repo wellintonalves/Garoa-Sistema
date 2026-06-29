@@ -1,6 +1,6 @@
 // Página Financeiro — industrial
 import { useEffect, useState } from 'react';
-import { Plus, TrendingUp, TrendingDown, Pencil, Trash2 } from 'lucide-react';
+import { Plus, TrendingUp, TrendingDown } from 'lucide-react';
 import { Modal } from '../components/Modal';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import api from '../api/client';
@@ -37,13 +37,9 @@ export function Financeiro() {
   
   const [carregando, setCarregando] = useState(true);
   const [modalAberto, setModalAberto] = useState(false);
-  const [modalEditarAberto, setModalEditarAberto] = useState(false);
-  const [lancamentoEditando, setLancamentoEditando] = useState<Lancamento | null>(null);
-  const [confirmarExclusao, setConfirmarExclusao] = useState<Lancamento | null>(null);
-
+  
   const formPadrao = { tipo: 'ENTRADA', categoria: '', descricao: '', valor: '', formaPagamento: 'PIX', data: new Date().toISOString().split('T')[0], servicoId: '', barbeiroId: '' };
   const [form, setForm] = useState(formPadrao);
-  const [formEditar, setFormEditar] = useState(formPadrao);
 
   async function carregar() {
     try {
@@ -72,36 +68,6 @@ export function Financeiro() {
       }
     }
   }, [form.servicoId, servicos]);
-
-  function abrirEditar(l: Lancamento) {
-    setLancamentoEditando(l);
-    setFormEditar({
-      tipo: l.tipo, categoria: l.categoria, descricao: l.descricao || '',
-      valor: l.valor, formaPagamento: l.formaPagamento,
-      data: l.data.split('T')[0], servicoId: '', barbeiroId: ''
-    });
-    setModalEditarAberto(true);
-  }
-
-  async function salvarEdicao() {
-    if (!lancamentoEditando) return;
-    try {
-      await api.put(`/financeiro/${lancamentoEditando.id}`, {
-        ...formEditar, valor: Number(formEditar.valor)
-      });
-      setModalEditarAberto(false); setLancamentoEditando(null);
-      carregar();
-    } catch (e) { console.error(e); }
-  }
-
-  async function excluirLancamento() {
-    if (!confirmarExclusao) return;
-    try {
-      await api.delete(`/financeiro/${confirmarExclusao.id}`);
-      setConfirmarExclusao(null);
-      carregar();
-    } catch (e) { console.error(e); }
-  }
 
   async function criarLancamento() {
     try {
@@ -223,7 +189,7 @@ export function Financeiro() {
           {lancamentos.map((l, i) => (
             <div
               key={l.id}
-              className="group flex items-center justify-between transition-colors"
+              className="flex items-center justify-between transition-colors"
               style={{
                 padding: '1rem 1.25rem',
                 borderBottom: i < lancamentos.length - 1 ? '1px solid var(--border)' : 'none',
@@ -242,29 +208,13 @@ export function Financeiro() {
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-3">
-                <div style={{ textAlign: 'right' }}>
-                  <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '14px', fontWeight: 500, color: l.tipo === 'ENTRADA' ? 'var(--success-text)' : 'var(--error-text)' }}>
-                    {l.tipo === 'ENTRADA' ? '+' : '-'} {fmt(Number(l.valor))}
-                  </p>
-                  <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '9px', letterSpacing: '0.04em', color: 'var(--text-muted)', marginTop: '2px' }}>
-                    {labelsForma[l.formaPagamento] || l.formaPagamento}
-                  </p>
-                </div>
-                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <button onClick={() => abrirEditar(l)} title="Editar"
-                    style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: '4px', padding: '4px 6px', cursor: 'pointer', color: 'var(--text-muted)', display: 'flex', alignItems: 'center' }}
-                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = 'var(--amber)'; }}
-                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'var(--text-muted)'; }}>
-                    <Pencil size={12} />
-                  </button>
-                  <button onClick={() => setConfirmarExclusao(l)} title="Excluir"
-                    style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: '4px', padding: '4px 6px', cursor: 'pointer', color: 'var(--text-muted)', display: 'flex', alignItems: 'center' }}
-                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = 'var(--error-text)'; }}
-                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'var(--text-muted)'; }}>
-                    <Trash2 size={12} />
-                  </button>
-                </div>
+              <div style={{ textAlign: 'right' }}>
+                <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '14px', fontWeight: 500, color: l.tipo === 'ENTRADA' ? 'var(--success-text)' : 'var(--error-text)' }}>
+                  {l.tipo === 'ENTRADA' ? '+' : '-'} {fmt(Number(l.valor))}
+                </p>
+                <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '9px', letterSpacing: '0.04em', color: 'var(--text-muted)', marginTop: '2px' }}>
+                  {labelsForma[l.formaPagamento] || l.formaPagamento}
+                </p>
               </div>
             </div>
           ))}
@@ -275,43 +225,6 @@ export function Financeiro() {
           )}
         </div>
       </div>
-
-      {/* Modal Editar */}
-      <Modal aberto={modalEditarAberto} onFechar={() => setModalEditarAberto(false)} titulo="Editar Lançamento">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            {(['ENTRADA', 'SAIDA'] as const).map(t => {
-              const isSelected = formEditar.tipo === t;
-              const activeColor = t === 'ENTRADA' ? 'var(--success-text)' : 'var(--error-text)';
-              return (
-                <button key={t} onClick={() => setFormEditar({...formEditar, tipo: t})}
-                  style={{ padding: '8px', fontFamily: 'var(--fonte-interface)', fontSize: '11px', letterSpacing: '0.1em', textTransform: 'uppercase', cursor: 'pointer', background: isSelected ? 'var(--bg-surface2)' : 'transparent', border: `1px solid ${isSelected ? activeColor : 'var(--border)'}`, color: isSelected ? activeColor : 'var(--text-muted)' }}>
-                  {t === 'ENTRADA' ? 'Entrada' : 'Saída'}
-                </button>
-              );
-            })}
-          </div>
-          <div><label className="input-label">Categoria</label><input value={formEditar.categoria} onChange={e => setFormEditar({...formEditar, categoria: e.target.value})} className="ds-input" /></div>
-          <div><label className="input-label">Descrição</label><input value={formEditar.descricao} onChange={e => setFormEditar({...formEditar, descricao: e.target.value})} className="ds-input" /></div>
-          <div><label className="input-label">Valor (R$)</label><input type="number" step="0.01" value={formEditar.valor} onChange={e => setFormEditar({...formEditar, valor: e.target.value})} className="ds-input" /></div>
-          <div><label className="input-label">Forma de Pagamento</label><select value={formEditar.formaPagamento} onChange={e => setFormEditar({...formEditar, formaPagamento: e.target.value})} className="ds-select">{formasPagamento.map(f => <option key={f} value={f}>{labelsForma[f]}</option>)}</select></div>
-          <div><label className="input-label">Data</label><input type="date" value={formEditar.data} onChange={e => setFormEditar({...formEditar, data: e.target.value})} className="ds-input" /></div>
-          <button onClick={salvarEdicao} className="btn-primary w-full justify-center">Salvar</button>
-        </div>
-      </Modal>
-
-      {/* Modal Confirmar Exclusão */}
-      <Modal aberto={!!confirmarExclusao} onFechar={() => setConfirmarExclusao(null)} titulo="Excluir Lançamento">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '13px', color: 'var(--text-primary)' }}>
-            Excluir <strong>{confirmarExclusao?.categoria}</strong> de <strong>{fmt(Number(confirmarExclusao?.valor))}</strong>?
-          </p>
-          <div className="flex gap-2">
-            <button onClick={() => setConfirmarExclusao(null)} style={{ flex: 1, padding: '8px', fontFamily: 'var(--fonte-interface)', fontSize: '12px', cursor: 'pointer', background: 'var(--bg-surface)', border: '1px solid var(--border)', color: 'var(--text-muted)', borderRadius: '4px' }}>Cancelar</button>
-            <button onClick={excluirLancamento} style={{ flex: 1, padding: '8px', fontFamily: 'var(--fonte-interface)', fontSize: '12px', cursor: 'pointer', background: 'var(--error-text)', border: 'none', color: 'white', borderRadius: '4px' }}>Excluir</button>
-          </div>
-        </div>
-      </Modal>
 
       <Modal aberto={modalAberto} onFechar={() => setModalAberto(false)} titulo="Novo Lançamento">
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>

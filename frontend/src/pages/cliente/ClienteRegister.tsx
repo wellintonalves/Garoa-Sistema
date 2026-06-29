@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useClienteAuth } from '../../hooks/useClienteAuth';
-import { Scissors, ArrowLeft } from 'lucide-react';
+import { Scissors, ArrowLeft, Eye, EyeOff } from 'lucide-react';
 
 export function ClienteRegister() {
   const navigate = useNavigate();
@@ -11,6 +11,7 @@ export function ClienteRegister() {
   const [telefone, setTelefone] = useState('');
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
+  const [mostrarSenha, setMostrarSenha] = useState(false);
   const [erro, setErro] = useState('');
   const [enviando, setEnviando] = useState(false);
 

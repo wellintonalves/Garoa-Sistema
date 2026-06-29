@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Mail, Lock, AlertCircle, Star } from 'lucide-react';
+import { Mail, Lock, AlertCircle, Star, Eye, EyeOff } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Lottie from 'lottie-react';
 import premiumAnimation from '../../assets/animations/premium.json';
@@ -12,6 +12,7 @@ export function ClienteLoginPrincipal() {
   const { login } = useClienteAuth();
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
+  const [mostrarSenha, setMostrarSenha] = useState(false);
   const [erro, setErro] = useState('');
   const [carregando, setCarregando] = useState(false);
   const [isMobile, setIsMobile] = useState(false);

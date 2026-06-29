@@ -205,7 +205,6 @@ model Agendamento {
   clienteId    String
   barbeiroId   String
   servicoId    String
-  servicosIds  String[]           @default([])
   dataHora     DateTime
   status       StatusAgendamento  @default(AGUARDANDO)
   observacoes  String?
@@ -370,4 +369,7 @@ model Indicacao {
 
   barbearia Barbearia? @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
   indicador Cliente    @relation("Indicador", fields: [indicadorId], references: [id], onDelete: Cascade)
-  indicado  Cliente    @relation("Indicado", fields: [indicadoId], references: [id
+  indicado  Cliente    @relation("Indicado", fields: [indicadoId], references: [id], onDelete: Cascade)
+
+  @@map("indicacoes")
+}

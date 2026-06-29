@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Mail, Lock, AlertCircle, UserPlus } from 'lucide-react';
+import { Mail, Lock, AlertCircle, UserPlus, Eye, EyeOff } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 import api from '../../api/client';
@@ -10,6 +10,7 @@ export function AdminLogin() {
   const { loginDireto } = useAuth();
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
+  const [mostrarSenha, setMostrarSenha] = useState(false);
   const [erro, setErro] = useState('');
   const [carregando, setCarregando] = useState(false);
   const [isMobile, setIsMobile] = useState(false);

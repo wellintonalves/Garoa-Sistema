@@ -3,7 +3,7 @@
 import { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useClienteAuth } from '../../hooks/useClienteAuth';
-import { User, Phone, Mail, Lock, AlertCircle, Scissors, ArrowLeft } from 'lucide-react';
+import { User, Phone, Mail, Lock, AlertCircle, Scissors, ArrowLeft, Eye, EyeOff } from 'lucide-react';
 
 export function ClienteCadastro() {
   const navigate = useNavigate();
@@ -12,6 +12,7 @@ export function ClienteCadastro() {
   const [telefone, setTelefone] = useState('');
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
+  const [mostrarSenha, setMostrarSenha] = useState(false);
   const [erro, setErro] = useState('');
   const [enviando, setEnviando] = useState(false);
 

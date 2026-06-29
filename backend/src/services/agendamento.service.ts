@@ -14,7 +14,6 @@ interface DadosAgendamento {
   clienteId: string;
   barbeiroId: string;
   servicoId: string;
-  servicosIds?: string[];
   dataHora: string;
   observacoes?: string;
   valorCobrado: number;
@@ -62,24 +61,12 @@ export class AgendamentoService {
 
   /** Cria um novo agendamento */
   static async criar(dados: DadosAgendamento) {
-    // Suporte a múltiplos serviços — usa servicosIds se fornecido
-    const todosIds = dados.servicosIds && dados.servicosIds.length > 0
-      ? dados.servicosIds
-      : [dados.servicoId];
-
-    // Busca todos os serviços selecionados para calcular duração total
-    const todosServicos = await prisma.servico.findMany({ where: { id: { in: todosIds } } });
-    if (todosServicos.length === 0) throw new Error('Serviço não encontrado');
-
-    // Usa o primeiro serviço como servicoId (compatibilidade)
-    const servico = todosServicos.find(s => s.id === dados.servicoId) || todosServicos[0];
-    const duracaoTotal = todosServicos.reduce((acc, s) => acc + s.duracaoMinutos, 0);
-    const valorTotal = dados.servicosIds && dados.servicosIds.length > 0
-      ? todosServicos.reduce((acc, s) => acc + Number(s.preco), 0)
-      : dados.valorCobrado;
+    // Verifica conflito de horário
+    const servico = await prisma.servico.findUnique({ where: { id: dados.servicoId } });
+    if (!servico) throw new Error('Serviço não encontrado');
 
     const dataInicio = toBrasiliaDate(dados.dataHora);
-    const dataFim = new Date(dataInicio.getTime() + duracaoTotal * 60000);
+    const dataFim = new Date(dataInicio.getTime() + servico.duracaoMinutos * 60000);
 
     const conflito = await prisma.agendamento.findFirst({
       where: {
@@ -100,11 +87,10 @@ export class AgendamentoService {
       data: {
         clienteId: dados.clienteId,
         barbeiroId: dados.barbeiroId,
-        servicoId: servico.id,
-        servicosIds: todosIds,
+        servicoId: dados.servicoId,
         dataHora: dataInicio,
         observacoes: dados.observacoes,
-        valorCobrado: valorTotal,
+        valorCobrado: dados.valorCobrado,
       } as any,
       include: {
         cliente: { include: { usuario: { select: { nome: true } } } },
@@ -286,4 +272,28 @@ export class AgendamentoService {
 
     for (let m = inicioMinutos; m < fimMinutos; m += 30) {
       const hora = Math.floor(m / 60);
-      const m
+      const minuto = m % 60;
+
+      // Pula horário de almoço
+      if (temAlmoco && m >= almocoInicioMin && m < almocoFimMin) {
+        continue;
+      }
+
+      const slotInicio = criarDataHoraBrasilia(data, hora, minuto);
+
+      const agendamentoNoSlot = agendamentos.find((ag: any) => {
+        const agInicio = new Date(ag.dataHora);
+        const agFim = new Date(agInicio.getTime() + ag.servico.duracaoMinutos * 60000);
+        return slotInicio >= agInicio && slotInicio < agFim;
+      });
+
+      slots.push({
+        horario: formatarHorario(hora, minuto),
+        ocupado: !!agendamentoNoSlot,
+        agendamentoId: agendamentoNoSlot?.id,
+      });
+    }
+
+    return { data, barbeiroId, slots };
+  }
+}
