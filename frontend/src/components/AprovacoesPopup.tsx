@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import api from '../api/client';
+import barbeiroApi from '../api/barbeiroApi';
 import { AlertCircle, Check, X } from 'lucide-react';
 import { useBarbeiroAuth } from '../hooks/useBarbeiroAuth';
 
@@ -23,7 +23,7 @@ export function AprovacoesPopup() {
 
   const buscarPendentes = async () => {
     try {
-      const res = await api.get('/aprovacoes/pendentes');
+      const res = await barbeiroApi.get('/aprovacoes/pendentes');
       setPendentes(res.data);
     } catch (e) {
       console.error('Erro ao buscar aprovações pendentes:', e);
@@ -33,7 +33,7 @@ export function AprovacoesPopup() {
   const handleAprovar = async (id: string) => {
     setCarregando(true);
     try {
-      await api.post(`/aprovacoes/${id}/aprovar`);
+      await barbeiroApi.post(`/aprovacoes/${id}/aprovar`);
       buscarPendentes();
     } catch (e: any) {
       alert(e?.response?.data?.erro || 'Erro ao aprovar.');
@@ -45,7 +45,7 @@ export function AprovacoesPopup() {
   const handleRejeitar = async (id: string) => {
     setCarregando(true);
     try {
-      await api.post(`/aprovacoes/${id}/rejeitar`);
+      await barbeiroApi.post(`/aprovacoes/${id}/rejeitar`);
       buscarPendentes();
     } catch (e: any) {
       alert(e?.response?.data?.erro || 'Erro ao rejeitar.');
