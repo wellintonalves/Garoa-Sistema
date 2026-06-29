@@ -5,11 +5,11 @@ import { Check, ArrowLeft, Scissors, Star } from 'lucide-react';
 import clienteApi from '../../../api/clienteApi';
 
 interface Servico { id: string; nome: string; preco: string; duracaoMinutos: number; }
-interface Barbeiro {
-  id: string;
-  foto: string | null;
-  usuario: { nome: string };
-  especialidades: string[];
+interface Barbeiro { 
+  id: string; 
+  foto: string | null; 
+  usuario: { nome: string }; 
+  especialidades: string[]; 
 }
 interface Slot { horario: string; disponivel: boolean; }
 
@@ -23,7 +23,6 @@ export function ClienteBarbeariaAgendar() {
   const [barbeiros, setBarbeiros] = useState<Barbeiro[]>([]);
   const [slots, setSlots] = useState<Slot[]>([]);
 
-  // Multi-serviço: array de serviços selecionados
   const [servicosSel, setServicosSel] = useState<Servico[]>([]);
   const [barbeiroSel, setBarbeiroSel] = useState<Barbeiro | null>(null);
   const [dataSel, setDataSel] = useState('');
@@ -38,27 +37,27 @@ export function ClienteBarbeariaAgendar() {
     }
   }, [barbeariaId]);
 
-  const duracaoTotal = servicosSel.reduce((acc, s) => acc + s.duracaoMinutos, 0);
-  const valorTotal = servicosSel.reduce((acc, s) => acc + Number(s.preco), 0);
   const servicoPrincipal = servicosSel[0] || null;
 
   useEffect(() => {
-    if (dataSel && barbeiroSel && servicosSel.length > 0 && barbeariaId) {
+    if (dataSel && barbeiroSel && servicoPrincipal && barbeariaId) {
       clienteApi.get<Slot[]>(`/cliente/barbearia/${barbeariaId}/horarios-disponiveis`, {
-        params: { barbeiroId: barbeiroSel.id, data: dataSel, servicoId: servicosSel[0].id, duracao: duracaoTotal }
+        params: { barbeiroId: barbeiroSel.id, data: dataSel, servicoId: servicoPrincipal.id }
       }).then(r => setSlots(r.data));
     }
-  }, [dataSel, barbeiroSel, servicosSel, barbeariaId, duracaoTotal]);
+  }, [dataSel, barbeiroSel, servicoPrincipal, barbeariaId]);
 
   const fmt = (v: string | number) => Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   const hoje = new Date().toISOString().split('T')[0];
 
   function toggleServico(s: Servico) {
-    setServicosSel(prev => prev.some(sel => sel.id === s.id)
-      ? prev.filter(sel => sel.id !== s.id)
-      : [...prev, s]
+    setServicosSel(prev =>
+      prev.find(x => x.id === s.id) ? prev.filter(x => x.id !== s.id) : [...prev, s]
     );
   }
+
+  const totalMinutos = servicosSel.reduce((acc, s) => acc + s.duracaoMinutos, 0);
+  const totalValor = servicosSel.reduce((acc, s) => acc + Number(s.preco), 0);
 
   async function confirmarAgendamento() {
     if (!servicoPrincipal || !barbeiroSel || !dataSel || !horarioSel) return;
@@ -70,7 +69,6 @@ export function ClienteBarbeariaAgendar() {
         barbeiroId: barbeiroSel.id,
         data: dataSel,
         hora: horarioSel,
-        valorCobrado: valorTotal,
       });
       setSucesso(true);
     } catch { alert('Erro ao agendar'); }
@@ -90,8 +88,7 @@ export function ClienteBarbeariaAgendar() {
         <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '14px', color: 'var(--text-muted)', textAlign: 'center', marginBottom: '32px' }}>
           Te esperamos no dia {new Date(dataSel + 'T00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })} às {horarioSel}.
         </p>
-        <button onClick={() => navigate(`/cliente/barbearia/${barbeariaId}`)} className="btn-primary w-full justify-center py-4"
-          style={{ textTransform: 'uppercase', fontSize: '13px', fontWeight: 600, letterSpacing: '0.04em' }}>
+        <button onClick={() => navigate(`/cliente/barbearia/${barbeariaId}`)} className="btn-primary w-full justify-center py-4" style={{ textTransform: 'uppercase', fontSize: '13px', fontWeight: 600, letterSpacing: '0.04em' }}>
           Voltar ao Início
         </button>
       </div>
@@ -139,23 +136,23 @@ export function ClienteBarbeariaAgendar() {
           </button>
         )}
         <h1 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '24px', fontWeight: 600, color: 'var(--text-primary)' }}>
-          {etapa === 'servico' && 'Selecione o que deseja fazer hoje.'}
+          {etapa === 'servico' && 'Selecione os serviços.'}
           {etapa === 'barbeiro' && 'Escolha o profissional.'}
           {etapa === 'data' && 'Escolha o melhor horário.'}
           {etapa === 'confirmacao' && 'Revise seu agendamento.'}
         </h1>
         {etapa === 'servico' && (
           <p className="flex items-center gap-1.5 mt-2" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '12px', color: 'var(--amber)' }}>
-            <Star size={12} /> Ganhe 50 pts a cada atendimento · Pode selecionar mais de um serviço
+            <Star size={12} /> Ganhe 50 pts a cada atendimento
           </p>
         )}
       </div>
 
-      {/* Etapa 1: Seleção de serviços (multi-select) */}
+      {/* Etapa 1: Serviços (multi-select) */}
       {etapa === 'servico' && (
         <div className="flex flex-col gap-3">
           {servicos.map((s, idx) => {
-            const selecionado = servicosSel.some(sel => sel.id === s.id);
+            const selecionado = servicosSel.some(x => x.id === s.id);
             return (
               <button key={s.id} onClick={() => toggleServico(s)}
                 className="flex items-center justify-between p-4 w-full text-left transition-all rounded-md"
@@ -165,47 +162,32 @@ export function ClienteBarbeariaAgendar() {
                   cursor: 'pointer',
                 }}>
                 <div className="flex items-center gap-4">
-                  <div style={{
-                    width: '20px', height: '20px', borderRadius: '5px', flexShrink: 0,
-                    background: selecionado ? 'var(--amber)' : 'transparent',
-                    border: selecionado ? '1px solid var(--amber)' : '1px solid var(--borda)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  }}>
-                    {selecionado && <svg width="12" height="10" viewBox="0 0 12 10"><path d="M1 5l4 4 6-8" stroke="#000" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"/></svg>}
-                  </div>
                   <div className={`w-10 h-10 rounded-full flex items-center justify-center ${selecionado ? 'bg-[var(--amber)] text-[#0a0a0a]' : 'bg-[var(--bg-surface)] text-[var(--cor-icone)] border border-[var(--borda)]'}`}>
-                    <Scissors size={18} />
+                    {selecionado ? <Check size={18} /> : <Scissors size={18} />}
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
                       <p style={{ fontFamily: 'var(--fonte-interface)', fontWeight: 600, color: 'var(--text-primary)', fontSize: '15px' }}>{s.nome}</p>
                       {idx === 0 && <span className="bg-[var(--amber)] text-black text-[9px] uppercase tracking-wider font-bold px-1.5 py-0.5 rounded-sm">Mais popular</span>}
                     </div>
-                    <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>{s.duracaoMinutos} min de duração</p>
+                    <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>{s.duracaoMinutos} min</p>
                   </div>
                 </div>
-                <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '15px', color: selecionado ? 'var(--amber)' : 'var(--text-primary)', fontWeight: 500 }}>{fmt(s.preco)}</span>
+                <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '15px', color: 'var(--text-primary)', fontWeight: 500 }}>{fmt(s.preco)}</span>
               </button>
             );
           })}
 
+          {/* Barra de total + botão continuar */}
           {servicosSel.length > 0 && (
-            <div style={{ marginTop: '8px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 16px', background: 'var(--fundo-sidebar)', border: '1px solid var(--borda)', borderRadius: '8px', marginBottom: '12px' }}>
-                <div>
-                  <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', color: 'var(--text-muted)', marginBottom: '2px' }}>
-                    {servicosSel.length} serviço{servicosSel.length > 1 ? 's' : ''} · {duracaoTotal} min no total
-                  </p>
-                  <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '12px', color: 'var(--text-primary)' }}>
-                    {servicosSel.map(s => s.nome).join(' + ')}
-                  </p>
-                </div>
-                <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '18px', color: 'var(--amber)', fontWeight: 700, alignSelf: 'center' }}>
-                  {fmt(valorTotal)}
-                </span>
+            <div className="mt-2 p-4 rounded-md flex items-center justify-between" style={{ background: 'var(--fundo-sidebar)', border: '1px solid var(--amber)' }}>
+              <div>
+                <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', color: 'var(--text-muted)' }}>
+                  {servicosSel.length} serviço{servicosSel.length > 1 ? 's' : ''} · {totalMinutos} min
+                </p>
+                <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '18px', color: 'var(--amber)', fontWeight: 600 }}>{fmt(totalValor)}</p>
               </div>
-              <button onClick={() => setEtapa('barbeiro')} className="btn-primary w-full justify-center py-4"
-                style={{ fontSize: '13px', fontWeight: 600, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+              <button onClick={() => setEtapa('barbeiro')} className="btn-primary" style={{ fontSize: '13px' }}>
                 Continuar →
               </button>
             </div>
@@ -252,15 +234,13 @@ export function ClienteBarbeariaAgendar() {
             <input type="date" value={dataSel} onChange={e => { setDataSel(e.target.value); setHorarioSel(''); }}
               min={hoje} className="w-full bg-[var(--fundo-input)] border border-[var(--borda)] rounded p-3 text-[var(--text-primary)] font-interface focus:outline-none focus:border-[var(--amber)] transition-colors outline-none" />
           </div>
-
           {dataSel && (
             <div>
               <label className="block mb-3" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--text-muted)' }}>Horários Disponíveis</label>
               {slots.length > 0 ? (
                 <div className="grid grid-cols-4 md:grid-cols-5 gap-2">
                   {slots.map(s => (
-                    <button key={s.horario}
-                      disabled={!s.disponivel}
+                    <button key={s.horario} disabled={!s.disponivel}
                       onClick={() => { setHorarioSel(s.horario); setEtapa('confirmacao'); }}
                       style={{
                         padding: '12px 4px', fontFamily: 'var(--fonte-numeros)', fontSize: '14px', textAlign: 'center',
@@ -294,14 +274,54 @@ export function ClienteBarbeariaAgendar() {
             </h3>
             <div className="flex flex-col gap-5">
               <div>
-                <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '8px' }}>
-                  Serviço{servicosSel.length > 1 ? 's' : ''}
-                </p>
+                <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '8px' }}>Serviços</p>
                 {servicosSel.map(s => (
                   <div key={s.id} className="flex justify-between items-center mb-2">
-                    <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '14px', fontWeight: 500, color: 'var(--text-primary)' }}>{s.nome}</p>
+                    <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '14px', color: 'var(--text-primary)' }}>{s.nome}</p>
                     <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '14px', color: 'var(--text-primary)' }}>{fmt(s.preco)}</p>
                   </div>
                 ))}
                 {servicosSel.length > 1 && (
-                  <div className="flex justify-between items-center pt-2" style={{ borderTop: '1px solid var(--
+                  <div className="flex justify-between items-center pt-2" style={{ borderTop: '1px solid var(--borda)' }}>
+                    <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>Total</p>
+                    <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '16px', fontWeight: 600, color: 'var(--amber)' }}>{fmt(totalValor)}</p>
+                  </div>
+                )}
+              </div>
+              <div className="flex justify-between items-start">
+                <div>
+                  <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '2px' }}>Profissional</p>
+                  <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '16px', fontWeight: 500, color: 'var(--text-primary)' }}>{barbeiroSel?.usuario.nome}</p>
+                </div>
+              </div>
+              <div className="flex justify-between items-start">
+                <div>
+                  <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '2px' }}>Data</p>
+                  <p className="capitalize" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '16px', fontWeight: 500, color: 'var(--text-primary)' }}>
+                    {new Date(dataSel + 'T00:00').toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: 'short' })}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '2px' }}>Horário</p>
+                  <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '16px', color: 'var(--amber)', fontWeight: 600 }}>{horarioSel}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="w-full flex">
+            {Array.from({ length: 20 }).map((_, i) => (
+              <div key={i} className="flex-1 h-2" style={{ background: 'var(--fundo-pagina)', clipPath: 'polygon(0 0, 50% 100%, 100% 0)', marginTop: '-1px' }} />
+            ))}
+          </div>
+          <div className="mt-8">
+            <button onClick={confirmarAgendamento} disabled={enviando}
+              className="btn-primary w-full justify-center py-4"
+              style={{ fontSize: '14px', fontWeight: 600, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+              {enviando ? 'Confirmando...' : 'Confirmar e Agendar'}
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

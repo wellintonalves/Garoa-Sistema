@@ -31,10 +31,10 @@ export function Financeiro() {
   const [lancamentos, setLancamentos] = useState<Lancamento[]>([]);
   const [resumo, setResumo] = useState<ResumoDia | null>(null);
   const [grafico, setGrafico] = useState<DadoGrafico[]>([]);
-
+  
   const [barbeiros, setBarbeiros] = useState<Barbeiro[]>([]);
   const [servicos, setServicos] = useState<Servico[]>([]);
-
+  
   const [carregando, setCarregando] = useState(true);
   const [modalAberto, setModalAberto] = useState(false);
   const [modalEditarAberto, setModalEditarAberto] = useState(false);
@@ -56,7 +56,7 @@ export function Financeiro() {
         api.get<Servico[]>('/servicos')
       ]);
       setLancamentos(l.data); setResumo(r.data); setGrafico(g.data);
-      setBarbeiros(b.data.filter((bar: any) => bar.ativo));
+      setBarbeiros(b.data.filter((bar: any) => bar.ativo)); 
       setServicos(s.data.filter((srv: any) => srv.ativo));
     } catch (e) { console.error(e); }
     finally { setCarregando(false); }
@@ -73,31 +73,12 @@ export function Financeiro() {
     }
   }, [form.servicoId, servicos]);
 
-  async function criarLancamento() {
-    try {
-      const payload = {
-        ...form,
-        valor: Number(form.valor),
-        servicoId: form.servicoId || undefined,
-        barbeiroId: form.barbeiroId || undefined
-      };
-      await api.post('/financeiro', payload);
-      setModalAberto(false); setForm(formPadrao);
-      carregar();
-    } catch (e) { console.error(e); }
-  }
-
   function abrirEditar(l: Lancamento) {
     setLancamentoEditando(l);
     setFormEditar({
-      tipo: l.tipo,
-      categoria: l.categoria,
-      descricao: l.descricao || '',
-      valor: String(Number(l.valor)),
-      formaPagamento: l.formaPagamento,
-      data: new Date(l.data).toISOString().split('T')[0],
-      servicoId: '',
-      barbeiroId: '',
+      tipo: l.tipo, categoria: l.categoria, descricao: l.descricao || '',
+      valor: l.valor, formaPagamento: l.formaPagamento,
+      data: l.data.split('T')[0], servicoId: '', barbeiroId: ''
     });
     setModalEditarAberto(true);
   }
@@ -106,19 +87,32 @@ export function Financeiro() {
     if (!lancamentoEditando) return;
     try {
       await api.put(`/financeiro/${lancamentoEditando.id}`, {
-        ...formEditar,
-        valor: Number(formEditar.valor),
+        ...formEditar, valor: Number(formEditar.valor)
       });
-      setModalEditarAberto(false);
-      setLancamentoEditando(null);
+      setModalEditarAberto(false); setLancamentoEditando(null);
       carregar();
     } catch (e) { console.error(e); }
   }
 
-  async function excluirLancamento(l: Lancamento) {
+  async function excluirLancamento() {
+    if (!confirmarExclusao) return;
     try {
-      await api.delete(`/financeiro/${l.id}`);
+      await api.delete(`/financeiro/${confirmarExclusao.id}`);
       setConfirmarExclusao(null);
+      carregar();
+    } catch (e) { console.error(e); }
+  }
+
+  async function criarLancamento() {
+    try {
+      const payload = { 
+        ...form, 
+        valor: Number(form.valor),
+        servicoId: form.servicoId || undefined,
+        barbeiroId: form.barbeiroId || undefined
+      };
+      await api.post('/financeiro', payload);
+      setModalAberto(false); setForm(formPadrao);
       carregar();
     } catch (e) { console.error(e); }
   }
@@ -239,11 +233,11 @@ export function Financeiro() {
               onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
             >
               <div className="flex items-center gap-3">
-                <div style={{ width: '8px', height: '8px', background: l.tipo === 'ENTRADA' ? 'var(--success-text)' : 'var(--error-text)', flexShrink: 0 }} />
+                <div style={{ width: '8px', height: '8px', background: l.tipo === 'ENTRADA' ? 'var(--success-text)' : 'var(--error-text)' }} />
                 <div>
                   <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '13px', fontWeight: 500, color: 'var(--text-primary)' }}>{l.categoria}</p>
                   <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px' }}>
-                    {l.servico ? `${l.servico.nome}` : l.descricao}
+                    {l.servico ? `${l.servico.nome}` : l.descricao} 
                     {l.barbeiro && ` • ${l.barbeiro.usuario.nome}`}
                   </p>
                 </div>
@@ -257,23 +251,17 @@ export function Financeiro() {
                     {labelsForma[l.formaPagamento] || l.formaPagamento}
                   </p>
                 </div>
-                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity" style={{ flexShrink: 0 }}>
-                  <button
-                    onClick={(e) => { e.stopPropagation(); abrirEditar(l); }}
-                    title="Editar"
-                    style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: '6px', padding: '6px', cursor: 'pointer', color: 'var(--text-muted)', display: 'flex', alignItems: 'center' }}
-                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = 'var(--amber)'; (e.currentTarget as HTMLElement).style.borderColor = 'var(--amber)'; }}
-                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'var(--text-muted)'; (e.currentTarget as HTMLElement).style.borderColor = 'var(--border)'; }}
-                  >
+                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button onClick={() => abrirEditar(l)} title="Editar"
+                    style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: '4px', padding: '4px 6px', cursor: 'pointer', color: 'var(--text-muted)', display: 'flex', alignItems: 'center' }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = 'var(--amber)'; }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'var(--text-muted)'; }}>
                     <Pencil size={12} />
                   </button>
-                  <button
-                    onClick={(e) => { e.stopPropagation(); setConfirmarExclusao(l); }}
-                    title="Excluir"
-                    style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: '6px', padding: '6px', cursor: 'pointer', color: 'var(--text-muted)', display: 'flex', alignItems: 'center' }}
-                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = 'var(--error-text)'; (e.currentTarget as HTMLElement).style.borderColor = 'var(--error-text)'; }}
-                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'var(--text-muted)'; (e.currentTarget as HTMLElement).style.borderColor = 'var(--border)'; }}
-                  >
+                  <button onClick={() => setConfirmarExclusao(l)} title="Excluir"
+                    style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: '4px', padding: '4px 6px', cursor: 'pointer', color: 'var(--text-muted)', display: 'flex', alignItems: 'center' }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = 'var(--error-text)'; }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'var(--text-muted)'; }}>
                     <Trash2 size={12} />
                   </button>
                 </div>
@@ -288,7 +276,7 @@ export function Financeiro() {
         </div>
       </div>
 
-      {/* Modal Editar Lançamento */}
+      {/* Modal Editar */}
       <Modal aberto={modalEditarAberto} onFechar={() => setModalEditarAberto(false)} titulo="Editar Lançamento">
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -296,19 +284,120 @@ export function Financeiro() {
               const isSelected = formEditar.tipo === t;
               const activeColor = t === 'ENTRADA' ? 'var(--success-text)' : 'var(--error-text)';
               return (
-                <button key={t} onClick={() => setFormEditar({ ...formEditar, tipo: t })}
-                  style={{ padding: '8px', fontFamily: 'var(--fonte-interface)', fontSize: '11px', letterSpacing: '0.1em', textTransform: 'uppercase', cursor: 'pointer', background: isSelected ? 'var(--bg-surface2)' : 'transparent', border: `1px solid ${isSelected ? activeColor : 'var(--border)'}`, color: isSelected ? activeColor : 'var(--text-muted)', transition: 'all 0.2s' }}>
+                <button key={t} onClick={() => setFormEditar({...formEditar, tipo: t})}
+                  style={{ padding: '8px', fontFamily: 'var(--fonte-interface)', fontSize: '11px', letterSpacing: '0.1em', textTransform: 'uppercase', cursor: 'pointer', background: isSelected ? 'var(--bg-surface2)' : 'transparent', border: `1px solid ${isSelected ? activeColor : 'var(--border)'}`, color: isSelected ? activeColor : 'var(--text-muted)' }}>
+                  {t === 'ENTRADA' ? 'Entrada' : 'Saída'}
+                </button>
+              );
+            })}
+          </div>
+          <div><label className="input-label">Categoria</label><input value={formEditar.categoria} onChange={e => setFormEditar({...formEditar, categoria: e.target.value})} className="ds-input" /></div>
+          <div><label className="input-label">Descrição</label><input value={formEditar.descricao} onChange={e => setFormEditar({...formEditar, descricao: e.target.value})} className="ds-input" /></div>
+          <div><label className="input-label">Valor (R$)</label><input type="number" step="0.01" value={formEditar.valor} onChange={e => setFormEditar({...formEditar, valor: e.target.value})} className="ds-input" /></div>
+          <div><label className="input-label">Forma de Pagamento</label><select value={formEditar.formaPagamento} onChange={e => setFormEditar({...formEditar, formaPagamento: e.target.value})} className="ds-select">{formasPagamento.map(f => <option key={f} value={f}>{labelsForma[f]}</option>)}</select></div>
+          <div><label className="input-label">Data</label><input type="date" value={formEditar.data} onChange={e => setFormEditar({...formEditar, data: e.target.value})} className="ds-input" /></div>
+          <button onClick={salvarEdicao} className="btn-primary w-full justify-center">Salvar</button>
+        </div>
+      </Modal>
+
+      {/* Modal Confirmar Exclusão */}
+      <Modal aberto={!!confirmarExclusao} onFechar={() => setConfirmarExclusao(null)} titulo="Excluir Lançamento">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '13px', color: 'var(--text-primary)' }}>
+            Excluir <strong>{confirmarExclusao?.categoria}</strong> de <strong>{fmt(Number(confirmarExclusao?.valor))}</strong>?
+          </p>
+          <div className="flex gap-2">
+            <button onClick={() => setConfirmarExclusao(null)} style={{ flex: 1, padding: '8px', fontFamily: 'var(--fonte-interface)', fontSize: '12px', cursor: 'pointer', background: 'var(--bg-surface)', border: '1px solid var(--border)', color: 'var(--text-muted)', borderRadius: '4px' }}>Cancelar</button>
+            <button onClick={excluirLancamento} style={{ flex: 1, padding: '8px', fontFamily: 'var(--fonte-interface)', fontSize: '12px', cursor: 'pointer', background: 'var(--error-text)', border: 'none', color: 'white', borderRadius: '4px' }}>Excluir</button>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal aberto={modalAberto} onFechar={() => setModalAberto(false)} titulo="Novo Lançamento">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {(['ENTRADA', 'SAIDA'] as const).map(t => {
+              const isSelected = form.tipo === t;
+              const activeColor = t === 'ENTRADA' ? 'var(--success-text)' : 'var(--error-text)';
+              return (
+                <button
+                  key={t}
+                  onClick={() => setForm({...form, tipo: t})}
+                  style={{
+                    padding: '8px',
+                    fontFamily: 'var(--fonte-interface)',
+                    fontSize: '11px',
+                    letterSpacing: '0.1em',
+                    textTransform: 'uppercase',
+                    cursor: 'pointer',
+                    background: isSelected ? 'var(--bg-surface2)' : 'transparent',
+                    border: `1px solid ${isSelected ? activeColor : 'var(--border)'}`,
+                    color: isSelected ? activeColor : 'var(--text-muted)',
+                    transition: 'all 0.2s',
+                  }}
+                >
                   {t === 'ENTRADA' ? 'Entrada' : 'Saída'}
                 </button>
               );
             })}
           </div>
 
+          {form.tipo === 'ENTRADA' && (
+            <>
+              <div>
+                <label className="input-label">Serviço (Opcional)</label>
+                <select value={form.servicoId} onChange={e => setForm({...form, servicoId: e.target.value})} className="ds-select">
+                  <option value="">Selecione um serviço...</option>
+                  {servicos.map(s => <option key={s.id} value={s.id}>{s.nome}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="input-label">Barbeiro (Opcional)</label>
+                <select value={form.barbeiroId} onChange={e => setForm({...form, barbeiroId: e.target.value})} className="ds-select">
+                  <option value="">Selecione um barbeiro...</option>
+                  {barbeiros.map(b => <option key={b.id} value={b.id}>{b.usuario.nome}</option>)}
+                </select>
+              </div>
+            </>
+          )}
+
           <div>
             <label className="input-label">Categoria</label>
-            <input value={formEditar.categoria} onChange={e => setFormEditar({ ...formEditar, categoria: e.target.value })} placeholder="Ex: Serviço Prestado, Produto, Conta de Luz" className="ds-input" />
+            <input value={form.categoria} onChange={e => setForm({...form, categoria: e.target.value})} placeholder="Ex: Serviço Prestado, Produto, Conta de Luz" className="ds-input" />
           </div>
 
           <div>
             <label className="input-label">Descrição / Observação</label>
-            <input value={formEditar.descri
+            <input value={form.descricao} onChange={e => setForm({...form, descricao: e.target.value})} placeholder="Opcional" className="ds-input" />
+          </div>
+
+          <div>
+            <label className="input-label">Valor (R$)</label>
+            <input type="number" step="0.01" value={form.valor} onChange={e => setForm({...form, valor: e.target.value})} className="ds-input" />
+          </div>
+
+          {form.tipo === 'ENTRADA' && form.barbeiroId && form.valor && (
+            <div style={{ padding: '12px', background: 'var(--bg-surface2)', border: '1px solid var(--border)', fontFamily: 'var(--fonte-interface)', fontSize: '11px', color: 'var(--text-primary)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              <p>Comissão do Barbeiro: <strong style={{ color: 'var(--cor-icone)' }}>{fmt(previaComissao)}</strong></p>
+              <p>Líquido Barbearia: <strong style={{ color: 'var(--success-text)' }}>{fmt(previaLiquido)}</strong></p>
+            </div>
+          )}
+
+          <div>
+            <label className="input-label">Forma de Pagamento</label>
+            <select value={form.formaPagamento} onChange={e => setForm({...form, formaPagamento: e.target.value})} className="ds-select">
+              {formasPagamento.map(f => <option key={f} value={f}>{labelsForma[f]}</option>)}
+            </select>
+          </div>
+
+          <div>
+            <label className="input-label">Data</label>
+            <input type="date" value={form.data} onChange={e => setForm({...form, data: e.target.value})} className="ds-input" />
+          </div>
+
+          <button onClick={criarLancamento} className="btn-primary w-full justify-center">Registrar</button>
+        </div>
+      </Modal>
+    </div>
+  );
+}
