@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Filter, DollarSign, Users, Scissors, TrendingUp, AlertCircle } from 'lucide-react';
+import { Filter, DollarSign, Users, Scissors, TrendingUp, AlertCircle, Pencil, X } from 'lucide-react';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { StatCard } from '../components/StatCard';
 import api from '../api/client';
@@ -52,6 +52,11 @@ export function Relatorios() {
   const barbeiroIdUrl = searchParams.get('barbeiroId') || 'todos';
   const [filtros, setFiltros] = useState({ inicio: dataPrimeiroDia, fim: dataHoje, barbeiroId: barbeiroIdUrl });
   const [relatorio, setRelatorio] = useState<RelatorioData | null>(null);
+
+  // Estados para edição de lançamento
+  const [lancamentoEditando, setLancamentoEditando] = useState<Lancamento | null>(null);
+  const [valoresEdit, setValoresEdit] = useState({ valor: '', comissao: '', formaPagamento: '' });
+  const [salvandoEdicao, setSalvandoEdicao] = useState(false);
 
   useEffect(() => {
     async function carregar() {
@@ -109,6 +114,34 @@ export function Relatorios() {
   useEffect(() => {
     buscarRelatorio();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleEditar = (l: Lancamento) => {
+    setLancamentoEditando(l);
+    setValoresEdit({
+      valor: String(l.valor),
+      comissao: String(l.valorComissao || ''),
+      formaPagamento: l.formaPagamento,
+    });
+  };
+
+  const salvarEdicao = async () => {
+    if (!lancamentoEditando) return;
+    setSalvandoEdicao(true);
+    try {
+      await api.put(`/financeiro/${lancamentoEditando.id}`, {
+        valor: Number(valoresEdit.valor),
+        valorComissao: valoresEdit.comissao ? Number(valoresEdit.comissao) : null,
+        formaPagamento: valoresEdit.formaPagamento,
+      });
+      setLancamentoEditando(null);
+      buscarRelatorio();
+    } catch (e: any) {
+      console.error('Erro ao editar:', e);
+      alert(e?.response?.data?.erro || 'Erro ao editar lançamento.');
+    } finally {
+      setSalvandoEdicao(false);
+    }
+  };
 
   const fmt = (v: number | string | null | undefined) => {
     const num = Number(v) || 0;
@@ -250,13 +283,14 @@ export function Relatorios() {
                     <th style={{ textAlign: 'right' }}>Valor Total</th>
                     <th style={{ textAlign: 'right' }}>Comissão</th>
                     <th style={{ textAlign: 'right' }}>Líquido</th>
+                    <th style={{ width: '40px' }}></th>
                   </tr>
                 </thead>
                 <tbody>
                   {entradas.map((l) => (
                     <tr key={l.id}>
                       <td style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--text-muted)' }}>
-                        {new Date(l.data + 'T12:00:00').toLocaleDateString('pt-BR')}
+                        {new Date(l.data).toLocaleDateString('pt-BR')}
                       </td>
                       <td>
                         <p style={{ fontWeight: 500, color: 'var(--text-primary)' }}>{l.servico ? l.servico.nome : l.categoria}</p>
@@ -275,6 +309,24 @@ export function Relatorios() {
                       <td style={{ textAlign: 'right', fontFamily: 'var(--fonte-numeros)', fontSize: '12px', color: 'var(--text-primary)' }}>{fmt(l.valor)}</td>
                       <td style={{ textAlign: 'right', fontFamily: 'var(--fonte-numeros)', fontSize: '12px', color: 'var(--error-text)' }}>{l.valorComissao ? fmt(l.valorComissao) : '—'}</td>
                       <td style={{ textAlign: 'right', fontFamily: 'var(--fonte-numeros)', fontSize: '12px', color: 'var(--success-text)', fontWeight: 500 }}>{l.valorLiquido ? fmt(l.valorLiquido) : fmt(l.valor)}</td>
+                      <td style={{ textAlign: 'center' }}>
+                        <button
+                          onClick={() => handleEditar(l)}
+                          style={{
+                            background: 'transparent',
+                            border: 'none',
+                            cursor: 'pointer',
+                            color: 'var(--text-muted)',
+                            padding: '4px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }}
+                          title="Editar lançamento"
+                        >
+                          <Pencil size={14} />
+                        </button>
+                      </td>
                     </tr>
                   ))}
                   {entradas.length === 0 && (
@@ -289,6 +341,81 @@ export function Relatorios() {
             </div>
           </div>
         </>
+      )}
+
+      {/* Modal de Edição */}
+      {lancamentoEditando && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 9999,
+          display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px'
+        }}>
+          <div className="card" style={{ width: '100%', maxWidth: '400px', padding: '24px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <h3 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)' }}>Editar Lançamento</h3>
+              <button onClick={() => setLancamentoEditando(null)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}>
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div>
+                <label className="input-label">Valor Total (R$)</label>
+                <input 
+                  type="number" 
+                  step="0.01"
+                  className="ds-input" 
+                  value={valoresEdit.valor} 
+                  onChange={e => setValoresEdit({...valoresEdit, valor: e.target.value})}
+                />
+              </div>
+              
+              <div>
+                <label className="input-label">Comissão (R$)</label>
+                <input 
+                  type="number" 
+                  step="0.01"
+                  className="ds-input" 
+                  value={valoresEdit.comissao} 
+                  onChange={e => setValoresEdit({...valoresEdit, comissao: e.target.value})}
+                  placeholder="Opcional"
+                />
+              </div>
+
+              <div>
+                <label className="input-label">Forma de Pagamento</label>
+                <select 
+                  className="ds-select"
+                  value={valoresEdit.formaPagamento}
+                  onChange={e => setValoresEdit({...valoresEdit, formaPagamento: e.target.value})}
+                >
+                  <option value="DINHEIRO">Dinheiro</option>
+                  <option value="PIX">Pix</option>
+                  <option value="CARTAO_DEBITO">Cartão de Débito</option>
+                  <option value="CARTAO_CREDITO">Cartão de Crédito</option>
+                </select>
+              </div>
+
+              <div style={{ display: 'flex', gap: '12px', marginTop: '8px' }}>
+                <button 
+                  className="btn-secondary" 
+                  style={{ flex: 1 }}
+                  onClick={() => setLancamentoEditando(null)}
+                >
+                  Cancelar
+                </button>
+                <button 
+                  className="btn-primary" 
+                  style={{ flex: 1 }}
+                  onClick={salvarEdicao}
+                  disabled={salvandoEdicao}
+                >
+                  {salvandoEdicao ? 'Salvando...' : 'Salvar'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
