@@ -51,6 +51,12 @@ enum RemetenteMensagem {
 
 // --- Modelos ---
 
+enum StatusAprovacao {
+  PENDENTE
+  APROVADO
+  REJEITADO
+}
+
 model Barbearia {
   id                 String   @id @default(uuid())
   nome               String
@@ -127,6 +133,7 @@ model Barbeiro {
   usuario      Usuario       @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
   agendamentos Agendamento[]
   lancamentos  LancamentoFinanceiro[]
+  aprovacoes   AprovacaoEdicao[]
 
   @@map("barbeiros")
 }
@@ -240,6 +247,8 @@ model LancamentoFinanceiro {
   
   data           DateTime
   createdAt      DateTime       @default(now())
+
+  aprovacoes  AprovacaoEdicao[]
 
   barbearia   Barbearia?   @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
   agendamento Agendamento? @relation(fields: [agendamentoId], references: [id], onDelete: SetNull)
@@ -373,4 +382,19 @@ model Indicacao {
   indicado  Cliente    @relation("Indicado", fields: [indicadoId], references: [id], onDelete: Cascade)
 
   @@map("indicacoes")
+}
+
+model AprovacaoEdicao {
+  id              String         @id @default(uuid())
+  lancamentoId    String
+  barbeiroId      String
+  acao            String         // "EDITAR" ou "EXCLUIR"
+  dadosNovos      Json?          // Null if acao == EXCLUIR
+  status          StatusAprovacao @default(PENDENTE)
+  createdAt       DateTime       @default(now())
+
+  lancamento LancamentoFinanceiro @relation(fields: [lancamentoId], references: [id], onDelete: Cascade)
+  barbeiro   Barbeiro             @relation(fields: [barbeiroId], references: [id], onDelete: Cascade)
+
+  @@map("aprovacoes_edicao")
 }

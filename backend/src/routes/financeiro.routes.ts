@@ -16,6 +16,7 @@ router.get('/resumo-dia', FinanceiroController.resumoDia);
 router.get('/ultimos-7-dias', FinanceiroController.ultimos7Dias);
 router.post('/', FinanceiroController.criar);
 router.put('/:id', FinanceiroController.atualizar);
+router.post('/:id/adicionar', FinanceiroController.adicionarPendente);
 router.delete('/:id', FinanceiroController.remover);
 
 export default router;

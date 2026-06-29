@@ -52,10 +52,21 @@ export class FinanceiroController {
   /** DELETE /financeiro/:id */
   static async remover(req: AuthRequest, res: Response): Promise<void> {
     try {
-      await FinanceiroService.remover(req.params.id);
-      res.json({ mensagem: 'Lançamento removido com sucesso' });
+      const resultado = await FinanceiroService.remover(req.params.id);
+      res.json(resultado || { mensagem: 'Lançamento removido com sucesso' });
     } catch (error) {
       const msg = error instanceof Error ? error.message : 'Erro ao remover lançamento';
+      res.status(400).json({ erro: msg });
+    }
+  }
+
+  /** POST /financeiro/:id/adicionar */
+  static async adicionarPendente(req: AuthRequest, res: Response): Promise<void> {
+    try {
+      const resultado = await FinanceiroService.adicionarPendente(req.params.id, req.body);
+      res.json(resultado);
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : 'Erro ao adicionar lançamento pendente';
       res.status(400).json({ erro: msg });
     }
   }

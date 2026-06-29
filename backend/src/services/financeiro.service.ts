@@ -79,6 +79,21 @@ export class FinanceiroService {
 
   /** Atualiza um lançamento */
   static async atualizar(id: string, dados: Partial<DadosLancamento>) {
+    const lancamento = await prisma.lancamentoFinanceiro.findUnique({ where: { id } });
+    if (!lancamento) throw new Error('Lançamento não encontrado.');
+
+    if (lancamento.barbeiroId) {
+      const aprovacao = await prisma.aprovacaoEdicao.create({
+        data: {
+          lancamentoId: id,
+          barbeiroId: lancamento.barbeiroId,
+          acao: 'EDITAR',
+          dadosNovos: dados as any,
+        }
+      });
+      return { status: 'PENDENTE', aprovacao };
+    }
+
     return prisma.lancamentoFinanceiro.update({
       where: { id },
       data: {
@@ -88,8 +103,43 @@ export class FinanceiroService {
     });
   }
 
+  /** Adiciona um lançamento extra vinculado a uma aprovação de edição */
+  static async adicionarPendente(lancamentoIdReferencia: string, dados: DadosLancamento) {
+    const lancamento = await prisma.lancamentoFinanceiro.findUnique({ where: { id: lancamentoIdReferencia } });
+    if (!lancamento) throw new Error('Lançamento não encontrado.');
+
+    if (dados.barbeiroId) {
+      const aprovacao = await prisma.aprovacaoEdicao.create({
+        data: {
+          lancamentoId: lancamentoIdReferencia,
+          barbeiroId: dados.barbeiroId,
+          acao: 'ADICIONAR',
+          dadosNovos: dados as any,
+        }
+      });
+      return { status: 'PENDENTE', aprovacao };
+    }
+
+    // Se não tiver barbeiro, cria direto
+    return FinanceiroService.criar(dados);
+  }
+
   /** Remove um lançamento */
   static async remover(id: string) {
+    const lancamento = await prisma.lancamentoFinanceiro.findUnique({ where: { id } });
+    if (!lancamento) throw new Error('Lançamento não encontrado.');
+
+    if (lancamento.barbeiroId) {
+      const aprovacao = await prisma.aprovacaoEdicao.create({
+        data: {
+          lancamentoId: id,
+          barbeiroId: lancamento.barbeiroId,
+          acao: 'EXCLUIR',
+        }
+      });
+      return { status: 'PENDENTE', aprovacao };
+    }
+
     return prisma.lancamentoFinanceiro.delete({ where: { id } });
   }
 

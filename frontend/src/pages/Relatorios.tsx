@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Filter, DollarSign, Users, Scissors, TrendingUp, AlertCircle, Pencil, X } from 'lucide-react';
+import { Filter, DollarSign, Users, Scissors, TrendingUp, AlertCircle, Pencil, X, Trash2, Plus } from 'lucide-react';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { StatCard } from '../components/StatCard';
 import api from '../api/client';
@@ -25,6 +25,8 @@ interface Lancamento {
   valorLiquido?: number | string | null;
   barbeiro?: { usuario: { nome: string } } | null;
   servico?: { nome: string } | null;
+  servicoId?: string | null;
+  barbeiroId?: string | null;
 }
 
 interface RelatorioData {
@@ -43,6 +45,7 @@ export function Relatorios() {
   const [searchParams] = useSearchParams();
   const [carregando, setCarregando] = useState(false);
   const [barbeiros, setBarbeiros] = useState<any[]>([]);
+  const [servicos, setServicos] = useState<any[]>([]);
   const [erro, setErro] = useState<string | null>(null);
 
   const dataAtual = new Date();
@@ -55,13 +58,16 @@ export function Relatorios() {
 
   // Estados para edição de lançamento
   const [lancamentoEditando, setLancamentoEditando] = useState<Lancamento | null>(null);
-  const [valoresEdit, setValoresEdit] = useState({ valor: '', comissao: '', formaPagamento: '' });
+    const [valoresEdit, setValoresEdit] = useState({ valor: '', comissao: '', formaPagamento: '', servicoId: '' });
+  const [servicosAdicionais, setServicosAdicionais] = useState<any[]>([]);
   const [salvandoEdicao, setSalvandoEdicao] = useState(false);
 
   useEffect(() => {
     async function carregar() {
       try {
         const res = await api.get('/barbeiros');
+        const resS = await api.get('/servicos');
+        setServicos(resS.data.filter((s: any) => s.ativo));
         setBarbeiros(res.data.filter((b: any) => b.ativo));
       } catch (e) {
         console.error('Erro ao carregar barbeiros:', e);
@@ -115,24 +121,66 @@ export function Relatorios() {
     buscarRelatorio();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const handleEditar = (l: Lancamento) => {
+    const handleEditar = (l: Lancamento) => {
     setLancamentoEditando(l);
+    setServicosAdicionais([]);
     setValoresEdit({
       valor: String(l.valor),
       comissao: String(l.valorComissao || ''),
       formaPagamento: l.formaPagamento,
+      servicoId: l.servicoId || '',
     });
   };
 
-  const salvarEdicao = async () => {
+    const excluirLancamento = async (id: string) => {
+    if (!confirm('Tem certeza que deseja excluir este lançamento?')) return;
+    try {
+      const res = await api.delete(`/financeiro/${id}`);
+      if (res.data?.status === 'PENDENTE') {
+        alert('Este lançamento pertence a um barbeiro. Uma solicitação de exclusão foi enviada para aprovação do barbeiro.');
+      } else {
+        alert('Lançamento excluído com sucesso.');
+      }
+      buscarRelatorio();
+    } catch (e: any) {
+      alert(e?.response?.data?.erro || 'Erro ao excluir.');
+    }
+  };
+
+    const salvarEdicao = async () => {
     if (!lancamentoEditando) return;
     setSalvandoEdicao(true);
     try {
-      await api.put(`/financeiro/${lancamentoEditando.id}`, {
+      const payload: any = {
         valor: Number(valoresEdit.valor),
         valorComissao: valoresEdit.comissao ? Number(valoresEdit.comissao) : null,
         formaPagamento: valoresEdit.formaPagamento,
-      });
+      };
+      if (valoresEdit.servicoId) payload.servicoId = valoresEdit.servicoId;
+
+      const res = await api.put(`/financeiro/${lancamentoEditando.id}`, payload);
+      
+      // Adicionar serviços extras
+      for (const servicoExtra of servicosAdicionais) {
+        if (!servicoExtra.servicoId) continue;
+        await api.post(`/financeiro/${lancamentoEditando.id}/adicionar`, {
+          tipo: 'ENTRADA',
+          categoria: 'Serviço Adicional',
+          descricao: '',
+          valor: Number(servicoExtra.valor),
+          formaPagamento: valoresEdit.formaPagamento, // Usa a mesma forma de pgto
+          barbeiroId: lancamentoEditando.barbeiroId || null,
+          servicoId: servicoExtra.servicoId,
+          data: lancamentoEditando.data,
+        });
+      }
+
+      if (res.data?.status === 'PENDENTE' || (servicosAdicionais.length > 0 && lancamentoEditando.barbeiroId)) {
+        alert('As alterações que afetam barbeiros foram enviadas para aprovação.');
+      } else {
+        alert('Alterações salvas com sucesso.');
+      }
+
       setLancamentoEditando(null);
       buscarRelatorio();
     } catch (e: any) {
@@ -309,22 +357,20 @@ export function Relatorios() {
                       <td style={{ textAlign: 'right', fontFamily: 'var(--fonte-numeros)', fontSize: '12px', color: 'var(--text-primary)' }}>{fmt(l.valor)}</td>
                       <td style={{ textAlign: 'right', fontFamily: 'var(--fonte-numeros)', fontSize: '12px', color: 'var(--error-text)' }}>{l.valorComissao ? fmt(l.valorComissao) : '—'}</td>
                       <td style={{ textAlign: 'right', fontFamily: 'var(--fonte-numeros)', fontSize: '12px', color: 'var(--success-text)', fontWeight: 500 }}>{l.valorLiquido ? fmt(l.valorLiquido) : fmt(l.valor)}</td>
-                      <td style={{ textAlign: 'center' }}>
+                      <td style={{ textAlign: 'center', display: 'flex', gap: '8px', justifyContent: 'center' }}>
                         <button
                           onClick={() => handleEditar(l)}
-                          style={{
-                            background: 'transparent',
-                            border: 'none',
-                            cursor: 'pointer',
-                            color: 'var(--text-muted)',
-                            padding: '4px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                          }}
+                          style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}
                           title="Editar lançamento"
                         >
                           <Pencil size={14} />
+                        </button>
+                        <button
+                          onClick={() => excluirLancamento(l.id)}
+                          style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--error-text)' }}
+                          title="Excluir lançamento"
+                        >
+                          <Trash2 size={14} />
                         </button>
                       </td>
                     </tr>
@@ -359,6 +405,18 @@ export function Relatorios() {
             </div>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                            <div>
+                <label className="input-label">Serviço Realizado</label>
+                <select 
+                  className="ds-select"
+                  value={valoresEdit.servicoId}
+                  onChange={e => setValoresEdit({...valoresEdit, servicoId: e.target.value})}
+                >
+                  <option value="">Selecione (ou deixe em branco)</option>
+                  {servicos.map(s => <option key={s.id} value={s.id}>{s.nome} - R$ {Number(s.preco).toFixed(2)}</option>)}
+                </select>
+              </div>
+
               <div>
                 <label className="input-label">Valor Total (R$)</label>
                 <input 
@@ -395,6 +453,56 @@ export function Relatorios() {
                   <option value="CARTAO_CREDITO">Cartão de Crédito</option>
                 </select>
               </div>
+
+              {servicosAdicionais.map((srv, index) => (
+                <div key={index} style={{ borderTop: '1px dashed var(--border)', paddingTop: '16px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <label className="input-label">Serviço Adicional {index + 1}</label>
+                    <button onClick={() => {
+                      const novos = [...servicosAdicionais];
+                      novos.splice(index, 1);
+                      setServicosAdicionais(novos);
+                    }} style={{ background: 'transparent', border: 'none', color: 'var(--error-text)', fontSize: '12px', cursor: 'pointer' }}>Remover</button>
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <select 
+                      className="ds-select"
+                      value={srv.servicoId}
+                      onChange={e => {
+                        const s = servicos.find(sv => sv.id === e.target.value);
+                        const novos = [...servicosAdicionais];
+                        novos[index].servicoId = e.target.value;
+                        if (s) novos[index].valor = String(s.preco);
+                        setServicosAdicionais(novos);
+                      }}
+                      style={{ flex: 2 }}
+                    >
+                      <option value="">Selecione...</option>
+                      {servicos.map(s => <option key={s.id} value={s.id}>{s.nome}</option>)}
+                    </select>
+                    <input 
+                      type="number"
+                      placeholder="Valor"
+                      className="ds-input"
+                      value={srv.valor}
+                      onChange={e => {
+                        const novos = [...servicosAdicionais];
+                        novos[index].valor = e.target.value;
+                        setServicosAdicionais(novos);
+                      }}
+                      style={{ flex: 1 }}
+                    />
+                  </div>
+                </div>
+              ))}
+
+              <button 
+                className="btn-secondary" 
+                style={{ fontSize: '12px', padding: '8px', borderStyle: 'dashed' }}
+                onClick={() => setServicosAdicionais([...servicosAdicionais, { servicoId: '', valor: '' }])}
+              >
+                <Plus size={14} /> Adicionar Serviço Extra
+              </button>
 
               <div style={{ display: 'flex', gap: '12px', marginTop: '8px' }}>
                 <button 
