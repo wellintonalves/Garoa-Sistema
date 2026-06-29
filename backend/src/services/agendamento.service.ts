@@ -303,7 +303,7 @@ export class AgendamentoService {
     const fimMinutos = horaFechamento * 60 + minFechamento;
 
     // Gera slots de 30 min dentro do horário de funcionamento
-    const slots: Array<{ horario: string; ocupado: boolean; agendamentoId?: string }> = [];
+    const slots: Array<{ horario: string; ocupado: boolean; agendamentoId?: string; bloqueado?: boolean; motivoBloqueio?: string | null }> = [];
 
     for (let m = inicioMinutos; m < fimMinutos; m += 30) {
       const hora = Math.floor(m / 60);
