@@ -73,7 +73,7 @@ export class AuthService {
   /** Autentica um usuário existente */
   static async login(dados: DadosLogin): Promise<RespostaAuth> {
     // Busca o usuário (se barbeariaId for fornecido, busca exato, senão pega o primeiro)
-    const whereClause = dados.barbeariaId 
+    const whereClause = dados.barbeariaId
       ? { email_barbeariaId: { email: dados.email, barbeariaId: dados.barbeariaId } }
       : { email: dados.email };
 

@@ -36,7 +36,7 @@ export class AuthController {
         res.status(400).json({ erro: 'A senha deve ter pelo menos 6 caracteres' });
         return;
       }
-      
+
       let bId = barbeariaId;
       if (!bId) {
         const prisma = (await import('../lib/prisma')).prisma;
@@ -57,7 +57,7 @@ export class AuthController {
       }
 
       const resultado = await AuthService.registrar({ nome, email, senha, papel, barbeariaId: bId });
-      
+
       // Envia o código de verificação após criar o usuário
       await VerificacaoService.enviarCodigo(resultado.usuario.id, resultado.usuario.email, resultado.usuario.nome);
 

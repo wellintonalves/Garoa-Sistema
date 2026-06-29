@@ -6,16 +6,16 @@ export class EmailService {
   static async enviarCodigoVerificacao(email: string, nome: string, codigo: string): Promise<void> {
     console.log('[EmailService] Tentando enviar para:', email);
     console.log('[EmailService] API Key presente:', !!process.env.RESEND_API_KEY);
-    
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       throw new Error(`Email inválido: ${email}`);
     }
 
-        if (!resend) {
-                console.warn('[EmailService] RESEND_API_KEY não configurado. Email não enviado para:', email, '| Código:', codigo);
-                return;
-        }
+    if (!resend) {
+      console.warn('[EmailService] RESEND_API_KEY não configurado. Email não enviado para:', email, '| Código:', codigo);
+      return;
+    }
     await resend.emails.send({
       from: 'Garoa Sistema <noreply@valenbarber.com.br>',
       to: email,
@@ -54,10 +54,10 @@ export class EmailService {
   }
 
   static async enviarCodigoRecuperacaoSenha(email: string, nome: string, codigo: string): Promise<void> {
-        if (!resend) {
-                console.warn('[EmailService] RESEND_API_KEY não configurado. Email de recuperação não enviado para:', email);
-                return;
-        }
+    if (!resend) {
+      console.warn('[EmailService] RESEND_API_KEY não configurado. Email de recuperação não enviado para:', email);
+      return;
+    }
     await resend.emails.send({
       from: 'Garoa Sistema <noreply@valenbarber.com.br>',
       to: email,
