@@ -44,8 +44,8 @@ export class FinanceiroService {
 
   /** Cria um lançamento */
   static async criar(dados: DadosLancamento) {
-    let valorComissao = null;
-    let valorLiquido = null;
+    let valorComissao: number | null = null;
+    let valorLiquido: number | null = null;
 
     // Se for serviço prestado e tiver barbeiro vinculado
     if (dados.tipo === 'ENTRADA' && dados.barbeiroId) {
@@ -318,7 +318,4 @@ export class FinanceiroService {
       estoqueBaixo,
       ticketMedio,
       servicoMaisRealizado,
-      porDia: porDiaCompleto,
-    };
-  }
-}
+      porDia:

@@ -1,15 +1,15 @@
-// Aba Agendar — fluxo em etapas: serviço → barbeiro → data/horário → confirmação
+// Aba Agendar — fluxo em etapas: serviço(s) → barbeiro → data/horário → confirmação
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Check, ArrowLeft, Scissors, Star } from 'lucide-react';
 import clienteApi from '../../../api/clienteApi';
 
 interface Servico { id: string; nome: string; preco: string; duracaoMinutos: number; }
-interface Barbeiro { 
-  id: string; 
-  foto: string | null; 
-  usuario: { nome: string }; 
-  especialidades: string[]; 
+interface Barbeiro {
+  id: string;
+  foto: string | null;
+  usuario: { nome: string };
+  especialidades: string[];
 }
 interface Slot { horario: string; disponivel: boolean; }
 
@@ -23,7 +23,8 @@ export function ClienteBarbeariaAgendar() {
   const [barbeiros, setBarbeiros] = useState<Barbeiro[]>([]);
   const [slots, setSlots] = useState<Slot[]>([]);
 
-  const [servicoSel, setServicoSel] = useState<Servico | null>(null);
+  // Multi-serviço: array de serviços selecionados
+  const [servicosSel, setServicosSel] = useState<Servico[]>([]);
   const [barbeiroSel, setBarbeiroSel] = useState<Barbeiro | null>(null);
   const [dataSel, setDataSel] = useState('');
   const [horarioSel, setHorarioSel] = useState('');
@@ -37,27 +38,39 @@ export function ClienteBarbeariaAgendar() {
     }
   }, [barbeariaId]);
 
+  const duracaoTotal = servicosSel.reduce((acc, s) => acc + s.duracaoMinutos, 0);
+  const valorTotal = servicosSel.reduce((acc, s) => acc + Number(s.preco), 0);
+  const servicoPrincipal = servicosSel[0] || null;
+
   useEffect(() => {
-    if (dataSel && barbeiroSel && servicoSel && barbeariaId) {
+    if (dataSel && barbeiroSel && servicosSel.length > 0 && barbeariaId) {
       clienteApi.get<Slot[]>(`/cliente/barbearia/${barbeariaId}/horarios-disponiveis`, {
-        params: { barbeiroId: barbeiroSel.id, data: dataSel, servicoId: servicoSel.id }
+        params: { barbeiroId: barbeiroSel.id, data: dataSel, servicoId: servicosSel[0].id, duracao: duracaoTotal }
       }).then(r => setSlots(r.data));
     }
-  }, [dataSel, barbeiroSel, servicoSel, barbeariaId]);
+  }, [dataSel, barbeiroSel, servicosSel, barbeariaId, duracaoTotal]);
 
   const fmt = (v: string | number) => Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-
   const hoje = new Date().toISOString().split('T')[0];
 
+  function toggleServico(s: Servico) {
+    setServicosSel(prev => prev.some(sel => sel.id === s.id)
+      ? prev.filter(sel => sel.id !== s.id)
+      : [...prev, s]
+    );
+  }
+
   async function confirmarAgendamento() {
-    if (!servicoSel || !barbeiroSel || !dataSel || !horarioSel) return;
+    if (!servicoPrincipal || !barbeiroSel || !dataSel || !horarioSel) return;
     setEnviando(true);
     try {
       await clienteApi.post(`/cliente/barbearia/${barbeariaId}/agendar`, {
-        servicoId: servicoSel.id,
+        servicoId: servicoPrincipal.id,
+        servicosIds: servicosSel.map(s => s.id),
         barbeiroId: barbeiroSel.id,
         data: dataSel,
         hora: horarioSel,
+        valorCobrado: valorTotal,
       });
       setSucesso(true);
     } catch { alert('Erro ao agendar'); }
@@ -77,7 +90,8 @@ export function ClienteBarbeariaAgendar() {
         <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '14px', color: 'var(--text-muted)', textAlign: 'center', marginBottom: '32px' }}>
           Te esperamos no dia {new Date(dataSel + 'T00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })} às {horarioSel}.
         </p>
-        <button onClick={() => navigate(`/cliente/barbearia/${barbeariaId}`)} className="btn-primary w-full justify-center py-4" style={{ textTransform: 'uppercase', fontSize: '13px', fontWeight: 600, letterSpacing: '0.04em' }}>
+        <button onClick={() => navigate(`/cliente/barbearia/${barbeariaId}`)} className="btn-primary w-full justify-center py-4"
+          style={{ textTransform: 'uppercase', fontSize: '13px', fontWeight: 600, letterSpacing: '0.04em' }}>
           Voltar ao Início
         </button>
       </div>
@@ -94,19 +108,16 @@ export function ClienteBarbeariaAgendar() {
 
   return (
     <div className="px-5 py-6 animate-fade-in max-w-2xl mx-auto">
-      {/* Stepper Circular Linha Conectada */}
+      {/* Stepper */}
       <div className="flex items-center justify-between mb-8 relative">
         <div className="absolute top-[12px] left-[10%] right-[10%] h-[2px]" style={{ background: 'var(--bg-surface)' }} />
-        <div className="absolute top-[12px] left-[10%] h-[2px] transition-all duration-300" 
+        <div className="absolute top-[12px] left-[10%] h-[2px] transition-all duration-300"
              style={{ background: 'var(--amber)', width: `${(etapaIdx / (etapas.length - 1)) * 80}%` }} />
-        
         {etapas.map((e, i) => {
           const isAtivo = i <= etapaIdx;
           return (
             <div key={e.key} className="flex flex-col items-center gap-2 relative z-10 w-1/4">
-              <div className={`stepper-dot ${isAtivo ? 'active' : 'inactive'}`}>
-                {i + 1}
-              </div>
+              <div className={`stepper-dot ${isAtivo ? 'active' : 'inactive'}`}>{i + 1}</div>
               <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '9px', fontWeight: isAtivo ? 600 : 400, color: isAtivo ? 'var(--amber)' : 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                 {e.label}
               </span>
@@ -115,7 +126,7 @@ export function ClienteBarbeariaAgendar() {
         })}
       </div>
 
-      {/* Header Contextual por Etapa */}
+      {/* Header */}
       <div className="mb-6">
         {etapa !== 'servico' && (
           <button onClick={() => {
@@ -127,51 +138,82 @@ export function ClienteBarbeariaAgendar() {
             <ArrowLeft size={14} /> Voltar
           </button>
         )}
-        
         <h1 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '24px', fontWeight: 600, color: 'var(--text-primary)' }}>
           {etapa === 'servico' && 'Selecione o que deseja fazer hoje.'}
           {etapa === 'barbeiro' && 'Escolha o profissional.'}
           {etapa === 'data' && 'Escolha o melhor horário.'}
           {etapa === 'confirmacao' && 'Revise seu agendamento.'}
         </h1>
-        
         {etapa === 'servico' && (
           <p className="flex items-center gap-1.5 mt-2" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '12px', color: 'var(--amber)' }}>
-            <Star size={12} /> Ganhe 50 pts a cada atendimento
+            <Star size={12} /> Ganhe 50 pts a cada atendimento · Pode selecionar mais de um serviço
           </p>
         )}
       </div>
 
-      {/* Conteúdo Etapa 1: Serviço */}
+      {/* Etapa 1: Seleção de serviços (multi-select) */}
       {etapa === 'servico' && (
         <div className="flex flex-col gap-3">
-          {servicos.map((s, idx) => (
-            <button key={s.id} onClick={() => { setServicoSel(s); setEtapa('barbeiro'); }}
-              className="flex items-center justify-between p-4 w-full text-left transition-all rounded-md"
-              style={{
-                background: servicoSel?.id === s.id ? 'rgba(var(--cor-primaria-rgb), 0.12)' : 'var(--fundo-sidebar)',
-                border: servicoSel?.id === s.id ? '1px solid var(--amber)' : '1px solid var(--borda)',
-                cursor: 'pointer',
-              }}>
-              <div className="flex items-center gap-4">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${servicoSel?.id === s.id ? 'bg-[var(--amber)] text-[#0a0a0a]' : 'bg-[var(--bg-surface)] text-[var(--cor-icone)] border border-[var(--borda)]'}`}>
-                  <Scissors size={18} />
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <p style={{ fontFamily: 'var(--fonte-interface)', fontWeight: 600, color: 'var(--text-primary)', fontSize: '15px' }}>{s.nome}</p>
-                    {idx === 0 && <span className="bg-[var(--amber)] text-black text-[9px] uppercase tracking-wider font-bold px-1.5 py-0.5 rounded-sm">Mais popular</span>}
+          {servicos.map((s, idx) => {
+            const selecionado = servicosSel.some(sel => sel.id === s.id);
+            return (
+              <button key={s.id} onClick={() => toggleServico(s)}
+                className="flex items-center justify-between p-4 w-full text-left transition-all rounded-md"
+                style={{
+                  background: selecionado ? 'rgba(var(--cor-primaria-rgb), 0.12)' : 'var(--fundo-sidebar)',
+                  border: selecionado ? '1px solid var(--amber)' : '1px solid var(--borda)',
+                  cursor: 'pointer',
+                }}>
+                <div className="flex items-center gap-4">
+                  <div style={{
+                    width: '20px', height: '20px', borderRadius: '5px', flexShrink: 0,
+                    background: selecionado ? 'var(--amber)' : 'transparent',
+                    border: selecionado ? '1px solid var(--amber)' : '1px solid var(--borda)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    {selecionado && <svg width="12" height="10" viewBox="0 0 12 10"><path d="M1 5l4 4 6-8" stroke="#000" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"/></svg>}
                   </div>
-                  <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>{s.duracaoMinutos} min de duração</p>
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${selecionado ? 'bg-[var(--amber)] text-[#0a0a0a]' : 'bg-[var(--bg-surface)] text-[var(--cor-icone)] border border-[var(--borda)]'}`}>
+                    <Scissors size={18} />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <p style={{ fontFamily: 'var(--fonte-interface)', fontWeight: 600, color: 'var(--text-primary)', fontSize: '15px' }}>{s.nome}</p>
+                      {idx === 0 && <span className="bg-[var(--amber)] text-black text-[9px] uppercase tracking-wider font-bold px-1.5 py-0.5 rounded-sm">Mais popular</span>}
+                    </div>
+                    <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>{s.duracaoMinutos} min de duração</p>
+                  </div>
                 </div>
+                <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '15px', color: selecionado ? 'var(--amber)' : 'var(--text-primary)', fontWeight: 500 }}>{fmt(s.preco)}</span>
+              </button>
+            );
+          })}
+
+          {servicosSel.length > 0 && (
+            <div style={{ marginTop: '8px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 16px', background: 'var(--fundo-sidebar)', border: '1px solid var(--borda)', borderRadius: '8px', marginBottom: '12px' }}>
+                <div>
+                  <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', color: 'var(--text-muted)', marginBottom: '2px' }}>
+                    {servicosSel.length} serviço{servicosSel.length > 1 ? 's' : ''} · {duracaoTotal} min no total
+                  </p>
+                  <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '12px', color: 'var(--text-primary)' }}>
+                    {servicosSel.map(s => s.nome).join(' + ')}
+                  </p>
+                </div>
+                <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '18px', color: 'var(--amber)', fontWeight: 700, alignSelf: 'center' }}>
+                  {fmt(valorTotal)}
+                </span>
               </div>
-              <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '15px', color: 'var(--text-primary)', fontWeight: 500 }}>{fmt(s.preco)}</span>
-            </button>
-          ))}
+              <button onClick={() => setEtapa('barbeiro')} className="btn-primary w-full justify-center py-4"
+                style={{ fontSize: '13px', fontWeight: 600, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+                Continuar →
+              </button>
+            </div>
+          )}
         </div>
       )}
 
-      {/* Conteúdo Etapa 2: Barbeiro */}
+      {/* Etapa 2: Barbeiro */}
       {etapa === 'barbeiro' && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {barbeiros.map(b => (
@@ -183,11 +225,7 @@ export function ClienteBarbeariaAgendar() {
                 cursor: 'pointer',
               }}>
               {b.foto ? (
-                <img 
-                  src={b.foto} 
-                  alt={b.usuario.nome} 
-                  className="w-12 h-12 rounded-full object-cover border border-[var(--borda)]"
-                />
+                <img src={b.foto} alt={b.usuario.nome} className="w-12 h-12 rounded-full object-cover border border-[var(--borda)]" />
               ) : (
                 <div className="w-12 h-12 flex items-center justify-center rounded-full bg-[var(--bg-surface)] border border-[var(--borda)] text-[var(--text-primary)] font-semibold font-interface">
                   {b.usuario.nome.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)}
@@ -206,7 +244,7 @@ export function ClienteBarbeariaAgendar() {
         </div>
       )}
 
-      {/* Conteúdo Etapa 3: Data e Horário */}
+      {/* Etapa 3: Data e Horário */}
       {etapa === 'data' && (
         <div>
           <div className="mb-6 p-4 rounded-md" style={{ background: 'var(--fundo-sidebar)', border: '1px solid var(--borda)' }}>
@@ -225,17 +263,12 @@ export function ClienteBarbeariaAgendar() {
                       disabled={!s.disponivel}
                       onClick={() => { setHorarioSel(s.horario); setEtapa('confirmacao'); }}
                       style={{
-                        padding: '12px 4px',
-                        fontFamily: 'var(--fonte-numeros)',
-                        fontSize: '14px',
-                        textAlign: 'center',
+                        padding: '12px 4px', fontFamily: 'var(--fonte-numeros)', fontSize: '14px', textAlign: 'center',
                         cursor: s.disponivel ? 'pointer' : 'not-allowed',
                         background: horarioSel === s.horario ? 'var(--amber)' : s.disponivel ? 'var(--fundo-sidebar)' : 'transparent',
                         color: horarioSel === s.horario ? '#0A0A0A' : s.disponivel ? 'var(--text-primary)' : 'var(--text-disabled)',
                         border: horarioSel === s.horario ? '1px solid var(--amber)' : s.disponivel ? '1px solid var(--borda)' : '1px dashed var(--borda)',
-                        opacity: s.disponivel ? 1 : 0.3,
-                        borderRadius: '6px',
-                        fontWeight: 500
+                        opacity: s.disponivel ? 1 : 0.3, borderRadius: '6px', fontWeight: 500
                       }}>
                       {s.horario}
                     </button>
@@ -251,7 +284,7 @@ export function ClienteBarbeariaAgendar() {
         </div>
       )}
 
-      {/* Conteúdo Etapa 4: Confirmação (Recibo Elegante) */}
+      {/* Etapa 4: Confirmação */}
       {etapa === 'confirmacao' && (
         <div className="w-full max-w-sm mx-auto">
           <div className="rounded-t-lg p-6 relative overflow-hidden" style={{ background: 'var(--fundo-sidebar)', border: '1px solid var(--borda)', borderBottom: 'none' }}>
@@ -259,58 +292,16 @@ export function ClienteBarbeariaAgendar() {
             <h3 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.2em', color: 'var(--text-muted)', textAlign: 'center', marginBottom: '24px' }}>
               Resumo do Agendamento
             </h3>
-
             <div className="flex flex-col gap-5">
-              <div className="flex justify-between items-start">
-                <div>
-                  <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '2px' }}>Serviço</p>
-                  <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '16px', fontWeight: 500, color: 'var(--text-primary)' }}>{servicoSel?.nome}</p>
-                </div>
-                <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '16px', color: 'var(--text-primary)' }}>{fmt(servicoSel?.preco || '0')}</p>
-              </div>
-
-              <div className="flex justify-between items-start">
-                <div>
-                  <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '2px' }}>Profissional</p>
-                  <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '16px', fontWeight: 500, color: 'var(--text-primary)' }}>{barbeiroSel?.usuario.nome}</p>
-                </div>
-              </div>
-
-              <div className="flex justify-between items-start">
-                <div>
-                  <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '2px' }}>Data</p>
-                  <p className="capitalize" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '16px', fontWeight: 500, color: 'var(--text-primary)' }}>
-                    {new Date(dataSel + 'T00:00').toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: 'short' })}
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '2px' }}>Horário</p>
-                  <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '16px', color: 'var(--amber)', fontWeight: 600 }}>{horarioSel}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          {/* Efeito serrilhado (recibo) */}
-          <div className="w-full flex">
-            {Array.from({ length: 20 }).map((_, i) => (
-              <div key={i} className="flex-1 h-2" style={{ 
-                background: 'var(--fundo-pagina)', 
-                clipPath: 'polygon(0 0, 50% 100%, 100% 0)',
-                marginTop: '-1px'
-              }} />
-            ))}
-          </div>
-
-          <div className="mt-8">
-            <button onClick={confirmarAgendamento} disabled={enviando}
-              className="btn-primary w-full justify-center py-4"
-              style={{ fontSize: '14px', fontWeight: 600, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
-              {enviando ? 'Confirmando...' : 'Confirmar e Agendar'}
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
+              <div>
+                <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '8px' }}>
+                  Serviço{servicosSel.length > 1 ? 's' : ''}
+                </p>
+                {servicosSel.map(s => (
+                  <div key={s.id} className="flex justify-between items-center mb-2">
+                    <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '14px', fontWeight: 500, color: 'var(--text-primary)' }}>{s.nome}</p>
+                    <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '14px', color: 'var(--text-primary)' }}>{fmt(s.preco)}</p>
+                  </div>
+                ))}
+                {servicosSel.length > 1 && (
+                  <div className="flex justify-between items-center pt-2" style={{ borderTop: '1px solid var(--
