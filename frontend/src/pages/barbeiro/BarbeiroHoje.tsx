@@ -18,6 +18,8 @@ export function BarbeiroHoje() {
   const [agendamentos, setAgendamentos] = useState<AgendamentoHoje[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [concluindoId, setConcluindoId] = useState<string | null>(null);
+  const [trabalhandoAgora, setTrabalhandoAgora] = useState(false);
+  const [atualizandoStatus, setAtualizandoStatus] = useState(false);
 
   useEffect(() => {
     carregarAgenda();
@@ -27,8 +29,23 @@ export function BarbeiroHoje() {
     try {
       const res = await barbeiroApi.get<AgendamentoHoje[]>('/barbeiro/agenda-hoje');
       setAgendamentos(res.data);
+      const perfilRes = await barbeiroApi.get('/barbeiro/perfil');
+      setTrabalhandoAgora(perfilRes.data.trabalhandoAgora);
     } catch { /* empty */ }
     finally { setCarregando(false); }
+  }
+
+  async function toggleTrabalhando() {
+    setAtualizandoStatus(true);
+    try {
+      const novoStatus = !trabalhandoAgora;
+      await barbeiroApi.patch('/barbeiro/status-trabalho', { trabalhandoAgora: novoStatus });
+      setTrabalhandoAgora(novoStatus);
+    } catch (err: any) {
+      alert(err.response?.data?.erro || 'Erro ao atualizar status');
+    } finally {
+      setAtualizandoStatus(false);
+    }
   }
 
   async function concluir(id: string) {
@@ -54,13 +71,25 @@ export function BarbeiroHoje() {
   return (
     <div className="px-5 py-6 animate-fade-in">
       {/* Header */}
-      <div className="mb-8">
-        <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--cor-icone)', letterSpacing: '0.15em', textTransform: 'uppercase' }}>
-          Hoje
-        </p>
-        <h1 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '28px', color: 'var(--text-primary)', letterSpacing: '0.04em' }}>
-          Olá, {barbeiro?.nome.split(' ')[0]}
-        </h1>
+      <div className="mb-8 flex justify-between items-start">
+        <div>
+          <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--cor-icone)', letterSpacing: '0.15em', textTransform: 'uppercase' }}>
+            Hoje
+          </p>
+          <h1 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '28px', color: 'var(--text-primary)', letterSpacing: '0.04em' }}>
+            Olá, {barbeiro?.nome.split(' ')[0]}
+          </h1>
+        </div>
+        
+        <div className="flex flex-col items-center">
+          <label className="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" value="" className="sr-only peer" checked={trabalhandoAgora} onChange={toggleTrabalhando} disabled={atualizandoStatus} />
+            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div>
+          </label>
+          <span className="text-[9px] uppercase tracking-wider mt-1" style={{ color: trabalhandoAgora ? 'var(--success-text, #22c55e)' : 'var(--text-muted)' }}>
+            {trabalhandoAgora ? 'Trabalhando' : 'Ausente'}
+          </span>
+        </div>
       </div>
 
       {carregando ? (

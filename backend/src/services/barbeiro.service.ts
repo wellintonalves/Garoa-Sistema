@@ -20,6 +20,7 @@ interface DadosAtualizacao {
   comissaoPercent?: number;
   cor?: string;
   ativo?: boolean;
+  trabalhandoAgora?: boolean;
 }
 
 export class BarbeiroService {
@@ -143,6 +144,7 @@ export class BarbeiroService {
     if (dados.comissaoPercent !== undefined) updateBarbeiro.comissaoPercent = dados.comissaoPercent;
     if (dados.cor !== undefined) updateBarbeiro.cor = dados.cor;
     if (dados.ativo !== undefined) updateBarbeiro.ativo = dados.ativo;
+    if (dados.trabalhandoAgora !== undefined) updateBarbeiro.trabalhandoAgora = dados.trabalhandoAgora;
 
     return prisma.barbeiro.update({
       where: { id },

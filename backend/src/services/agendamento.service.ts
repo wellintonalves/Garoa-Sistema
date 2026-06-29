@@ -96,6 +96,18 @@ export class AgendamentoService {
       throw new Error('Horário já ocupado para este barbeiro');
     }
 
+    const conflitoBloqueio = await prisma.bloqueioAgenda.findFirst({
+      where: {
+        barbeiroId: dados.barbeiroId,
+        dataInicio: { lt: dataFim },
+        dataFim: { gt: dataInicio }
+      }
+    });
+
+    if (conflitoBloqueio) {
+      throw new Error('Horário indisponível (bloqueado pelo barbeiro)');
+    }
+
     return prisma.agendamento.create({
       data: {
         clienteId: dados.clienteId,
@@ -260,6 +272,15 @@ export class AgendamentoService {
       orderBy: { dataHora: 'asc' },
     });
 
+    // Busca bloqueios do dia
+    const bloqueios = await prisma.bloqueioAgenda.findMany({
+      where: {
+        barbeiroId,
+        dataInicio: { lte: fim },
+        dataFim: { gte: inicio },
+      }
+    });
+
     // Busca horários da barbearia (se existir)
     const barbeiro = await prisma.barbeiro.findUnique({
       where: { id: barbeiroId },
@@ -301,10 +322,16 @@ export class AgendamentoService {
         return slotInicio >= agInicio && slotInicio < agFim;
       });
 
+      const bloqueioNoSlot = bloqueios.find((bl: any) => {
+        return slotInicio >= new Date(bl.dataInicio) && slotInicio < new Date(bl.dataFim);
+      });
+
       slots.push({
         horario: formatarHorario(hora, minuto),
-        ocupado: !!agendamentoNoSlot,
+        ocupado: !!agendamentoNoSlot || !!bloqueioNoSlot,
         agendamentoId: agendamentoNoSlot?.id,
+        bloqueado: !!bloqueioNoSlot,
+        motivoBloqueio: bloqueioNoSlot?.motivo,
       });
     }
 

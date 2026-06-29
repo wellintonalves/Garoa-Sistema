@@ -116,4 +116,24 @@ export class BarbeiroAppController {
       res.status(500).json({ erro: 'Erro ao buscar perfil' });
     }
   }
+
+  /** PATCH /barbeiro/status-trabalho */
+  static async atualizarStatusTrabalho(req: BarbeiroAuthRequest, res: Response): Promise<void> {
+    try {
+      const barbeiro = req.barbeiro;
+      if (!barbeiro) { res.status(401).json({ erro: 'Não autorizado' }); return; }
+
+      const { trabalhandoAgora } = req.body;
+      const { prisma } = require('../lib/prisma');
+      
+      const atualizado = await prisma.barbeiro.update({
+        where: { id: barbeiro.barbeiroId },
+        data: { trabalhandoAgora: Boolean(trabalhandoAgora) },
+      });
+
+      res.json({ trabalhandoAgora: atualizado.trabalhandoAgora });
+    } catch (error) {
+      res.status(500).json({ erro: 'Erro ao atualizar status' });
+    }
+  }
 }

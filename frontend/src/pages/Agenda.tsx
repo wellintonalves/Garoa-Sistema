@@ -49,6 +49,14 @@ interface Agendamento {
 interface Barbeiro { id: string; usuario: { nome: string }; cor: string }
 interface Cliente { id: string; usuario: { nome: string } }
 interface Servico { id: string; nome: string; preco: string; duracaoMinutos: number; cor: string }
+interface Bloqueio {
+  id: string;
+  barbeiroId: string;
+  dataInicio: string;
+  dataFim: string;
+  motivo?: string;
+  barbeiro: { usuario: { nome: string } };
+}
 
 const statusStyles: Record<string, { bg: string; border: string; color: string }> = {
   AGUARDANDO:  { bg: 'rgba(var(--cor-primaria-rgb), 0.10)', border: 'var(--amber)', color: 'rgba(var(--cor-primaria-rgb), 0.15)' },
@@ -72,8 +80,10 @@ export function Agenda() {
     const d = new Date(); d.setDate(d.getDate() - d.getDay() + 1); d.setHours(0, 0, 0, 0); return d;
   });
   const [agendamentos, setAgendamentos] = useState<Agendamento[]>([]);
+  const [bloqueios, setBloqueios] = useState<Bloqueio[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [modalAberto, setModalAberto] = useState(false);
+  const [modalBloqueioAberto, setModalBloqueioAberto] = useState(false);
   const [barbeiros, setBarbeiros] = useState<Barbeiro[]>([]);
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [servicos, setServicos] = useState<Servico[]>([]);
@@ -81,6 +91,7 @@ export function Agenda() {
 
   // Form
   const [form, setForm] = useState({ clienteId: '', barbeiroId: '', servicoId: '', dataHora: '', observacoes: '' });
+  const [formBloqueio, setFormBloqueio] = useState({ barbeiroId: '', dataInicio: '', dataFim: '', motivo: '' });
 
   const diasDaSemana = Array.from({ length: 7 }, (_, i) => {
     const d = new Date(semanaInicio); d.setDate(semanaInicio.getDate() + i); return d;
@@ -95,6 +106,10 @@ export function Agenda() {
       const resultados = await Promise.all(promises);
       const todos = resultados.flatMap((r) => r.data);
       setAgendamentos(todos);
+
+      // Carregar bloqueios
+      const resBloq = await api.get<Bloqueio[]>('/bloqueios');
+      setBloqueios(resBloq.data);
     } catch (err) {
       console.error('Erro ao carregar agenda:', err);
     } finally {
@@ -136,6 +151,27 @@ export function Agenda() {
       carregar();
     } catch (err) {
       console.error('Erro ao criar agendamento:', err);
+    }
+  }
+
+  async function criarBloqueio() {
+    try {
+      await api.post('/bloqueios', formBloqueio);
+      setModalBloqueioAberto(false);
+      setFormBloqueio({ barbeiroId: '', dataInicio: '', dataFim: '', motivo: '' });
+      carregar();
+    } catch (err: any) {
+      alert(err.response?.data?.erro || 'Erro ao criar bloqueio');
+    }
+  }
+
+  async function removerBloqueio(id: string) {
+    if (!confirm('Deseja realmente remover este bloqueio?')) return;
+    try {
+      await api.delete(`/bloqueios/${id}`);
+      carregar();
+    } catch (err: any) {
+      alert(err.response?.data?.erro || 'Erro ao remover bloqueio');
     }
   }
 
@@ -195,9 +231,14 @@ export function Agenda() {
               <ChevronRight size={16} strokeWidth={1.5} />
             </button>
           </div>
-          <button onClick={abrirModal} className="btn-primary">
-            <Plus size={14} strokeWidth={1.5} /> Novo
-          </button>
+          <div className="flex gap-2">
+            <button onClick={() => setModalBloqueioAberto(true)} className="btn-secondary">
+              Bloquear Horário
+            </button>
+            <button onClick={abrirModal} className="btn-primary">
+              <Plus size={14} strokeWidth={1.5} /> Novo Agendamento
+            </button>
+          </div>
         </div>
       </div>
 
@@ -291,10 +332,11 @@ export function Agenda() {
                 {horario}
               </div>
               {diasDaSemana.map((dia, diaIdx) => {
+                const diaISO = dia.toISOString().split('T')[0];
+
                 const agendamentosDoCelula = agendamentos.filter((ag) => {
                   const d = new Date(ag.dataHora);
                   const dataBR = getDataBrasilia(d);
-                  const diaISO = dia.toISOString().split('T')[0];
                   const hm = getHoraMinutoBrasilia(d);
                   const horarioAg = `${String(hm.hora).padStart(2, '0')}:${String(hm.minuto).padStart(2, '0')}`;
                   
@@ -302,8 +344,41 @@ export function Agenda() {
                   return dataBR === diaISO && horarioAg === horario && checkBarbeiro;
                 });
 
+                const bloqueiosDaCelula = bloqueios.filter((bl) => {
+                  const dInicio = new Date(bl.dataInicio);
+                  const dFim = new Date(bl.dataFim);
+                  const dtAtual = new Date(diaISO + 'T' + horario + ':00-03:00'); // Hora do slot atual em SP
+
+                  // Consideramos o bloqueio na célula se o slot começar dentro do bloqueio
+                  const dentroBloqueio = dtAtual >= dInicio && dtAtual < dFim;
+                  
+                  const checkBarbeiro = filtroBarbeiro === 'todos' || bl.barbeiroId === filtroBarbeiro;
+                  return dentroBloqueio && checkBarbeiro;
+                });
+
                 return (
-                  <div key={diaIdx} style={{ borderLeft: '1px solid var(--border)', minHeight: '48px', padding: '2px' }}>
+                  <div key={diaIdx} style={{ borderLeft: '1px solid var(--border)', minHeight: '48px', padding: '2px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    {bloqueiosDaCelula.map((bl) => (
+                      <div
+                        key={bl.id}
+                        className="truncate cursor-pointer"
+                        onClick={() => removerBloqueio(bl.id)}
+                        title="Clique para remover bloqueio"
+                        style={{
+                          padding: '4px 8px',
+                          background: 'repeating-linear-gradient(45deg, var(--bg-surface2), var(--bg-surface2) 10px, transparent 10px, transparent 20px)',
+                          borderLeft: `3px solid var(--text-muted)`,
+                          color: 'var(--text-muted)',
+                          fontFamily: 'var(--fonte-interface)',
+                          fontSize: '11px',
+                          borderRadius: '0 4px 4px 0'
+                        }}
+                      >
+                        <p className="truncate pr-1" style={{ fontWeight: 600 }}>{bl.barbeiro.usuario.nome}</p>
+                        <p className="truncate" style={{ fontSize: '9px' }}>Bloqueado: {bl.motivo || 'Indisponível'}</p>
+                      </div>
+                    ))}
+
                     {agendamentosDoCelula.map((ag) => {
                       const isCancelado = ag.status === 'CANCELADO';
                       const isConcluido = ag.status === 'CONCLUIDO';
@@ -413,6 +488,34 @@ export function Agenda() {
           </div>
           <button onClick={criarAgendamento} className="btn-primary w-full justify-center">
             Criar Agendamento
+          </button>
+        </div>
+      </Modal>
+
+      {/* Modal para Bloqueio de Agenda */}
+      <Modal aberto={modalBloqueioAberto} onFechar={() => setModalBloqueioAberto(false)} titulo="Bloquear Horário">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div>
+            <label className="input-label">Barbeiro</label>
+            <select value={formBloqueio.barbeiroId} onChange={(e) => setFormBloqueio({ ...formBloqueio, barbeiroId: e.target.value })} className="ds-select">
+              <option value="">Selecione...</option>
+              {barbeiros.map((b) => <option key={b.id} value={b.id}>{b.usuario.nome}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="input-label">Início</label>
+            <input type="datetime-local" value={formBloqueio.dataInicio} onChange={(e) => setFormBloqueio({ ...formBloqueio, dataInicio: e.target.value })} className="ds-input" />
+          </div>
+          <div>
+            <label className="input-label">Fim</label>
+            <input type="datetime-local" value={formBloqueio.dataFim} onChange={(e) => setFormBloqueio({ ...formBloqueio, dataFim: e.target.value })} className="ds-input" />
+          </div>
+          <div>
+            <label className="input-label">Motivo (Opcional)</label>
+            <input type="text" value={formBloqueio.motivo} onChange={(e) => setFormBloqueio({ ...formBloqueio, motivo: e.target.value })} placeholder="Ex: Almoço, Atestado" className="ds-input" />
+          </div>
+          <button onClick={criarBloqueio} className="btn-secondary w-full justify-center text-white bg-red-600 hover:bg-red-700">
+            Confirmar Bloqueio
           </button>
         </div>
       </Modal>

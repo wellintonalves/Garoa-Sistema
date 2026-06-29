@@ -128,14 +128,29 @@ model Barbeiro {
   comissaoPercent Float    @default(50)
   cor             String?  @default("#F97316") // Laranja
   ativo           Boolean  @default(true)
+  trabalhandoAgora Boolean @default(false)
 
-  barbearia    Barbearia?    @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
-  usuario      Usuario       @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
-  agendamentos Agendamento[]
-  lancamentos  LancamentoFinanceiro[]
-  aprovacoes   AprovacaoEdicao[]
+  barbearia       Barbearia?             @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
+  usuario         Usuario                @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  agendamentos    Agendamento[]
+  lancamentos     LancamentoFinanceiro[]
+  aprovacoes      AprovacaoEdicao[]
+  bloqueiosAgenda BloqueioAgenda[]
 
   @@map("barbeiros")
+}
+
+model BloqueioAgenda {
+  id          String   @id @default(uuid())
+  barbeiroId  String
+  dataInicio  DateTime
+  dataFim     DateTime
+  motivo      String?
+  createdAt   DateTime @default(now())
+
+  barbeiro    Barbeiro @relation(fields: [barbeiroId], references: [id], onDelete: Cascade)
+
+  @@map("bloqueios_agenda")
 }
 
 model Cliente {

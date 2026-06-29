@@ -19,6 +19,7 @@ import verificacaoRoutes from './verificacao.routes';
 import recuperacaoRoutes from './recuperacao.routes';
 import chatRoutes from './chat.routes';
 import aprovacaoRoutes from './aprovacao.routes';
+import { bloqueioRoutes } from './bloqueio.routes';
 
 const router = Router();
 
@@ -46,5 +47,6 @@ router.use('/upload', uploadRoutes);
 router.use('/verificacao', verificacaoRoutes);
 router.use('/recuperacao', recuperacaoRoutes);
 router.use('/aprovacoes', aprovacaoRoutes);
+router.use('/bloqueios', bloqueioRoutes);
 
 export default router;
