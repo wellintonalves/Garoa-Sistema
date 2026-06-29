@@ -99,6 +99,7 @@ export function Agenda() {
 
   const carregar = useCallback(async () => {
     setCarregando(true);
+    
     try {
       const promises = diasDaSemana.map((d) =>
         api.get<Agendamento[]>('/agendamentos', { params: { data: d.toISOString().split('T')[0] } })
@@ -106,19 +107,25 @@ export function Agenda() {
       const resultados = await Promise.all(promises);
       const todos = resultados.flatMap((r) => r.data);
       setAgendamentos(todos);
+    } catch (err) {
+      console.error('Erro ao carregar agendamentos:', err);
+    }
 
-      // Carregar bloqueios
+    try {
       const resBloq = await api.get<Bloqueio[]>('/bloqueios');
       setBloqueios(resBloq.data);
+    } catch (err) {
+      console.error('Erro ao carregar bloqueios:', err);
+    }
 
-      // Carregar barbeiros
+    try {
       const resBarb = await api.get<Barbeiro[]>('/barbeiros');
       setBarbeiros(resBarb.data);
     } catch (err) {
-      console.error('Erro ao carregar agenda:', err);
-    } finally {
-      setCarregando(false);
+      console.error('Erro ao carregar barbeiros:', err);
     }
+
+    setCarregando(false);
   }, [semanaInicio]);
 
   useEffect(() => { carregar(); }, [carregar]);
