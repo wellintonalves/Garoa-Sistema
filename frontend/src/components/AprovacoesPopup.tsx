@@ -5,9 +5,15 @@ import { useBarbeiroAuth } from '../hooks/useBarbeiroAuth';
 
 interface Aprovacao {
   id: string;
-  tipo: string;
-  detalhes: string;
-  dataCriacao: string;
+  acao: string;
+  dadosNovos: any;
+  createdAt: string;
+  lancamento?: {
+    servico?: { nome: string };
+    descricao?: string;
+    valor?: number;
+    categoria?: string;
+  };
 }
 
 export function AprovacoesPopup() {
@@ -58,6 +64,18 @@ export function AprovacoesPopup() {
 
   const atual = pendentes[0];
 
+  let titulo = 'Ação de Lançamento';
+  if (atual.acao === 'EDITAR') titulo = 'Edição de Lançamento';
+  if (atual.acao === 'EXCLUIR') titulo = 'Exclusão de Lançamento';
+  if (atual.acao === 'ADICIONAR') titulo = 'Adição de Serviço Extra';
+
+  const fmt = (v: any) => {
+    if (v === null || v === undefined) return '';
+    const num = Number(v);
+    if (!isNaN(num)) return num.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    return String(v);
+  };
+
   return (
     <div style={{
       position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
@@ -85,14 +103,35 @@ export function AprovacoesPopup() {
         
         <div style={{ background: 'var(--bg-surface2)', padding: '16px', borderRadius: '8px', marginBottom: '24px' }}>
           <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '8px' }}>
-            {atual.tipo === 'EDICAO' ? 'Edição de Lançamento' : 'Exclusão de Lançamento'}
+            {titulo}
           </p>
-          <pre style={{
+          <div style={{
             fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--text-muted)',
             whiteSpace: 'pre-wrap', wordBreak: 'break-word', margin: 0
           }}>
-            {atual.detalhes}
-          </pre>
+            {atual.acao === 'EXCLUIR' && (
+              <p>Confirma a exclusão do lançamento de {fmt(atual.lancamento?.valor)} ({atual.lancamento?.servico?.nome || atual.lancamento?.categoria})?</p>
+            )}
+            {atual.acao === 'EDITAR' && (
+              <>
+                <p>O administrador solicitou a edição dos valores:</p>
+                <ul style={{ paddingLeft: '20px', marginTop: '8px' }}>
+                  {atual.dadosNovos?.valor !== undefined && <li>Novo Valor: {fmt(atual.dadosNovos.valor)}</li>}
+                  {atual.dadosNovos?.valorComissao !== undefined && <li>Nova Comissão: {fmt(atual.dadosNovos.valorComissao)}</li>}
+                  {atual.dadosNovos?.formaPagamento && <li>Forma de Pgto: {atual.dadosNovos.formaPagamento}</li>}
+                </ul>
+              </>
+            )}
+            {atual.acao === 'ADICIONAR' && (
+              <>
+                <p>O administrador adicionou um serviço extra ao seu lançamento:</p>
+                <ul style={{ paddingLeft: '20px', marginTop: '8px' }}>
+                  <li>Valor do Serviço Extra: {fmt(atual.dadosNovos?.valor)}</li>
+                  <li>Forma de Pgto: {atual.dadosNovos?.formaPagamento}</li>
+                </ul>
+              </>
+            )}
+          </div>
         </div>
 
         <div style={{ display: 'flex', gap: '12px' }}>

@@ -49,9 +49,11 @@ export class AprovacaoService {
       });
     } else if (aprovacao.acao === 'ADICIONAR' && aprovacao.dadosNovos) {
       const dados = aprovacao.dadosNovos as any;
+      const original = await prisma.lancamentoFinanceiro.findUnique({ where: { id: aprovacao.lancamentoId } });
       await prisma.lancamentoFinanceiro.create({
         data: {
           ...dados,
+          barbeariaId: original?.barbeariaId, // Importante para não sumir do painel
           data: dados.data ? new Date(dados.data) : new Date(),
         }
       });
