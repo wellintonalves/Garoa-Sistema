@@ -5,4 +5,4 @@ buildCommand = "npm install && npm run build -w backend"
 [deploy]
 startCommand = "npx prisma db push --skip-generate --accept-data-loss && node dist/server.js"
 restartPolicyType = "on_failure"
-restartPolicyMaxRe
+restartPolicyMaxRetries = 3
