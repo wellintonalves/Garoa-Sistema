@@ -6,7 +6,11 @@ import { errorMiddleware } from './middlewares/error.middleware';
 
 const app = express();
 
-const allowedOrigins = ['https://valenbarber.com.br', 'http://localhost:5173'];
+const allowedOrigins = [
+  'https://valenbarber.com.br',
+  'https://barbearia-frontend-production-bb18.up.railway.app',
+  'http://localhost:5173'
+];
 
 app.use(cors({
   origin: allowedOrigins,

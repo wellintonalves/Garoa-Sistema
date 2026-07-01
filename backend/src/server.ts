@@ -4,6 +4,14 @@ dotenv.config();
 
 import app from './app';
 
+process.on('uncaughtException', (err) => {
+  console.error('❌ uncaughtException:', err);
+});
+
+process.on('unhandledRejection', (reason) => {
+  console.error('❌ unhandledRejection:', reason);
+});
+
 const PORT = Number(process.env.PORT) || 3001;
 
 app.listen(PORT, () => {
