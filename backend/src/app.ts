@@ -7,6 +7,7 @@ import routes from './routes';
 import { errorMiddleware } from './middlewares/error.middleware';
 
 const app = express();
+app.set('trust proxy', 1);
 app.use(helmet());
 app.use(helmet.hsts({ maxAge: 15552000 }));
 app.use(compression());
