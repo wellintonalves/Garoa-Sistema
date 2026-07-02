@@ -3,12 +3,13 @@ import { Router } from 'express';
 import { ClienteAppController } from '../controllers/clienteApp.controller';
 import { clienteAuthMiddleware } from '../middlewares/clienteAuth.middleware';
 import { ChatController } from '../controllers/chat.controller';
+import { loginLimiter } from '../middlewares/rateLimit.middleware';
 
 const router = Router();
 
 // Rotas públicas (sem autenticação)
 router.post('/register', ClienteAppController.registrar);
-router.post('/login', ClienteAppController.login);
+router.post('/login', loginLimiter, ClienteAppController.login);
 
 // Rotas protegidas (requerem token do cliente)
 router.use(clienteAuthMiddleware as never);

@@ -2,11 +2,12 @@
 import { Router } from 'express';
 import { BarbeiroAppController } from '../controllers/barbeiroApp.controller';
 import { barbeiroAuthMiddleware } from '../middlewares/barbeiroAuth.middleware';
+import { loginLimiter } from '../middlewares/rateLimit.middleware';
 
 const router = Router();
 
 // Rota pública (login)
-router.post('/login', BarbeiroAppController.login);
+router.post('/login', loginLimiter, BarbeiroAppController.login);
 
 // Rotas protegidas (requerem token do barbeiro)
 router.use(barbeiroAuthMiddleware as never);
