@@ -79,7 +79,7 @@ export class ClienteService {
     if (clienteIdsFiltrados.length === 0) return [];
 
     // Agregações de agendamentos (apenas concluídos da barbearia atual)
-    const statsAgendamentos = await prisma.agendamento.groupBy({
+    const statsAgendamentos: any[] = await (prisma.agendamento as any).groupBy({
       by: ['clienteId'],
       where: { 
         clienteId: { in: clienteIdsFiltrados }, 
@@ -92,7 +92,7 @@ export class ClienteService {
     });
 
     // Agregações de pontos ganhos
-    const statsPontos = await prisma.pontoFidelidade.groupBy({
+    const statsPontos: any[] = await (prisma.pontoFidelidade as any).groupBy({
       by: ['clienteId'],
       where: { clienteId: { in: clienteIdsFiltrados }, barbeariaId },
       _sum: { pontos: true }
@@ -105,9 +105,9 @@ export class ClienteService {
       _sum: { pontosUsados: true }
     });
 
-    const agendamentosMap = new Map(statsAgendamentos.map(s => [s.clienteId, s]));
-    const pontosMap = new Map(statsPontos.map(s => [s.clienteId, s]));
-    const resgatesMap = new Map(statsResgates.map(s => [s.clienteId, s]));
+    const agendamentosMap = new Map<string, any>(statsAgendamentos.map((s: any) => [s.clienteId, s]));
+    const pontosMap = new Map<string, any>(statsPontos.map((s: any) => [s.clienteId, s]));
+    const resgatesMap = new Map<string, any>(statsResgates.map((s: any) => [s.clienteId, s]));
 
     // Processar e agregar dados
     const resultado = clientes.map((c: any) => {
@@ -377,14 +377,15 @@ export class ClienteService {
     inicioMes.setHours(0, 0, 0, 0);
 
     const agendamentosMes: any[] = clienteIds.length > 0
-      ? await prisma.agendamento.groupBy({
-          by: ['clienteId'],
+      ? await prisma.agendamento.findMany({
           where: {
             barbeariaId,
             clienteId: { in: clienteIds },
             status: 'CONCLUIDO',
             dataHora: { gte: inicioMes },
           },
+          distinct: ['clienteId'],
+          select: { clienteId: true },
         })
       : [];
 
