@@ -225,6 +225,7 @@ export function Dashboard() {
               valor={String(dados.estoqueBaixo)}
               icone={AlertTriangle}
               subtexto="Itens abaixo do mínimo"
+              alerta={dados.estoqueBaixo > 0}
             />
           </div>
 

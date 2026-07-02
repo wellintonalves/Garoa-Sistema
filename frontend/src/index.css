@@ -46,6 +46,8 @@
   --error-text:     #EF4444;
   --success-text:   #22C55E;
   --warning-text:   #F59E0B;
+  --cor-alerta:       var(--error-text);
+  --cor-alerta-rgb:   239, 68, 68;
 
   /* Cor de destaque padrão do sistema (sobrescrita pelo tema da barbearia) */
   --amber:              #F59E0B;
@@ -79,6 +81,8 @@
   --error-text:         #DC2626;  /* 4.43:1 on #F5F5F5 (era #EF4444 = 3.45:1) */
   --success-text:       #15803D;  /* 4.60:1 on #F5F5F5 (era #22C55E = 2.09:1) */
   --warning-text:       #B45309;  /* reusa amber-700 para consistência */
+  --cor-alerta:         var(--error-text);
+  --cor-alerta-rgb:     220, 38, 38;
 }
 
 /* Aplicação global das fontes */
