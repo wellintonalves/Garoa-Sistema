@@ -124,28 +124,28 @@ export function Dashboard() {
       <div className="card" style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', alignItems: 'flex-end', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
           <button
-            className={periodoAtivo === 'hoje' ? 'btn-primary' : 'btn-secondary'}
+            className={`${periodoAtivo === 'hoje' ? 'btn-primary' : 'btn-secondary'} max-md:min-h-[48px]`}
             onClick={() => setShortcut('hoje')}
             style={{ padding: '8px 16px', fontSize: '10px' }}
           >
             Hoje
           </button>
           <button
-            className={periodoAtivo === 'esta_semana' ? 'btn-primary' : 'btn-secondary'}
+            className={`${periodoAtivo === 'esta_semana' ? 'btn-primary' : 'btn-secondary'} max-md:min-h-[48px]`}
             onClick={() => setShortcut('esta_semana')}
             style={{ padding: '8px 16px', fontSize: '10px' }}
           >
             Esta Semana
           </button>
           <button
-            className={periodoAtivo === 'este_mes' ? 'btn-primary' : 'btn-secondary'}
+            className={`${periodoAtivo === 'este_mes' ? 'btn-primary' : 'btn-secondary'} max-md:min-h-[48px]`}
             onClick={() => setShortcut('este_mes')}
             style={{ padding: '8px 16px', fontSize: '10px' }}
           >
             Este Mês
           </button>
           <button
-            className={periodoAtivo === 'mes_anterior' ? 'btn-primary' : 'btn-secondary'}
+            className={`${periodoAtivo === 'mes_anterior' ? 'btn-primary' : 'btn-secondary'} max-md:min-h-[48px]`}
             onClick={() => setShortcut('mes_anterior')}
             style={{ padding: '8px 16px', fontSize: '10px' }}
           >
@@ -174,7 +174,7 @@ export function Dashboard() {
               style={{ minHeight: '34px', padding: '6px 12px' }}
             />
           </div>
-          <button onClick={buscarDados} className="btn-primary" disabled={carregando} style={{ padding: '8px 16px', fontSize: '10px', height: '34px' }}>
+          <button onClick={buscarDados} className="btn-primary max-md:min-h-[48px]" disabled={carregando} style={{ padding: '8px 16px', fontSize: '10px', height: '34px' }}>
             <Calendar size={12} /> {carregando ? 'Buscando...' : 'Aplicar'}
           </button>
         </div>

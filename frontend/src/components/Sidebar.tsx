@@ -163,7 +163,7 @@ export function Sidebar({ mobileOpen, onCloseMobile }: SidebarProps) {
           )}
           <button
             onClick={logout}
-            className="flex items-center gap-3 w-full px-3 py-2 transition-colors"
+            className="flex items-center gap-3 w-full px-3 py-2 transition-colors max-md:min-h-[48px]"
             style={{
               fontFamily: 'var(--fonte-interface)',
               fontSize: '10px',

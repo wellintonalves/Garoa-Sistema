@@ -32,7 +32,7 @@ export function DashboardLayout() {
       >
         <button
           onClick={() => setMobileOpen(true)}
-          className="mr-3 p-1 transition-colors"
+          className="mr-3 p-1 transition-colors min-h-[48px] min-w-[48px] flex items-center justify-center"
           style={{ color: 'var(--text-muted)', background: 'transparent', border: 'none' }}
         >
           <Menu size={20} strokeWidth={1.5} />

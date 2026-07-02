@@ -23,6 +23,7 @@ export function ToggleModo() {
           key={valor}
           onClick={() => setModo(valor)}
           title={label}
+          className="max-md:min-h-[48px]"
           style={{
             flex: 1,
             display: 'flex',
