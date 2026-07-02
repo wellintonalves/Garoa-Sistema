@@ -2,10 +2,13 @@
 import express from 'express';
 import cors from 'cors';
 import compression from 'compression';
+import helmet from 'helmet';
 import routes from './routes';
 import { errorMiddleware } from './middlewares/error.middleware';
 
 const app = express();
+app.use(helmet());
+app.use(helmet.hsts({ maxAge: 15552000 }));
 app.use(compression());
 
 const allowedOrigins = [
