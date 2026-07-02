@@ -1,6 +1,6 @@
 // force redeploy
 // Página de Agenda — calendário semanal com estética industrial
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { ChevronLeft, ChevronRight, Plus, ChevronDown } from 'lucide-react';
 import { Modal } from '../components/Modal';
 import { LoadingSpinner } from '../components/LoadingSpinner';
@@ -77,16 +77,21 @@ const diasSemana = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 const horarios = Array.from({ length: 22 }, (_, i) => `${String(Math.floor(i / 2) + 8).padStart(2, '0')}:${i % 2 === 0 ? '00' : '30'}`);
 
 const PALETA_CORES = [
-  '#F87171', '#FBBF24', '#34D399', '#60A5FA', '#A78BFA',
-  '#F472B6', '#2DD4BF', '#E879F9', '#FB923C', '#38BDF8'
+  '#EF4444', '#F59E0B', '#10B981', '#3B82F6', '#8B5CF6',
+  '#EC4899', '#14B8A6', '#D946EF', '#F97316', '#0EA5E9',
+  '#84CC16', '#6366F1'
 ];
 
-function getBarbeiroColor(id: string): string {
+function getBarbeiroColor(id: string, listaBarbeiros: {id: string}[] = []): string {
   if (!id) return PALETA_CORES[0];
+  if (listaBarbeiros && listaBarbeiros.length > 0) {
+    const idx = listaBarbeiros.findIndex(b => b.id === id);
+    if (idx !== -1) return PALETA_CORES[idx % PALETA_CORES.length];
+  }
   let hash = 0;
   for (let i = 0; i < id.length; i++) {
     hash = (hash << 5) - hash + id.charCodeAt(i);
-    hash = hash & hash;
+    hash = Math.imul(hash, 31);
   }
   return PALETA_CORES[Math.abs(hash) % PALETA_CORES.length];
 }
@@ -115,6 +120,21 @@ export function Agenda() {
   const [servicos, setServicos] = useState<Servico[]>([]);
   const [filtroBarbeiro, setFiltroBarbeiro] = useState('todos');
   const [dropdownAberto, setDropdownAberto] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent | TouchEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setDropdownAberto(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
+  }, []);
 
   // Form
   const [form, setForm] = useState({ clienteId: '', barbeiroId: '', servicoId: '', dataHora: '', observacoes: '' });
@@ -299,7 +319,7 @@ export function Agenda() {
               <ChevronRight size={16} strokeWidth={1.5} />
             </button>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <button onClick={() => setModalBloqueioAberto(true)} className="btn-secondary">
               Bloquear Horário
             </button>
@@ -311,9 +331,9 @@ export function Agenda() {
       </div>
 
       {/* Filtros de Barbeiro (Dropdown) */}
-      <div className="relative" style={{ width: '100%', maxWidth: '300px' }}>
+      <div className="relative" style={{ width: '100%', maxWidth: '300px' }} ref={dropdownRef}>
         <button
-          onClick={() => setDropdownAberto(!dropdownAberto)}
+          onClick={() => setDropdownAberto(prev => !prev)}
           style={{
             display: 'flex',
             alignItems: 'center',
@@ -339,7 +359,7 @@ export function Agenda() {
               </>
             ) : (
               <>
-                <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: getBarbeiroColor(filtroBarbeiro) }} />
+                <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: getBarbeiroColor(filtroBarbeiro, barbeiros) }} />
                 {barbeiros.find((b) => b.id === filtroBarbeiro)?.usuario.nome || 'Desconhecido'}
               </>
             )}
@@ -381,7 +401,7 @@ export function Agenda() {
                 fontFamily: 'var(--fonte-interface)',
                 fontSize: '14px',
                 textAlign: 'left',
-                minHeight: isMobile ? '44px' : '40px',
+                minHeight: '44px',
               }}
               className="hover:bg-zinc-800 transition-colors"
             >
@@ -390,7 +410,7 @@ export function Agenda() {
             </button>
 
             {barbeiros.map((b) => {
-              const cor = getBarbeiroColor(b.id);
+              const cor = getBarbeiroColor(b.id, barbeiros);
               const isSelected = filtroBarbeiro === b.id;
               return (
                 <button
@@ -408,7 +428,7 @@ export function Agenda() {
                     fontFamily: 'var(--fonte-interface)',
                     fontSize: '14px',
                     textAlign: 'left',
-                    minHeight: isMobile ? '44px' : '40px',
+                    minHeight: '44px',
                   }}
                   className="hover:bg-zinc-800 transition-colors"
                 >
@@ -532,7 +552,7 @@ export function Agenda() {
                     {agendamentosDoCelula.map((ag) => {
                       const isCancelado = ag.status === 'CANCELADO';
                       const isConcluido = ag.status === 'CONCLUIDO';
-                      const corB = isCancelado ? '#ef4444' : getBarbeiroColor(ag.barbeiroId);
+                      const corB = isCancelado ? '#ef4444' : getBarbeiroColor(ag.barbeiroId, barbeiros);
                       const bgB = isCancelado ? '#ef444420' : (corB + '20');
                       
                       const corS = ag.servico.cor || '#22C55E';
