@@ -1,10 +1,12 @@
 // Configuração do Express
 import express from 'express';
 import cors from 'cors';
+import compression from 'compression';
 import routes from './routes';
 import { errorMiddleware } from './middlewares/error.middleware';
 
 const app = express();
+app.use(compression());
 
 const allowedOrigins = [
   'https://valenbarber.com.br',

@@ -57,9 +57,17 @@ export class BloqueioService {
     return prisma.bloqueioAgenda.findMany({
       where,
       orderBy: { dataInicio: 'asc' },
-      include: {
+      select: {
+        id: true,
+        barbeiroId: true,
+        dataInicio: true,
+        dataFim: true,
+        motivo: true,
         barbeiro: {
-          include: { usuario: { select: { nome: true } } }
+          select: {
+            id: true,
+            usuario: { select: { nome: true } }
+          }
         }
       }
     });
