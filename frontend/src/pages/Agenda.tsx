@@ -75,6 +75,21 @@ const statusLabels: Record<string, string> = {
 const diasSemana = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 const horarios = Array.from({ length: 22 }, (_, i) => `${String(Math.floor(i / 2) + 8).padStart(2, '0')}:${i % 2 === 0 ? '00' : '30'}`);
 
+const PALETA_CORES = [
+  '#F87171', '#FBBF24', '#34D399', '#60A5FA', '#A78BFA',
+  '#F472B6', '#2DD4BF', '#E879F9', '#FB923C', '#38BDF8'
+];
+
+function getBarbeiroColor(id: string): string {
+  if (!id) return PALETA_CORES[0];
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) {
+    hash = (hash << 5) - hash + id.charCodeAt(i);
+    hash = hash & hash;
+  }
+  return PALETA_CORES[Math.abs(hash) % PALETA_CORES.length];
+}
+
 export function Agenda() {
   const [semanaInicio, setSemanaInicio] = useState(() => {
     const d = new Date(); d.setDate(d.getDate() - d.getDay() + 1); d.setHours(0, 0, 0, 0); return d;
@@ -266,21 +281,25 @@ export function Agenda() {
           >
             Todos
           </button>
-          {barbeiros.map((b) => (
-            <button
-              key={b.id}
-              onClick={() => setFiltroBarbeiro(b.id)}
-              style={{ background: filtroBarbeiro === b.id ? 'var(--amber)' : 'var(--bg-surface)', color: filtroBarbeiro === b.id ? 'black' : 'var(--text-primary)', border: '1px solid var(--border)', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontFamily: 'var(--fonte-interface)', fontSize: '12px', fontWeight: 600 }}
-            >
-              {b.usuario.nome}
-            </button>
-          ))}
+          {barbeiros.map((b) => {
+            const cor = getBarbeiroColor(b.id);
+            const isActive = filtroBarbeiro === b.id;
+            return (
+              <button
+                key={b.id}
+                onClick={() => setFiltroBarbeiro(b.id)}
+                style={{ background: isActive ? cor : 'var(--bg-surface)', color: isActive ? '#0a0a0a' : 'var(--text-primary)', border: `1px solid ${isActive ? cor : 'var(--border)'}`, padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontFamily: 'var(--fonte-interface)', fontSize: '12px', fontWeight: 600 }}
+              >
+                {b.usuario.nome}
+              </button>
+            );
+          })}
         </div>
         <div className="flex flex-wrap gap-4">
           <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Barbeiros:</span>
           {barbeiros.map(b => (
             <div key={b.id} className="flex items-center gap-1.5">
-              <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: b.cor || '#F97316' }} />
+              <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: getBarbeiroColor(b.id) }} />
               <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--text-primary)' }}>{b.usuario.nome}</span>
             </div>
           ))}
@@ -397,7 +416,7 @@ export function Agenda() {
                     {agendamentosDoCelula.map((ag) => {
                       const isCancelado = ag.status === 'CANCELADO';
                       const isConcluido = ag.status === 'CONCLUIDO';
-                      const corB = isCancelado ? '#ef4444' : (ag.barbeiro.cor || '#F97316');
+                      const corB = isCancelado ? '#ef4444' : getBarbeiroColor(ag.barbeiroId);
                       const bgB = isCancelado ? '#ef444420' : (corB + '20');
                       
                       const corS = ag.servico.cor || '#22C55E';
