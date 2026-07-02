@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { DollarSign, CalendarCheck, Clock, AlertTriangle, TrendingUp, Award, Calendar } from 'lucide-react';
+import { DollarSign, CalendarCheck, Clock, AlertTriangle, TrendingUp, Award, Calendar, BarChart3 } from 'lucide-react';
 import { StatCard } from '../components/StatCard';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import api from '../api/client';
@@ -262,7 +262,7 @@ export function Dashboard() {
               Faturamento Dia a Dia
             </h3>
             
-            {dados.porDia.length > 0 ? (
+            {dados.porDia.length > 0 && dados.porDia.some(dia => dia.entradas > 0) ? (
               <div style={{ height: '220px', display: 'flex', alignItems: 'flex-end', gap: '4px', position: 'relative', paddingTop: '20px' }}>
                 {/* Linhas de grade horizontais */}
                 <div style={{ position: 'absolute', top: '0', left: '0', right: '0', borderTop: '1px dashed var(--border)', zIndex: 0 }}></div>
@@ -316,7 +316,10 @@ export function Dashboard() {
                 })}
               </div>
             ) : (
-              <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', color: 'var(--text-muted)' }}>Nenhum dado para este período.</p>
+              <div style={{ height: '220px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
+                <BarChart3 size={32} strokeWidth={1} style={{ color: 'var(--text-muted)', opacity: 0.5 }} />
+                <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '12px', color: 'var(--text-muted)' }}>Nenhum faturamento registrado neste período</p>
+              </div>
             )}
           </div>
         </>
