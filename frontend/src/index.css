@@ -19,9 +19,9 @@
   --borda:             #1F1F1F;
   --borda-input:       #2A2A2A;
   --texto-principal:   #F5F5F5;
-  --texto-secundario:  #737373;
-  --texto-placeholder: #404040;
-  --texto-label:       #525252;
+  --texto-secundario:  #999999;
+  --texto-placeholder: #737373;
+  --texto-label:       #A3A3A3;
 
   /* Aliases legados de fontes removidos */
 
