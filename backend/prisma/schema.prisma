@@ -137,6 +137,7 @@ model Barbeiro {
   aprovacoes      AprovacaoEdicao[]
   bloqueiosAgenda BloqueioAgenda[]
 
+  @@index([barbeariaId])
   @@map("barbeiros")
 }
 
@@ -150,6 +151,8 @@ model BloqueioAgenda {
 
   barbeiro    Barbeiro @relation(fields: [barbeiroId], references: [id], onDelete: Cascade)
 
+  @@index([barbeiroId])
+  @@index([dataInicio, dataFim])
   @@map("bloqueios_agenda")
 }
 
@@ -172,6 +175,7 @@ model Cliente {
   indicacoesFeitas   Indicacao[]         @relation("Indicador")
   indicacaoRecebida  Indicacao[]         @relation("Indicado")
 
+  @@index([barbeariaId])
   @@map("clientes")
 }
 
@@ -242,6 +246,10 @@ model Agendamento {
 
   lancamentos LancamentoFinanceiro[]
 
+  @@index([barbeariaId])
+  @@index([clienteId])
+  @@index([barbeiroId])
+  @@index([dataHora])
   @@map("agendamentos")
 }
 
@@ -270,6 +278,8 @@ model LancamentoFinanceiro {
   barbeiro    Barbeiro?    @relation(fields: [barbeiroId], references: [id], onDelete: SetNull)
   servico     Servico?     @relation(fields: [servicoId], references: [id], onDelete: SetNull)
 
+  @@index([barbeariaId])
+  @@index([data])
   @@map("lancamentos_financeiros")
 }
 

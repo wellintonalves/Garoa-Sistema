@@ -71,37 +71,54 @@ export class ClienteService {
         usuario: {
           select: { id: true, nome: true, email: true },
         },
-        agendamentos: {
-          select: {
-            id: true,
-            dataHora: true,
-            status: true,
-            valorCobrado: true,
-            barbeariaId: true,
-          },
-        },
-        pontosFidelidade: {
-          select: { pontos: true, barbeariaId: true },
-        },
-        resgatesRecompensa: {
-          select: { pontosUsados: true, barbeariaId: true },
-        },
       },
     });
 
+    const clienteIdsFiltrados = clientes.map(c => c.id);
+
+    if (clienteIdsFiltrados.length === 0) return [];
+
+    // Agregações de agendamentos (apenas concluídos da barbearia atual)
+    const statsAgendamentos = await prisma.agendamento.groupBy({
+      by: ['clienteId'],
+      where: { 
+        clienteId: { in: clienteIdsFiltrados }, 
+        barbeariaId, 
+        status: 'CONCLUIDO' 
+      },
+      _count: { id: true },
+      _sum: { valorCobrado: true },
+      _max: { dataHora: true }
+    });
+
+    // Agregações de pontos ganhos
+    const statsPontos = await prisma.pontoFidelidade.groupBy({
+      by: ['clienteId'],
+      where: { clienteId: { in: clienteIdsFiltrados }, barbeariaId },
+      _sum: { pontos: true }
+    });
+
+    // Agregações de resgates
+    const statsResgates = await (prisma as any).resgateRecompensa.groupBy({
+      by: ['clienteId'],
+      where: { clienteId: { in: clienteIdsFiltrados }, barbeariaId },
+      _sum: { pontosUsados: true }
+    });
+
+    const agendamentosMap = new Map(statsAgendamentos.map(s => [s.clienteId, s]));
+    const pontosMap = new Map(statsPontos.map(s => [s.clienteId, s]));
+    const resgatesMap = new Map(statsResgates.map(s => [s.clienteId, s]));
+
     // Processar e agregar dados
     const resultado = clientes.map((c: any) => {
-      const agConcluidos = (c.agendamentos || []).filter((a: any) => a.status === 'CONCLUIDO' && a.barbeariaId === barbeariaId);
-      const totalVisitas = agConcluidos.length;
-      const totalGasto = agConcluidos.reduce((s: number, a: any) => s + Number(a.valorCobrado), 0);
+      const ag = agendamentosMap.get(c.id);
+      const totalVisitas = ag?._count?.id || 0;
+      const totalGasto = ag?._sum?.valorCobrado || 0;
+      const ultimoAtendimento = ag?._max?.dataHora || null;
 
-      const ultimoAtendimento = agConcluidos.length > 0
-        ? agConcluidos.sort((a: any, b: any) => new Date(b.dataHora).getTime() - new Date(a.dataHora).getTime())[0].dataHora
-        : null;
-
-      const pontosGanhos = (c.pontosFidelidade || []).filter((p: any) => p.barbeariaId === barbeariaId).reduce((s: number, p: any) => s + p.pontos, 0);
-      const pontosUsados = (c.resgatesRecompensa || []).filter((r: any) => r.barbeariaId === barbeariaId).reduce((s: number, r: any) => s + r.pontosUsados, 0);
-      const pontosAtuais = pontosGanhos - pontosUsados;
+      const pGanhos = pontosMap.get(c.id)?._sum?.pontos || 0;
+      const pUsados = resgatesMap.get(c.id)?._sum?.pontosUsados || 0;
+      const pontosAtuais = pGanhos - pUsados;
       const nivelInfo = calcularNivel(pontosAtuais);
 
       return {
@@ -111,7 +128,7 @@ export class ClienteService {
         dataNascimento: c.dataNascimento,
         observacoes: c.observacoes,
         totalVisitas,
-        totalGasto: Number(totalGasto.toFixed(2)),
+        totalGasto: Number(Number(totalGasto).toFixed(2)),
         ultimoAtendimento,
         pontosAtuais,
         ...nivelInfo,
@@ -360,18 +377,18 @@ export class ClienteService {
     inicioMes.setHours(0, 0, 0, 0);
 
     const agendamentosMes: any[] = clienteIds.length > 0
-      ? await prisma.agendamento.findMany({
+      ? await prisma.agendamento.groupBy({
+          by: ['clienteId'],
           where: {
             barbeariaId,
             clienteId: { in: clienteIds },
             status: 'CONCLUIDO',
             dataHora: { gte: inicioMes },
           },
-          select: { clienteId: true, valorCobrado: true },
         })
       : [];
 
-    const clientesAtivos = new Set(agendamentosMes.map((a: any) => a.clienteId)).size;
+    const clientesAtivos = agendamentosMes.length;
 
     // Ticket médio geral (todos os concluídos)
     const todosAgendamentos: any = clienteIds.length > 0

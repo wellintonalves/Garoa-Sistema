@@ -40,4 +40,24 @@ api.interceptors.response.use(
   }
 );
 
+// Deduplicação de requisições GET simultâneas (evita requests repetidos na montagem)
+const pendingRequests = new Map<string, Promise<any>>();
+const originalGet = api.get;
+
+api.get = function (url: string, config?: any) {
+  const key = `get:${url}:${JSON.stringify(config?.params || {})}`;
+
+  if (pendingRequests.has(key)) {
+    return pendingRequests.get(key) as Promise<any>;
+  }
+
+  const promise = originalGet.apply(this, [url, config]).finally(() => {
+    // Remove do cache assim que a promise resolve ou rejeita
+    pendingRequests.delete(key);
+  });
+
+  pendingRequests.set(key, promise);
+  return promise;
+};
+
 export default api;

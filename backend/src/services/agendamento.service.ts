@@ -22,7 +22,7 @@ interface DadosAgendamento {
 
 export class AgendamentoService {
   /** Lista agendamentos com filtros opcionais */
-  static async listarTodos(filtros?: { barbeiroId?: string; data?: string; status?: StatusAgendamento }) {
+  static async listarTodos(filtros?: { barbeiroId?: string; data?: string; dataInicio?: string; dataFim?: string; status?: StatusAgendamento }) {
     const where: Record<string, unknown> = {};
 
     if (filtros?.barbeiroId) where.barbeiroId = filtros.barbeiroId;
@@ -31,6 +31,10 @@ export class AgendamentoService {
     if (filtros?.data) {
       const inicio = inicioDiaBrasilia(filtros.data);
       const fim = fimDiaBrasilia(filtros.data);
+      where.dataHora = { gte: inicio, lte: fim };
+    } else if (filtros?.dataInicio && filtros?.dataFim) {
+      const inicio = inicioDiaBrasilia(filtros.dataInicio);
+      const fim = fimDiaBrasilia(filtros.dataFim);
       where.dataHora = { gte: inicio, lte: fim };
     }
 

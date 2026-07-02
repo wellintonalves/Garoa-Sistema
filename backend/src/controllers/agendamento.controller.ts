@@ -7,7 +7,7 @@ export class AgendamentoController {
   /** GET /agendamentos */
   static async listar(req: AuthRequest, res: Response): Promise<void> {
     try {
-      const { barbeiroId, data, status } = req.query;
+      const { barbeiroId, data, dataInicio, dataFim, status } = req.query;
 
       // Se for barbeiro, só vê os próprios
       let filtroBarb = barbeiroId as string | undefined;
@@ -20,6 +20,8 @@ export class AgendamentoController {
       const agendamentos = await AgendamentoService.listarTodos({
         barbeiroId: filtroBarb,
         data: data as string,
+        dataInicio: dataInicio as string,
+        dataFim: dataFim as string,
         status: status as 'AGUARDANDO' | 'CONFIRMADO' | 'CONCLUIDO' | 'CANCELADO',
       });
       res.json(agendamentos);

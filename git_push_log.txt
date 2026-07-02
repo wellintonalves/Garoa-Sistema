@@ -1,0 +1,15 @@
+=== GIT PUSH FIX LOG v4 === 
+Data: 29/06/2026  0:20:04,70 
+ 
+Removendo lock files... 
+ 
+git stash (incluindo untracked)... 
+warning: in the working copy of 'git_push_fix.bat', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'git_push_log.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/railway.toml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/src/services/email.service.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/railway.toml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+Saved working directory and index state WIP on main: d07f9be fix: bloquear acesso ao painel admin por usuarios sem papel ADMIN
+warning: failed to remove git_push_log.txt: Invalid argument
