@@ -14,7 +14,7 @@ export function Servicos() {
   const [servicos, setServicos] = useState<Servico[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [editandoId, setEditandoId] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState({ preco: '', duracaoMinutos: '' });
+  const [editForm, setEditForm] = useState({ nome: '', preco: '', duracaoMinutos: '', comissaoPercent: '' });
   const [modalAberto, setModalAberto] = useState(false);
   const [form, setForm] = useState({ nome: '', descricao: '', preco: '', duracaoMinutos: '', comissaoPercent: '50', cor: '#22C55E' });
 
@@ -33,12 +33,17 @@ export function Servicos() {
 
   function iniciarEdicao(s: Servico) {
     setEditandoId(s.id);
-    setEditForm({ preco: String(Number(s.preco)), duracaoMinutos: String(s.duracaoMinutos) });
+    setEditForm({ nome: s.nome, preco: String(Number(s.preco)), duracaoMinutos: String(s.duracaoMinutos), comissaoPercent: String(s.comissaoPercent) });
   }
 
   async function salvarEdicao(id: string) {
     try {
-      await api.put(`/servicos/${id}`, { preco: Number(editForm.preco), duracaoMinutos: Number(editForm.duracaoMinutos) });
+      await api.put(`/servicos/${id}`, { 
+        nome: editForm.nome,
+        preco: Number(editForm.preco), 
+        duracaoMinutos: Number(editForm.duracaoMinutos),
+        comissaoPercent: Number(editForm.comissaoPercent)
+      });
       setEditandoId(null); carregar();
     } catch (e) { console.error(e); }
   }
@@ -84,8 +89,14 @@ export function Servicos() {
             {servicos.map(s => (
               <tr key={s.id}>
                 <td>
-                  <p style={{ fontWeight: 500, color: 'var(--text-primary)' }}>{s.nome}</p>
-                  {s.descricao && <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px', letterSpacing: '0.04em' }}>{s.descricao}</p>}
+                  {editandoId === s.id ? (
+                    <input type="text" value={editForm.nome} onChange={e => setEditForm({...editForm, nome: e.target.value})} className="ds-input" style={{ width: '100%', minWidth: '150px', minHeight: '32px', padding: '6px 8px' }} />
+                  ) : (
+                    <>
+                      <p style={{ fontWeight: 500, color: 'var(--text-primary)' }}>{s.nome}</p>
+                      {s.descricao && <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px', letterSpacing: '0.04em' }}>{s.descricao}</p>}
+                    </>
+                  )}
                 </td>
                 <td>
                   {editandoId === s.id ? (
@@ -105,7 +116,16 @@ export function Servicos() {
                     </span>
                   )}
                 </td>
-                <td style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--text-muted)' }}>{s.comissaoPercent}%</td>
+                <td style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--text-muted)' }}>
+                  {editandoId === s.id ? (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <input type="number" value={editForm.comissaoPercent} onChange={e => setEditForm({...editForm, comissaoPercent: e.target.value})} className="ds-input" style={{ width: '60px', minHeight: '32px', padding: '6px 8px' }} />
+                      <span>%</span>
+                    </div>
+                  ) : (
+                    `${s.comissaoPercent}%`
+                  )}
+                </td>
                 <td style={{ textAlign: 'right' }}>
                   {editandoId === s.id ? (
                     <div className="flex items-center justify-end gap-1">
