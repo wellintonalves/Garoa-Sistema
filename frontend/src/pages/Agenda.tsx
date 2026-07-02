@@ -1,3 +1,4 @@
+// force redeploy
 // Página de Agenda — calendário semanal com estética industrial
 import { useEffect, useState, useCallback } from 'react';
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
