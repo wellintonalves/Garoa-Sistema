@@ -519,12 +519,13 @@ export function Agenda() {
                           borderLeft: `3px solid var(--text-muted)`,
                           color: 'var(--text-muted)',
                           fontFamily: 'var(--fonte-interface)',
-                          fontSize: '11px',
-                          borderRadius: '0 4px 4px 0'
+                          fontSize: isMobile ? '11px' : '12px',
+                          borderRadius: '0 4px 4px 0',
+                          lineHeight: 1.2
                         }}
                       >
-                        <p className="truncate pr-1" style={{ fontWeight: 600 }}>{bl.barbeiro.usuario.nome}</p>
-                        <p className="truncate" style={{ fontSize: '9px' }}>Bloqueado: {bl.motivo || 'Indisponível'}</p>
+                        <p className="truncate pr-1" style={{ fontWeight: 600, marginBottom: '2px' }}>{bl.barbeiro.usuario.nome}</p>
+                        <p className="truncate" style={{ fontSize: isMobile ? '11px' : '12px' }}>Bloqueado: {bl.motivo || 'Indisponível'}</p>
                       </div>
                     ))}
 
@@ -540,38 +541,43 @@ export function Agenda() {
                       return (
                         <div
                           key={ag.id}
-                          className="truncate cursor-pointer"
+                          className="truncate cursor-pointer flex flex-col"
                           style={{
-                            padding: '4px 8px',
+                            padding: '6px 8px',
                             background: bgB,
                             borderLeft: `3px solid ${corB}`,
                             color: 'var(--text-primary)',
                             opacity: isConcluido ? 0.7 : 1,
                             fontFamily: 'var(--fonte-interface)',
-                            fontSize: '11px',
+                            fontSize: isMobile ? '11px' : '12px',
                             marginBottom: '4px',
                             position: 'relative',
-                            borderRadius: '0 4px 4px 0'
+                            borderRadius: '0 4px 4px 0',
+                            lineHeight: 1.2
                           }}
                         >
-                          <div className="flex justify-between items-start mb-1">
+                          <div className="flex justify-between items-start mb-1.5">
                             <p className="truncate pr-1" style={{ fontWeight: 600 }}>{ag.cliente.usuario.nome}</p>
                             {ag.origem === 'ONLINE' && (
-                              <span className="bg-[var(--cor-primaria)] text-black px-1 rounded text-[8px] font-bold">WEB</span>
+                              <span className="bg-[var(--cor-primaria)] text-black px-1 rounded text-[8px] font-bold shrink-0">WEB</span>
                             )}
                           </div>
-                          <p className="truncate" style={{ 
-                            fontFamily: 'var(--fonte-interface)', 
-                            fontSize: '9px', 
-                            background: bgS, 
-                            color: 'var(--text-primary)',
-                            padding: '2px 4px', 
-                            borderRadius: '2px', 
-                            display: 'inline-block', 
-                            border: `1px solid ${corS}50` 
-                          }}>
-                            {ag.servico.nome}
-                          </p>
+                          <div>
+                            <p className="truncate" style={{ 
+                              fontFamily: 'var(--fonte-interface)', 
+                              fontSize: isMobile ? '11px' : '12px', 
+                              background: bgS, 
+                              color: 'var(--text-primary)',
+                              padding: '3px 6px', 
+                              borderRadius: '4px', 
+                              display: 'inline-block', 
+                              border: `1px solid ${corS}50`,
+                              maxWidth: '100%',
+                              lineHeight: 1.2
+                            }}>
+                              {ag.servico.nome}
+                            </p>
+                          </div>
                         </div>
                       );
                     })}
