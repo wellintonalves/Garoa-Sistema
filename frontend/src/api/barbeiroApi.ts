@@ -29,12 +29,16 @@ barbeiroApi.interceptors.request.use((config) => {
 barbeiroApi.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      if (window.location.pathname.startsWith('/barbeiro')) {
-        localStorage.removeItem('@garoa:barbeiro_token');
-        localStorage.removeItem('@garoa:barbeiro_dados');
-        window.location.href = '/barbeiro/login';
-      }
+    const status = error.response?.status;
+    const url = error.config?.url || '';
+    // Só desloga se o endpoint de sessão do proprio barbeiro rejeitar o token,
+    // evitando que um 401 de rota secundaria derrube a sessao inteira.
+    const rotasCriticas = ['/barbeiro/perfil', '/barbeiro/agenda-hoje'];
+    const ehRotaCritica = rotasCriticas.some((r) => url.includes(r));
+    if (status === 401 && ehRotaCritica && window.location.pathname.startsWith('/barbeiro')) {
+      localStorage.removeItem('@garoa:barbeiro_token');
+      localStorage.removeItem('@garoa:barbeiro_dados');
+      window.location.href = '/barbeiro/login';
     }
     return Promise.reject(error);
   }
