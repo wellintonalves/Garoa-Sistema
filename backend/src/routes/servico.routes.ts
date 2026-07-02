@@ -8,8 +8,8 @@ const router = Router();
 
 router.use(authMiddleware);
 
-router.get('/', ServicoController.listar);
-router.get('/:id', ServicoController.buscar);
+router.get('/', roleMiddleware('ADMIN', 'BARBEIRO'), ServicoController.listar);
+router.get('/:id', roleMiddleware('ADMIN', 'BARBEIRO'), ServicoController.buscar);
 router.post('/', roleMiddleware('ADMIN'), ServicoController.criar);
 router.put('/:id', roleMiddleware('ADMIN'), ServicoController.atualizar);
 router.delete('/:id', roleMiddleware('ADMIN'), ServicoController.desativar);

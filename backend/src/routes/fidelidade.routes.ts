@@ -1,10 +1,12 @@
 import { Router } from 'express';
 import { FidelidadeController } from '../controllers/fidelidade.controller';
 import { authMiddleware } from '../middlewares/auth.middleware';
+import { roleMiddleware } from '../middlewares/role.middleware';
 
 const router = Router();
 
 router.use(authMiddleware);
+router.use(roleMiddleware('ADMIN'));
 
 // Configuração
 router.get('/configuracao', FidelidadeController.obterConfiguracao);

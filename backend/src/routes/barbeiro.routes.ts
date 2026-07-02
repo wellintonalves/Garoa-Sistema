@@ -8,8 +8,8 @@ const router = Router();
 
 router.use(authMiddleware);
 
-router.get('/', BarbeiroController.listar);
-router.get('/:id', BarbeiroController.buscar);
+router.get('/', roleMiddleware('ADMIN', 'BARBEIRO'), BarbeiroController.listar);
+router.get('/:id', roleMiddleware('ADMIN', 'BARBEIRO'), BarbeiroController.buscar);
 router.post('/', roleMiddleware('ADMIN'), BarbeiroController.criar);
 router.put('/:id', roleMiddleware('ADMIN'), BarbeiroController.atualizar);
 router.delete('/:id', roleMiddleware('ADMIN'), BarbeiroController.desativar);
