@@ -6,3 +6,12 @@ export const loginLimiter = rateLimit({
   legacyHeaders: false,
   message: { erro: 'Muitas tentativas. Tente novamente em alguns minutos.' },
 });
+
+export const registerLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hora
+  max: 5,
+  limit: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { erro: 'Muitas contas criadas a partir deste IP. Tente novamente mais tarde.' },
+});
