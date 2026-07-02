@@ -269,8 +269,8 @@ export function Agenda() {
           >
             <button
               onClick={() => navegar(-1)}
-              className="p-2 transition-colors"
-              style={{ color: 'var(--text-muted)', background: 'transparent', border: 'none', cursor: 'pointer' }}
+              className="p-2 transition-colors flex items-center justify-center"
+              style={{ color: 'var(--text-muted)', background: 'transparent', border: 'none', cursor: 'pointer', minHeight: isMobile ? '44px' : '32px', minWidth: isMobile ? '44px' : '32px' }}
             >
               <ChevronLeft size={16} strokeWidth={1.5} />
             </button>
@@ -291,8 +291,8 @@ export function Agenda() {
             </span>
             <button
               onClick={() => navegar(1)}
-              className="p-2 transition-colors"
-              style={{ color: 'var(--text-muted)', background: 'transparent', border: 'none', cursor: 'pointer' }}
+              className="p-2 transition-colors flex items-center justify-center"
+              style={{ color: 'var(--text-muted)', background: 'transparent', border: 'none', cursor: 'pointer', minHeight: isMobile ? '44px' : '32px', minWidth: isMobile ? '44px' : '32px' }}
             >
               <ChevronRight size={16} strokeWidth={1.5} />
             </button>
@@ -313,7 +313,7 @@ export function Agenda() {
         <div className="flex flex-wrap gap-2">
           <button
             onClick={() => setFiltroBarbeiro('todos')}
-            style={{ background: filtroBarbeiro === 'todos' ? 'var(--amber)' : 'var(--bg-surface)', color: filtroBarbeiro === 'todos' ? 'black' : 'var(--text-primary)', border: '1px solid var(--border)', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontFamily: 'var(--fonte-interface)', fontSize: '12px', fontWeight: 600 }}
+            style={{ background: filtroBarbeiro === 'todos' ? 'var(--amber)' : 'var(--bg-surface)', color: filtroBarbeiro === 'todos' ? 'black' : 'var(--text-primary)', border: '1px solid var(--border)', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontFamily: 'var(--fonte-interface)', fontSize: '12px', fontWeight: 600, minHeight: isMobile ? '44px' : '32px' }}
           >
             Todos
           </button>
@@ -324,7 +324,7 @@ export function Agenda() {
               <button
                 key={b.id}
                 onClick={() => setFiltroBarbeiro(b.id)}
-                style={{ background: isActive ? cor : 'var(--bg-surface)', color: isActive ? '#0a0a0a' : 'var(--text-primary)', border: `1px solid ${isActive ? cor : 'var(--border)'}`, padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontFamily: 'var(--fonte-interface)', fontSize: '12px', fontWeight: 600 }}
+                style={{ background: isActive ? cor : 'var(--bg-surface)', color: isActive ? '#0a0a0a' : 'var(--text-primary)', border: `1px solid ${isActive ? cor : 'var(--border)'}`, padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontFamily: 'var(--fonte-interface)', fontSize: '12px', fontWeight: 600, minHeight: isMobile ? '44px' : '32px' }}
               >
                 {b.usuario.nome}
               </button>
