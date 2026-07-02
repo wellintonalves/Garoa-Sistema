@@ -7,14 +7,15 @@ export class AuthController {
   /** POST /auth/login */
   static async login(req: Request, res: Response): Promise<void> {
     try {
-      const { email, senha, papel } = req.body;
+      const { email, senha } = req.body;
 
       if (!email || !senha) {
         res.status(400).json({ erro: 'Email e senha são obrigatórios' });
         return;
       }
 
-      const resultado = await AuthService.login({ email, senha, papel });
+      // Portal admin: papel é fixado no servidor, nunca vem do cliente
+      const resultado = await AuthService.login({ email, senha, papel: 'ADMIN' });
       res.json(resultado);
     } catch (error) {
       const mensagem = error instanceof Error ? error.message : 'Erro ao fazer login';
