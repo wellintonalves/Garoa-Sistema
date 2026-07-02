@@ -94,6 +94,16 @@ export function Agenda() {
   const [semanaInicio, setSemanaInicio] = useState(() => {
     const d = new Date(); d.setDate(d.getDate() - d.getDay() + 1); d.setHours(0, 0, 0, 0); return d;
   });
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [diaMobile, setDiaMobile] = useState(() => {
+    const d = new Date(); d.setHours(0, 0, 0, 0); return d;
+  });
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
   const [agendamentos, setAgendamentos] = useState<Agendamento[]>([]);
   const [bloqueios, setBloqueios] = useState<Bloqueio[]>([]);
   const [carregando, setCarregando] = useState(true);
@@ -111,6 +121,7 @@ export function Agenda() {
   const diasDaSemana = Array.from({ length: 7 }, (_, i) => {
     const d = new Date(semanaInicio); d.setDate(semanaInicio.getDate() + i); return d;
   });
+  const diasExibidos = isMobile ? [diaMobile] : diasDaSemana;
 
   const carregar = useCallback(async () => {
     setCarregando(true);
@@ -211,10 +222,31 @@ export function Agenda() {
     setSemanaInicio(nova);
   }
 
+  function navegar(direcao: number) {
+    if (isMobile) {
+      const nova = new Date(diaMobile);
+      nova.setDate(nova.getDate() + direcao);
+      setDiaMobile(nova);
+
+      const novaStr = getDataBrasilia(nova);
+      const inicioStr = getDataBrasilia(diasDaSemana[0]);
+      const fimStr = getDataBrasilia(diasDaSemana[6]);
+
+      if (novaStr < inicioStr || novaStr > fimStr) {
+        const novaSemana = new Date(nova);
+        novaSemana.setDate(novaSemana.getDate() - novaSemana.getDay() + 1);
+        novaSemana.setHours(0, 0, 0, 0);
+        setSemanaInicio(novaSemana);
+      }
+    } else {
+      mudarSemana(direcao);
+    }
+  }
+
   if (carregando) return <LoadingSpinner />;
 
   return (
-    <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+    <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', minWidth: 0 }}>
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <h1
@@ -236,7 +268,7 @@ export function Agenda() {
             }}
           >
             <button
-              onClick={() => mudarSemana(-1)}
+              onClick={() => navegar(-1)}
               className="p-2 transition-colors"
               style={{ color: 'var(--text-muted)', background: 'transparent', border: 'none', cursor: 'pointer' }}
             >
@@ -251,10 +283,14 @@ export function Agenda() {
                 letterSpacing: '0.04em',
               }}
             >
-              {diasDaSemana[0].toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })} — {diasDaSemana[6].toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })}
+              {isMobile ? (
+                `${diasSemana[diaMobile.getDay()]}, ${diaMobile.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })}`
+              ) : (
+                `${diasDaSemana[0].toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })} — ${diasDaSemana[6].toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })}`
+              )}
             </span>
             <button
-              onClick={() => mudarSemana(1)}
+              onClick={() => navegar(1)}
               className="p-2 transition-colors"
               style={{ color: 'var(--text-muted)', background: 'transparent', border: 'none', cursor: 'pointer' }}
             >
@@ -306,13 +342,13 @@ export function Agenda() {
         </div>
       </div>
 
-      {/* Calendário semanal */}
-      <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', overflow: 'auto' }}>
-        <div style={{ minWidth: '700px' }}>
+      {/* Calendário semanal/diário */}
+      <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', overflowX: 'auto', width: '100%' }}>
+        <div style={{ minWidth: isMobile ? '100%' : '700px' }}>
           {/* Cabeçalho dos dias */}
-          <div style={{ display: 'grid', gridTemplateColumns: '60px repeat(7, 1fr)', borderBottom: '1px solid var(--border)' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: `60px repeat(${diasExibidos.length}, 1fr)`, borderBottom: '1px solid var(--border)' }}>
             <div style={{ padding: '8px' }} />
-            {diasDaSemana.map((dia, i) => {
+            {diasExibidos.map((dia, i) => {
               const isHoje = dia.toDateString() === new Date().toDateString();
               return (
                 <div
@@ -352,7 +388,7 @@ export function Agenda() {
 
           {/* Grid de horários */}
           {horarios.map((horario) => (
-            <div key={horario} style={{ display: 'grid', gridTemplateColumns: '60px repeat(7, 1fr)', borderBottom: '1px solid var(--border)' }}>
+            <div key={horario} style={{ display: 'grid', gridTemplateColumns: `60px repeat(${diasExibidos.length}, 1fr)`, borderBottom: '1px solid var(--border)' }}>
               <div
                 className="text-right pr-3 pt-3"
                 style={{
@@ -365,7 +401,7 @@ export function Agenda() {
               >
                 {horario}
               </div>
-              {diasDaSemana.map((dia, diaIdx) => {
+              {diasExibidos.map((dia, diaIdx) => {
                 const diaISO = dia.toISOString().split('T')[0];
 
                 const agendamentosDoCelula = agendamentos.filter((ag) => {
