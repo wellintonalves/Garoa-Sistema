@@ -100,7 +100,7 @@ export function Sidebar({ mobileOpen, onCloseMobile }: SidebarProps) {
           
           {/* Close Mobile */}
           <button 
-            className="md:hidden p-1 text-muted"
+            className="md:hidden p-1 text-muted min-h-[48px] min-w-[48px] flex items-center justify-center"
             onClick={onCloseMobile}
             style={{ color: 'var(--text-muted)' }}
           >
