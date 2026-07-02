@@ -47,7 +47,7 @@ export class BloqueioController {
 
     const aPartirDe = aPartirDeHoje === 'true' ? new Date() : undefined;
 
-    const bloqueios = await BloqueioService.listar({ barbeiroId: bId, aPartirDe });
+    const bloqueios = await BloqueioService.listar({ barbeiroId: bId, barbeariaId: usuario?.barbeariaId || undefined, aPartirDe });
     res.json(bloqueios);
   }
 

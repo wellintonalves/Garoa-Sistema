@@ -34,24 +34,6 @@ export class ClienteService {
     nivel?: string;
     ordenar?: string;
   }) {
-    // Busca clientes vinculados via tabela de junção ClienteBarbearia
-    const vinculos = await prisma.clienteBarbearia.findMany({
-      where: { barbeariaId },
-      select: { clienteId: true },
-    });
-    const idsPorVinculo = vinculos.map((v: any) => v.clienteId);
-
-    // Busca clientes vinculados diretamente via Cliente.barbeariaId
-    const clientesDiretos = await prisma.cliente.findMany({
-      where: { barbeariaId },
-      select: { id: true },
-    });
-    const idsDiretos = clientesDiretos.map((c: any) => c.id);
-
-    // Combina sem duplicatas
-    const clienteIds = [...new Set([...idsPorVinculo, ...idsDiretos])];
-    if (clienteIds.length === 0) return [];
-
     const termoBusca = filtros?.busca?.trim();
     const buscaFilter = termoBusca
       ? {
@@ -64,7 +46,10 @@ export class ClienteService {
 
     const clientes: any[] = await (prisma.cliente as any).findMany({
       where: {
-        id: { in: clienteIds },
+        OR: [
+          { barbeariaId },
+          { clientesBarbearias: { some: { barbeariaId } } }
+        ],
         ...buscaFilter,
       },
       include: {
@@ -74,18 +59,12 @@ export class ClienteService {
       },
     });
 
-    const clienteIdsFiltrados = clientes.map(c => c.id);
-
-    if (clienteIdsFiltrados.length === 0) return [];
+    if (clientes.length === 0) return [];
 
     // Agregações de agendamentos (apenas concluídos da barbearia atual)
     const statsAgendamentos: any[] = await (prisma.agendamento as any).groupBy({
       by: ['clienteId'],
-      where: { 
-        clienteId: { in: clienteIdsFiltrados }, 
-        barbeariaId, 
-        status: 'CONCLUIDO' 
-      },
+      where: { barbeariaId, status: 'CONCLUIDO' },
       _count: { id: true },
       _sum: { valorCobrado: true },
       _max: { dataHora: true }
@@ -94,14 +73,14 @@ export class ClienteService {
     // Agregações de pontos ganhos
     const statsPontos: any[] = await (prisma.pontoFidelidade as any).groupBy({
       by: ['clienteId'],
-      where: { clienteId: { in: clienteIdsFiltrados }, barbeariaId },
+      where: { barbeariaId },
       _sum: { pontos: true }
     });
 
     // Agregações de resgates
-    const statsResgates = await (prisma as any).resgateRecompensa.groupBy({
+    const statsResgates: any[] = await (prisma as any).resgateRecompensa.groupBy({
       by: ['clienteId'],
-      where: { clienteId: { in: clienteIdsFiltrados }, barbeariaId },
+      where: { barbeariaId },
       _sum: { pontosUsados: true }
     });
 
@@ -314,25 +293,12 @@ export class ClienteService {
   static async aniversariantesDoMes(barbeariaId: string) {
     const mesAtual = new Date().getMonth() + 1; // 1-12
 
-    // Combina clientes de ClienteBarbearia + Cliente.barbeariaId
-    const vinculos = await prisma.clienteBarbearia.findMany({
-      where: { barbeariaId },
-      select: { clienteId: true },
-    });
-    const idsPorVinculo = vinculos.map((v: any) => v.clienteId);
-
-    const clientesDiretos = await prisma.cliente.findMany({
-      where: { barbeariaId },
-      select: { id: true },
-    });
-    const idsDiretos = clientesDiretos.map((c: any) => c.id);
-
-    const clienteIds = [...new Set([...idsPorVinculo, ...idsDiretos])];
-    if (clienteIds.length === 0) return [];
-
     const clientes: any[] = await (prisma.cliente as any).findMany({
       where: {
-        id: { in: clienteIds },
+        OR: [
+          { barbeariaId },
+          { clientesBarbearias: { some: { barbeariaId } } }
+        ],
         dataNascimento: { not: null },
       },
       include: {
@@ -355,54 +321,41 @@ export class ClienteService {
 
   /** Resumo / stats para cards do topo */
   static async resumo(barbeariaId: string) {
-    // Combina clientes de ClienteBarbearia + Cliente.barbeariaId
-    const vinculos = await prisma.clienteBarbearia.findMany({
-      where: { barbeariaId },
-      select: { clienteId: true },
+    const totalClientes = await prisma.cliente.count({
+      where: {
+        OR: [
+          { barbeariaId },
+          { clientesBarbearias: { some: { barbeariaId } } }
+        ],
+      }
     });
-    const idsPorVinculo = vinculos.map((v: any) => v.clienteId);
-
-    const clientesDiretos = await prisma.cliente.findMany({
-      where: { barbeariaId },
-      select: { id: true },
-    });
-    const idsDiretos = clientesDiretos.map((c: any) => c.id);
-
-    const clienteIds = [...new Set([...idsPorVinculo, ...idsDiretos])];
-    const totalClientes = clienteIds.length;
 
     // Clientes ativos no mês (com agendamento concluído no mês atual)
     const inicioMes = new Date();
     inicioMes.setDate(1);
     inicioMes.setHours(0, 0, 0, 0);
 
-    const agendamentosMes: any[] = clienteIds.length > 0
-      ? await prisma.agendamento.findMany({
-          where: {
-            barbeariaId,
-            clienteId: { in: clienteIds },
-            status: 'CONCLUIDO',
-            dataHora: { gte: inicioMes },
-          },
-          distinct: ['clienteId'],
-          select: { clienteId: true },
-        })
-      : [];
+    const agendamentosMes: any[] = await prisma.agendamento.findMany({
+      where: {
+        barbeariaId,
+        status: 'CONCLUIDO',
+        dataHora: { gte: inicioMes },
+      },
+      distinct: ['clienteId'],
+      select: { clienteId: true },
+    });
 
     const clientesAtivos = agendamentosMes.length;
 
     // Ticket médio geral (todos os concluídos)
-    const todosAgendamentos: any = clienteIds.length > 0
-      ? await prisma.agendamento.aggregate({
-          _avg: { valorCobrado: true },
-          _count: true,
-          where: {
-            barbeariaId,
-            clienteId: { in: clienteIds },
-            status: 'CONCLUIDO',
-          },
-        })
-      : { _avg: { valorCobrado: null }, _count: 0 };
+    const todosAgendamentos: any = await prisma.agendamento.aggregate({
+      _avg: { valorCobrado: true },
+      _count: true,
+      where: {
+        barbeariaId,
+        status: 'CONCLUIDO',
+      },
+    });
 
     return {
       totalClientes,

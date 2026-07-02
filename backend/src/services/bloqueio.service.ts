@@ -43,10 +43,12 @@ export class BloqueioService {
   /**
    * Lista bloqueios de um barbeiro específico ou de todos (se admin).
    */
-  static async listar(filtros: { barbeiroId?: string, aPartirDe?: Date }) {
+  static async listar(filtros: { barbeiroId?: string, barbeariaId?: string, aPartirDe?: Date }) {
     const where: any = {};
     if (filtros.barbeiroId) {
       where.barbeiroId = filtros.barbeiroId;
+    } else if (filtros.barbeariaId) {
+      where.barbeiro = { barbeariaId: filtros.barbeariaId };
     }
     if (filtros.aPartirDe) {
       where.dataFim = { gte: filtros.aPartirDe };

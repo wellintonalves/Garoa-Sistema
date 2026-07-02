@@ -26,25 +26,6 @@ interface DadosAtualizacao {
 export class BarbeiroService {
   /** Lista todos os barbeiros ativos */
   static async listarTodos(barbeariaId?: string) {
-    if (barbeariaId) {
-      // Auto-correção: associa barbeiros órfãos à barbearia atual
-      await prisma.barbeiro.updateMany({
-        where: { barbeariaId: null },
-        data: { barbeariaId },
-      });
-      // Opcional: atualizar os usuários ligados aos barbeiros também
-      const barbeirosOrfaos = await prisma.barbeiro.findMany({
-        where: { barbeariaId },
-        select: { usuarioId: true }
-      });
-      if (barbeirosOrfaos.length > 0) {
-        const usuarioIds = barbeirosOrfaos.map(b => b.usuarioId);
-        await prisma.usuario.updateMany({
-          where: { id: { in: usuarioIds }, barbeariaId: null },
-          data: { barbeariaId }
-        });
-      }
-    }
 
     return prisma.barbeiro.findMany({
       where: { ...(barbeariaId ? { barbeariaId } : {}) },
