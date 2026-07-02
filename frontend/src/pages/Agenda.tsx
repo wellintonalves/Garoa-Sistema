@@ -1,7 +1,7 @@
 // force redeploy
 // Página de Agenda — calendário semanal com estética industrial
 import { useEffect, useState, useCallback } from 'react';
-import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, ChevronDown } from 'lucide-react';
 import { Modal } from '../components/Modal';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import api from '../api/client';
@@ -114,6 +114,7 @@ export function Agenda() {
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [servicos, setServicos] = useState<Servico[]>([]);
   const [filtroBarbeiro, setFiltroBarbeiro] = useState('todos');
+  const [dropdownAberto, setDropdownAberto] = useState(false);
 
   // Form
   const [form, setForm] = useState({ clienteId: '', barbeiroId: '', servicoId: '', dataHora: '', observacoes: '' });
@@ -309,38 +310,115 @@ export function Agenda() {
         </div>
       </div>
 
-      {/* Filtros e Legenda */}
-      <div className="flex flex-col gap-3">
-        <div className="flex flex-wrap gap-2">
-          <button
-            onClick={() => setFiltroBarbeiro('todos')}
-            style={{ background: filtroBarbeiro === 'todos' ? 'var(--amber)' : 'var(--bg-surface)', color: filtroBarbeiro === 'todos' ? 'black' : 'var(--text-primary)', border: '1px solid var(--border)', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontFamily: 'var(--fonte-interface)', fontSize: '12px', fontWeight: 600, minHeight: isMobile ? '44px' : '32px' }}
+      {/* Filtros de Barbeiro (Dropdown) */}
+      <div className="relative" style={{ width: '100%', maxWidth: '300px' }}>
+        <button
+          onClick={() => setDropdownAberto(!dropdownAberto)}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            background: 'var(--bg-surface)',
+            color: 'var(--text-primary)',
+            border: '1px solid var(--border)',
+            padding: '8px 16px',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontFamily: 'var(--fonte-interface)',
+            fontSize: '14px',
+            fontWeight: 500,
+            minHeight: isMobile ? '44px' : '40px',
+            width: '100%',
+          }}
+        >
+          <div className="flex items-center gap-2">
+            {filtroBarbeiro === 'todos' ? (
+              <>
+                <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: 'var(--amber)' }} />
+                Todos os barbeiros
+              </>
+            ) : (
+              <>
+                <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: getBarbeiroColor(filtroBarbeiro) }} />
+                {barbeiros.find((b) => b.id === filtroBarbeiro)?.usuario.nome || 'Desconhecido'}
+              </>
+            )}
+          </div>
+          <ChevronDown size={16} strokeWidth={1.5} style={{ color: 'var(--text-muted)' }} />
+        </button>
+
+        {dropdownAberto && (
+          <div
+            style={{
+              position: 'absolute',
+              top: '100%',
+              left: 0,
+              width: '100%',
+              marginTop: '4px',
+              background: 'var(--bg-surface)',
+              border: '1px solid var(--border)',
+              borderRadius: '4px',
+              zIndex: 50,
+              display: 'flex',
+              flexDirection: 'column',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
+              maxHeight: '300px',
+              overflowY: 'auto'
+            }}
           >
-            Todos
-          </button>
-          {barbeiros.map((b) => {
-            const cor = getBarbeiroColor(b.id);
-            const isActive = filtroBarbeiro === b.id;
-            return (
-              <button
-                key={b.id}
-                onClick={() => setFiltroBarbeiro(b.id)}
-                style={{ background: isActive ? cor : 'var(--bg-surface)', color: isActive ? '#0a0a0a' : 'var(--text-primary)', border: `1px solid ${isActive ? cor : 'var(--border)'}`, padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontFamily: 'var(--fonte-interface)', fontSize: '12px', fontWeight: 600, minHeight: isMobile ? '44px' : '32px' }}
-              >
-                {b.usuario.nome}
-              </button>
-            );
-          })}
-        </div>
-        <div className="flex flex-wrap gap-4">
-          <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Barbeiros:</span>
-          {barbeiros.map(b => (
-            <div key={b.id} className="flex items-center gap-1.5">
-              <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: getBarbeiroColor(b.id) }} />
-              <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--text-primary)' }}>{b.usuario.nome}</span>
-            </div>
-          ))}
-        </div>
+            <button
+              onClick={() => { setFiltroBarbeiro('todos'); setDropdownAberto(false); }}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '10px 16px',
+                background: filtroBarbeiro === 'todos' ? 'rgba(var(--cor-primaria-rgb), 0.1)' : 'transparent',
+                color: 'var(--text-primary)',
+                border: 'none',
+                borderBottom: '1px solid var(--border)',
+                cursor: 'pointer',
+                fontFamily: 'var(--fonte-interface)',
+                fontSize: '14px',
+                textAlign: 'left',
+                minHeight: isMobile ? '44px' : '40px',
+              }}
+              className="hover:bg-zinc-800 transition-colors"
+            >
+              <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: 'var(--amber)' }} />
+              Todos os barbeiros
+            </button>
+
+            {barbeiros.map((b) => {
+              const cor = getBarbeiroColor(b.id);
+              const isSelected = filtroBarbeiro === b.id;
+              return (
+                <button
+                  key={b.id}
+                  onClick={() => { setFiltroBarbeiro(b.id); setDropdownAberto(false); }}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '10px 16px',
+                    background: isSelected ? 'rgba(var(--cor-primaria-rgb), 0.1)' : 'transparent',
+                    color: 'var(--text-primary)',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontFamily: 'var(--fonte-interface)',
+                    fontSize: '14px',
+                    textAlign: 'left',
+                    minHeight: isMobile ? '44px' : '40px',
+                  }}
+                  className="hover:bg-zinc-800 transition-colors"
+                >
+                  <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: cor }} />
+                  {b.usuario.nome}
+                </button>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Calendário semanal/diário */}
