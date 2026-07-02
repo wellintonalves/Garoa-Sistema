@@ -281,9 +281,9 @@ export function Agenda() {
         >
           Agenda
         </h1>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
           <div
-            className="flex items-center"
+            className="flex items-center justify-between"
             style={{
               border: '1px solid var(--border)',
               background: 'var(--bg-surface)',
@@ -320,10 +320,10 @@ export function Agenda() {
             </button>
           </div>
           <div className="flex flex-wrap gap-2">
-            <button onClick={() => setModalBloqueioAberto(true)} className="btn-secondary">
+            <button onClick={() => setModalBloqueioAberto(true)} className="btn-secondary flex-1 sm:flex-none justify-center">
               Bloquear Horário
             </button>
-            <button onClick={abrirModal} className="btn-primary">
+            <button onClick={abrirModal} className="btn-primary flex-1 sm:flex-none justify-center">
               <Plus size={14} strokeWidth={1.5} /> Novo Agendamento
             </button>
           </div>
