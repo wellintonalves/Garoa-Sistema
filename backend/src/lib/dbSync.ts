@@ -30,17 +30,22 @@ export async function copiarBanco(sourceUrl: string, targetUrl: string) {
     
     const tables = result.rows.map(row => row.table_name);
     let totalLinhas = 0;
+    
+    const countMap = new Map<string, number>();
 
     // Disable triggers and FK checks in target
     await targetClient.query('SET session_replication_role = replica;');
 
+    if (tables.length > 0) {
+      // Truncate todas de uma vez
+      await targetClient.query(`TRUNCATE TABLE ${tables.map((t: string) => `"${t}"`).join(', ')} CASCADE;`);
+    }
+
     for (const table of tables) {
-      // Truncate
-      await targetClient.query(`TRUNCATE TABLE "${table}" CASCADE;`);
-      
       // Fetch data
       const dataResult = await sourceClient.query(`SELECT * FROM "${table}";`);
       const rows = dataResult.rows;
+      countMap.set(table, rows.length);
       
       if (rows.length > 0) {
         // Insert in batches of 500
@@ -71,14 +76,22 @@ export async function copiarBanco(sourceUrl: string, targetUrl: string) {
       }
       
       totalLinhas += rows.length;
+    }
 
-      // Verification
+    // Verificação consolidada
+    const divergencias: string[] = [];
+    for (const table of tables) {
       const targetCountResult = await targetClient.query(`SELECT COUNT(*) FROM "${table}";`);
       const targetCount = parseInt(targetCountResult.rows[0].count, 10);
+      const sourceCount = countMap.get(table) || 0;
       
-      if (targetCount !== rows.length) {
-        throw new Error(`Divergência na tabela ${table}: Source=${rows.length}, Target=${targetCount}`);
+      if (targetCount !== sourceCount) {
+        divergencias.push(`${table} (Source: ${sourceCount}, Target: ${targetCount})`);
       }
+    }
+
+    if (divergencias.length > 0) {
+      throw new Error(`Divergência de dados detectada nas tabelas: ${divergencias.join('; ')}`);
     }
 
     return {
