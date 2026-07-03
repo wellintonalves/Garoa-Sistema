@@ -1,6 +1,6 @@
 // Página Financeiro — industrial
 import { useEffect, useState } from 'react';
-import { Plus, TrendingUp, TrendingDown } from 'lucide-react';
+import { Plus, TrendingUp, TrendingDown, Edit2, Trash2, Loader2 } from 'lucide-react';
 import { Modal } from '../components/Modal';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import api from '../api/client';
@@ -10,6 +10,8 @@ interface Servico { id: string; nome: string; preco: string; }
 interface Lancamento {
   id: string; tipo: string; categoria: string; descricao: string | null;
   valor: string; formaPagamento: string; data: string;
+  barbeiroId?: string | null;
+  servicoId?: string | null;
   barbeiro?: { usuario: { nome: string } };
   servico?: { nome: string };
   valorComissao?: string;
@@ -38,6 +40,9 @@ export function Financeiro() {
   
   const [carregando, setCarregando] = useState(true);
   const [modalAberto, setModalAberto] = useState(false);
+  const [salvando, setSalvando] = useState(false);
+  const [apagando, setApagando] = useState<string | null>(null);
+  const [editId, setEditId] = useState<string | null>(null);
   
   const formPadrao = { tipo: 'ENTRADA', categoria: '', descricao: '', valor: '', formaPagamento: 'PIX', data: new Date().toISOString().split('T')[0], servicoId: '', barbeiroId: '' };
   const [form, setForm] = useState(formPadrao);
@@ -71,7 +76,29 @@ export function Financeiro() {
     }
   }, [form.servicoId, servicos]);
 
-  async function criarLancamento() {
+  function abrirModal(lancamento?: Lancamento) {
+    if (lancamento) {
+      setEditId(lancamento.id);
+      setForm({
+        tipo: lancamento.tipo,
+        categoria: lancamento.categoria,
+        descricao: lancamento.descricao || '',
+        valor: lancamento.valor,
+        formaPagamento: lancamento.formaPagamento,
+        data: lancamento.data.split('T')[0],
+        servicoId: lancamento.servicoId || '',
+        barbeiroId: lancamento.barbeiroId || ''
+      });
+    } else {
+      setEditId(null);
+      setForm(formPadrao);
+    }
+    setModalAberto(true);
+  }
+
+  async function salvarLancamento() {
+    if (salvando) return;
+    setSalvando(true);
     try {
       const payload = { 
         ...form, 
@@ -79,10 +106,35 @@ export function Financeiro() {
         servicoId: form.servicoId || undefined,
         barbeiroId: form.barbeiroId || undefined
       };
-      await api.post('/financeiro', payload);
-      setModalAberto(false); setForm(formPadrao);
+      if (editId) {
+        await api.put(`/financeiro/${editId}`, payload);
+      } else {
+        await api.post('/financeiro', payload);
+      }
+      setModalAberto(false); 
+      setForm(formPadrao);
+      setEditId(null);
       carregar();
-    } catch (e) { console.error(e); }
+    } catch (e) { 
+      console.error(e); 
+      alert('Erro ao salvar o lançamento. Tente novamente.');
+    } finally {
+      setSalvando(false);
+    }
+  }
+
+  async function apagarLancamento(id: string) {
+    if (!window.confirm('Tem certeza que deseja excluir este lançamento? Esta ação não pode ser desfeita.')) return;
+    setApagando(id);
+    try {
+      await api.delete(`/financeiro/${id}`);
+      carregar();
+    } catch (e) {
+      console.error(e);
+      alert('Erro ao excluir o lançamento. Tente novamente.');
+    } finally {
+      setApagando(null);
+    }
   }
 
   const fmt = (v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -120,7 +172,7 @@ export function Financeiro() {
         >
           Financeiro
         </h1>
-        <button onClick={() => setModalAberto(true)} className="btn-primary">
+        <button onClick={() => abrirModal()} className="btn-primary" disabled={carregando}>
           <Plus size={14} strokeWidth={1.5} /> Lançamento
         </button>
       </div>
@@ -232,13 +284,33 @@ export function Financeiro() {
                   </p>
                 </div>
               </div>
-              <div style={{ textAlign: 'right' }}>
-                <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '14px', fontWeight: 500, color: l.tipo === 'ENTRADA' ? 'var(--success-text)' : 'var(--error-text)' }}>
-                  {l.tipo === 'ENTRADA' ? '+' : '-'} {fmt(Number(l.valor))}
-                </p>
-                <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '9px', letterSpacing: '0.04em', color: 'var(--text-muted)', marginTop: '2px' }}>
-                  {labelsForma[l.formaPagamento] || l.formaPagamento}
-                </p>
+              <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>
+                <div>
+                  <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '14px', fontWeight: 500, color: l.tipo === 'ENTRADA' ? 'var(--success-text)' : 'var(--error-text)' }}>
+                    {l.tipo === 'ENTRADA' ? '+' : '-'} {fmt(Number(l.valor))}
+                  </p>
+                  <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '9px', letterSpacing: '0.04em', color: 'var(--text-muted)', marginTop: '2px' }}>
+                    {labelsForma[l.formaPagamento] || l.formaPagamento}
+                  </p>
+                </div>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button 
+                    onClick={() => abrirModal(l)} 
+                    style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: '4px' }} 
+                    title="Editar"
+                    disabled={apagando === l.id}
+                  >
+                    <Edit2 size={14} />
+                  </button>
+                  <button 
+                    onClick={() => apagarLancamento(l.id)} 
+                    style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--error-text)', padding: '4px', opacity: apagando === l.id ? 0.5 : 1 }} 
+                    title="Excluir"
+                    disabled={apagando === l.id}
+                  >
+                    {apagando === l.id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                  </button>
+                </div>
               </div>
             </div>
           ))}
@@ -250,7 +322,7 @@ export function Financeiro() {
         </div>
       </div>
 
-      <Modal aberto={modalAberto} onFechar={() => setModalAberto(false)} titulo="Novo Lançamento">
+      <Modal aberto={modalAberto} onFechar={() => setModalAberto(false)} titulo={editId ? "Editar Lançamento" : "Novo Lançamento"}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {(['ENTRADA', 'SAIDA'] as const).map(t => {
@@ -332,7 +404,21 @@ export function Financeiro() {
             <input type="date" value={form.data} onChange={e => setForm({...form, data: e.target.value})} className="ds-input" />
           </div>
 
-          <button onClick={criarLancamento} className="btn-primary w-full justify-center">Registrar</button>
+          <button 
+            onClick={salvarLancamento} 
+            className="btn-primary w-full justify-center" 
+            disabled={salvando}
+            style={{ 
+              opacity: salvando ? 0.7 : 1, 
+              cursor: salvando ? 'not-allowed' : 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
+            }}
+          >
+            {salvando && <Loader2 size={14} className="animate-spin" />}
+            {salvando ? 'Salvando...' : 'Registrar'}
+          </button>
         </div>
       </Modal>
     </div>
