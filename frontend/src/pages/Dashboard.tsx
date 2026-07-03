@@ -92,7 +92,7 @@ export function Dashboard() {
     (valor || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
   // Cálculo para o gráfico
-  const maxFaturamento = dados?.porDia ? Math.max(...dados.porDia.map((d) => d.entradas), 1) : 1;
+  const maxFaturamento = dados?.porDia ? Math.max(...dados.porDia.map((d) => Math.max(d.entradas, d.produtos)), 1) : 1;
 
   return (
     <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
