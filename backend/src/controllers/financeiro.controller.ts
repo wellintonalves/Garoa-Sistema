@@ -41,7 +41,8 @@ export class FinanceiroController {
   /** PUT /financeiro/:id */
   static async atualizar(req: AuthRequest, res: Response): Promise<void> {
     try {
-      const lancamento = await FinanceiroService.atualizar(req.params.id, req.body);
+      const isAdmin = req.usuario?.papel === 'ADMIN';
+      const lancamento = await FinanceiroService.atualizar(req.params.id, req.body, isAdmin);
       res.json(lancamento);
     } catch (error) {
       const msg = error instanceof Error ? error.message : 'Erro ao atualizar lançamento';
@@ -52,7 +53,8 @@ export class FinanceiroController {
   /** DELETE /financeiro/:id */
   static async remover(req: AuthRequest, res: Response): Promise<void> {
     try {
-      const resultado = await FinanceiroService.remover(req.params.id);
+      const isAdmin = req.usuario?.papel === 'ADMIN';
+      const resultado = await FinanceiroService.remover(req.params.id, isAdmin);
       res.json(resultado || { mensagem: 'Lançamento removido com sucesso' });
     } catch (error) {
       const msg = error instanceof Error ? error.message : 'Erro ao remover lançamento';

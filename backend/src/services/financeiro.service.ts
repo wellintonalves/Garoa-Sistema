@@ -75,11 +75,11 @@ export class FinanceiroService {
   }
 
   /** Atualiza um lançamento */
-  static async atualizar(id: string, dados: Partial<DadosLancamento>) {
+  static async atualizar(id: string, dados: Partial<DadosLancamento>, isAdmin: boolean = false) {
     const lancamento = await prisma.lancamentoFinanceiro.findUnique({ where: { id } });
     if (!lancamento) throw new Error('Lançamento não encontrado.');
 
-    if (lancamento.barbeiroId) {
+    if (lancamento.barbeiroId && !isAdmin) {
       const aprovacao = await prisma.aprovacaoEdicao.create({
         data: {
           lancamentoId: id,
@@ -122,11 +122,11 @@ export class FinanceiroService {
   }
 
   /** Remove um lançamento */
-  static async remover(id: string) {
+  static async remover(id: string, isAdmin: boolean = false) {
     const lancamento = await prisma.lancamentoFinanceiro.findUnique({ where: { id } });
     if (!lancamento) throw new Error('Lançamento não encontrado.');
 
-    if (lancamento.barbeiroId) {
+    if (lancamento.barbeiroId && !isAdmin) {
       const aprovacao = await prisma.aprovacaoEdicao.create({
         data: {
           lancamentoId: id,
