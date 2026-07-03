@@ -26,7 +26,7 @@ async function start() {
     }
     try {
       await corrigirDados(process.env.DATABASE_URL);
-      process.exit(0);
+      console.log('✅ FIX ORPHANS concluído com sucesso');
     } catch (err) {
       console.error('❌ Erro no FIX_ORPHANS:', err);
       process.exit(1);
