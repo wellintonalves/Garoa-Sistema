@@ -6,6 +6,7 @@ import app from './app';
 import { prisma } from './lib/prisma';
 import { copiarBanco } from './lib/dbSync';
 import { agendarBackupDiario } from './lib/backupJob';
+import { corrigirDados } from './lib/fixOrphans';
 
 process.on('uncaughtException', (err) => {
   console.error('❌ uncaughtException:', err);
@@ -18,6 +19,20 @@ process.on('unhandledRejection', (reason) => {
 const PORT = Number(process.env.PORT) || 3001;
 
 async function start() {
+  if (process.env.RUN_FIX_ORPHANS === '1') {
+    if (!process.env.DATABASE_URL) {
+      console.error('❌ RUN_FIX_ORPHANS=1 mas falta DATABASE_URL no .env');
+      process.exit(1);
+    }
+    try {
+      await corrigirDados(process.env.DATABASE_URL);
+      process.exit(0);
+    } catch (err) {
+      console.error('❌ Erro no FIX_ORPHANS:', err);
+      process.exit(1);
+    }
+  }
+
   if (process.env.RUN_DB_COPY === '1') {
     if (!process.env.BACKUP_DIRECT_URL || !process.env.DATABASE_URL) {
       console.error('❌ RUN_DB_COPY=1 mas falta BACKUP_DIRECT_URL ou DATABASE_URL no .env');
