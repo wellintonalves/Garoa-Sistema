@@ -193,7 +193,7 @@ export class FinanceiroService {
 
   /** Resumo dos últimos 7 dias (para gráfico) */
   static async ultimos7Dias() {
-    const resultado: Array<{ data: string; entradas: number; saidas: number }> = [];
+    const resultado: Array<{ data: string; entradas: number; entradasServicos: number; entradasProdutos: number; saidas: number }> = [];
 
     for (let i = 6; i >= 0; i--) {
       const dia = new Date();
