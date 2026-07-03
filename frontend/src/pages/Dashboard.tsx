@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { DollarSign, CalendarCheck, Clock, AlertTriangle, TrendingUp, Award, Calendar, BarChart3 } from 'lucide-react';
 import { StatCard } from '../components/StatCard';
 import { LoadingSpinner } from '../components/LoadingSpinner';
+import { SkeletonPage } from '../components/Skeleton';
 import api from '../api/client';
 import { useAuth } from '../hooks/useAuth';
 
@@ -183,7 +184,7 @@ export function Dashboard() {
       </div>
 
       {carregando ? (
-        <LoadingSpinner />
+        <SkeletonPage />
       ) : erro ? (
         <div
           className="card"

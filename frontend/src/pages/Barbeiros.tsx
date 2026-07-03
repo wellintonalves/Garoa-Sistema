@@ -4,6 +4,7 @@ import { Star, Plus, DollarSign, TrendingUp, Calendar, Edit2, Trash2 } from 'luc
 import { Modal } from '../components/Modal';
 import { ImageCropperModal } from '../components/ImageCropperModal';
 import { LoadingSpinner } from '../components/LoadingSpinner';
+import { SkeletonPage } from '../components/Skeleton';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/client';
 
@@ -140,7 +141,7 @@ export function Barbeiros() {
     return nome.split(' ').slice(0, 2).map(p => p[0]).join('').toUpperCase();
   }
 
-  if (carregando) return <LoadingSpinner />;
+  if (carregando) return <SkeletonPage />;
 
   return (
     <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>

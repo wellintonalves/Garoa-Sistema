@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { Plus, TrendingUp, TrendingDown, Edit2, Trash2, Loader2 } from 'lucide-react';
 import { Modal } from '../components/Modal';
 import { LoadingSpinner } from '../components/LoadingSpinner';
+import { SkeletonPage } from '../components/Skeleton';
 import api from '../api/client';
 
 interface Barbeiro { id: string; usuario: { nome: string }; comissaoPercent: number; }
@@ -150,7 +151,7 @@ export function Financeiro() {
     }
   }
 
-  if (carregando) return <LoadingSpinner />;
+  if (carregando) return <SkeletonPage />;
 
   const lancamentosFiltrados = lancamentos.filter(l => {
     if (filtroCategoria === 'SERVICOS') return l.categoria !== 'Venda de Produto' && l.tipo === 'ENTRADA';

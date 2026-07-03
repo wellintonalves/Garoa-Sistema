@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { Plus, Check, X, Pencil } from 'lucide-react';
 import { Modal } from '../components/Modal';
 import { LoadingSpinner } from '../components/LoadingSpinner';
+import { SkeletonPage } from '../components/Skeleton';
 import api from '../api/client';
 
 interface Servico {
@@ -55,7 +56,7 @@ export function Servicos() {
     } catch (e) { console.error(e); }
   }
 
-  if (carregando) return <LoadingSpinner />;
+  if (carregando) return <SkeletonPage />;
 
   return (
     <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>

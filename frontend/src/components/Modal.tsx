@@ -1,5 +1,5 @@
 // Modal reutilizável — design system industrial
-import { useEffect, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { X } from 'lucide-react';
 
 interface ModalProps {
@@ -11,29 +11,49 @@ interface ModalProps {
 }
 
 export function Modal({ aberto, onFechar, titulo, children, largura = 'max-w-lg' }: ModalProps) {
+  const [visivel, setVisivel] = useState(aberto);
+  const [fechando, setFechando] = useState(false);
+
+  useEffect(() => {
+    if (aberto) {
+      setVisivel(true);
+      setFechando(false);
+    } else if (visivel) {
+      setFechando(true);
+    }
+  }, [aberto, visivel]);
+
   // Fecha com ESC
   useEffect(() => {
     function handleEsc(e: KeyboardEvent) {
-      if (e.key === 'Escape') onFechar();
+      if (e.key === 'Escape' && !fechando) onFechar();
     }
     if (aberto) document.addEventListener('keydown', handleEsc);
     return () => document.removeEventListener('keydown', handleEsc);
-  }, [aberto, onFechar]);
+  }, [aberto, onFechar, fechando]);
 
-  if (!aberto) return null;
+  if (!visivel) return null;
 
   return (
-    <div className="modal-overlay">
+    <div className={`modal-overlay ${fechando ? 'modal-fechando' : ''}`}>
       {/* Backdrop */}
-      <div className="modal-backdrop" onClick={onFechar} />
+      <div className="modal-backdrop" onClick={() => !fechando && onFechar()} />
 
       {/* Conteúdo */}
-      <div className={`modal-content ${largura}`}>
+      <div 
+        className={`modal-content ${largura}`}
+        onAnimationEnd={() => {
+          if (fechando) {
+            setVisivel(false);
+            setFechando(false);
+          }
+        }}
+      >
         {/* Header */}
         <div className="modal-header">
           <h2>{titulo}</h2>
           <button
-            onClick={onFechar}
+            onClick={() => !fechando && onFechar()}
             className="flex items-center justify-center transition-colors"
             style={{
               width: '32px',

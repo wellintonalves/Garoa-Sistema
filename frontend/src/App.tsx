@@ -3,6 +3,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import { useAuth } from './hooks/useAuth';
 import { DashboardLayout } from './layouts/DashboardLayout';
 import { LoadingSpinner } from './components/LoadingSpinner';
+import { SkeletonPage } from './components/Skeleton';
 import { type ReactNode, useEffect, lazy, Suspense } from 'react';
 import { useTema } from './hooks/useTema';
 import { useModoTema } from './hooks/useModoTema';
@@ -81,7 +82,7 @@ export function App() {
         <ClientAuthProvider>
           <ClienteAuthProvider>
             <BarbeiroAuthProvider>
-              <Suspense fallback={<div className="h-screen w-full flex items-center justify-center"><LoadingSpinner /></div>}>
+              <Suspense fallback={<div className="h-screen w-full flex p-8"><SkeletonPage className="w-full" /></div>}>
                 <Routes>
                   {/* === Tela Principal — Login do Cliente === */}
                   <Route path="/" element={<ClienteLoginPrincipal />} />

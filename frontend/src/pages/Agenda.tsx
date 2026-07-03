@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { ChevronLeft, ChevronRight, Plus, ChevronDown } from 'lucide-react';
 import { Modal } from '../components/Modal';
 import { LoadingSpinner } from '../components/LoadingSpinner';
+import { SkeletonPage } from '../components/Skeleton';
 import api from '../api/client';
 
 /** Extrai hora e minuto de um Date no fuso de Brasília */
@@ -265,7 +266,7 @@ export function Agenda() {
     }
   }
 
-  if (carregando) return <LoadingSpinner />;
+  if (carregando) return <SkeletonPage />;
 
   return (
     <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', minWidth: 0 }}>

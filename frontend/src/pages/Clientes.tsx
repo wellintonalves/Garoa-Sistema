@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { StatCard } from '../components/StatCard';
 import { LoadingSpinner } from '../components/LoadingSpinner';
+import { SkeletonPage } from '../components/Skeleton';
 import api from '../api/client';
 
 /* ─── Tipos ────────────────────────────────────────────────── */
