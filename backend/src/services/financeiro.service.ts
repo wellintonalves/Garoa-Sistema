@@ -24,12 +24,8 @@ export class FinanceiroService {
     if (filtros?.tipo) where.tipo = filtros.tipo;
     if (filtros?.inicio || filtros?.fim) {
       where.data = {};
-      if (filtros.inicio) (where.data as Record<string, Date>).gte = new Date(filtros.inicio);
-      if (filtros.fim) {
-        const fim = new Date(filtros.fim);
-        fim.setDate(fim.getDate() + 1);
-        (where.data as Record<string, Date>).lt = fim;
-      }
+      if (filtros.inicio) (where.data as Record<string, Date>).gte = inicioDiaBrasilia(filtros.inicio);
+      if (filtros.fim) (where.data as Record<string, Date>).lte = fimDiaBrasilia(filtros.fim);
     }
 
     return prisma.lancamentoFinanceiro.findMany({
@@ -244,12 +240,8 @@ export class FinanceiroService {
     
     if (filtros.inicio || filtros.fim) {
       where.data = {};
-      if (filtros.inicio) where.data.gte = new Date(filtros.inicio);
-      if (filtros.fim) {
-        const fim = new Date(filtros.fim);
-        fim.setDate(fim.getDate() + 1);
-        where.data.lt = fim;
-      }
+      if (filtros.inicio) where.data.gte = inicioDiaBrasilia(filtros.inicio);
+      if (filtros.fim) where.data.lte = fimDiaBrasilia(filtros.fim);
     }
 
     if (filtros.barbeiroId && filtros.barbeiroId !== 'todos') {
@@ -311,13 +303,12 @@ export class FinanceiroService {
 
   /** Resumo para o Dashboard — aceita período customizável */
   static async dashboardResumo(inicio: string, fim: string) {
-    const dataInicio = new Date(inicio);
-    const dataFim = new Date(fim);
-    dataFim.setDate(dataFim.getDate() + 1); // inclui o dia final
+    const dataInicio = inicioDiaBrasilia(inicio);
+    const dataFim = fimDiaBrasilia(fim);
 
     // --- Lançamentos financeiros do período ---
     const lancamentos = await prisma.lancamentoFinanceiro.findMany({
-      where: { data: { gte: dataInicio, lt: dataFim } } as any,
+      where: { data: { gte: dataInicio, lte: dataFim } } as any,
       include: { servico: { select: { nome: true } } },
       orderBy: { data: 'asc' },
     });
@@ -382,7 +373,7 @@ export class FinanceiroService {
 
     // --- Agendamentos no período ---
     const agendamentos = await prisma.agendamento.findMany({
-      where: { dataHora: { gte: dataInicio, lt: dataFim } },
+      where: { dataHora: { gte: dataInicio, lte: dataFim } },
       select: { status: true },
     });
 
