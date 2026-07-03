@@ -293,6 +293,7 @@ export function Dashboard() {
                         <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '12px', fontWeight: 700, color: 'var(--text-primary)' }}>{formatarMoeda(totalDia)}</p>
                       </div>
 
+                      <div 
                         style={{ 
                           width: '100%', 
                           maxWidth: '30px', 

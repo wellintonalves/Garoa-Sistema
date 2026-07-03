@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard, Calendar, Scissors, ListChecks,
-  Users, DollarSign, Package, ChevronLeft, ChevronRight, LogOut,
+  Users, DollarSign, ChevronLeft, ChevronRight, LogOut,
   BarChart3, X, Settings, MessageCircle, Star, ShoppingCart
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
