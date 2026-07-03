@@ -73,7 +73,7 @@ export class FinanceiroService {
         servicoId: dados.servicoId || null,
         valorComissao,
         valorLiquido,
-        data: new Date(dados.data),
+        data: inicioDiaBrasilia(dados.data),
       } as any,
     });
   }
@@ -99,7 +99,7 @@ export class FinanceiroService {
       where: { id },
       data: {
         ...dados,
-        data: dados.data ? new Date(dados.data) : undefined,
+        data: dados.data ? inicioDiaBrasilia(dados.data) : undefined,
       } as any,
     });
   }
@@ -394,7 +394,7 @@ export class FinanceiroService {
     const estoqueBaixo = todosEstoque.filter((i: any) => i.quantidade <= i.quantidadeMinima).length;
 
     return {
-      totalEntradas: faturamentoServicos,
+      totalEntradas: faturamentoServicos + faturamentoProdutos,
       faturamentoServicos,
       faturamentoProdutos,
       faturamentoTotal: faturamentoServicos + faturamentoProdutos,
