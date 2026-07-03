@@ -31,8 +31,10 @@ export class FinanceiroController {
       }
 
       const lancamento = await FinanceiroService.criar(req.body);
+      console.log(`[Financeiro] Lançamento criado com sucesso: id=${lancamento.id} barbeariaId=${lancamento.barbeariaId} valor=${lancamento.valor}`);
       res.status(201).json(lancamento);
     } catch (error) {
+      console.error('[Financeiro] Falha ao criar lançamento. Payload:', req.body, 'Erro:', error);
       const msg = error instanceof Error ? error.message : 'Erro ao criar lançamento';
       res.status(400).json({ erro: msg });
     }

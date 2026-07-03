@@ -175,7 +175,7 @@ export class BarbeiroAppService {
     // Cria lançamento financeiro
     const lancamento = await prisma.lancamentoFinanceiro.create({
       data: {
-        barbeariaId,
+        barbeariaId: agendamento.barbeariaId || barbeariaId,
         tipo: 'ENTRADA',
         categoria: 'Serviço',
         descricao: `${agendamento.servico.nome} — concluído pelo barbeiro`,

@@ -271,6 +271,7 @@ export class PublicoController {
       const agendamento = await prisma.agendamento.create({
         data: {
           clienteId: cliente.id,
+          barbeariaId: servico.barbeariaId,
           barbeiroId: barbeiroFinalId,
           servicoId: servico.id,
           dataHora: dataHoraBrasilia,

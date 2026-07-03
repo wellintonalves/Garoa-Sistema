@@ -25,7 +25,20 @@ export function clienteAuthMiddleware(req: ClienteAuthRequest, res: Response, ne
   try {
     const decoded = jwt.verify(token, authConfig.secretCliente) as ClienteJWT;
     req.cliente = decoded;
-    next();
+
+    // Tenta encontrar o barbeariaId no payload (se existir no futuro), headers, body ou extraindo da URL
+    const barbeariaId = (decoded as any).barbeariaId || 
+                        req.headers['x-barbearia-id'] || 
+                        req.params.barbeariaId || 
+                        req.body?.barbeariaId ||
+                        req.originalUrl.match(/\/barbearia\/([^\/?]+)/)?.[1];
+
+    if (barbeariaId && typeof barbeariaId === 'string') {
+      const { tenantStorage } = require('../lib/als');
+      tenantStorage.run({ barbeariaId }, () => next());
+    } else {
+      next();
+    }
   } catch {
     res.status(401).json({ erro: 'Token inválido ou expirado' });
   }

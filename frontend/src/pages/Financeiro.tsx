@@ -41,6 +41,7 @@ export function Financeiro() {
   const [carregando, setCarregando] = useState(true);
   const [modalAberto, setModalAberto] = useState(false);
   const [salvando, setSalvando] = useState(false);
+  const [erroSalvar, setErroSalvar] = useState<string | null>(null);
   const [apagando, setApagando] = useState<string | null>(null);
   const [editId, setEditId] = useState<string | null>(null);
   
@@ -93,6 +94,7 @@ export function Financeiro() {
       setEditId(null);
       setForm(formPadrao);
     }
+    setErroSalvar(null);
     setModalAberto(true);
   }
 
@@ -117,7 +119,7 @@ export function Financeiro() {
       carregar();
     } catch (e) { 
       console.error(e); 
-      alert('Erro ao salvar o lançamento. Tente novamente.');
+      setErroSalvar('Não foi possível salvar o lançamento — tente novamente');
     } finally {
       setSalvando(false);
     }
@@ -324,6 +326,11 @@ export function Financeiro() {
 
       <Modal aberto={modalAberto} onFechar={() => setModalAberto(false)} titulo={editId ? "Editar Lançamento" : "Novo Lançamento"}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          {erroSalvar && (
+            <div style={{ padding: '12px', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid var(--error-text)', borderRadius: '6px', color: 'var(--error-text)', fontFamily: 'var(--fonte-interface)', fontSize: '13px', fontWeight: 500 }}>
+              {erroSalvar}
+            </div>
+          )}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {(['ENTRADA', 'SAIDA'] as const).map(t => {
               const isSelected = form.tipo === t;

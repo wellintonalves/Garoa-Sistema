@@ -138,6 +138,8 @@ export function Agenda() {
 
   // Form
   const [form, setForm] = useState({ clienteId: '', barbeiroId: '', servicoId: '', dataHora: '', observacoes: '' });
+  const [salvando, setSalvando] = useState(false);
+  const [erroSalvar, setErroSalvar] = useState<string | null>(null);
   const [formBloqueio, setFormBloqueio] = useState({ barbeiroId: '', data: '', horaInicio: '', horaFim: '', motivo: '' });
 
   const diasDaSemana = Array.from({ length: 7 }, (_, i) => {
@@ -192,6 +194,7 @@ export function Agenda() {
       ]);
       setClientes(c.data);
       setServicos(s.data);
+      setErroSalvar(null);
       setModalAberto(true);
     } catch (err) {
       console.error('Erro ao carregar dados:', err);
@@ -199,14 +202,20 @@ export function Agenda() {
   }
 
   async function criarAgendamento() {
+    if (salvando) return;
+    setSalvando(true);
+    setErroSalvar(null);
     try {
       const servico = servicos.find((s) => s.id === form.servicoId);
       await api.post('/agendamentos', { ...form, valorCobrado: servico ? Number(servico.preco) : 0 });
       setModalAberto(false);
       setForm({ clienteId: '', barbeiroId: '', servicoId: '', dataHora: '', observacoes: '' });
       carregar();
-    } catch (err) {
+    } catch (err: any) {
       console.error('Erro ao criar agendamento:', err);
+      setErroSalvar(err?.response?.data?.erro || 'Não foi possível salvar o lançamento — tente novamente');
+    } finally {
+      setSalvando(false);
     }
   }
 
@@ -632,6 +641,11 @@ export function Agenda() {
       {/* Modal para novo agendamento */}
       <Modal aberto={modalAberto} onFechar={() => setModalAberto(false)} titulo="Novo Agendamento">
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          {erroSalvar && (
+            <div style={{ padding: '12px', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid var(--error-text)', borderRadius: '6px', color: 'var(--error-text)', fontFamily: 'var(--fonte-interface)', fontSize: '13px', fontWeight: 500 }}>
+              {erroSalvar}
+            </div>
+          )}
           <div>
             <label className="input-label">Cliente</label>
             <select value={form.clienteId} onChange={(e) => setForm({ ...form, clienteId: e.target.value })} className="ds-select">
@@ -661,8 +675,13 @@ export function Agenda() {
             <label className="input-label">Observações</label>
             <textarea value={form.observacoes} onChange={(e) => setForm({ ...form, observacoes: e.target.value })} rows={2} className="ds-textarea" />
           </div>
-          <button onClick={criarAgendamento} className="btn-primary w-full justify-center">
-            Criar Agendamento
+          <button 
+            onClick={criarAgendamento} 
+            className="btn-primary w-full justify-center"
+            disabled={salvando}
+            style={{ opacity: salvando ? 0.7 : 1, cursor: salvando ? 'not-allowed' : 'pointer' }}
+          >
+            {salvando ? 'Salvando...' : 'Criar Agendamento'}
           </button>
         </div>
       </Modal>

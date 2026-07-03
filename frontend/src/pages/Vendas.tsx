@@ -109,6 +109,7 @@ export function Vendas() {
   const [modalCarrinho, setModalCarrinho] = useState(false);
   const [formaPagCart, setFormaPagCart] = useState<FormaPagamento>('PIX');
   const [fechandoVenda, setFechandoVenda] = useState(false);
+  const [erroCarrinho, setErroCarrinho] = useState<string | null>(null);
 
   // Totais do carrinho
   const totalItensCarrinho = carrinho.reduce((s, c) => s + c.quantidade, 0);
@@ -250,10 +251,11 @@ export function Vendas() {
       setCarrinho([]);
       setModalCarrinho(false);
       setFormaPagCart('PIX');
+      setErroCarrinho(null);
       carregarEstoque();
       carregarVendas();
     } catch (e: any) {
-      alert(e?.response?.data?.erro || 'Erro ao fechar venda');
+      setErroCarrinho(e?.response?.data?.erro || 'Não foi possível salvar o lançamento — tente novamente');
     } finally {
       setFechandoVenda(false);
     }
@@ -274,7 +276,10 @@ export function Vendas() {
         <div className="flex items-center gap-2">
           {/* Botão Carrinho */}
           <button
-            onClick={() => setModalCarrinho(true)}
+            onClick={() => {
+              setErroCarrinho(null);
+              setModalCarrinho(true);
+            }}
             className="btn-secondary flex items-center gap-2"
             style={{
               position: 'relative',
@@ -638,6 +643,11 @@ export function Vendas() {
       {/* ── Modal Carrinho ────────────────────────────────────────────────── */}
       <Modal aberto={modalCarrinho} onFechar={() => setModalCarrinho(false)} titulo="Carrinho de Vendas">
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          {erroCarrinho && (
+            <div style={{ padding: '12px', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid var(--error-text)', borderRadius: '6px', color: 'var(--error-text)', fontFamily: 'var(--fonte-interface)', fontSize: '13px', fontWeight: 500 }}>
+              {erroCarrinho}
+            </div>
+          )}
           {carrinho.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '2rem 0' }}>
               <ShoppingCart size={32} strokeWidth={1} style={{ color: 'var(--text-muted)', margin: '0 auto 12px' }} />

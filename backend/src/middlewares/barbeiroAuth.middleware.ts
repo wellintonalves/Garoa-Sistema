@@ -25,7 +25,26 @@ export function barbeiroAuthMiddleware(req: BarbeiroAuthRequest, res: Response, 
   try {
     const decoded = jwt.verify(token, authConfig.secretBarbeiro) as BarbeiroJWT;
     req.barbeiro = decoded;
-    next();
+
+    if (decoded.barbeariaId) {
+      const { tenantStorage } = require('../lib/als');
+      tenantStorage.run({ barbeariaId: decoded.barbeariaId }, () => {
+        next();
+      });
+    } else {
+      // Se por acaso não tiver (legacy), busca no banco
+      const { prisma } = require('../lib/prisma');
+      prisma.barbeiro.findUnique({ where: { id: decoded.barbeiroId }, select: { barbeariaId: true } })
+        .then((b: any) => {
+          if (b?.barbeariaId) {
+            const { tenantStorage } = require('../lib/als');
+            tenantStorage.run({ barbeariaId: b.barbeariaId }, () => next());
+          } else {
+            next();
+          }
+        })
+        .catch(() => next());
+    }
   } catch {
     res.status(401).json({ erro: 'Token inválido ou expirado' });
   }
