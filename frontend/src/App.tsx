@@ -9,7 +9,7 @@ import { Servicos } from './pages/Servicos';
 import { Clientes } from './pages/Clientes';
 import { Financeiro } from './pages/Financeiro';
 import { Relatorios } from './pages/Relatorios';
-import { Estoque } from './pages/Estoque';
+import { Vendas } from './pages/Vendas';
 import { Configuracoes } from './pages/Configuracoes';
 import { Agendar } from './pages/publico/Agendar';
 import { Fidelidade } from './pages/publico/Fidelidade';
@@ -141,7 +141,7 @@ export function App() {
                   <Route path="clientes" element={<Clientes />} />
                   <Route path="financeiro" element={<Financeiro />} />
                   <Route path="relatorios" element={<Relatorios />} />
-                  <Route path="estoque" element={<Estoque />} />
+                  <Route path="vendas" element={<Vendas />} />
                   <Route path="configuracoes" element={<Configuracoes />} />
                   <Route path="fidelidade" element={<AdminFidelidade />} />
                   <Route path="chat" element={<AdminChat />} />
@@ -152,6 +152,7 @@ export function App() {
                 <Route path="/cliente" element={<Navigate to="/" replace />} />
                 <Route path="/cliente/login" element={<Navigate to="/" replace />} />
                 <Route path="/cliente/register" element={<Navigate to="/cadastro" replace />} />
+                <Route path="/admin/estoque" element={<Navigate to="/admin/vendas" replace />} />
 
                 {/* Fallback */}
                 <Route path="*" element={<Navigate to="/" replace />} />

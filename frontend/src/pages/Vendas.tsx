@@ -82,7 +82,7 @@ function margem(custo: string | number, venda: string | null | undefined): strin
 
 // ─── Componente ────────────────────────────────────────────────────────────
 
-export function Estoque() {
+export function Vendas() {
   // Dados
   const [itens, setItens] = useState<ItemEstoque[]>([]);
   const [kpis, setKpis] = useState<KPIs | null>(null);
@@ -268,7 +268,7 @@ export function Estoque() {
       {/* Cabeçalho */}
       <div className="flex items-center justify-between flex-wrap gap-4">
         <h1 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '32px', color: 'var(--text-primary)', letterSpacing: '0.04em' }}>
-          Estoque
+          Vendas
         </h1>
         <div className="flex items-center gap-2">
           {/* Botão Carrinho */}

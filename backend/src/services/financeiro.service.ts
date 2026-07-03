@@ -2,6 +2,7 @@
 import { prisma } from '../lib/prisma';
 import { TipoLancamento, FormaPagamento } from '@prisma/client';
 import { inicioDiaBrasilia, fimDiaBrasilia } from '../lib/timezone';
+import { CATEGORIA_VENDA_PRODUTO } from '../lib/constantes';
 
 interface DadosLancamento {
   tipo: TipoLancamento;
@@ -154,6 +155,8 @@ export class FinanceiroService {
 
     const porFormaPagamento: Record<string, number> = {};
     let totalEntradas = 0;
+    let entradasServicos = 0;
+    let entradasProdutos = 0;
     let totalSaidas = 0;
 
     lancamentos.forEach((l: any) => {
@@ -163,6 +166,11 @@ export class FinanceiroService {
       if (!porFormaPagamento[forma]) porFormaPagamento[forma] = 0;
 
       if (l.tipo === 'ENTRADA') {
+        if (l.categoria === CATEGORIA_VENDA_PRODUTO) {
+          entradasProdutos += valor;
+        } else {
+          entradasServicos += valor;
+        }
         totalEntradas += valor;
         porFormaPagamento[forma] += valor;
       } else {
@@ -174,6 +182,8 @@ export class FinanceiroService {
     return {
       data,
       totalEntradas,
+      entradasServicos,
+      entradasProdutos,
       totalSaidas,
       saldo: totalEntradas - totalSaidas,
       porFormaPagamento,
@@ -198,17 +208,29 @@ export class FinanceiroService {
       });
 
       let entradas = 0;
+      let entradasServicos = 0;
+      let entradasProdutos = 0;
       let saidas = 0;
 
       lancamentos.forEach((l: any) => {
         const valor = Number(l.valor);
-        if (l.tipo === 'ENTRADA') entradas += valor;
-        else saidas += valor;
+        if (l.tipo === 'ENTRADA') {
+          entradas += valor;
+          if (l.categoria === CATEGORIA_VENDA_PRODUTO) {
+            entradasProdutos += valor;
+          } else {
+            entradasServicos += valor;
+          }
+        } else {
+          saidas += valor;
+        }
       });
 
       resultado.push({
         data: diaStr,
         entradas,
+        entradasServicos,
+        entradasProdutos,
         saidas,
       });
     }
@@ -245,6 +267,7 @@ export class FinanceiroService {
 
     const consolidado = {
       totalBruto: 0,
+      totalProdutos: 0,
       totalComissoes: 0,
       totalLiquido: 0,
       totalAtendimentos: 0,
@@ -255,26 +278,30 @@ export class FinanceiroService {
       const valor = Number(l.valor);
       
       if (l.tipo === 'ENTRADA') {
-        consolidado.totalBruto += valor;
-        
-        if (l.barbeiroId && l.barbeiro) {
-          const nomeBarbeiro = l.barbeiro.usuario.nome;
-          const comissao = Number(l.valorComissao) || 0;
-          const liquido = Number(l.valorLiquido) || valor;
-          
-          consolidado.totalComissoes += comissao;
-          consolidado.totalLiquido += liquido;
-          consolidado.totalAtendimentos++;
-
-          if (!consolidado.porBarbeiro[l.barbeiroId]) {
-            consolidado.porBarbeiro[l.barbeiroId] = { nome: nomeBarbeiro, bruto: 0, comissao: 0, liquido: 0 };
-          }
-          consolidado.porBarbeiro[l.barbeiroId].bruto += valor;
-          consolidado.porBarbeiro[l.barbeiroId].comissao += comissao;
-          consolidado.porBarbeiro[l.barbeiroId].liquido += liquido;
+        if (l.categoria === CATEGORIA_VENDA_PRODUTO) {
+          consolidado.totalProdutos += valor;
         } else {
-          // Entradas sem barbeiro (ex: produtos) vão pro líquido integral
-          consolidado.totalLiquido += valor;
+          consolidado.totalBruto += valor;
+          
+          if (l.barbeiroId && l.barbeiro) {
+            const nomeBarbeiro = l.barbeiro.usuario.nome;
+            const comissao = Number(l.valorComissao) || 0;
+            const liquido = Number(l.valorLiquido) || valor;
+            
+            consolidado.totalComissoes += comissao;
+            consolidado.totalLiquido += liquido;
+            consolidado.totalAtendimentos++;
+
+            if (!consolidado.porBarbeiro[l.barbeiroId]) {
+              consolidado.porBarbeiro[l.barbeiroId] = { nome: nomeBarbeiro, bruto: 0, comissao: 0, liquido: 0 };
+            }
+            consolidado.porBarbeiro[l.barbeiroId].bruto += valor;
+            consolidado.porBarbeiro[l.barbeiroId].comissao += comissao;
+            consolidado.porBarbeiro[l.barbeiroId].liquido += liquido;
+          } else {
+            // Entradas sem barbeiro (ex: outros serviços) vão pro líquido integral
+            consolidado.totalLiquido += valor;
+          }
         }
       }
     });
@@ -295,30 +322,36 @@ export class FinanceiroService {
       orderBy: { data: 'asc' },
     });
 
-    let totalEntradas = 0;
+    let faturamentoServicos = 0;
+    let faturamentoProdutos = 0;
     let totalSaidas = 0;
     let totalAtendimentos = 0;
-    const porDia: Record<string, { entradas: number; saidas: number }> = {};
+    const porDia: Record<string, { entradas: number; produtos: number; saidas: number }> = {};
     const servicoContagem: Record<string, { nome: string; count: number; total: number }> = {};
 
     lancamentos.forEach((l: any) => {
       const valor = Number(l.valor);
       const diaKey = new Date(l.data).toISOString().split('T')[0];
 
-      if (!porDia[diaKey]) porDia[diaKey] = { entradas: 0, saidas: 0 };
+      if (!porDia[diaKey]) porDia[diaKey] = { entradas: 0, produtos: 0, saidas: 0 };
 
       if (l.tipo === 'ENTRADA') {
-        totalEntradas += valor;
-        porDia[diaKey].entradas += valor;
-        if (l.barbeiroId) totalAtendimentos++;
+        if (l.categoria === CATEGORIA_VENDA_PRODUTO) {
+          faturamentoProdutos += valor;
+          porDia[diaKey].produtos += valor;
+        } else {
+          faturamentoServicos += valor;
+          porDia[diaKey].entradas += valor;
+          if (l.barbeiroId) totalAtendimentos++;
 
-        // Contagem de serviços
-        if (l.servicoId && l.servico) {
-          if (!servicoContagem[l.servicoId]) {
-            servicoContagem[l.servicoId] = { nome: l.servico.nome, count: 0, total: 0 };
+          // Contagem de serviços
+          if (l.servicoId && l.servico) {
+            if (!servicoContagem[l.servicoId]) {
+              servicoContagem[l.servicoId] = { nome: l.servico.nome, count: 0, total: 0 };
+            }
+            servicoContagem[l.servicoId].count++;
+            servicoContagem[l.servicoId].total += valor;
           }
-          servicoContagem[l.servicoId].count++;
-          servicoContagem[l.servicoId].total += valor;
         }
       } else {
         totalSaidas += valor;
@@ -327,7 +360,7 @@ export class FinanceiroService {
     });
 
     // Preencher dias sem lançamento no range
-    const porDiaCompleto: Array<{ data: string; entradas: number; saidas: number }> = [];
+    const porDiaCompleto: Array<{ data: string; entradas: number; produtos: number; saidas: number }> = [];
     const cursor = new Date(inicio);
     const fimLoop = new Date(fim);
     while (cursor <= fimLoop) {
@@ -335,13 +368,14 @@ export class FinanceiroService {
       porDiaCompleto.push({
         data: key,
         entradas: porDia[key]?.entradas || 0,
+        produtos: porDia[key]?.produtos || 0,
         saidas: porDia[key]?.saidas || 0,
       });
       cursor.setDate(cursor.getDate() + 1);
     }
 
-    // Ticket médio
-    const ticketMedio = totalAtendimentos > 0 ? totalEntradas / totalAtendimentos : 0;
+    // Ticket médio (apenas serviços)
+    const ticketMedio = totalAtendimentos > 0 ? faturamentoServicos / totalAtendimentos : 0;
 
     // Serviço mais realizado
     const servicoMaisRealizado = Object.values(servicoContagem).sort((a, b) => b.count - a.count)[0] || null;
@@ -360,9 +394,12 @@ export class FinanceiroService {
     const estoqueBaixo = todosEstoque.filter((i: any) => i.quantidade <= i.quantidadeMinima).length;
 
     return {
-      totalEntradas,
+      totalEntradas: faturamentoServicos,
+      faturamentoServicos,
+      faturamentoProdutos,
+      faturamentoTotal: faturamentoServicos + faturamentoProdutos,
       totalSaidas,
-      saldo: totalEntradas - totalSaidas,
+      saldo: (faturamentoServicos + faturamentoProdutos) - totalSaidas,
       totalAtendimentos: concluidos,
       pendentes,
       estoqueBaixo,

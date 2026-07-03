@@ -6,7 +6,9 @@ import api from '../api/client';
 import { useAuth } from '../hooks/useAuth';
 
 interface DadosDashboard {
-  totalEntradas: number;
+  faturamentoTotal: number;
+  faturamentoServicos: number;
+  faturamentoProdutos: number;
   totalSaidas: number;
   saldo: number;
   totalAtendimentos: number;
@@ -14,7 +16,7 @@ interface DadosDashboard {
   estoqueBaixo: number;
   ticketMedio: number;
   servicoMaisRealizado: { nome: string; count: number; total: number } | null;
-  porDia: Array<{ data: string; entradas: number; saidas: number }>;
+  porDia: Array<{ data: string; entradas: number; produtos: number; saidas: number }>;
 }
 
 function getPeriodDates(period: 'hoje' | 'esta_semana' | 'este_mes' | 'mes_anterior') {
@@ -202,11 +204,17 @@ export function Dashboard() {
           {/* Cards Principais */}
           <div className="dashboard-grid">
             <StatCard
-              titulo="Faturamento"
-              valor={formatarMoeda(dados.totalEntradas)}
+              titulo="Serviços"
+              valor={formatarMoeda(dados.faturamentoServicos)}
               icone={DollarSign}
-              subtexto="Entradas do período"
+              subtexto="Faturamento"
               destaque
+            />
+            <StatCard
+              titulo="Produtos"
+              valor={formatarMoeda(dados.faturamentoProdutos)}
+              icone={DollarSign}
+              subtexto="Faturamento"
             />
             <StatCard
               titulo="Atendimentos"
@@ -272,7 +280,8 @@ export function Dashboard() {
 
                 {/* Barras */}
                 {dados.porDia.map((dia, idx) => {
-                  const altura = maxFaturamento > 0 ? (dia.entradas / maxFaturamento) * 100 : 0;
+                  const totalDia = dia.entradas + dia.produtos;
+                  const altura = maxFaturamento > 0 ? (totalDia / maxFaturamento) * 100 : 0;
                   const dataObj = new Date(dia.data + 'T12:00:00');
                   const isHoje = dia.data === hojeStr;
 
@@ -281,16 +290,15 @@ export function Dashboard() {
                       {/* Tooltip ao passar o mouse */}
                       <div className="chart-tooltip" style={{ opacity: 0, position: 'absolute', bottom: '100%', marginBottom: '8px', background: 'var(--bg-surface2)', border: '1px solid var(--border)', padding: '6px 8px', borderRadius: '4px', whiteSpace: 'nowrap', pointerEvents: 'none', transition: 'opacity 0.2s', zIndex: 10 }}>
                         <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--text-muted)' }}>{dataObj.toLocaleDateString('pt-BR')}</p>
-                        <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '12px', fontWeight: 700, color: 'var(--text-primary)' }}>{formatarMoeda(dia.entradas)}</p>
+                        <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '12px', fontWeight: 700, color: 'var(--text-primary)' }}>{formatarMoeda(totalDia)}</p>
                       </div>
 
-                      <div 
                         style={{ 
                           width: '100%', 
                           maxWidth: '30px', 
                           height: `${altura}%`, 
                           background: isHoje ? 'rgba(var(--cor-primaria-rgb), 0.15)' : 'var(--amber)', 
-                          minHeight: dia.entradas > 0 ? '4px' : '0',
+                          minHeight: totalDia > 0 ? '4px' : '0',
                           transition: 'height 0.4s ease-out',
                           cursor: 'pointer'
                         }}

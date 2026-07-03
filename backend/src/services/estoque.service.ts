@@ -1,6 +1,7 @@
 // Serviço de estoque — CRUD + vendas de produtos
 import { prisma } from '../lib/prisma';
 import { FormaPagamento } from '@prisma/client';
+import { CATEGORIA_VENDA_PRODUTO } from '../lib/constantes';
 
 interface DadosEstoque {
   nome: string;
@@ -118,7 +119,7 @@ export class EstoqueService {
     await (prisma as any).lancamentoFinanceiro.create({
       data: {
         tipo: 'ENTRADA',
-        categoria: 'Venda de Produto',
+        categoria: CATEGORIA_VENDA_PRODUTO,
         descricao: `${quantidade}x ${item.nome}`,
         valor: totalVenda,
         formaPagamento,
@@ -193,7 +194,7 @@ export class EstoqueService {
     await (prisma as any).lancamentoFinanceiro.create({
       data: {
         tipo: 'ENTRADA',
-        categoria: 'Venda de Produto',
+        categoria: CATEGORIA_VENDA_PRODUTO,
         descricao,
         valor: totalVendaGeral,
         formaPagamento,
@@ -238,6 +239,16 @@ export class EstoqueService {
     }
     const rankingProdutos = Object.values(porProduto).sort((a, b) => b.receita - a.receita);
 
-    return { vendas, totalReceita, totalCusto, totalLucro, totalUnidades, rankingProdutos };
+    // Calcular porFormaPagamento e margemLucro
+    const porFormaPagamento: Record<string, number> = {};
+    for (const v of vendas) {
+      const forma = v.formaPagamento;
+      if (!porFormaPagamento[forma]) porFormaPagamento[forma] = 0;
+      porFormaPagamento[forma] += Number(v.precoVenda) * v.quantidade;
+    }
+
+    const margemLucro = totalReceita > 0 ? (totalLucro / totalReceita) * 100 : 0;
+
+    return { vendas, totalReceita, totalCusto, totalLucro, totalUnidades, rankingProdutos, porFormaPagamento, margemLucro };
   }
 }

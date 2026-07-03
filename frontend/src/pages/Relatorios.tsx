@@ -7,6 +7,7 @@ import api from '../api/client';
 
 interface Consolidado {
   totalBruto: number;
+  totalProdutos: number;
   totalComissoes: number;
   totalLiquido: number;
   totalAtendimentos: number;
@@ -266,29 +267,29 @@ export function Relatorios() {
           {/* Cards de Totais */}
           <div className="dashboard-grid">
             <StatCard
-              titulo="Receita Total (Bruto)"
+              titulo="Receita Serviços (Bruto)"
               valor={fmt(relatorio.consolidado.totalBruto)}
-              icone={DollarSign}
-              subtexto="Soma de todas as entradas"
+              icone={Scissors}
+              subtexto="Soma de serviços prestados"
             />
             <StatCard
-              titulo="Comissões dos Barbeiros"
+              titulo="Receita Produtos"
+              valor={fmt(relatorio.consolidado.totalProdutos)}
+              icone={DollarSign}
+              subtexto="Soma de produtos vendidos"
+            />
+            <StatCard
+              titulo="Comissões Pagas"
               valor={fmt(relatorio.consolidado.totalComissoes)}
               icone={Users}
-              subtexto="Total pago em comissões"
+              subtexto="Total aos barbeiros"
             />
             <StatCard
-              titulo="Lucro Líquido Barbearia"
+              titulo="Lucro Líquido"
               valor={fmt(relatorio.consolidado.totalLiquido)}
               icone={TrendingUp}
               destaque
-              subtexto="Receita − comissões"
-            />
-            <StatCard
-              titulo="Atendimentos"
-              valor={String(relatorio.consolidado.totalAtendimentos)}
-              icone={Scissors}
-              subtexto="Serviços com barbeiro"
+              subtexto="Serviços + Produtos − Comissões"
             />
           </div>
 

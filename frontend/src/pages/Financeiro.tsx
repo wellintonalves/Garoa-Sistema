@@ -16,7 +16,8 @@ interface Lancamento {
   valorLiquido?: string;
 }
 interface ResumoDia {
-  totalEntradas: number; totalSaidas: number; saldo: number;
+  totalEntradas: number; entradasServicos: number; entradasProdutos: number;
+  totalSaidas: number; saldo: number;
   porFormaPagamento: Record<string, number>;
 }
 interface DadoGrafico { data: string; entradas: number; saidas: number }
@@ -40,6 +41,7 @@ export function Financeiro() {
   
   const formPadrao = { tipo: 'ENTRADA', categoria: '', descricao: '', valor: '', formaPagamento: 'PIX', data: new Date().toISOString().split('T')[0], servicoId: '', barbeiroId: '' };
   const [form, setForm] = useState(formPadrao);
+  const [filtroCategoria, setFiltroCategoria] = useState<string>('TODAS');
 
   async function carregar() {
     try {
@@ -98,6 +100,13 @@ export function Financeiro() {
 
   if (carregando) return <LoadingSpinner />;
 
+  const lancamentosFiltrados = lancamentos.filter(l => {
+    if (filtroCategoria === 'SERVICOS') return l.categoria !== 'Venda de Produto' && l.tipo === 'ENTRADA';
+    if (filtroCategoria === 'PRODUTOS') return l.categoria === 'Venda de Produto' && l.tipo === 'ENTRADA';
+    if (filtroCategoria === 'SAIDAS') return l.tipo === 'SAIDA';
+    return true;
+  });
+
   return (
     <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
       <div className="flex items-center justify-between flex-wrap gap-4">
@@ -121,9 +130,16 @@ export function Financeiro() {
         <div className="metric-card" style={{ borderLeft: '2px solid var(--success-text)' }}>
           <div className="flex items-center gap-2 mb-2" style={{ color: 'var(--success-text)' }}>
             <TrendingUp size={14} strokeWidth={1.5} />
-            <span className="metric-label !mt-0 uppercase tracking-widest" style={{ color: 'var(--success-text)' }}>Entradas</span>
+            <span className="metric-label !mt-0 uppercase tracking-widest" style={{ color: 'var(--success-text)' }}>Serviços</span>
           </div>
-          <p className="metric-value">{fmt(resumo?.totalEntradas || 0)}</p>
+          <p className="metric-value">{fmt(resumo?.entradasServicos || 0)}</p>
+        </div>
+        <div className="metric-card" style={{ borderLeft: '2px solid var(--success-text)' }}>
+          <div className="flex items-center gap-2 mb-2" style={{ color: 'var(--success-text)' }}>
+            <TrendingUp size={14} strokeWidth={1.5} />
+            <span className="metric-label !mt-0 uppercase tracking-widest" style={{ color: 'var(--success-text)' }}>Produtos</span>
+          </div>
+          <p className="metric-value">{fmt(resumo?.entradasProdutos || 0)}</p>
         </div>
         <div className="metric-card" style={{ borderLeft: '2px solid var(--error-text)' }}>
           <div className="flex items-center gap-2 mb-2" style={{ color: 'var(--error-text)' }}>
@@ -182,11 +198,19 @@ export function Financeiro() {
 
       {/* Lançamentos do dia */}
       <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-        <h3 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)', padding: '1.25rem', borderBottom: '1px solid var(--border)' }}>
-          Lançamentos de Hoje
-        </h3>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1.25rem', borderBottom: '1px solid var(--border)' }}>
+          <h3 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)' }}>
+            Lançamentos de Hoje
+          </h3>
+          <select value={filtroCategoria} onChange={e => setFiltroCategoria(e.target.value)} className="ds-select" style={{ width: 'auto', padding: '4px 8px', fontSize: '11px', minHeight: 'auto' }}>
+            <option value="TODAS">Todos</option>
+            <option value="SERVICOS">Apenas Serviços</option>
+            <option value="PRODUTOS">Apenas Produtos</option>
+            <option value="SAIDAS">Apenas Saídas</option>
+          </select>
+        </div>
         <div style={{ display: 'flex', flexDirection: 'column' }}>
-          {lancamentos.map((l, i) => (
+          {lancamentosFiltrados.map((l, i) => (
             <div
               key={l.id}
               className="flex items-center justify-between transition-colors"
@@ -218,9 +242,9 @@ export function Financeiro() {
               </div>
             </div>
           ))}
-          {lancamentos.length === 0 && (
+          {lancamentosFiltrados.length === 0 && (
             <p style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)', fontFamily: 'var(--fonte-interface)', fontSize: '11px' }}>
-              Nenhum lançamento hoje
+              Nenhum lançamento encontrado
             </p>
           )}
         </div>
