@@ -323,7 +323,7 @@ export function Clientes() {
                     <th style={{ textAlign: 'right' }}>Ações</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="stagger-children">
                   {clientes.map(c => (
                     <tr key={c.id} style={{ cursor: 'pointer' }} onClick={() => abrirPerfil(c.id)}>
                       {/* Avatar + Nome */}

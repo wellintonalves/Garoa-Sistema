@@ -202,7 +202,7 @@ export function Dashboard() {
       ) : dados ? (
         <>
           {/* Cards Principais */}
-          <div className="dashboard-grid">
+          <div className="dashboard-grid stagger-children">
             <StatCard
               titulo="Serviços"
               valor={formatarMoeda(dados.faturamentoServicos)}
