@@ -2,7 +2,6 @@
 import { useEffect, useState } from 'react';
 import { Plus, Check, X, Pencil } from 'lucide-react';
 import { Modal } from '../components/Modal';
-import { LoadingSpinner } from '../components/LoadingSpinner';
 import { SkeletonPage } from '../components/Skeleton';
 import api from '../api/client';
 

@@ -1,8 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Filter, DollarSign, Users, Scissors, TrendingUp, AlertCircle, Pencil, X, Trash2, Plus } from 'lucide-react';
-import { LoadingSpinner } from '../components/LoadingSpinner';
-import { SkeletonPage } from '../components/Skeleton';
+import { SkeletonTable } from '../components/Skeleton';
 import { StatCard } from '../components/StatCard';
 import api from '../api/client';
 
@@ -236,7 +235,7 @@ export function Relatorios() {
       </div>
 
       {/* Estado de carregamento */}
-      {carregando && <LoadingSpinner />}
+      {carregando && <SkeletonTable rows={5} cols={4} />}
 
       {/* Estado de erro */}
       {!carregando && erro && (

@@ -3,8 +3,8 @@ import { useEffect, useState } from 'react';
 import { Star, Plus, DollarSign, TrendingUp, Calendar, Edit2, Trash2 } from 'lucide-react';
 import { Modal } from '../components/Modal';
 import { ImageCropperModal } from '../components/ImageCropperModal';
-import { LoadingSpinner } from '../components/LoadingSpinner';
-import { SkeletonPage } from '../components/Skeleton';
+
+import { SkeletonPage, SkeletonCard } from '../components/Skeleton';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/client';
 
@@ -339,7 +339,7 @@ export function Barbeiros() {
 
         <div>
           {carregandoComissoes ? (
-            <LoadingSpinner />
+            <SkeletonCard />
           ) : Object.keys(comissoes).length > 0 ? (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '12px' }}>
               {Object.entries(comissoes).map(([id, b]) => (

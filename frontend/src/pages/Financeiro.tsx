@@ -2,7 +2,6 @@
 import { useEffect, useState } from 'react';
 import { Plus, TrendingUp, TrendingDown, Edit2, Trash2, Loader2 } from 'lucide-react';
 import { Modal } from '../components/Modal';
-import { LoadingSpinner } from '../components/LoadingSpinner';
 import { SkeletonPage } from '../components/Skeleton';
 import api from '../api/client';
 

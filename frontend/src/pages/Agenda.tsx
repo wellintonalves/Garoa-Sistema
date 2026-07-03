@@ -3,7 +3,6 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { ChevronLeft, ChevronRight, Plus, ChevronDown } from 'lucide-react';
 import { Modal } from '../components/Modal';
-import { LoadingSpinner } from '../components/LoadingSpinner';
 import { SkeletonPage } from '../components/Skeleton';
 import api from '../api/client';
 

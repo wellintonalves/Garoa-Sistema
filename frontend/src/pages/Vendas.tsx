@@ -6,8 +6,8 @@ import {
   Minus, Trash2,
 } from 'lucide-react';
 import { Modal } from '../components/Modal';
-import { LoadingSpinner } from '../components/LoadingSpinner';
-import { SkeletonPage } from '../components/Skeleton';
+
+import { SkeletonPage, SkeletonCard } from '../components/Skeleton';
 import api from '../api/client';
 
 // ─── Tipos ─────────────────────────────────────────────────────────────────
@@ -507,7 +507,7 @@ export function Vendas() {
             </div>
           </div>
 
-          {carregandoVendas ? <LoadingSpinner /> : resumoVendas && (
+          {carregandoVendas ? <SkeletonCard /> : resumoVendas && (
             <>
               {/* KPIs de vendas */}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '12px' }}>

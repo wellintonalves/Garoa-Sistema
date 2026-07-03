@@ -5,8 +5,7 @@ import {
   Star, Phone, Mail, X, Plus, MessageCircle, Cake,
 } from 'lucide-react';
 import { StatCard } from '../components/StatCard';
-import { LoadingSpinner } from '../components/LoadingSpinner';
-import { SkeletonPage } from '../components/Skeleton';
+import { SkeletonCard } from '../components/Skeleton';
 import api from '../api/client';
 
 /* ─── Tipos ────────────────────────────────────────────────── */
@@ -496,7 +495,7 @@ export function Clientes() {
           <div className="slide-panel">
             {carregandoDetalhe ? (
               <div style={{ padding: '3rem', display: 'flex', justifyContent: 'center' }}>
-                <LoadingSpinner />
+                <SkeletonCard />
               </div>
             ) : clienteSelecionado && (
               <>
