@@ -247,10 +247,9 @@ model Agendamento {
 
   lancamentos LancamentoFinanceiro[]
 
-  @@index([barbeariaId])
+  @@index([barbeariaId, dataHora])
   @@index([clienteId])
   @@index([barbeiroId])
-  @@index([dataHora])
   @@map("agendamentos")
 }
 
@@ -279,8 +278,7 @@ model LancamentoFinanceiro {
   barbeiro    Barbeiro?    @relation(fields: [barbeiroId], references: [id], onDelete: SetNull)
   servico     Servico?     @relation(fields: [servicoId], references: [id], onDelete: SetNull)
 
-  @@index([barbeariaId])
-  @@index([data])
+  @@index([barbeariaId, data])
   @@map("lancamentos_financeiros")
 }
 
@@ -297,6 +295,7 @@ model Estoque {
   barbearia Barbearia?     @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
   vendas    VendaProduto[]
 
+  @@index([barbeariaId])
   @@map("estoque")
 }
 
@@ -315,6 +314,7 @@ model VendaProduto {
   barbearia Barbearia? @relation(fields: [barbeariaId], references: [id], onDelete: SetNull)
   estoque   Estoque?   @relation(fields: [estoqueId], references: [id], onDelete: SetNull)
 
+  @@index([barbeariaId, data])
   @@map("vendas_produtos")
 }
 

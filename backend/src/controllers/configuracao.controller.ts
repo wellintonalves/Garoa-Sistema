@@ -12,6 +12,8 @@ const gerarSlug = (nome: string) => {
     .replace(/^-+|-+$/g, '');
 };
 
+const cacheBarbearia: Record<string, { data: any, expira: number }> = {};
+
 export class ConfiguracaoController {
   /** GET /configuracoes */
   static async obter(req: AuthRequest, res: Response): Promise<void> {
@@ -40,6 +42,12 @@ export class ConfiguracaoController {
     try {
       let barbeariaId = req.usuario?.barbeariaId;
       const { prisma } = require('../lib/prisma');
+      
+      const agora = Date.now();
+      if (barbeariaId && cacheBarbearia[barbeariaId] && cacheBarbearia[barbeariaId].expira > agora) {
+        res.json(cacheBarbearia[barbeariaId].data);
+        return;
+      }
       
       if (!barbeariaId && req.usuario?.papel === 'ADMIN') {
         const primeira = await prisma.barbearia.findFirst();
@@ -80,7 +88,12 @@ export class ConfiguracaoController {
 
       const clientesCount = await prisma.clienteBarbearia.count({ where: { barbeariaId } });
 
-      res.json({ ...barbearia, clientesCount });
+      const payload = { ...barbearia, clientesCount };
+      if (barbeariaId) {
+        cacheBarbearia[barbeariaId] = { data: payload, expira: agora + 60000 };
+      }
+
+      res.json(payload);
     } catch (error) {
       res.status(500).json({ erro: 'Erro ao buscar dados da barbearia' });
     }
@@ -131,6 +144,8 @@ export class ConfiguracaoController {
         where: { id: barbeariaId },
         data: { nome, slug, corPrimaria, corSecundaria, corTexto, fonte, logo, endereco, telefone, horarioAbertura, horarioFechamento, temAlmoco, horarioAlmocoInicio, horarioAlmocoFim }
       });
+
+      if (barbeariaId) delete cacheBarbearia[barbeariaId];
 
       res.json(barbearia);
     } catch (error) {

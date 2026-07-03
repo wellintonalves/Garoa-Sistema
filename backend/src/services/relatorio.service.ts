@@ -50,11 +50,17 @@ export class RelatorioService {
       agrupado.set(ag.barbeiroId, lista);
     });
 
+    const barbeirosIds = [...agrupado.keys()];
+    const barbeiros = await prisma.barbeiro.findMany({
+      where: { id: { in: barbeirosIds } },
+      include: { usuario: { select: { nome: true } } },
+    });
+    
+    const barbeirosMap = new Map<string, typeof barbeiros[0]>();
+    barbeiros.forEach((b: any) => barbeirosMap.set(b.id, b));
+
     for (const [barbeiroId, ags] of agrupado) {
-      const barbeiro = await prisma.barbeiro.findUnique({
-        where: { id: barbeiroId },
-        include: { usuario: { select: { nome: true } } },
-      });
+      const barbeiro = barbeirosMap.get(barbeiroId);
 
       const faturamentoBarbeiro = ags.reduce(
         (total: any, ag: any) => total + Number(ag.valorCobrado),

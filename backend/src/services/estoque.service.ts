@@ -157,49 +157,52 @@ export class EstoqueService {
     let totalVendaGeral = 0;
     const resultados: { nomeProduto: string; quantidade: number; totalVenda: number; lucro: number }[] = [];
 
-    // 2 & 3. Criar vendas e dar baixa no estoque
-    for (const { item, quantidade } of produtos) {
-      const precoUnit = Number((item as any).precoVenda);
-      const custoUnit = Number(item.custo);
-      const totalVenda = precoUnit * quantidade;
-      const lucro = totalVenda - custoUnit * quantidade;
-      totalVendaGeral += totalVenda;
+    // Prepara operações da transação iterativa
+    await (prisma as any).$transaction(async (tx: any) => {
+      // 2 & 3. Criar vendas e dar baixa no estoque
+      for (const { item, quantidade } of produtos) {
+        const precoUnit = Number((item as any).precoVenda);
+        const custoUnit = Number(item.custo);
+        const totalVenda = precoUnit * quantidade;
+        const lucro = totalVenda - custoUnit * quantidade;
+        totalVendaGeral += totalVenda;
 
-      await (prisma as any).vendaProduto.create({
+        await tx.vendaProduto.create({
+          data: {
+            estoqueId: item.id,
+            nomeProduto: item.nome,
+            quantidade,
+            precoVenda: precoUnit,
+            custoUnitario: custoUnit,
+            lucro,
+            formaPagamento,
+            data: new Date(),
+          },
+        });
+
+        await tx.estoque.update({
+          where: { id: item.id },
+          data: { quantidade: item.quantidade - quantidade },
+        });
+
+        resultados.push({ nomeProduto: item.nome, quantidade, totalVenda, lucro });
+      }
+
+      // 4. Lançamento financeiro único para o carrinho inteiro
+      const descricao = produtos
+        .map(p => `${p.quantidade}x ${p.item.nome}`)
+        .join(', ');
+
+      await tx.lancamentoFinanceiro.create({
         data: {
-          estoqueId: item.id,
-          nomeProduto: item.nome,
-          quantidade,
-          precoVenda: precoUnit,
-          custoUnitario: custoUnit,
-          lucro,
+          tipo: 'ENTRADA',
+          categoria: CATEGORIA_VENDA_PRODUTO,
+          descricao,
+          valor: totalVendaGeral,
           formaPagamento,
           data: new Date(),
         },
       });
-
-      await prisma.estoque.update({
-        where: { id: item.id },
-        data: { quantidade: item.quantidade - quantidade },
-      });
-
-      resultados.push({ nomeProduto: item.nome, quantidade, totalVenda, lucro });
-    }
-
-    // 4. Lançamento financeiro único para o carrinho inteiro
-    const descricao = produtos
-      .map(p => `${p.quantidade}x ${p.item.nome}`)
-      .join(', ');
-
-    await (prisma as any).lancamentoFinanceiro.create({
-      data: {
-        tipo: 'ENTRADA',
-        categoria: CATEGORIA_VENDA_PRODUTO,
-        descricao,
-        valor: totalVendaGeral,
-        formaPagamento,
-        data: new Date(),
-      },
     });
 
     return { resultados, totalVenda: totalVendaGeral };

@@ -14,7 +14,18 @@ process.on('unhandledRejection', (reason) => {
 
 const PORT = Number(process.env.PORT) || 3001;
 
+import { prisma } from './lib/prisma';
+
 app.listen(PORT, () => {
   console.log(`🏪 Servidor da barbearia rodando na porta ${PORT}`);
   console.log(`📋 Health check: http://localhost:${PORT}/health`);
+
+  // Prisma keep-alive
+  setInterval(async () => {
+    try {
+      await prisma.$queryRaw`SELECT 1`;
+    } catch (err) {
+      console.error('❌ Erro no keep-alive do Prisma:', err);
+    }
+  }, 60000);
 });

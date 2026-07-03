@@ -191,43 +191,55 @@ export class FinanceiroService {
   static async ultimos7Dias() {
     const resultado: Array<{ data: string; entradas: number; entradasServicos: number; entradasProdutos: number; saidas: number }> = [];
 
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+    const inicioFiltro = new Date(hoje);
+    inicioFiltro.setDate(inicioFiltro.getDate() - 6);
+    
+    // Converte para as strings que a lib de timezone espera
+    const inicioStr = inicioFiltro.toISOString().split('T')[0];
+    const fimStr = hoje.toISOString().split('T')[0];
+
+    const dataInicio = inicioDiaBrasilia(inicioStr);
+    const dataFim = fimDiaBrasilia(fimStr);
+
+    const lancamentos = await prisma.lancamentoFinanceiro.findMany({
+      where: { data: { gte: dataInicio, lte: dataFim } } as any,
+    });
+
+    const agrupado: Record<string, { entradas: number; entradasServicos: number; entradasProdutos: number; saidas: number }> = {};
+
+    lancamentos.forEach((l: any) => {
+      // Cria a chave YYYY-MM-DD usando a data do banco (para fuso UTC local)
+      const diaKey = new Date(l.data).toISOString().split('T')[0];
+      if (!agrupado[diaKey]) {
+        agrupado[diaKey] = { entradas: 0, entradasServicos: 0, entradasProdutos: 0, saidas: 0 };
+      }
+
+      const valor = Number(l.valor);
+      if (l.tipo === 'ENTRADA') {
+        agrupado[diaKey].entradas += valor;
+        if (l.categoria === CATEGORIA_VENDA_PRODUTO) {
+          agrupado[diaKey].entradasProdutos += valor;
+        } else {
+          agrupado[diaKey].entradasServicos += valor;
+        }
+      } else {
+        agrupado[diaKey].saidas += valor;
+      }
+    });
+
     for (let i = 6; i >= 0; i--) {
       const dia = new Date();
       dia.setDate(dia.getDate() - i);
       const diaStr = dia.toISOString().split('T')[0];
 
-      const inicioDia = inicioDiaBrasilia(diaStr);
-      const fimDia = fimDiaBrasilia(diaStr);
-
-      const lancamentos = await prisma.lancamentoFinanceiro.findMany({
-        where: { data: { gte: inicioDia, lte: fimDia } } as any,
-      });
-
-      let entradas = 0;
-      let entradasServicos = 0;
-      let entradasProdutos = 0;
-      let saidas = 0;
-
-      lancamentos.forEach((l: any) => {
-        const valor = Number(l.valor);
-        if (l.tipo === 'ENTRADA') {
-          entradas += valor;
-          if (l.categoria === CATEGORIA_VENDA_PRODUTO) {
-            entradasProdutos += valor;
-          } else {
-            entradasServicos += valor;
-          }
-        } else {
-          saidas += valor;
-        }
-      });
-
       resultado.push({
         data: diaStr,
-        entradas,
-        entradasServicos,
-        entradasProdutos,
-        saidas,
+        entradas: agrupado[diaStr]?.entradas || 0,
+        entradasServicos: agrupado[diaStr]?.entradasServicos || 0,
+        entradasProdutos: agrupado[diaStr]?.entradasProdutos || 0,
+        saidas: agrupado[diaStr]?.saidas || 0,
       });
     }
 
@@ -306,12 +318,19 @@ export class FinanceiroService {
     const dataInicio = inicioDiaBrasilia(inicio);
     const dataFim = fimDiaBrasilia(fim);
 
-    // --- Lançamentos financeiros do período ---
-    const lancamentos = await prisma.lancamentoFinanceiro.findMany({
-      where: { data: { gte: dataInicio, lte: dataFim } } as any,
-      include: { servico: { select: { nome: true } } },
-      orderBy: { data: 'asc' },
-    });
+    // --- Executa as queries em paralelo ---
+    const [lancamentos, agendamentos, todosEstoque] = await Promise.all([
+      prisma.lancamentoFinanceiro.findMany({
+        where: { data: { gte: dataInicio, lte: dataFim } } as any,
+        include: { servico: { select: { nome: true } } },
+        orderBy: { data: 'asc' },
+      }),
+      prisma.agendamento.findMany({
+        where: { dataHora: { gte: dataInicio, lte: dataFim } },
+        select: { status: true },
+      }),
+      prisma.estoque.findMany()
+    ]);
 
     let faturamentoServicos = 0;
     let faturamentoProdutos = 0;
@@ -372,16 +391,10 @@ export class FinanceiroService {
     const servicoMaisRealizado = Object.values(servicoContagem).sort((a, b) => b.count - a.count)[0] || null;
 
     // --- Agendamentos no período ---
-    const agendamentos = await prisma.agendamento.findMany({
-      where: { dataHora: { gte: dataInicio, lte: dataFim } },
-      select: { status: true },
-    });
-
     const concluidos = agendamentos.filter((a: any) => a.status === 'CONCLUIDO').length;
     const pendentes = agendamentos.filter((a: any) => a.status === 'AGUARDANDO' || a.status === 'CONFIRMADO').length;
 
     // --- Estoque baixo (snapshot atual, não depende de período) ---
-    const todosEstoque = await prisma.estoque.findMany();
     const estoqueBaixo = todosEstoque.filter((i: any) => i.quantidade <= i.quantidadeMinima).length;
 
     return {
