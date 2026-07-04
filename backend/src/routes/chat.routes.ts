@@ -13,5 +13,6 @@ router.get('/nao-lidas', ChatController.totalNaoLidas);
 router.get('/conversas', ChatController.listarConversas);
 router.get('/conversas/:clienteId', ChatController.adminGetMensagens);
 router.post('/conversas/:clienteId', ChatController.adminEnviar);
+router.post('/conversas/:clienteId/digitando', ChatController.adminDigitando);
 
 export default router;

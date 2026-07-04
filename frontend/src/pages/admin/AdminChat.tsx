@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback, FormEvent } from 'react';
-import { MessageCircle, Send, Search, Volume2, VolumeX } from 'lucide-react';
+import { MessageCircle, Send, Search, Volume2, VolumeX, Check, CheckCheck } from 'lucide-react';
 import api from '../../api/client';
 import { useChatSounds } from '../../hooks/useChatSounds';
 
@@ -11,6 +11,7 @@ interface Conversa {
   ultimaAt: string;
   ultimoRemetente: 'CLIENTE' | 'ADMIN';
   naoLidas: number;
+  outroDigitando?: boolean;
 }
 
 interface Mensagem {
@@ -21,10 +22,16 @@ interface Mensagem {
   createdAt: string;
 }
 
+interface ChatResponse {
+  mensagens: Mensagem[];
+  outroDigitando: boolean;
+}
+
 export function AdminChat() {
   const [conversas, setConversas] = useState<Conversa[]>([]);
   const [clienteSelecionado, setClienteSelecionado] = useState<{ id: string; nome: string } | null>(null);
   const [mensagens, setMensagens] = useState<Mensagem[]>([]);
+  const [clienteDigitando, setClienteDigitando] = useState(false);
   const [texto, setTexto] = useState('');
   const [enviando, setEnviando] = useState(false);
   const [busca, setBusca] = useState('');
@@ -33,7 +40,12 @@ export function AdminChat() {
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const { isMuted, toggleMute, playSent, playReceived, initAudio } = useChatSounds();
-  const mensagensRef = useRef<Mensagem[]>([]); // Para checar mensagens novas e tocar som
+  
+  // Utiliza um Set para rastrear IDs conhecidos de mensagens e evitar tocar som duplicado
+  const msgIdsConhecidos = useRef<Set<string>>(new Set());
+
+  // Typing throttle
+  const lastTypingTime = useRef<number>(0);
 
   // Busca lista de conversas
   const fetchConversas = useCallback(async () => {
@@ -50,18 +62,27 @@ export function AdminChat() {
     const targetId = clienteId || clienteSelecionado?.id;
     if (!targetId) return;
     try {
-      const res = await api.get<Mensagem[]>(`/chat/conversas/${targetId}`);
+      const res = await api.get<ChatResponse>(`/chat/conversas/${targetId}`);
       
-      // Checa se há mensagens novas recebidas para tocar o som
-      if (mensagensRef.current.length > 0 && res.data.length > mensagensRef.current.length) {
-        const ultimaNova = res.data[res.data.length - 1];
-        if (ultimaNova.remetente === 'CLIENTE') {
-          playReceived();
+      setClienteDigitando(res.data.outroDigitando);
+      const novasMensagens = res.data.mensagens;
+
+      // Checa se há mensagens novas recebidas para tocar o som (apenas na conversa ativa)
+      let temNovaDoCliente = false;
+      novasMensagens.forEach(msg => {
+        if (!msgIdsConhecidos.current.has(msg.id)) {
+          msgIdsConhecidos.current.add(msg.id);
+          if (msg.remetente === 'CLIENTE') {
+            temNovaDoCliente = true;
+          }
         }
+      });
+
+      if (temNovaDoCliente) {
+        playReceived();
       }
       
-      setMensagens(res.data);
-      mensagensRef.current = res.data;
+      setMensagens(novasMensagens);
 
       // Atualiza contagem de não lidas na lista
       setConversas(prev =>
@@ -82,9 +103,9 @@ export function AdminChat() {
   // Polling mensagens do cliente selecionado (a cada 3s)
   useEffect(() => {
     if (!clienteSelecionado) {
-      mensagensRef.current = [];
       return;
     }
+    // Quando abre uma conversa, preenche o known IDs
     fetchMensagens();
     const interval = setInterval(fetchMensagens, 3000);
     return () => clearInterval(interval);
@@ -97,11 +118,23 @@ export function AdminChat() {
 
   useEffect(() => {
     scrollToBottom();
-  }, [mensagens]);
+  }, [mensagens, clienteDigitando]);
+
+  // Notificar servidor sobre digitação
+  const handleTyping = (val: string) => {
+    setTexto(val);
+    if (!clienteSelecionado) return;
+    
+    const now = Date.now();
+    if (now - lastTypingTime.current > 2000) {
+      lastTypingTime.current = now;
+      api.post(`/chat/conversas/${clienteSelecionado.id}/digitando`).catch(() => {});
+    }
+  };
 
   async function enviar(e?: FormEvent) {
     if (e) e.preventDefault();
-    initAudio(); // Garante inicialização no clique/enter
+    initAudio();
     
     const textoEnviar = texto.trim();
     if (!textoEnviar || enviando || !clienteSelecionado) return;
@@ -112,11 +145,10 @@ export function AdminChat() {
     try {
       const res = await api.post<Mensagem>(`/chat/conversas/${clienteSelecionado.id}`, { texto: textoEnviar });
       
-      setMensagens(prev => {
-        const nova = [...prev, res.data];
-        mensagensRef.current = nova;
-        return nova;
-      });
+      const nova = res.data;
+      msgIdsConhecidos.current.add(nova.id);
+      
+      setMensagens(prev => [...prev, nova]);
       playSent(); // Som de envio
       
       setConversas(prev =>
@@ -127,7 +159,6 @@ export function AdminChat() {
         )
       );
       
-      // Pequeno delay para garantir render e smooth scroll total
       setTimeout(scrollToBottom, 50);
     } catch {
       setTexto(textoEnviar);
@@ -163,7 +194,6 @@ export function AdminChat() {
     return d.toLocaleDateString('pt-BR', { day: 'numeric', month: 'long' });
   }
 
-  // Agrupa mensagens por data
   const grupos: { data: string; itens: Mensagem[] }[] = [];
   for (const m of mensagens) {
     const label = formatarDataSeparador(m.createdAt);
@@ -184,7 +214,7 @@ export function AdminChat() {
     nome.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
 
   return (
-    <div className="w-full h-full flex flex-col md:grid md:grid-cols-[340px_1fr] overflow-hidden bg-[var(--fundo-pagina)]">
+    <div className="-m-4 md:-m-6 h-[calc(100dvh-64px)] md:h-[100dvh] pb-[env(safe-area-inset-bottom)] w-auto flex flex-col md:grid md:grid-cols-[340px_1fr] overflow-hidden bg-[var(--fundo-pagina)]">
       <style>{`
         @media (prefers-reduced-motion: no-preference) {
           .msg-enter-sent { animation: popSent 180ms ease-out forwards; }
@@ -198,13 +228,10 @@ export function AdminChat() {
             100% { opacity: 1; transform: translateX(0); }
           }
         }
-        
         .chat-btn:active:not(:disabled) {
           transform: scale(0.92);
           transition: transform 0.1s ease-out;
         }
-        
-        /* Ajuste do textarea */
         textarea::-webkit-scrollbar { width: 6px; }
         textarea::-webkit-scrollbar-track { background: transparent; }
         textarea::-webkit-scrollbar-thumb { background: var(--borda); border-radius: 4px; }
@@ -215,10 +242,9 @@ export function AdminChat() {
         className={`flex-col border-r h-full overflow-hidden flex-shrink-0 bg-[var(--fundo-card)] ${clienteSelecionado ? 'hidden md:flex' : 'flex'}`}
         style={{ borderColor: 'var(--borda)' }}
       >
-        {/* Header inbox */}
         <div className="px-4 py-4 border-b flex-shrink-0" style={{ borderColor: 'var(--borda)' }}>
           <h1 className="font-['Inter'] text-base font-semibold" style={{ color: 'var(--texto-principal)' }}>
-            Chat
+            Conversas
           </h1>
           <p className="font-['Inter'] text-[11px] mt-0.5" style={{ color: 'var(--texto-secundario)' }}>
             {conversas.reduce((s, c) => s + c.naoLidas, 0) > 0
@@ -227,7 +253,6 @@ export function AdminChat() {
           </p>
         </div>
 
-        {/* Busca */}
         <div className="px-3 py-3 border-b flex-shrink-0" style={{ borderColor: 'var(--borda)' }}>
           <div className="flex items-center gap-2 rounded-md px-3 py-2 border transition-colors focus-within:border-[var(--cor-primaria)]" 
                style={{ background: 'var(--fundo-pagina)', borderColor: 'var(--borda)' }}>
@@ -242,7 +267,6 @@ export function AdminChat() {
           </div>
         </div>
 
-        {/* Lista */}
         <div className="flex-1 overflow-y-auto">
           {conversasFiltradas.length === 0 && (
             <div className="flex flex-col items-center justify-center py-12 gap-3" style={{ color: 'var(--texto-secundario)' }}>
@@ -262,19 +286,17 @@ export function AdminChat() {
                   e.preventDefault();
                   initAudio();
                   setClienteSelecionado({ id: c.clienteId, nome: c.clienteNome });
-                  fetchMensagens(c.clienteId); // Dispara fetch imediatamente
+                  fetchMensagens(c.clienteId);
                 }}
                 className="w-full flex items-center gap-3 px-4 py-3 text-left transition-colors relative"
                 style={{
                   background: isAtivo ? 'rgba(var(--cor-primaria-rgb), 0.08)' : 'transparent',
                 }}
               >
-                {/* Barra indicadora lateral */}
                 {isAtivo && (
                   <div className="absolute left-0 top-0 bottom-0 w-[3px]" style={{ background: 'var(--cor-primaria)' }} />
                 )}
                 
-                {/* Avatar */}
                 <div
                   className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 font-['Inter'] text-[13px] font-semibold"
                   style={{ background: 'rgba(var(--cor-primaria-rgb), 0.15)', color: 'var(--cor-primaria)' }}
@@ -282,7 +304,6 @@ export function AdminChat() {
                   {iniciais(c.clienteNome)}
                 </div>
                 
-                {/* Info */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">
                     <p className="truncate font-['Inter'] text-[13px] font-semibold" style={{ color: 'var(--texto-principal)' }}>
@@ -293,9 +314,15 @@ export function AdminChat() {
                     </span>
                   </div>
                   <div className="flex items-center justify-between mt-0.5">
-                    <p className="truncate font-['Inter'] text-[11px]" style={{ color: 'var(--texto-secundario)' }}>
-                      {c.ultimoRemetente === 'ADMIN' ? 'Você: ' : ''}{c.ultimaMensagem}
-                    </p>
+                    {c.outroDigitando ? (
+                      <p className="truncate font-['Inter'] text-[11px] italic" style={{ color: 'var(--cor-primaria)' }}>
+                        digitando...
+                      </p>
+                    ) : (
+                      <p className="truncate font-['Inter'] text-[11px]" style={{ color: 'var(--texto-secundario)' }}>
+                        {c.ultimoRemetente === 'ADMIN' ? 'Você: ' : ''}{c.ultimaMensagem}
+                      </p>
+                    )}
                     {c.naoLidas > 0 && (
                       <span className="flex-shrink-0 ml-2 w-5 h-5 rounded-full flex items-center justify-center text-white font-['JetBrains_Mono'] text-[10px] font-bold"
                         style={{ background: 'var(--cor-primaria)' }}>
@@ -313,7 +340,6 @@ export function AdminChat() {
       {/* ── Coluna direita: thread de mensagens ── */}
       <div className={`flex-1 flex-col h-full overflow-hidden ${clienteSelecionado ? 'flex' : 'hidden md:flex'}`}>
         {!clienteSelecionado ? (
-          // Estado vazio aprimorado
           <div className="flex-1 flex flex-col items-center justify-center gap-4 text-center px-6">
             <div className="w-20 h-20 rounded-full flex items-center justify-center mb-2" style={{ background: 'rgba(var(--texto-secundario-rgb), 0.1)' }}>
               <MessageCircle size={40} strokeWidth={1.5} style={{ color: 'var(--texto-secundario)' }} />
@@ -330,7 +356,6 @@ export function AdminChat() {
             {/* Header do chat */}
             <div className="flex items-center justify-between px-5 py-4 border-b flex-shrink-0" style={{ borderColor: 'var(--borda)', background: 'var(--fundo-card)' }}>
               <div className="flex items-center gap-3">
-                {/* Voltar no mobile */}
                 <button
                   className="md:hidden p-1 mr-1 transition-transform active:scale-95"
                   onClick={(e) => {
@@ -353,13 +378,12 @@ export function AdminChat() {
                   <p className="font-['Inter'] text-[14px] font-medium leading-tight capitalize" style={{ color: 'var(--texto-principal)' }}>
                     {clienteSelecionado.nome.toLowerCase()}
                   </p>
-                  <p className="font-['Inter'] text-[11px] mt-0.5" style={{ color: 'var(--texto-secundario)' }}>
-                    Cliente
+                  <p className="font-['Inter'] text-[11px] mt-0.5" style={{ color: clienteDigitando ? 'var(--cor-primaria)' : 'var(--texto-secundario)' }}>
+                    {clienteDigitando ? <span className="italic">digitando...</span> : 'Cliente'}
                   </p>
                 </div>
               </div>
               
-              {/* Controles de som */}
               <button 
                 onClick={toggleMute}
                 className="p-2 rounded-full transition-colors hover:bg-black/5 dark:hover:bg-white/5 chat-btn"
@@ -385,7 +409,7 @@ export function AdminChat() {
                 <div key={grupo.data}>
                   <div className="flex items-center gap-3 my-6">
                     <div className="flex-1 h-px" style={{ background: 'var(--borda)' }} />
-                    <span className="font-['Inter'] text-[11px] font-medium" style={{ color: 'var(--texto-secundario)' }}>
+                    <span className="font-['Inter'] text-[11px] font-medium uppercase tracking-wider px-3 py-1 rounded-full bg-[var(--fundo-card)] border" style={{ color: 'var(--texto-secundario)', borderColor: 'var(--borda)' }}>
                       {grupo.data}
                     </span>
                     <div className="flex-1 h-px" style={{ background: 'var(--borda)' }} />
@@ -397,8 +421,8 @@ export function AdminChat() {
                     const isLastInGroup = !nextMsg || nextMsg.remetente !== m.remetente;
                     const marginBottom = isLastInGroup ? 'mb-4' : 'mb-1';
                     const borderRadius = isAdmin 
-                        ? (isLastInGroup ? 'rounded-2xl rounded-br-sm' : 'rounded-2xl')
-                        : (isLastInGroup ? 'rounded-2xl rounded-bl-sm' : 'rounded-2xl');
+                        ? (isLastInGroup ? 'rounded-2xl rounded-tr-sm' : 'rounded-2xl')
+                        : (isLastInGroup ? 'rounded-2xl rounded-tl-sm' : 'rounded-2xl');
 
                     return (
                       <div
@@ -406,24 +430,30 @@ export function AdminChat() {
                         className={`flex ${marginBottom} ${isAdmin ? 'justify-end' : 'justify-start'} ${isAdmin ? 'msg-enter-sent' : 'msg-enter-received'}`}
                       >
                         <div
-                          className={`max-w-[75%] px-3.5 py-2.5 ${borderRadius} shadow-sm`}
+                          className={`max-w-[65%] px-3.5 py-2.5 ${borderRadius} shadow-sm relative`}
                           style={
                             isAdmin
                               ? { background: 'var(--cor-primaria)', color: '#111827' }
                               : { background: 'var(--fundo-card)', border: '1px solid var(--borda)', color: 'var(--texto-principal)' }
                           }
                         >
-                          <p className="font-['Inter'] text-[14px] leading-relaxed whitespace-pre-wrap break-words">
+                          <p className="font-['Inter'] text-[14px] leading-relaxed whitespace-pre-wrap break-words pr-1">
                             {m.texto}
                           </p>
-                          <p
-                            className="text-right mt-1 font-['JetBrains_Mono'] text-[10px]"
-                            style={{
-                              color: isAdmin ? 'rgba(0,0,0,0.6)' : 'var(--texto-secundario)',
-                            }}
-                          >
-                            {new Date(m.createdAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
-                          </p>
+                          <div className="flex items-center justify-end gap-1 mt-1 font-['JetBrains_Mono'] text-[10px]">
+                            <span style={{ color: isAdmin ? 'rgba(0,0,0,0.6)' : 'var(--texto-secundario)' }}>
+                              {new Date(m.createdAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                            {isAdmin && (
+                              <span className="flex items-center">
+                                {m.lida ? (
+                                  <CheckCheck size={14} className="text-blue-600" />
+                                ) : (
+                                  <Check size={14} style={{ color: 'rgba(0,0,0,0.5)' }} />
+                                )}
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </div>
                     );
@@ -442,7 +472,7 @@ export function AdminChat() {
               <textarea
                 ref={inputRef}
                 value={texto}
-                onChange={e => setTexto(e.target.value)}
+                onChange={e => handleTyping(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder="Digite sua mensagem..."
                 disabled={enviando}
@@ -470,7 +500,7 @@ export function AdminChat() {
                 className="w-11 h-11 md:w-12 md:h-12 rounded-full flex items-center justify-center flex-shrink-0 transition-all chat-btn disabled:opacity-50 disabled:scale-100"
                 style={{
                   background: 'var(--cor-primaria)',
-                  color: '#111827', // Texto escuro para contraste garantido com primária (amber/yellow/etc)
+                  color: '#111827',
                   cursor: (!texto.trim() || enviando) ? 'not-allowed' : 'pointer',
                   border: 'none',
                 }}

@@ -33,5 +33,6 @@ router.get('/barbearia/:barbeariaId/fidelidade', ClienteAppController.fidelidade
 router.post('/barbearia/:barbeariaId/fidelidade/resgatar', ClienteAppController.resgatarRecompensa);
 router.get('/barbearia/:barbeariaId/chat', ChatController.clienteGetMensagens as never);
 router.post('/barbearia/:barbeariaId/chat', ChatController.clienteEnviar as never);
+router.post('/barbearia/:barbeariaId/chat/digitando', ChatController.clienteDigitando as never);
 
 export default router;

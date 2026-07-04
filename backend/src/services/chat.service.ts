@@ -2,6 +2,15 @@
 import { prisma } from '../lib/prisma';
 
 export class ChatService {
+  // Mapa em memória para indicar digitação
+  // Chave: `${barbeariaId}:${clienteId}:${remetente}` -> Timestamp (Date.now())
+  static typingStatus = new Map<string, number>();
+
+  static registrarDigitando(barbeariaId: string, clienteId: string, remetente: 'ADMIN' | 'CLIENTE') {
+    const key = `${barbeariaId}:${clienteId}:${remetente}`;
+    this.typingStatus.set(key, Date.now());
+  }
+
   // ─── Cliente ───────────────────────────────────────────────────────────────
 
   /** Retorna histórico de mensagens entre cliente e barbearia */
@@ -12,7 +21,7 @@ export class ChatService {
       data: { lida: true },
     });
 
-    return prisma.chatMensagem.findMany({
+    const mensagens = await prisma.chatMensagem.findMany({
       where: { clienteId, barbeariaId },
       orderBy: { createdAt: 'asc' },
       select: {
@@ -23,6 +32,12 @@ export class ChatService {
         createdAt: true,
       },
     });
+
+    const keyAdmin = `${barbeariaId}:${clienteId}:ADMIN`;
+    const lastTypedAdmin = this.typingStatus.get(keyAdmin) || 0;
+    const outroDigitando = (Date.now() - lastTypedAdmin) < 4000;
+
+    return { mensagens, outroDigitando };
   }
 
   /** Cliente envia mensagem */
@@ -62,6 +77,10 @@ export class ChatService {
           }),
         ]);
 
+        const keyCliente = `${barbeariaId}:${clienteId}:CLIENTE`;
+        const lastTypedCliente = this.typingStatus.get(keyCliente) || 0;
+        const outroDigitando = (Date.now() - lastTypedCliente) < 4000;
+
         return {
           clienteId,
           clienteNome: cliente?.usuario.nome ?? 'Cliente',
@@ -70,6 +89,7 @@ export class ChatService {
           ultimaAt: ultima?.createdAt ?? new Date(),
           ultimoRemetente: ultima?.remetente ?? 'CLIENTE',
           naoLidas,
+          outroDigitando,
         };
       })
     );
@@ -86,7 +106,7 @@ export class ChatService {
       data: { lida: true },
     });
 
-    return prisma.chatMensagem.findMany({
+    const mensagens = await prisma.chatMensagem.findMany({
       where: { clienteId, barbeariaId },
       orderBy: { createdAt: 'asc' },
       select: {
@@ -97,6 +117,12 @@ export class ChatService {
         createdAt: true,
       },
     });
+
+    const keyCliente = `${barbeariaId}:${clienteId}:CLIENTE`;
+    const lastTypedCliente = this.typingStatus.get(keyCliente) || 0;
+    const outroDigitando = (Date.now() - lastTypedCliente) < 4000;
+
+    return { mensagens, outroDigitando };
   }
 
   /** Admin envia mensagem para cliente */

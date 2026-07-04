@@ -39,6 +39,18 @@ export class ChatController {
     }
   }
 
+  /** POST /cliente/barbearia/:barbeariaId/chat/digitando */
+  static async clienteDigitando(req: ClienteAuthRequest, res: Response): Promise<void> {
+    try {
+      const clienteId = req.cliente!.clienteId;
+      const { barbeariaId } = req.params;
+      ChatService.registrarDigitando(barbeariaId, clienteId, 'CLIENTE');
+      res.json({ success: true });
+    } catch {
+      res.status(500).json({ erro: 'Erro ao registrar' });
+    }
+  }
+
   // ─── Admin ─────────────────────────────────────────────────────────────────
 
   /** GET /chat/conversas */
@@ -83,6 +95,18 @@ export class ChatController {
     } catch (error) {
       const mensagem = error instanceof Error ? error.message : 'Erro ao enviar mensagem';
       res.status(500).json({ erro: mensagem });
+    }
+  }
+
+  /** POST /chat/conversas/:clienteId/digitando */
+  static async adminDigitando(req: AuthRequest, res: Response): Promise<void> {
+    try {
+      const barbeariaId = req.usuario!.barbeariaId!;
+      const { clienteId } = req.params;
+      ChatService.registrarDigitando(barbeariaId, clienteId, 'ADMIN');
+      res.json({ success: true });
+    } catch {
+      res.status(500).json({ erro: 'Erro ao registrar' });
     }
   }
 
