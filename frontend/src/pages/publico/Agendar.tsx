@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../api/client';
+import { dataBrasilia } from '../../utils/datas';
 import { ChevronRight, ChevronLeft, Check, Scissors, User, Calendar, Clock, CheckCircle } from 'lucide-react';
 
 interface Servico { id: string; nome: string; descricao: string; preco: string; duracaoMinutos: number; }
@@ -250,7 +251,7 @@ export function Agendar() {
               <label className="text-sm text-[var(--text-muted)] font-mono uppercase tracking-widest mb-2 block">Selecione o Dia</label>
               <div className="flex gap-2 overflow-x-auto pb-2 snap-x">
                 {proximosDias.map((d, i) => {
-                  const dataIso = d.toISOString().split('T')[0];
+                  const dataIso = dataBrasilia(d);
                   const diasDaSemanaAbrev = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
                   return (
                     <div 

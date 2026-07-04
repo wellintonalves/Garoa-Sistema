@@ -1,6 +1,7 @@
 // Controller de agendamentos
 import { Response } from 'express';
 import { AgendamentoService } from '../services/agendamento.service';
+import { diaBrasiliaStr } from '../lib/timezone';
 import { AuthRequest } from '../types';
 
 export class AgendamentoController {
@@ -86,7 +87,7 @@ export class AgendamentoController {
   static async horarios(req: AuthRequest, res: Response): Promise<void> {
     try {
       const { barbeiroId } = req.params;
-      const data = (req.query.data as string) || new Date().toISOString().split('T')[0];
+      const data = (req.query.data as string) || diaBrasiliaStr();
       const horarios = await AgendamentoService.horariosDisponivies(barbeiroId, data);
       res.json(horarios);
     } catch (error) {

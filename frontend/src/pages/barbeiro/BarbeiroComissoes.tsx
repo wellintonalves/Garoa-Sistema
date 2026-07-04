@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { DollarSign, Calendar as CalendarIcon, TrendingUp } from 'lucide-react';
 import barbeiroApi from '../../api/barbeiroApi';
+import { dataBrasilia, hojeBrasilia } from '../../utils/datas';
 
 interface ComissoesData {
   totalAtendimentos: number;
@@ -12,9 +13,10 @@ interface ComissoesData {
 }
 
 export function BarbeiroComissoes() {
-  const date = new Date();
-  const primeiroDia = new Date(date.getFullYear(), date.getMonth(), 1).toISOString().split('T')[0];
-  const ultimoDia = new Date(date.getFullYear(), date.getMonth() + 1, 0).toISOString().split('T')[0];
+  const hoje = hojeBrasilia();
+  const [year, month] = hoje.split('-').map(Number);
+  const primeiroDia = dataBrasilia(new Date(year, month - 1, 1, 12, 0, 0));
+  const ultimoDia = dataBrasilia(new Date(year, month, 0, 12, 0, 0));
 
   const [inicio, setInicio] = useState(primeiroDia);
   const [fim, setFim] = useState(ultimoDia);

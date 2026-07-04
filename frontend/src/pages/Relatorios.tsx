@@ -4,6 +4,7 @@ import { Filter, DollarSign, Users, Scissors, TrendingUp, AlertCircle, Pencil, X
 import { SkeletonTable } from '../components/Skeleton';
 import { StatCard } from '../components/StatCard';
 import api from '../api/client';
+import { dataBrasilia, hojeBrasilia } from '../utils/datas';
 
 interface Consolidado {
   totalBruto: number;
@@ -49,9 +50,9 @@ export function Relatorios() {
   const [servicos, setServicos] = useState<any[]>([]);
   const [erro, setErro] = useState<string | null>(null);
 
-  const dataAtual = new Date();
-  const dataPrimeiroDia = new Date(dataAtual.getFullYear(), dataAtual.getMonth(), 1).toISOString().split('T')[0];
-  const dataHoje = dataAtual.toISOString().split('T')[0];
+  const dataHoje = hojeBrasilia();
+  const [year, month] = dataHoje.split('-').map(Number);
+  const dataPrimeiroDia = dataBrasilia(new Date(year, month - 1, 1, 12, 0, 0));
 
   const barbeiroIdUrl = searchParams.get('barbeiroId') || 'todos';
   const [filtros, setFiltros] = useState({ inicio: dataPrimeiroDia, fim: dataHoje, barbeiroId: barbeiroIdUrl });

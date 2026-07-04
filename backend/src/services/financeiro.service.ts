@@ -1,7 +1,7 @@
 // Serviço financeiro — CRUD + resumos
 import { prisma } from '../lib/prisma';
 import { TipoLancamento, FormaPagamento } from '@prisma/client';
-import { inicioDiaBrasilia, fimDiaBrasilia } from '../lib/timezone';
+import { inicioDiaBrasilia, fimDiaBrasilia, diaBrasiliaStr } from '../lib/timezone';
 import { CATEGORIA_VENDA_PRODUTO } from '../lib/constantes';
 
 interface DadosLancamento {
@@ -210,8 +210,8 @@ export class FinanceiroService {
     const agrupado: Record<string, { entradas: number; entradasServicos: number; entradasProdutos: number; saidas: number }> = {};
 
     lancamentos.forEach((l: any) => {
-      // Cria a chave YYYY-MM-DD usando a data do banco (para fuso UTC local)
-      const diaKey = new Date(l.data).toISOString().split('T')[0];
+      // Cria a chave YYYY-MM-DD usando a data do banco no fuso de Brasília
+      const diaKey = diaBrasiliaStr(new Date(l.data));
       if (!agrupado[diaKey]) {
         agrupado[diaKey] = { entradas: 0, entradasServicos: 0, entradasProdutos: 0, saidas: 0 };
       }
@@ -232,7 +232,7 @@ export class FinanceiroService {
     for (let i = 6; i >= 0; i--) {
       const dia = new Date();
       dia.setDate(dia.getDate() - i);
-      const diaStr = dia.toISOString().split('T')[0];
+      const diaStr = diaBrasiliaStr(dia);
 
       resultado.push({
         data: diaStr,
@@ -341,7 +341,7 @@ export class FinanceiroService {
 
     lancamentos.forEach((l: any) => {
       const valor = Number(l.valor);
-      const diaKey = new Date(l.data).toISOString().split('T')[0];
+      const diaKey = diaBrasiliaStr(new Date(l.data));
 
       if (!porDia[diaKey]) porDia[diaKey] = { entradas: 0, produtos: 0, saidas: 0 };
 
@@ -374,7 +374,7 @@ export class FinanceiroService {
     const cursor = new Date(inicio);
     const fimLoop = new Date(fim);
     while (cursor <= fimLoop) {
-      const key = cursor.toISOString().split('T')[0];
+      const key = diaBrasiliaStr(cursor);
       porDiaCompleto.push({
         data: key,
         entradas: porDia[key]?.entradas || 0,

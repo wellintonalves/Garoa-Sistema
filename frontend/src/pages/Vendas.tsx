@@ -9,6 +9,7 @@ import { Modal } from '../components/Modal';
 
 import { SkeletonPage, SkeletonCard } from '../components/Skeleton';
 import api from '../api/client';
+import { dataBrasilia, hojeBrasilia } from '../utils/datas';
 
 // ─── Tipos ─────────────────────────────────────────────────────────────────
 
@@ -118,8 +119,9 @@ export function Vendas() {
   const lucroCarrinho = totalCarrinho - custoCarrinho;
 
   // Filtro de período para vendas
-  const hoje = new Date().toISOString().split('T')[0];
-  const primeiroDia = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0];
+  const hoje = hojeBrasilia();
+  const [year, month] = hoje.split('-').map(Number);
+  const primeiroDia = dataBrasilia(new Date(year, month - 1, 1, 12, 0, 0));
   const [periodoInicio, setPeriodoInicio] = useState(primeiroDia);
   const [periodoFim, setPeriodoFim] = useState(hoje);
 

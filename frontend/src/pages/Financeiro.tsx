@@ -4,6 +4,7 @@ import { Plus, TrendingUp, TrendingDown, Edit2, Trash2, Loader2 } from 'lucide-r
 import { Modal } from '../components/Modal';
 import { SkeletonPage } from '../components/Skeleton';
 import api from '../api/client';
+import { hojeBrasilia } from '../utils/datas';
 
 interface Barbeiro { id: string; usuario: { nome: string }; comissaoPercent: number; }
 interface Servico { id: string; nome: string; preco: string; }
@@ -45,13 +46,13 @@ export function Financeiro() {
   const [apagando, setApagando] = useState<string | null>(null);
   const [editId, setEditId] = useState<string | null>(null);
   
-  const formPadrao = { tipo: 'ENTRADA', categoria: '', descricao: '', valor: '', formaPagamento: 'PIX', data: new Date().toISOString().split('T')[0], servicoId: '', barbeiroId: '' };
+  const formPadrao = { tipo: 'ENTRADA', categoria: '', descricao: '', valor: '', formaPagamento: 'PIX', data: hojeBrasilia(), servicoId: '', barbeiroId: '' };
   const [form, setForm] = useState(formPadrao);
   const [filtroCategoria, setFiltroCategoria] = useState<string>('TODAS');
 
   async function carregar() {
     try {
-      const hoje = new Date().toISOString().split('T')[0];
+      const hoje = hojeBrasilia();
       const [l, r, g, b, s] = await Promise.all([
         api.get<Lancamento[]>('/financeiro', { params: { inicio: hoje, fim: hoje } }),
         api.get<ResumoDia>('/financeiro/resumo-dia', { params: { data: hoje } }),

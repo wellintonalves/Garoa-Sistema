@@ -6,6 +6,7 @@ import { ImageCropperModal } from '../components/ImageCropperModal';
 
 import { SkeletonPage, SkeletonCard } from '../components/Skeleton';
 import { useNavigate } from 'react-router-dom';
+import { dataBrasilia, hojeBrasilia } from '../utils/datas';
 import api from '../api/client';
 
 interface Barbeiro {
@@ -37,9 +38,9 @@ export function Barbeiros() {
   const navigate = useNavigate();
 
   // Seção de comissões
-  const dataAtual = new Date();
-  const dataPrimeiroDia = new Date(dataAtual.getFullYear(), dataAtual.getMonth(), 1).toISOString().split('T')[0];
-  const dataHoje = dataAtual.toISOString().split('T')[0];
+  const dataHoje = hojeBrasilia();
+  const [year, month] = dataHoje.split('-').map(Number);
+  const dataPrimeiroDia = dataBrasilia(new Date(year, month - 1, 1, 12, 0, 0));
   const [comissaoInicio, setComissaoInicio] = useState(dataPrimeiroDia);
   const [comissaoFim, setComissaoFim] = useState(dataHoje);
   const [comissoes, setComissoes] = useState<Record<string, ComissaoBarbeiro>>({});

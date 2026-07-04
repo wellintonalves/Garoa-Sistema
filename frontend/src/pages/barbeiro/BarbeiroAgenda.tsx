@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Calendar as CalendarIcon, Clock } from 'lucide-react';
 import barbeiroApi from '../../api/barbeiroApi';
+import { hojeBrasilia } from '../../utils/datas';
 
 interface AgendamentoAgenda {
   id: string;
@@ -19,7 +20,7 @@ interface Bloqueio {
 }
 
 export function BarbeiroAgenda() {
-  const [dataSel, setDataSel] = useState(new Date().toISOString().split('T')[0]);
+  const [dataSel, setDataSel] = useState(hojeBrasilia());
   const [agendamentos, setAgendamentos] = useState<AgendamentoAgenda[]>([]);
   const [bloqueios, setBloqueios] = useState<Bloqueio[]>([]);
   const [carregando, setCarregando] = useState(false);

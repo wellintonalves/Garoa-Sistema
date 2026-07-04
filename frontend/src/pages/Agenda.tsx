@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { ChevronLeft, ChevronRight, Plus, ChevronDown } from 'lucide-react';
 import { Modal } from '../components/Modal';
 import { SkeletonPage } from '../components/Skeleton';
+import { dataBrasilia } from '../utils/datas';
 import api from '../api/client';
 
 /** Extrai hora e minuto de um Date no fuso de Brasília */
@@ -151,8 +152,8 @@ export function Agenda() {
     setCarregando(true);
     
     try {
-      const dataInicio = diasDaSemana[0].toISOString().split('T')[0];
-      const dataFim = diasDaSemana[6].toISOString().split('T')[0];
+      const dataInicio = dataBrasilia(diasDaSemana[0]);
+      const dataFim = dataBrasilia(diasDaSemana[6]);
 
       const [resAgendamentos, resBloq, resBarb] = await Promise.allSettled([
         api.get<Agendamento[]>('/agendamentos', { params: { dataInicio, dataFim } }),
@@ -510,7 +511,7 @@ export function Agenda() {
                 {horario}
               </div>
               {diasExibidos.map((dia, diaIdx) => {
-                const diaISO = dia.toISOString().split('T')[0];
+                const diaISO = dataBrasilia(dia);
 
                 const agendamentosDoCelula = agendamentos.filter((ag) => {
                   const d = new Date(ag.dataHora);

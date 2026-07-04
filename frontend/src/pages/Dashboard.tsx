@@ -4,6 +4,7 @@ import { StatCard } from '../components/StatCard';
 import { SkeletonPage } from '../components/Skeleton';
 import api from '../api/client';
 import { useAuth } from '../hooks/useAuth';
+import { dataBrasilia, hojeBrasilia } from '../utils/datas';
 
 interface DadosDashboard {
   faturamentoTotal: number;
@@ -20,28 +21,30 @@ interface DadosDashboard {
 }
 
 function getPeriodDates(period: 'hoje' | 'esta_semana' | 'este_mes' | 'mes_anterior') {
-  const today = new Date();
-  let start = new Date();
-  let end = new Date();
+  const [year, month, day] = hojeBrasilia().split('-').map(Number);
+  const today = new Date(year, month - 1, day, 12, 0, 0); // Noon to avoid DST/TZ shifts
+
+  let start = new Date(today);
+  let end = new Date(today);
 
   if (period === 'hoje') {
     // start and end are today
   } else if (period === 'esta_semana') {
-    const day = today.getDay();
-    const diff = today.getDate() - day; // Adjust to Sunday
-    start = new Date(today.setDate(diff));
-    end = new Date(); // up to today
+    const d = today.getDay();
+    const diff = today.getDate() - d; // Adjust to Sunday
+    start = new Date(today.getFullYear(), today.getMonth(), diff, 12, 0, 0);
+    end = new Date(year, month - 1, day, 12, 0, 0); // up to today
   } else if (period === 'este_mes') {
-    start = new Date(today.getFullYear(), today.getMonth(), 1);
-    end = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+    start = new Date(year, month - 1, 1, 12, 0, 0);
+    end = new Date(year, month, 0, 12, 0, 0);
   } else if (period === 'mes_anterior') {
-    start = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-    end = new Date(today.getFullYear(), today.getMonth(), 0);
+    start = new Date(year, month - 2, 1, 12, 0, 0);
+    end = new Date(year, month - 1, 0, 12, 0, 0);
   }
 
   return {
-    inicio: start.toISOString().split('T')[0],
-    fim: end.toISOString().split('T')[0],
+    inicio: dataBrasilia(start),
+    fim: dataBrasilia(end),
   };
 }
 
@@ -51,7 +54,7 @@ export function Dashboard() {
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
 
-  const hojeStr = new Date().toISOString().split('T')[0];
+  const hojeStr = hojeBrasilia();
   const [filtros, setFiltros] = useState({ inicio: hojeStr, fim: hojeStr });
   const [periodoAtivo, setPeriodoAtivo] = useState<string>('hoje');
 

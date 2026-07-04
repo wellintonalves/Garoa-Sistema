@@ -1,6 +1,7 @@
 // Controller financeiro
 import { Response } from 'express';
 import { FinanceiroService } from '../services/financeiro.service';
+import { diaBrasiliaStr } from '../lib/timezone';
 import { AuthRequest } from '../types';
 
 export class FinanceiroController {
@@ -78,7 +79,7 @@ export class FinanceiroController {
   /** GET /financeiro/resumo-dia?data=YYYY-MM-DD */
   static async resumoDia(req: AuthRequest, res: Response): Promise<void> {
     try {
-      const data = (req.query.data as string) || new Date().toISOString().split('T')[0];
+      const data = (req.query.data as string) || diaBrasiliaStr();
       const resumo = await FinanceiroService.resumoDoDia(data);
       res.json(resumo);
     } catch (error) {

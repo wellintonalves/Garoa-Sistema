@@ -86,3 +86,7 @@ export function criarDataHoraBrasilia(dataStr: string, hora: number, minuto: num
 export function formatarHorario(hora: number, minuto: number): string {
   return `${String(hora).padStart(2, '0')}:${String(minuto).padStart(2, '0')}`;
 }
+
+export function diaBrasiliaStr(d: Date = new Date()): string {
+  return d.toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' });
+}

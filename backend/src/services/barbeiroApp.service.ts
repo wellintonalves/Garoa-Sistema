@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import { prisma } from '../lib/prisma';
 import { authConfig } from '../config/auth';
 import { BarbeiroJWT } from '../types';
-import { inicioDiaBrasilia, fimDiaBrasilia } from '../lib/timezone';
+import { diaBrasiliaStr, inicioDiaBrasilia, fimDiaBrasilia } from '../lib/timezone';
 
 interface RespostaAuthBarbeiro {
   token: string;
@@ -51,7 +51,7 @@ export class BarbeiroAppService {
 
   /** Agendamentos do barbeiro hoje */
   static async agendaHoje(barbeiroId: string, barbeariaId: string) {
-    const hojeStr = new Date().toISOString().split('T')[0];
+    const hojeStr = diaBrasiliaStr();
     const hoje = inicioDiaBrasilia(hojeStr);
     const amanha = fimDiaBrasilia(hojeStr);
 

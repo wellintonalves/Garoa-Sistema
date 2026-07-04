@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Check, ArrowLeft, Scissors, Star } from 'lucide-react';
 import clienteApi from '../../../api/clienteApi';
+import { hojeBrasilia } from '../../../utils/datas';
 
 interface Servico { id: string; nome: string; preco: string; duracaoMinutos: number; }
 interface Barbeiro { 
@@ -47,7 +48,7 @@ export function ClienteBarbeariaAgendar() {
 
   const fmt = (v: string | number) => Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
-  const hoje = new Date().toISOString().split('T')[0];
+  const hoje = hojeBrasilia();
 
   async function confirmarAgendamento() {
     if (!servicoSel || !barbeiroSel || !dataSel || !horarioSel) return;
