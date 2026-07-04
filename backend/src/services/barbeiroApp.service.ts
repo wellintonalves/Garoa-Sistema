@@ -5,6 +5,7 @@ import { prisma } from '../lib/prisma';
 import { authConfig } from '../config/auth';
 import { BarbeiroJWT } from '../types';
 import { diaBrasiliaStr, inicioDiaBrasilia, fimDiaBrasilia } from '../lib/timezone';
+import { creditarPontosPorAgendamento } from './fidelidade.engine';
 
 interface RespostaAuthBarbeiro {
   token: string;
@@ -160,6 +161,9 @@ export class BarbeiroAppService {
       where: { id: agendamentoId },
       data: { status: 'CONCLUIDO' },
     });
+
+    // Credita pontos de fidelidade (idempotente)
+    await creditarPontosPorAgendamento(agendamentoId);
 
     // Calcula comissão
     const barbeiro = await prisma.barbeiro.findUnique({

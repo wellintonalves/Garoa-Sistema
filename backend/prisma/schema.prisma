@@ -194,12 +194,13 @@ model ClienteBarbearia {
 }
 
 model PontoFidelidade {
-  id          String   @id @default(uuid())
-  clienteId   String
-  barbeariaId String?
-  pontos      Int
-  descricao   String
-  data        DateTime @default(now())
+  id            String   @id @default(uuid())
+  clienteId     String
+  barbeariaId   String?
+  agendamentoId String?  @unique
+  pontos        Int
+  descricao     String
+  data          DateTime @default(now())
 
   cliente   Cliente   @relation(fields: [clienteId], references: [id], onDelete: Cascade)
   barbearia Barbearia? @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
