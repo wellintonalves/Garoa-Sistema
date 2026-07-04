@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { Check, Clock, Scissors } from 'lucide-react';
 import barbeiroApi from '../../api/barbeiroApi';
+import { Modal } from '../../components/Modal';
 
 interface AgendamentoHoje {
   id: string;
@@ -20,6 +21,24 @@ export function BarbeiroHoje() {
   const [concluindoId, setConcluindoId] = useState<string | null>(null);
   const [trabalhandoAgora, setTrabalhandoAgora] = useState(false);
   const [atualizandoStatus, setAtualizandoStatus] = useState(false);
+
+  // Modal states
+  const [concluindoAg, setConcluindoAg] = useState<AgendamentoHoje | null>(null);
+  const [formaPagamento, setFormaPagamento] = useState('PIX');
+
+  // In-app feedback messages
+  const [sucessoMsg, setSucessoMsg] = useState('');
+  const [erroMsg, setErroMsg] = useState('');
+
+  const mostrarErro = (msg: string) => {
+    setErroMsg(msg);
+    setTimeout(() => setErroMsg(''), 4000);
+  };
+
+  const mostrarSucesso = (msg: string) => {
+    setSucessoMsg(msg);
+    setTimeout(() => setSucessoMsg(''), 3000);
+  };
 
   useEffect(() => {
     carregarAgenda();
@@ -42,22 +61,25 @@ export function BarbeiroHoje() {
       await barbeiroApi.patch('/barbeiro/status-trabalho', { trabalhandoAgora: novoStatus });
       setTrabalhandoAgora(novoStatus);
     } catch (err: any) {
-      alert(err.response?.data?.erro || 'Erro ao atualizar status');
+      mostrarErro(err.response?.data?.erro || 'Erro ao atualizar status');
     } finally {
       setAtualizandoStatus(false);
     }
   }
 
-  async function concluir(id: string) {
-    const formaPagamento = prompt('Forma de pagamento (DINHEIRO, PIX, CARTAO_DEBITO, CARTAO_CREDITO):', 'PIX');
-    if (!formaPagamento) return;
-
-    setConcluindoId(id);
+  async function confirmarConclusao() {
+    if (!concluindoAg) return;
+    
+    setConcluindoId(concluindoAg.id);
+    setErroMsg(''); // limpa erro modal se houver
+    
     try {
-      await barbeiroApi.post(`/barbeiro/concluir-agendamento/${id}`, { formaPagamento });
+      await barbeiroApi.post(`/barbeiro/concluir-agendamento/${concluindoAg.id}`, { formaPagamento });
       await carregarAgenda();
+      setConcluindoAg(null);
+      mostrarSucesso(`Atendimento concluído com sucesso!`);
     } catch (err: any) {
-      alert(err.response?.data?.erro || 'Erro ao concluir');
+      setErroMsg(err.response?.data?.erro || 'Erro ao concluir');
     } finally {
       setConcluindoId(null);
     }
@@ -70,6 +92,18 @@ export function BarbeiroHoje() {
 
   return (
     <div className="px-5 py-6 animate-fade-in">
+      {/* Toast In-App */}
+      {sucessoMsg && (
+        <div style={{ background: 'var(--success-text)', color: '#000', padding: '12px', marginBottom: '16px', fontSize: '13px', fontWeight: 600 }}>
+          {sucessoMsg}
+        </div>
+      )}
+      {erroMsg && !concluindoAg && ( // Não mostra toast global se o erro for do modal
+        <div style={{ background: 'var(--danger-text)', color: '#fff', padding: '12px', marginBottom: '16px', fontSize: '13px', fontWeight: 600 }}>
+          {erroMsg}
+        </div>
+      )}
+
       {/* Header */}
       <div className="mb-8 flex justify-between items-start">
         <div>
@@ -131,12 +165,15 @@ export function BarbeiroHoje() {
                     </div>
 
                     <button 
-                      onClick={() => concluir(a.id)}
-                      disabled={concluindoId === a.id}
+                      onClick={() => {
+                        setConcluindoAg(a);
+                        setFormaPagamento('PIX');
+                        setErroMsg('');
+                      }}
                       className="btn-primary w-full justify-center"
                       style={{ padding: '12px', fontSize: '12px' }}
                     >
-                      <Check size={14} /> {concluindoId === a.id ? 'Concluindo...' : 'Concluir Atendimento'}
+                      <Check size={14} /> Concluir Atendimento
                     </button>
                   </div>
                 ))}
@@ -174,6 +211,55 @@ export function BarbeiroHoje() {
           )}
         </>
       )}
+
+      {/* Modal Conclusão */}
+      <Modal 
+        aberto={!!concluindoAg} 
+        onFechar={() => setConcluindoAg(null)} 
+        titulo="Concluir Atendimento"
+      >
+        {concluindoAg && (
+          <div className="flex flex-col gap-4">
+            <div style={{ background: 'var(--bg-surface2)', padding: '12px', border: '1px solid var(--border)' }}>
+              <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '14px', color: 'var(--text-primary)', marginBottom: '4px' }}>
+                {concluindoAg.cliente.usuario.nome}
+              </p>
+              <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '12px', color: 'var(--text-muted)' }}>
+                {concluindoAg.servico.nome} — <strong>R$ {Number(concluindoAg.valorCobrado).toFixed(2)}</strong>
+              </p>
+            </div>
+
+            {erroMsg && (
+              <div style={{ color: 'var(--danger-text)', fontSize: '13px', padding: '8px', border: '1px solid var(--danger-text)' }}>
+                {erroMsg}
+              </div>
+            )}
+
+            <div className="input-group">
+              <label>Forma de Pagamento</label>
+              <select 
+                value={formaPagamento} 
+                onChange={e => setFormaPagamento(e.target.value)}
+                disabled={!!concluindoId}
+              >
+                <option value="DINHEIRO">Dinheiro</option>
+                <option value="PIX">PIX</option>
+                <option value="CARTAO_DEBITO">Cartão de Débito</option>
+                <option value="CARTAO_CREDITO">Cartão de Crédito</option>
+              </select>
+            </div>
+
+            <button 
+              onClick={confirmarConclusao}
+              disabled={!!concluindoId}
+              className="btn-primary w-full justify-center mt-2"
+              style={{ padding: '12px' }}
+            >
+              {concluindoId ? 'Confirmando...' : 'Confirmar conclusão'}
+            </button>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 }
