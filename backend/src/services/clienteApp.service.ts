@@ -13,6 +13,7 @@ import {
   criarDataHoraBrasilia,
   formatarHorario,
 } from '../lib/timezone';
+import { HorariosUtil } from './horarios.util';
 
 interface DadosCadastroCliente {
   nome: string;
@@ -475,50 +476,28 @@ export class ClienteAppService {
       orderBy: { dataHora: 'asc' },
     });
 
-    const horaAbertura = parseInt(barbearia.horarioAbertura?.split(':')[0] || '9');
-    const minAbertura = parseInt(barbearia.horarioAbertura?.split(':')[1] || '0');
-    const horaFechamento = parseInt(barbearia.horarioFechamento?.split(':')[0] || '19');
-    const minFechamento = parseInt(barbearia.horarioFechamento?.split(':')[1] || '0');
-    const duracaoServico = servico.duracaoMinutos;
-
-    // Horário de almoço
-    const temAlmoco = barbearia.temAlmoco || false;
-    const almocoInicio = barbearia.horarioAlmocoInicio || '12:00';
-    const almocoFim = barbearia.horarioAlmocoFim || '13:00';
-    const almocoInicioMin = parseInt(almocoInicio.split(':')[0]) * 60 + parseInt(almocoInicio.split(':')[1]);
-    const almocoFimMin = parseInt(almocoFim.split(':')[0]) * 60 + parseInt(almocoFim.split(':')[1]);
-
-    const inicioMin = horaAbertura * 60 + minAbertura;
-    const fimMin = horaFechamento * 60 + minFechamento;
-
-    const slots: Array<{ horario: string; disponivel: boolean }> = [];
-
-    for (let m = inicioMin; m < fimMin; m += 30) {
-      const hora = Math.floor(m / 60);
-      const minuto = m % 60;
-
-      // Pula horário de almoço
-      if (temAlmoco && m >= almocoInicioMin && m < almocoFimMin) {
-        continue;
+    const bloqueios = await prisma.bloqueioAgenda.findMany({
+      where: {
+        barbeiroId,
+        dataInicio: { lte: fim },
+        dataFim: { gte: inicio },
       }
+    });
 
-      const slotInicio = criarDataHoraBrasilia(data, hora, minuto);
-      const slotFim = new Date(slotInicio.getTime() + duracaoServico * 60000);
+    const configDia = await HorariosUtil.getConfigDia(barbeariaId, data);
+    
+    const slotsInfo = HorariosUtil.gerarSlotsDisponiveis({
+      dataStr: data,
+      configDia,
+      duracaoMinutos: servico.duracaoMinutos,
+      agendamentos,
+      bloqueios
+    });
 
-      // Verifica conflito
-      const conflito = agendamentos.some((ag) => {
-        const agInicio = new Date(ag.dataHora);
-        const agFim = new Date(agInicio.getTime() + ag.servico.duracaoMinutos * 60000);
-        return slotInicio < agFim && slotFim > agInicio;
-      });
-
-      slots.push({
-        horario: formatarHorario(hora, minuto),
-        disponivel: !conflito,
-      });
-    }
-
-    return slots;
+    return slotsInfo.filter(s => s.disponivel).map(s => ({
+      horario: s.horario,
+      disponivel: true
+    }));
   }
 
   /** Cria agendamento pelo cliente */
@@ -533,6 +512,46 @@ export class ClienteAppService {
     if (!servico) throw new Error('Serviço não encontrado');
 
     const dataHora = toBrasiliaDate(`${dados.data}T${dados.hora}:00`);
+
+    await HorariosUtil.validarDentroDoFuncionamento({
+      barbeariaId,
+      dataHora,
+      duracaoMinutos: servico.duracaoMinutos
+    });
+
+    const dataInicioDia = inicioDiaBrasilia(dados.data);
+    const dataFimDia = fimDiaBrasilia(dados.data);
+
+    const agendamentosDia = await prisma.agendamento.findMany({
+      where: {
+        barbeiroId: dados.barbeiroId,
+        status: { notIn: ['CANCELADO'] },
+        dataHora: { gte: dataInicioDia, lte: dataFimDia },
+      },
+      include: { servico: true }
+    });
+
+    const reqInicioM = dataHora.getUTCHours() * 60 + dataHora.getUTCMinutes();
+    const reqFimM = reqInicioM + servico.duracaoMinutos;
+
+    const conflito = agendamentosDia.some(ag => {
+      const agDate = new Date(ag.dataHora);
+      const agInicioM = agDate.getUTCHours() * 60 + agDate.getUTCMinutes();
+      const agFimM = agInicioM + ag.servico.duracaoMinutos;
+      return reqInicioM < agFimM && reqFimM > agInicioM;
+    });
+
+    if (conflito) throw new Error('Horário já ocupado para este barbeiro');
+
+    const conflitoBloqueio = await prisma.bloqueioAgenda.findFirst({
+      where: {
+        barbeiroId: dados.barbeiroId,
+        dataInicio: { lt: new Date(dataHora.getTime() + servico.duracaoMinutos * 60000) },
+        dataFim: { gt: dataHora }
+      }
+    });
+
+    if (conflitoBloqueio) throw new Error('Horário indisponível (bloqueado pelo barbeiro)');
 
     const agendamento = await prisma.agendamento.create({
       data: {

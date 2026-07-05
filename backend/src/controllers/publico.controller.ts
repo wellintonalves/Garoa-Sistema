@@ -9,6 +9,7 @@ import {
   criarDataHoraBrasilia,
   formatarHorario,
 } from '../lib/timezone';
+import { HorariosUtil } from '../services/horarios.util';
 
 export class PublicoController {
   /** GET /publico/servicos */
@@ -52,16 +53,10 @@ export class PublicoController {
         return;
       }
 
-      const config = await ConfiguracaoService.obter();
-      const horariosFuncionamento = config.horariosFuncionamento as any;
-      
-      // Calcula o dia da semana baseado na data em Brasília
-      const { hora: horaCheck } = getHoraMinutoBrasilia(dateObj);
-      const diasSemana = ['domingo', 'segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sabado'];
-      const diaAtual = diasSemana[dateObj.getDay()];
-      
-      const configDia = horariosFuncionamento[diaAtual];
-      if (!configDia || configDia.fechado) {
+      const barbearia = await prisma.barbearia.findFirst();
+      const configDia = await HorariosUtil.getConfigDia(barbearia?.id, dataStr);
+
+      if (configDia.fechado) {
         res.json([]);
         return;
       }
@@ -74,7 +69,6 @@ export class PublicoController {
 
       const duracaoTotal = servico.duracaoMinutos;
 
-      // Buscar agendamentos do dia com range de Brasília
       const dataInicioDia = inicioDiaBrasilia(dataStr);
       const dataFimDia = fimDiaBrasilia(dataStr);
 
@@ -92,86 +86,42 @@ export class PublicoController {
         include: { servico: true }
       });
 
-      // Se "sem_preferencia", precisamos garantir que existe pelo menos um barbeiro disponivel para o horario
       const barbeirosAtivos = await prisma.barbeiro.findMany({ where: { ativo: true } });
       if (barbeirosAtivos.length === 0) {
         res.json([]);
         return;
       }
 
-      // Busca dados de almoço da barbearia
-      const barbearia = await prisma.barbearia.findFirst();
-      const temAlmoco = barbearia?.temAlmoco || false;
-      const almocoInicio = barbearia?.horarioAlmocoInicio || '12:00';
-      const almocoFim = barbearia?.horarioAlmocoFim || '13:00';
-      const almocoInicioMin = parseInt(almocoInicio.split(':')[0]) * 60 + parseInt(almocoInicio.split(':')[1]);
-      const almocoFimMin = parseInt(almocoFim.split(':')[0]) * 60 + parseInt(almocoFim.split(':')[1]);
+      const barbeirosAlvo = (barbeiroId && barbeiroId !== 'sem_preferencia') 
+        ? [{ id: barbeiroId as string }] 
+        : barbeirosAtivos;
 
-      const { abertura, fechamento } = configDia;
-      const [aberturaHora, aberturaMin] = abertura.split(':').map(Number);
-      const [fechamentoHora, fechamentoMin] = fechamento.split(':').map(Number);
+      const horariosLivresSet = new Set<string>();
 
-      const inicioMinutos = aberturaHora * 60 + aberturaMin;
-      const fimMinutos = fechamentoHora * 60 + fechamentoMin;
-
-      const horariosLivres: string[] = [];
-      const agora = new Date();
-
-      // Iterar de 30 em 30 minutos
-      for (let m = inicioMinutos; m + duracaoTotal <= fimMinutos; m += 30) {
-        const horaSlot = Math.floor(m / 60);
-        const minSlot = m % 60;
-
-        // Pula horário de almoço
-        if (temAlmoco && m >= almocoInicioMin && m < almocoFimMin) {
-          continue;
-        }
-        
-        // Verifica se é no passado (usando fuso de Brasília)
-        const slotDate = criarDataHoraBrasilia(dataStr, horaSlot, minSlot);
-        if (slotDate < agora) {
-          continue;
-        }
-
-        const slotInicioM = m;
-        const slotFimM = m + duracaoTotal;
-
-        // Se barbeiro especifico, checa os agendamentos dele
-        if (barbeiroId && barbeiroId !== 'sem_preferencia') {
-          const conflito = agendamentosExistentes.some(ag => {
-            const agHM = getHoraMinutoBrasilia(new Date(ag.dataHora));
-            const agInicioM = agHM.hora * 60 + agHM.minuto;
-            const agFimM = agInicioM + ag.servico.duracaoMinutos;
-            // Intersecção de intervalos: inicio1 < fim2 && fim1 > inicio2
-            return slotInicioM < agFimM && slotFimM > agInicioM;
-          });
-
-          if (!conflito) {
-            horariosLivres.push(formatarHorario(horaSlot, minSlot));
-          }
-        } else {
-          // Sem preferencia: checa se PELO MENOS UM barbeiro está livre
-          let algumBarbeiroLivre = false;
-          for (const barb of barbeirosAtivos) {
-            const agsDoBarbeiro = agendamentosExistentes.filter(ag => ag.barbeiroId === barb.id);
-            const conflito = agsDoBarbeiro.some(ag => {
-              const agHM = getHoraMinutoBrasilia(new Date(ag.dataHora));
-              const agInicioM = agHM.hora * 60 + agHM.minuto;
-              const agFimM = agInicioM + ag.servico.duracaoMinutos;
-              return slotInicioM < agFimM && slotFimM > agInicioM;
-            });
-            if (!conflito) {
-              algumBarbeiroLivre = true;
-              break;
+      for (const barb of barbeirosAlvo) {
+         const agendamentosDoBarbeiro = agendamentosExistentes.filter(ag => ag.barbeiroId === barb.id);
+         const bloqueiosDoBarbeiro = await prisma.bloqueioAgenda.findMany({
+            where: {
+              barbeiroId: barb.id,
+              dataInicio: { lte: dataFimDia },
+              dataFim: { gte: dataInicioDia }
             }
-          }
+         });
+         
+         const slots = HorariosUtil.gerarSlotsDisponiveis({
+           dataStr,
+           configDia,
+           duracaoMinutos: duracaoTotal,
+           agendamentos: agendamentosDoBarbeiro,
+           bloqueios: bloqueiosDoBarbeiro
+         });
 
-          if (algumBarbeiroLivre) {
-            horariosLivres.push(formatarHorario(horaSlot, minSlot));
-          }
-        }
+         for (const s of slots) {
+           if (s.disponivel) horariosLivresSet.add(s.horario);
+         }
       }
 
+      const horariosLivres = Array.from(horariosLivresSet).sort();
       res.json(horariosLivres);
     } catch (error) {
       console.error(error);

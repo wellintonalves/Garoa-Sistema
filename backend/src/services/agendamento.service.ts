@@ -10,6 +10,7 @@ import {
   formatarHorario,
 } from '../lib/timezone';
 import { creditarPontosPorAgendamento } from './fidelidade.engine';
+import { HorariosUtil } from './horarios.util';
 
 interface DadosAgendamento {
   clienteId: string;
@@ -86,18 +87,40 @@ export class AgendamentoService {
     const dataInicio = toBrasiliaDate(dados.dataHora);
     const dataFim = new Date(dataInicio.getTime() + duracaoTotal * 60000);
 
-    const conflito = await prisma.agendamento.findFirst({
+    const barbeiro = await prisma.barbeiro.findUnique({ where: { id: dados.barbeiroId }, include: { barbearia: true } });
+    if (!barbeiro) throw new Error('Barbeiro não encontrado');
+
+    await HorariosUtil.validarDentroDoFuncionamento({
+      barbeariaId: barbeiro.barbeariaId,
+      dataHora: dataInicio,
+      duracaoMinutos: duracaoTotal
+    });
+
+    const dataStr = dados.dataHora.split('T')[0] || dataInicio.toISOString().split('T')[0];
+    const dataInicioDia = inicioDiaBrasilia(dataStr);
+    const dataFimDia = fimDiaBrasilia(dataStr);
+
+    const agendamentosDia = await prisma.agendamento.findMany({
       where: {
         barbeiroId: dados.barbeiroId,
         status: { notIn: ['CANCELADO'] },
-        dataHora: { lt: dataFim },
-        AND: {
-          dataHora: { gte: new Date(dataInicio.getTime() - servico.duracaoMinutos * 60000) },
-        },
+        dataHora: { gte: dataInicioDia, lte: dataFimDia },
       },
+      include: { servico: true }
     });
 
-    if (conflito) {
+    const conflitoAgendamento = agendamentosDia.some(ag => {
+      const agDate = new Date(ag.dataHora);
+      const agInicioM = agDate.getUTCHours() * 60 + agDate.getUTCMinutes();
+      const agFimM = agInicioM + ag.servico.duracaoMinutos;
+      
+      const reqInicioM = dataInicio.getUTCHours() * 60 + dataInicio.getUTCMinutes();
+      const reqFimM = reqInicioM + duracaoTotal;
+      
+      return reqInicioM < agFimM && reqFimM > agInicioM;
+    });
+
+    if (conflitoAgendamento) {
       throw new Error('Horário já ocupado para este barbeiro');
     }
 
@@ -190,59 +213,26 @@ export class AgendamentoService {
       }
     });
 
-    // Busca horários da barbearia (se existir)
     const barbeiro = await prisma.barbeiro.findUnique({
       where: { id: barbeiroId },
       include: { barbearia: true },
     });
 
-    const barbearia = barbeiro?.barbearia;
-    const horaAbertura = parseInt(barbearia?.horarioAbertura?.split(':')[0] || '8');
-    const minAbertura = parseInt(barbearia?.horarioAbertura?.split(':')[1] || '0');
-    const horaFechamento = parseInt(barbearia?.horarioFechamento?.split(':')[0] || '19');
-    const minFechamento = parseInt(barbearia?.horarioFechamento?.split(':')[1] || '0');
+    const configDia = await HorariosUtil.getConfigDia(barbeiro?.barbeariaId, data);
 
-    const temAlmoco = barbearia?.temAlmoco || false;
-    const almocoInicio = barbearia?.horarioAlmocoInicio || '12:00';
-    const almocoFim = barbearia?.horarioAlmocoFim || '13:00';
-    const almocoInicioMin = parseInt(almocoInicio.split(':')[0]) * 60 + parseInt(almocoInicio.split(':')[1]);
-    const almocoFimMin = parseInt(almocoFim.split(':')[0]) * 60 + parseInt(almocoFim.split(':')[1]);
-
-    const inicioMinutos = horaAbertura * 60 + minAbertura;
-    const fimMinutos = horaFechamento * 60 + minFechamento;
-
-    // Gera slots de 30 min dentro do horário de funcionamento
-    const slots: Array<{ horario: string; ocupado: boolean; agendamentoId?: string; bloqueado?: boolean; motivoBloqueio?: string | null }> = [];
-
-    for (let m = inicioMinutos; m < fimMinutos; m += 30) {
-      const hora = Math.floor(m / 60);
-      const minuto = m % 60;
-
-      // Pula horário de almoço
-      if (temAlmoco && m >= almocoInicioMin && m < almocoFimMin) {
-        continue;
-      }
-
-      const slotInicio = criarDataHoraBrasilia(data, hora, minuto);
-
-      const agendamentoNoSlot = agendamentos.find((ag: any) => {
-        const agInicio = new Date(ag.dataHora);
-        const agFim = new Date(agInicio.getTime() + ag.servico.duracaoMinutos * 60000);
-        return slotInicio >= agInicio && slotInicio < agFim;
-      });
-
-      const bloqueioNoSlot = bloqueios.find((bl: any) => {
-        return slotInicio >= new Date(bl.dataInicio) && slotInicio < new Date(bl.dataFim);
-      });
-
-      slots.push({
-        horario: formatarHorario(hora, minuto),
-        ocupado: !!agendamentoNoSlot || !!bloqueioNoSlot,
-        agendamentoId: agendamentoNoSlot?.id,
-        bloqueado: !!bloqueioNoSlot,
-        motivoBloqueio: bloqueioNoSlot?.motivo,
-      });
-    }
+    const slots = HorariosUtil.gerarSlotsDisponiveis({
+      dataStr: data,
+      configDia,
+      duracaoMinutos: 30, // grade de exibição de 30 min
+      agendamentos,
+      bloqueios
+    }).map(s => ({
+      horario: s.horario,
+      ocupado: s.ocupado || false,
+      agendamentoId: s.agendamentoId,
+      bloqueado: s.bloqueado || false,
+      motivoBloqueio: s.motivoBloqueio
+    }));
 
     return { data, barbeiroId, slots };
   }
