@@ -343,58 +343,7 @@ export function Configuracoes() {
               <input type="text" className="form-input w-full p-2 bg-black/50 border border-[var(--border)] rounded" value={barbearia.telefone || ''} onChange={e => setBarbearia({...barbearia, telefone: e.target.value})} />
             </div>
 
-            {/* Horário de Abertura e Fechamento */}
-            <div className="p-4 bg-fundo border border-zinc-800 rounded space-y-3">
-              <h3 className="text-sm font-bold text-[var(--cor-primaria)] uppercase tracking-wider">Horário de Funcionamento</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 px-6">
-                <div>
-                  <label className="block text-xs text-zinc-400 mb-1">Horário de Abertura</label>
-                  <input type="time" className="form-input w-full px-3 py-2 bg-black/50 border border-[var(--border)] rounded" value={barbearia.horarioAbertura || '08:00'} onChange={e => setBarbearia({...barbearia, horarioAbertura: e.target.value})} />
-                </div>
-                <div>
-                  <label className="block text-xs text-zinc-400 mb-1">Horário de Fechamento</label>
-                  <input type="time" className="form-input w-full px-3 py-2 bg-black/50 border border-[var(--border)] rounded" value={barbearia.horarioFechamento || '19:00'} onChange={e => setBarbearia({...barbearia, horarioFechamento: e.target.value})} />
-                </div>
-              </div>
-
-              {/* Toggle Horário de Almoço */}
-              <div className="flex items-center justify-between pt-2 border-t border-zinc-800">
-                <label htmlFor="toggle-almoco" className="text-sm text-zinc-300 cursor-pointer">
-                  Tem horário de almoço?
-                </label>
-                <button
-                  id="toggle-almoco"
-                  type="button"
-                  onClick={() => setBarbearia({...barbearia, temAlmoco: !barbearia.temAlmoco})}
-                  className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors"
-                  style={{
-                    background: barbearia.temAlmoco ? 'var(--amber)' : 'var(--bg-surface2)',
-                    border: '1px solid var(--border)',
-                  }}
-                >
-                  <span
-                    className="inline-block h-4 w-4 transform rounded-full bg-white transition-transform"
-                    style={{
-                      transform: barbearia.temAlmoco ? 'translateX(22px)' : 'translateX(4px)',
-                    }}
-                  />
-                </button>
-              </div>
-
-              {/* Campos de almoço (visíveis apenas quando toggle ativado) */}
-              {barbearia.temAlmoco && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 animate-fade-in px-6">
-                  <div>
-                    <label className="block text-xs text-zinc-400 mb-1">Início do Almoço</label>
-                    <input type="time" className="form-input w-full px-3 py-2 bg-black/50 border border-[var(--border)] rounded" value={barbearia.horarioAlmocoInicio || '12:00'} onChange={e => setBarbearia({...barbearia, horarioAlmocoInicio: e.target.value})} />
-                  </div>
-                  <div>
-                    <label className="block text-xs text-zinc-400 mb-1">Fim do Almoço</label>
-                    <input type="time" className="form-input w-full px-3 py-2 bg-black/50 border border-[var(--border)] rounded" value={barbearia.horarioAlmocoFim || '13:00'} onChange={e => setBarbearia({...barbearia, horarioAlmocoFim: e.target.value})} />
-                  </div>
-                </div>
-              )}
-            </div>
+            {/* Campos de Horário de Funcionamento removidos (agora centralizados por dia) */}
             
             <div className="p-4 bg-fundo border border-zinc-800 rounded flex justify-between items-center">
               <div>
@@ -435,22 +384,68 @@ export function Configuracoes() {
                   </div>
                   
                   {!configDia.fechado ? (
-                    <div className="flex items-center gap-2 flex-1">
-                      <input
-                        type="time"
-                        value={configDia.abertura || ''}
-                        onChange={(e) => handleChange(dia.key, 'abertura', e.target.value)}
-                        className="form-input flex-1 p-2 bg-black/50 rounded border border-[var(--border)]"
-                        required
-                      />
-                      <span>às</span>
-                      <input
-                        type="time"
-                        value={configDia.fechamento || ''}
-                        onChange={(e) => handleChange(dia.key, 'fechamento', e.target.value)}
-                        className="form-input flex-1 p-2 bg-black/50 rounded border border-[var(--border)]"
-                        required
-                      />
+                    <div className="flex flex-col gap-2 flex-1">
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="time"
+                          value={configDia.abertura || ''}
+                          onChange={(e) => handleChange(dia.key, 'abertura', e.target.value)}
+                          className="form-input flex-1 p-2 bg-black/50 rounded border border-[var(--border)]"
+                          required
+                        />
+                        <span>às</span>
+                        <input
+                          type="time"
+                          value={configDia.fechamento || ''}
+                          onChange={(e) => handleChange(dia.key, 'fechamento', e.target.value)}
+                          className="form-input flex-1 p-2 bg-black/50 rounded border border-[var(--border)]"
+                          required
+                        />
+                      </div>
+                      
+                      {/* Almoço */}
+                      <div className="flex items-center justify-between mt-1 pt-2 border-t border-zinc-800/50">
+                        <label htmlFor={`toggle-almoco-${dia.key}`} className="text-sm text-zinc-400 cursor-pointer">
+                          Tem almoço?
+                        </label>
+                        <button
+                          id={`toggle-almoco-${dia.key}`}
+                          type="button"
+                          onClick={() => handleChange(dia.key, 'temAlmoco', !configDia.temAlmoco)}
+                          className="relative inline-flex h-5 w-9 items-center rounded-full transition-colors"
+                          style={{
+                            background: configDia.temAlmoco ? 'var(--amber)' : 'var(--bg-surface2)',
+                            border: '1px solid var(--border)',
+                          }}
+                        >
+                          <span
+                            className="inline-block h-3 w-3 transform rounded-full bg-white transition-transform"
+                            style={{
+                              transform: configDia.temAlmoco ? 'translateX(16px)' : 'translateX(2px)',
+                            }}
+                          />
+                        </button>
+                      </div>
+                      
+                      {configDia.temAlmoco && (
+                        <div className="flex items-center gap-2 animate-fade-in">
+                          <input
+                            type="time"
+                            value={configDia.almocoInicio || ''}
+                            onChange={(e) => handleChange(dia.key, 'almocoInicio', e.target.value)}
+                            className="form-input flex-1 p-2 bg-black/50 rounded border border-[var(--border)] text-sm"
+                            required
+                          />
+                          <span className="text-sm text-zinc-400">às</span>
+                          <input
+                            type="time"
+                            value={configDia.almocoFim || ''}
+                            onChange={(e) => handleChange(dia.key, 'almocoFim', e.target.value)}
+                            className="form-input flex-1 p-2 bg-black/50 rounded border border-[var(--border)] text-sm"
+                            required
+                          />
+                        </div>
+                      )}
                     </div>
                   ) : (
                     <div className="flex-1 text-sm text-[var(--text-muted)] italic">

@@ -525,6 +525,7 @@ export function Agenda() {
                   fontSize: '10px',
                   color: 'var(--text-disabled)',
                   letterSpacing: '0.04em',
+                  height: '48px'
                 }}
               >
                 {horario}
@@ -555,8 +556,8 @@ export function Agenda() {
                 });
 
                 return (
-                  <div key={diaIdx} style={{ borderLeft: '1px solid var(--border)', minHeight: '48px', padding: '2px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    {bloqueiosDaCelula.map((bl) => (
+                  <div key={diaIdx} style={{ borderLeft: '1px solid var(--border)', height: '48px', position: 'relative' }}>
+                    {bloqueiosDaCelula.map((bl, idx) => (
                       <div
                         key={bl.id}
                         className="truncate cursor-pointer"
@@ -570,7 +571,13 @@ export function Agenda() {
                           fontFamily: 'var(--fonte-interface)',
                           fontSize: isMobile ? '11px' : '12px',
                           borderRadius: '0 4px 4px 0',
-                          lineHeight: 1.2
+                          lineHeight: 1.2,
+                          position: 'absolute',
+                          top: '2px',
+                          left: '2px',
+                          right: '2px',
+                          height: '44px',
+                          zIndex: 5 + idx
                         }}
                       >
                         <p className="truncate pr-1" style={{ fontWeight: 600, marginBottom: '2px' }}>{bl.barbeiro.usuario.nome}</p>
@@ -578,7 +585,7 @@ export function Agenda() {
                       </div>
                     ))}
 
-                    {agendamentosDoCelula.map((ag) => {
+                    {agendamentosDoCelula.map((ag, idx) => {
                       const isCancelado = ag.status === 'CANCELADO';
                       const isConcluido = ag.status === 'CONCLUIDO';
                       const corB = isCancelado ? '#ef4444' : getBarbeiroColor(ag.barbeiroId, barbeiros);
@@ -586,11 +593,14 @@ export function Agenda() {
                       
                       const corS = ag.servico.cor || '#22C55E';
                       const bgS = corS + '30';
+                      
+                      const duracao = ag.servico.duracaoMinutos || 30;
+                      const heightPx = Math.max(44, (duracao / 30) * 49 - 5);
 
                       return (
                         <div
                           key={ag.id}
-                          className="truncate cursor-pointer flex flex-col"
+                          className="cursor-pointer flex flex-col overflow-hidden"
                           onClick={() => setAgendamentoSelecionado(ag)}
                           style={{
                             padding: '6px 8px',
@@ -600,8 +610,12 @@ export function Agenda() {
                             opacity: isConcluido ? 0.7 : 1,
                             fontFamily: 'var(--fonte-interface)',
                             fontSize: isMobile ? '11px' : '12px',
-                            marginBottom: '4px',
-                            position: 'relative',
+                            position: 'absolute',
+                            top: '2px',
+                            left: `${2 + (idx * 10)}px`,
+                            right: '2px',
+                            height: `${heightPx}px`,
+                            zIndex: 10 + idx,
                             borderRadius: '0 4px 4px 0',
                             lineHeight: 1.2
                           }}
