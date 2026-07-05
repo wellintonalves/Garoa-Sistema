@@ -425,3 +425,13 @@ model AprovacaoEdicao {
 
   @@map("aprovacoes_edicao")
 }
+
+model BoasVindasConcedida {
+  id          String   @id @default(uuid())
+  clienteId   String
+  barbeariaId String
+  createdAt   DateTime @default(now())
+
+  @@unique([clienteId, barbeariaId])
+  @@map("boas_vindas_concedidas")
+}

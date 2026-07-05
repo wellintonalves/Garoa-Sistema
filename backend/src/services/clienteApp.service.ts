@@ -222,14 +222,25 @@ export class ClienteAppService {
         // Pontos de boas-vindas para o novo cliente
         const pontosBoasVindas = (config as any).pontosBoasVindas as number ?? 0;
         if (pontosBoasVindas > 0) {
-          await prisma.pontoFidelidade.create({
-            data: {
-              clienteId,
-              barbeariaId,
-              pontos: pontosBoasVindas,
-              descricao: 'Bem-vindo! Pontos de boas-vindas',
-            },
-          });
+          try {
+            await prisma.$transaction([
+              (prisma as any).boasVindasConcedida.create({
+                data: { clienteId, barbeariaId }
+              }),
+              prisma.pontoFidelidade.create({
+                data: {
+                  clienteId,
+                  barbeariaId,
+                  pontos: pontosBoasVindas,
+                  descricao: 'Bem-vindo! Pontos de boas-vindas',
+                },
+              })
+            ]);
+          } catch (e: any) {
+            if (e.code !== 'P2002') {
+              console.error('[conectarBarbearia] Erro ao creditar boas-vindas:', e);
+            }
+          }
         }
 
         // Processa código de indicação
