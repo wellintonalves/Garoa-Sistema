@@ -2,6 +2,7 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { prisma } from '../lib/prisma';
+import { Prisma } from '@prisma/client';
 import { authConfig } from '../config/auth';
 import { ClienteJWT } from '../types';
 import {
@@ -627,32 +628,47 @@ export class ClienteAppService {
       throw new Error('Recompensa não encontrada ou inativa.');
     }
 
-    const pontosAgregados = await prisma.pontoFidelidade.aggregate({
-      _sum: { pontos: true },
-      where: { clienteId, barbeariaId },
-    });
+    let tentativas = 0;
+    while (tentativas <= 2) {
+      try {
+        const resgate = await prisma.$transaction(async (tx) => {
+          const pontosAgregados = await tx.pontoFidelidade.aggregate({
+            _sum: { pontos: true },
+            where: { clienteId, barbeariaId },
+          });
 
-    const resgatesAgregados = await prisma.resgateRecompensa.aggregate({
-      _sum: { pontosUsados: true },
-      where: { clienteId, barbeariaId },
-    });
+          const resgatesAgregados = await tx.resgateRecompensa.aggregate({
+            _sum: { pontosUsados: true },
+            where: { clienteId, barbeariaId },
+          });
 
-    const saldo = (pontosAgregados._sum.pontos || 0) - (resgatesAgregados._sum.pontosUsados || 0);
+          const saldo = (pontosAgregados._sum.pontos || 0) - (resgatesAgregados._sum.pontosUsados || 0);
 
-    if (saldo < recompensa.pontosNecessarios) {
-      throw new Error('Saldo de pontos insuficiente para esta recompensa.');
+          if (saldo < recompensa.pontosNecessarios) {
+            throw new Error('Saldo de pontos insuficiente para esta recompensa.');
+          }
+
+          // Cria o resgate
+          return await tx.resgateRecompensa.create({
+            data: {
+              clienteId,
+              recompensaId,
+              barbeariaId,
+              pontosUsados: recompensa.pontosNecessarios,
+            },
+          });
+        }, {
+          isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
+        });
+
+        return resgate;
+      } catch (e: any) {
+        if (e.code === 'P2034' && tentativas < 2) {
+          tentativas++;
+          continue;
+        }
+        throw e;
+      }
     }
-
-    // Cria o resgate
-    const resgate = await prisma.resgateRecompensa.create({
-      data: {
-        clienteId,
-        recompensaId,
-        barbeariaId,
-        pontosUsados: recompensa.pontosNecessarios,
-      },
-    });
-
-    return resgate;
   }
 }

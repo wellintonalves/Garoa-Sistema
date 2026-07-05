@@ -1,6 +1,7 @@
 import { Response } from 'express';
 import { AuthRequest } from '../types';
 import { prisma } from '../lib/prisma';
+import { Prisma } from '@prisma/client';
 
 export class FidelidadeController {
   // Configuração
@@ -237,38 +238,60 @@ export class FidelidadeController {
         return;
       }
 
-      const pontosAgregados = await prisma.pontoFidelidade.aggregate({
-        _sum: { pontos: true },
-        where: { clienteId, barbeariaId },
-      });
+      let tentativas = 0;
+      let resgate;
 
-      const resgatesAgregados = await prisma.resgateRecompensa.aggregate({
-        _sum: { pontosUsados: true },
-        where: { clienteId, barbeariaId },
-      });
+      while (tentativas <= 2) {
+        try {
+          resgate = await prisma.$transaction(async (tx) => {
+            const pontosAgregados = await tx.pontoFidelidade.aggregate({
+              _sum: { pontos: true },
+              where: { clienteId, barbeariaId },
+            });
 
-      const totalGanho = pontosAgregados._sum.pontos || 0;
-      const totalGasto = resgatesAgregados._sum.pontosUsados || 0;
-      const saldo = totalGanho - totalGasto;
+            const resgatesAgregados = await tx.resgateRecompensa.aggregate({
+              _sum: { pontosUsados: true },
+              where: { clienteId, barbeariaId },
+            });
 
-      if (saldo < recompensa.pontosNecessarios) {
-        res.status(400).json({ erro: 'Saldo de pontos insuficiente.' });
-        return;
+            const totalGanho = pontosAgregados._sum.pontos || 0;
+            const totalGasto = resgatesAgregados._sum.pontosUsados || 0;
+            const saldo = totalGanho - totalGasto;
+
+            if (saldo < recompensa.pontosNecessarios) {
+              throw new Error('Saldo de pontos insuficiente.');
+            }
+
+            return await tx.resgateRecompensa.create({
+              data: {
+                clienteId,
+                recompensaId,
+                barbeariaId,
+                pontosUsados: recompensa.pontosNecessarios,
+              },
+            });
+          }, {
+            isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
+          });
+
+          break; // Sucesso, sai do loop
+        } catch (error: any) {
+          if (error.code === 'P2034' && tentativas < 2) {
+            tentativas++;
+            continue;
+          }
+          throw error;
+        }
       }
 
-      const resgate = await prisma.resgateRecompensa.create({
-        data: {
-          clienteId,
-          recompensaId,
-          barbeariaId,
-          pontosUsados: recompensa.pontosNecessarios,
-        },
-      });
-
       res.status(201).json(resgate);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao resgatar recompensa:', error);
-      res.status(500).json({ erro: 'Erro ao resgatar recompensa.' });
+      if (error.message === 'Saldo de pontos insuficiente.') {
+        res.status(400).json({ erro: error.message });
+      } else {
+        res.status(500).json({ erro: 'Erro ao resgatar recompensa.' });
+      }
     }
   }
 
