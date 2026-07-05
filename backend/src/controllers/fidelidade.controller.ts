@@ -1,7 +1,7 @@
 import { Response } from 'express';
 import { AuthRequest } from '../types';
 import { prisma } from '../lib/prisma';
-import { Prisma } from '@prisma/client';
+import { Prisma, StatusResgate } from '@prisma/client';
 
 export class FidelidadeController {
   // Configuração
@@ -193,12 +193,13 @@ export class FidelidadeController {
         return;
       }
 
-      const { clienteId, dataInicio, dataFim } = req.query;
+      const { clienteId, dataInicio, dataFim, status } = req.query;
 
       const resgates = await prisma.resgateRecompensa.findMany({
         where: {
           barbeariaId,
           ...(clienteId ? { clienteId: String(clienteId) } : {}),
+          ...(status ? { status: status as StatusResgate } : {}),
           ...(dataInicio && dataFim
             ? {
                 createdAt: {
@@ -212,7 +213,7 @@ export class FidelidadeController {
           cliente: { select: { id: true, usuario: { select: { nome: true, email: true } } } },
           recompensa: true,
         },
-        orderBy: { createdAt: 'desc' },
+        orderBy: [{ status: 'desc' }, { createdAt: 'desc' }],
       });
 
       res.json(resgates);
@@ -251,7 +252,7 @@ export class FidelidadeController {
 
             const resgatesAgregados = await tx.resgateRecompensa.aggregate({
               _sum: { pontosUsados: true },
-              where: { clienteId, barbeariaId },
+              where: { clienteId, barbeariaId, status: { in: ['PENDENTE', 'CONFIRMADO'] } },
             });
 
             const totalGanho = pontosAgregados._sum.pontos || 0;
@@ -268,6 +269,9 @@ export class FidelidadeController {
                 recompensaId,
                 barbeariaId,
                 pontosUsados: recompensa.pontosNecessarios,
+                status: 'CONFIRMADO',
+                confirmadoPor: req.usuario?.id,
+                confirmadoEm: new Date(),
               },
             });
           }, {
@@ -292,6 +296,80 @@ export class FidelidadeController {
       } else {
         res.status(500).json({ erro: 'Erro ao resgatar recompensa.' });
       }
+    }
+  }
+
+  // Confirmar Resgate
+  static async confirmarResgate(req: AuthRequest, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+      const barbeariaId = req.usuario?.barbeariaId;
+
+      if (!barbeariaId) {
+        res.status(400).json({ erro: 'Barbearia ID não encontrado.' });
+        return;
+      }
+
+      const resgate = await prisma.resgateRecompensa.findUnique({ where: { id } });
+      if (!resgate || resgate.barbeariaId !== barbeariaId) {
+        res.status(404).json({ erro: 'Resgate não encontrado.' });
+        return;
+      }
+
+      if (resgate.status !== 'PENDENTE') {
+        res.status(400).json({ erro: 'Apenas resgates pendentes podem ser confirmados.' });
+        return;
+      }
+
+      const atualizado = await prisma.resgateRecompensa.update({
+        where: { id },
+        data: {
+          status: 'CONFIRMADO',
+          confirmadoPor: req.usuario?.id,
+          confirmadoEm: new Date(),
+        },
+      });
+
+      res.json(atualizado);
+    } catch (error) {
+      console.error('Erro ao confirmar resgate:', error);
+      res.status(500).json({ erro: 'Erro ao confirmar resgate.' });
+    }
+  }
+
+  // Cancelar Resgate
+  static async cancelarResgate(req: AuthRequest, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+      const barbeariaId = req.usuario?.barbeariaId;
+
+      if (!barbeariaId) {
+        res.status(400).json({ erro: 'Barbearia ID não encontrado.' });
+        return;
+      }
+
+      const resgate = await prisma.resgateRecompensa.findUnique({ where: { id } });
+      if (!resgate || resgate.barbeariaId !== barbeariaId) {
+        res.status(404).json({ erro: 'Resgate não encontrado.' });
+        return;
+      }
+
+      if (resgate.status !== 'PENDENTE') {
+        res.status(400).json({ erro: 'Apenas resgates pendentes podem ser cancelados.' });
+        return;
+      }
+
+      const atualizado = await prisma.resgateRecompensa.update({
+        where: { id },
+        data: {
+          status: 'CANCELADO',
+        },
+      });
+
+      res.json(atualizado);
+    } catch (error) {
+      console.error('Erro ao cancelar resgate:', error);
+      res.status(500).json({ erro: 'Erro ao cancelar resgate.' });
     }
   }
 
@@ -360,7 +438,7 @@ export class FidelidadeController {
           orderBy: { data: 'desc' },
         }),
         prisma.resgateRecompensa.findMany({
-          where: { clienteId, barbeariaId },
+          where: { clienteId, barbeariaId, status: { in: ['PENDENTE', 'CONFIRMADO'] } },
           include: { recompensa: { select: { nome: true } } },
           orderBy: { createdAt: 'desc' },
         }),
@@ -416,7 +494,7 @@ export class FidelidadeController {
                 select: { pontos: true },
               },
               resgatesRecompensa: {
-                where: { barbeariaId },
+                where: { barbeariaId, status: { in: ['PENDENTE', 'CONFIRMADO'] } },
                 select: { pontosUsados: true },
               },
             },

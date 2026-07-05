@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import api from '../../api/client';
 
-type Tab = 'regras' | 'recompensas' | 'clientes' | 'historico';
+type Tab = 'regras' | 'recompensas' | 'clientes' | 'historico' | 'pendentes';
 
 interface ConfigFidelidade {
   ativo: boolean;
@@ -54,13 +54,21 @@ function Toast({ msg, tipo, onClose }: { msg: string; tipo: 'ok' | 'erro'; onClo
 export function Fidelidade() {
   const [tab, setTab] = useState<Tab>('regras');
   const [toast, setToast] = useState<{ msg: string; tipo: 'ok' | 'erro' } | null>(null);
+  const [pendentesCount, setPendentesCount] = useState(0);
 
   const showToast = useCallback((msg: string, tipo: 'ok' | 'erro' = 'ok') => setToast({ msg, tipo }), []);
 
-  const tabs: { id: Tab; label: string; icon: React.ComponentType<any> }[] = [
+  useEffect(() => {
+    api.get('/fidelidade/resgates?status=PENDENTE')
+      .then(r => setPendentesCount(r.data.length))
+      .catch(() => {});
+  }, [tab]);
+
+  const tabs: { id: Tab; label: string; icon: React.ComponentType<any>, count?: number }[] = [
     { id: 'regras', label: 'Regras', icon: Settings },
     { id: 'recompensas', label: 'Recompensas', icon: Gift },
     { id: 'clientes', label: 'Clientes', icon: Users },
+    { id: 'pendentes', label: 'Pendentes', icon: AlertCircle, count: pendentesCount },
     { id: 'historico', label: 'Histórico', icon: History },
   ];
 
@@ -88,7 +96,7 @@ export function Fidelidade() {
       <div style={{
         display: 'flex', gap: '4px', marginBottom: '24px',
         background: 'var(--bg-surface)', border: '1px solid var(--border)',
-        borderRadius: '10px', padding: '4px',
+        borderRadius: '10px', padding: '4px', overflowX: 'auto'
       }}>
         {tabs.map(t => {
           const Icon = t.icon;
@@ -100,9 +108,19 @@ export function Fidelidade() {
               background: active ? 'var(--amber, #F59E0B)' : 'transparent',
               color: active ? '#000' : 'var(--text-muted)',
               fontSize: '12px', fontWeight: active ? 600 : 400, transition: 'all 0.15s',
+              whiteSpace: 'nowrap'
             }}>
               <Icon size={14} />
               {t.label}
+              {t.count !== undefined && t.count > 0 && (
+                <span style={{
+                  background: active ? '#000' : 'var(--amber, #F59E0B)',
+                  color: active ? 'var(--amber, #F59E0B)' : '#000',
+                  padding: '2px 6px', borderRadius: '10px', fontSize: '10px', fontWeight: 700
+                }}>
+                  {t.count}
+                </span>
+              )}
             </button>
           );
         })}
@@ -112,6 +130,7 @@ export function Fidelidade() {
       {tab === 'regras' && <TabRegras showToast={showToast} />}
       {tab === 'recompensas' && <TabRecompensas showToast={showToast} />}
       {tab === 'clientes' && <TabClientes showToast={showToast} />}
+      {tab === 'pendentes' && <TabPendentes showToast={showToast} onUpdateCount={setPendentesCount} />}
       {tab === 'historico' && <TabHistorico showToast={showToast} />}
 
       {toast && <Toast msg={toast.msg} tipo={toast.tipo} onClose={() => setToast(null)} />}
@@ -748,7 +767,7 @@ function TabHistorico({ showToast }: { showToast: (m: string, t?: 'ok' | 'erro')
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                {['Data', 'Cliente', 'Recompensa', 'Pontos usados'].map(h => (
+                {['Data', 'Cliente', 'Recompensa', 'Pontos', 'Status'].map(h => (
                   <th key={h} style={{ padding: '10px 12px', fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)', textAlign: 'left', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{h}</th>
                 ))}
               </tr>
@@ -769,6 +788,119 @@ function TabHistorico({ showToast }: { showToast: (m: string, t?: 'ok' | 'erro')
                     <span style={{ fontSize: '13px', fontWeight: 700, color: '#EF4444' }}>
                       -{r.pontosUsados} pts
                     </span>
+                  </td>
+                  <td style={{ padding: '12px' }}>
+                    <span style={{
+                      fontSize: '11px', padding: '3px 10px', borderRadius: '20px',
+                      background: r.status === 'CONFIRMADO' ? 'rgba(34,197,94,0.12)' : r.status === 'PENDENTE' ? 'rgba(245,158,11,0.12)' : 'rgba(239,68,68,0.12)',
+                      color: r.status === 'CONFIRMADO' ? '#22C55E' : r.status === 'PENDENTE' ? '#F59E0B' : '#EF4444',
+                    }}>
+                      {r.status}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </Card>
+  );
+}
+
+// ─── TAB PENDENTES ───────────────────────────────────────────────────────────
+
+function TabPendentes({ showToast, onUpdateCount }: { showToast: (m: string, t?: 'ok' | 'erro') => void, onUpdateCount: (c: number) => void }) {
+  const [resgates, setResgates] = useState<any[]>([]);
+  const [carregando, setCarregando] = useState(true);
+  const [acaoId, setAcaoId] = useState<string | null>(null);
+
+  function carregar() {
+    api.get('/fidelidade/resgates?status=PENDENTE')
+      .then(r => {
+        setResgates(r.data);
+        onUpdateCount(r.data.length);
+      })
+      .catch(() => showToast('Erro ao carregar pendentes', 'erro'))
+      .finally(() => setCarregando(false));
+  }
+
+  useEffect(() => { carregar(); }, []);
+
+  async function confirmar(id: string) {
+    setAcaoId(id);
+    try {
+      await api.patch(`/fidelidade/resgates/${id}/confirmar`);
+      showToast('Resgate confirmado!');
+      carregar();
+    } catch {
+      showToast('Erro ao confirmar', 'erro');
+    } finally {
+      setAcaoId(null);
+    }
+  }
+
+  async function cancelar(id: string) {
+    if (!confirm('Tem certeza que deseja cancelar este resgate? O cliente receberá os pontos de volta.')) return;
+    setAcaoId(id);
+    try {
+      await api.patch(`/fidelidade/resgates/${id}/cancelar`);
+      showToast('Resgate cancelado.');
+      carregar();
+    } catch {
+      showToast('Erro ao cancelar', 'erro');
+    } finally {
+      setAcaoId(null);
+    }
+  }
+
+  if (carregando) return <Spinner />;
+
+  return (
+    <Card>
+      <SectionTitle>Resgates pendentes</SectionTitle>
+      {resgates.length === 0 ? (
+        <EmptyState icon={AlertCircle} text="Nenhum resgate pendente de confirmação." />
+      ) : (
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr style={{ borderBottom: '1px solid var(--border)' }}>
+                {['Data', 'Cliente', 'Recompensa', 'Pontos', 'Ações'].map(h => (
+                  <th key={h} style={{ padding: '10px 12px', fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)', textAlign: 'left', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {resgates.map(r => (
+                <tr key={r.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                  <td style={{ padding: '12px', fontSize: '12px', color: 'var(--text-muted)' }}>
+                    {new Date(r.createdAt).toLocaleDateString('pt-BR')}
+                  </td>
+                  <td style={{ padding: '12px', fontSize: '13px', color: 'var(--text-primary)' }}>
+                    {r.cliente?.usuario?.nome}
+                  </td>
+                  <td style={{ padding: '12px', fontSize: '13px', color: 'var(--text-primary)' }}>
+                    {r.recompensa?.nome}
+                  </td>
+                  <td style={{ padding: '12px' }}>
+                    <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--amber, #F59E0B)' }}>
+                      {r.pontosUsados} pts
+                    </span>
+                  </td>
+                  <td style={{ padding: '12px' }}>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <button onClick={() => confirmar(r.id)} disabled={acaoId === r.id} style={{
+                        padding: '6px 12px', background: 'rgba(34,197,94,0.15)', color: '#22C55E',
+                        border: '1px solid rgba(34,197,94,0.3)', borderRadius: '6px', cursor: 'pointer',
+                        fontSize: '11px', fontWeight: 600, opacity: acaoId === r.id ? 0.5 : 1
+                      }}>Confirmar</button>
+                      <button onClick={() => cancelar(r.id)} disabled={acaoId === r.id} style={{
+                        padding: '6px 12px', background: 'rgba(239,68,68,0.15)', color: '#EF4444',
+                        border: '1px solid rgba(239,68,68,0.3)', borderRadius: '6px', cursor: 'pointer',
+                        fontSize: '11px', fontWeight: 600, opacity: acaoId === r.id ? 0.5 : 1
+                      }}>Cancelar</button>
+                    </div>
                   </td>
                 </tr>
               ))}

@@ -58,6 +58,12 @@ enum StatusAprovacao {
   REJEITADO
 }
 
+enum StatusResgate {
+  PENDENTE
+  CONFIRMADO
+  CANCELADO
+}
+
 model Barbearia {
   id                 String   @id @default(uuid())
   nome               String
@@ -367,12 +373,15 @@ model Recompensa {
 }
 
 model ResgateRecompensa {
-  id           String   @id @default(uuid())
-  clienteId    String
-  recompensaId String
-  barbeariaId  String?
-  pontosUsados Int
-  createdAt    DateTime @default(now())
+  id            String        @id @default(uuid())
+  clienteId     String
+  recompensaId  String
+  barbeariaId   String?
+  pontosUsados  Int
+  status        StatusResgate @default(PENDENTE)
+  confirmadoPor String?
+  confirmadoEm  DateTime?
+  createdAt     DateTime      @default(now())
 
   cliente    Cliente    @relation(fields: [clienteId], references: [id], onDelete: Cascade)
   recompensa Recompensa @relation(fields: [recompensaId], references: [id], onDelete: Cascade)

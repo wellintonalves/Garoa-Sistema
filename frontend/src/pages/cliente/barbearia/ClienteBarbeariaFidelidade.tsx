@@ -17,7 +17,7 @@ interface FidelidadeData {
     valorDesconto?: number; 
     servico?: { nome: string } 
   }>;
-  historico: Array<{ id: string; tipo: 'GANHO' | 'RESGATE'; pontos: number; descricao: string; data: string }>;
+  historico: Array<{ id: string; tipo: 'GANHO' | 'RESGATE'; status?: string; pontos: number; descricao: string; data: string }>;
 }
 
 export function ClienteBarbeariaFidelidade() {
@@ -62,7 +62,7 @@ export function ClienteBarbeariaFidelidade() {
     setResgatando(recompensaId);
     try {
       await clienteApi.post(`/cliente/barbearia/${barbeariaId}/fidelidade/resgatar`, { recompensaId });
-      setMensagemSucesso('Recompensa resgatada com sucesso! Mostre no caixa.');
+      setMensagemSucesso('Solicitação enviada! Confirme no caixa.');
       carregarFidelidade(); // Recarrega para atualizar o saldo e o histórico
       setTimeout(() => setMensagemSucesso(null), 5000);
     } catch (error: any) {
@@ -274,7 +274,18 @@ export function ClienteBarbeariaFidelidade() {
                 
                 <div className="flex justify-between items-start">
                   <div>
-                    <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '14px', fontWeight: 500, color: 'var(--text-primary)' }}>{h.descricao}</p>
+                    <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '14px', fontWeight: 500, color: 'var(--text-primary)' }}>
+                      {h.descricao}
+                      {h.tipo === 'RESGATE' && h.status && (
+                        <span style={{ 
+                          marginLeft: '8px', fontSize: '10px', padding: '2px 6px', borderRadius: '4px',
+                          background: h.status === 'CONFIRMADO' ? 'rgba(34,197,94,0.1)' : h.status === 'PENDENTE' ? 'rgba(245,158,11,0.1)' : 'rgba(239,68,68,0.1)',
+                          color: h.status === 'CONFIRMADO' ? '#22C55E' : h.status === 'PENDENTE' ? '#F59E0B' : '#EF4444'
+                        }}>
+                          {h.status}
+                        </span>
+                      )}
+                    </p>
                     <div className="flex items-center gap-1.5 mt-1" style={{ color: 'var(--text-muted)' }}>
                       <Clock size={10} />
                       <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px' }}>
@@ -282,8 +293,12 @@ export function ClienteBarbeariaFidelidade() {
                       </p>
                     </div>
                   </div>
-                  <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '15px', fontWeight: 600, color: h.tipo === 'GANHO' ? 'var(--amber)' : 'var(--text-primary)' }}>
-                    {h.tipo === 'GANHO' ? '+' : '-'}{h.pontos}
+                  <span style={{ 
+                    fontFamily: 'var(--fonte-numeros)', fontSize: '15px', fontWeight: 600, 
+                    color: h.status === 'CANCELADO' ? 'var(--text-disabled)' : h.tipo === 'GANHO' ? 'var(--amber)' : 'var(--text-primary)',
+                    textDecoration: h.status === 'CANCELADO' ? 'line-through' : 'none'
+                  }}>
+                    {h.tipo === 'GANHO' ? '+' : ''}{h.pontos}
                   </span>
                 </div>
               </div>

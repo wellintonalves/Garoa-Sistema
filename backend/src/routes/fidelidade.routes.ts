@@ -21,6 +21,8 @@ router.delete('/recompensas/:id', FidelidadeController.removerRecompensa);
 // Resgates
 router.get('/resgates', FidelidadeController.listarResgates);
 router.post('/resgatar/:clienteId/:recompensaId', FidelidadeController.resgatarRecompensa);
+router.patch('/resgates/:id/confirmar', FidelidadeController.confirmarResgate);
+router.patch('/resgates/:id/cancelar', FidelidadeController.cancelarResgate);
 
 // Pontos — ajuste manual e histórico por cliente
 router.post('/ajuste/:clienteId', FidelidadeController.ajustarPontos);

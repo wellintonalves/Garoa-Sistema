@@ -559,7 +559,7 @@ export class ClienteAppService {
 
     const resgatesAgregados = await prisma.resgateRecompensa.aggregate({
       _sum: { pontosUsados: true },
-      where: { clienteId, barbeariaId },
+      where: { clienteId, barbeariaId, status: { in: ['PENDENTE', 'CONFIRMADO'] } },
     });
 
     const totalGanhos = pontosAgregados._sum.pontos || 0;
@@ -601,6 +601,7 @@ export class ClienteAppService {
       ...resgates.map(r => ({
         id: r.id,
         tipo: 'RESGATE',
+        status: (r as any).status,
         pontos: -r.pontosUsados,
         descricao: `Resgate: ${r.recompensa.nome}`,
         data: r.createdAt,
@@ -639,7 +640,7 @@ export class ClienteAppService {
 
           const resgatesAgregados = await tx.resgateRecompensa.aggregate({
             _sum: { pontosUsados: true },
-            where: { clienteId, barbeariaId },
+            where: { clienteId, barbeariaId, status: { in: ['PENDENTE', 'CONFIRMADO'] } },
           });
 
           const saldo = (pontosAgregados._sum.pontos || 0) - (resgatesAgregados._sum.pontosUsados || 0);
@@ -655,6 +656,7 @@ export class ClienteAppService {
               recompensaId,
               barbeariaId,
               pontosUsados: recompensa.pontosNecessarios,
+              status: 'PENDENTE',
             },
           });
         }, {
