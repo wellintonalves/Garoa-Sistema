@@ -116,6 +116,9 @@ export function Agenda() {
   const [carregando, setCarregando] = useState(true);
   const [modalAberto, setModalAberto] = useState(false);
   const [modalBloqueioAberto, setModalBloqueioAberto] = useState(false);
+  const [agendamentoSelecionado, setAgendamentoSelecionado] = useState<Agendamento | null>(null);
+  const [alterandoStatus, setAlterandoStatus] = useState<string | null>(null);
+  const [erroStatus, setErroStatus] = useState<string | null>(null);
   const [barbeiros, setBarbeiros] = useState<Barbeiro[]>([]);
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [servicos, setServicos] = useState<Servico[]>([]);
@@ -245,6 +248,22 @@ export function Agenda() {
       carregar();
     } catch (err: any) {
       alert(err.response?.data?.erro || 'Erro ao remover bloqueio');
+    }
+  }
+
+  async function mudarStatus(novoStatus: string) {
+    if (!agendamentoSelecionado) return;
+    setAlterandoStatus(novoStatus);
+    setErroStatus(null);
+    try {
+      await api.put(`/agendamentos/${agendamentoSelecionado.id}`, { status: novoStatus });
+      setAgendamentoSelecionado(null);
+      carregar();
+    } catch (err: any) {
+      console.error('Erro ao alterar status:', err);
+      setErroStatus(err.response?.data?.erro || 'Erro ao alterar status. Tente novamente.');
+    } finally {
+      setAlterandoStatus(null);
     }
   }
 
@@ -572,6 +591,7 @@ export function Agenda() {
                         <div
                           key={ag.id}
                           className="truncate cursor-pointer flex flex-col"
+                          onClick={() => setAgendamentoSelecionado(ag)}
                           style={{
                             padding: '6px 8px',
                             background: bgB,
@@ -719,6 +739,98 @@ export function Agenda() {
             Confirmar Bloqueio
           </button>
         </div>
+      </Modal>
+
+      {/* Modal de Detalhes e Ações do Agendamento */}
+      <Modal 
+        aberto={agendamentoSelecionado !== null} 
+        onFechar={() => {
+          setAgendamentoSelecionado(null);
+          setErroStatus(null);
+        }} 
+        titulo="Detalhes do Agendamento"
+      >
+        {agendamentoSelecionado && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {erroStatus && (
+              <div style={{ padding: '12px', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid var(--error-text)', borderRadius: '6px', color: 'var(--error-text)', fontFamily: 'var(--fonte-interface)', fontSize: '13px', fontWeight: 500 }}>
+                {erroStatus}
+              </div>
+            )}
+            
+            <div className="flex flex-col gap-2 mb-2" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '14px', color: 'var(--text-primary)' }}>
+              <p><strong style={{ color: 'var(--text-muted)' }}>Cliente:</strong> {agendamentoSelecionado.cliente.usuario.nome}</p>
+              <p><strong style={{ color: 'var(--text-muted)' }}>Serviço:</strong> {agendamentoSelecionado.servico.nome} ({agendamentoSelecionado.servico.duracaoMinutos} min)</p>
+              <p><strong style={{ color: 'var(--text-muted)' }}>Barbeiro:</strong> {agendamentoSelecionado.barbeiro.usuario.nome}</p>
+              <p><strong style={{ color: 'var(--text-muted)' }}>Data/Hora:</strong> {new Date(agendamentoSelecionado.dataHora).toLocaleString('pt-BR')}</p>
+              <p><strong style={{ color: 'var(--text-muted)' }}>Status Atual:</strong> {statusLabels[agendamentoSelecionado.status] || agendamentoSelecionado.status}</p>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              {agendamentoSelecionado.status === 'AGUARDANDO' && (
+                <>
+                  <button 
+                    onClick={() => mudarStatus('CONFIRMADO')} 
+                    className="btn-primary w-full justify-center"
+                    disabled={alterandoStatus !== null}
+                    style={{ opacity: alterandoStatus !== null ? 0.7 : 1 }}
+                  >
+                    {alterandoStatus === 'CONFIRMADO' ? 'Carregando...' : 'Confirmar Agendamento'}
+                  </button>
+                  <button 
+                    onClick={() => mudarStatus('CONCLUIDO')} 
+                    className="btn-secondary w-full justify-center"
+                    disabled={alterandoStatus !== null}
+                    style={{ background: '#1A3D2A', color: 'var(--success-text)', opacity: alterandoStatus !== null ? 0.7 : 1 }}
+                  >
+                    {alterandoStatus === 'CONCLUIDO' ? 'Carregando...' : 'Concluir Agendamento'}
+                  </button>
+                  <button 
+                    onClick={() => mudarStatus('CANCELADO')} 
+                    className="btn-secondary w-full justify-center"
+                    disabled={alterandoStatus !== null}
+                    style={{ background: 'var(--error)', color: 'var(--error-text)', opacity: alterandoStatus !== null ? 0.7 : 1 }}
+                  >
+                    {alterandoStatus === 'CANCELADO' ? 'Carregando...' : 'Cancelar Agendamento'}
+                  </button>
+                </>
+              )}
+
+              {agendamentoSelecionado.status === 'CONFIRMADO' && (
+                <>
+                  <button 
+                    onClick={() => mudarStatus('CONCLUIDO')} 
+                    className="btn-secondary w-full justify-center"
+                    disabled={alterandoStatus !== null}
+                    style={{ background: '#1A3D2A', color: 'var(--success-text)', opacity: alterandoStatus !== null ? 0.7 : 1 }}
+                  >
+                    {alterandoStatus === 'CONCLUIDO' ? 'Carregando...' : 'Concluir Agendamento'}
+                  </button>
+                  <button 
+                    onClick={() => mudarStatus('CANCELADO')} 
+                    className="btn-secondary w-full justify-center"
+                    disabled={alterandoStatus !== null}
+                    style={{ background: 'var(--error)', color: 'var(--error-text)', opacity: alterandoStatus !== null ? 0.7 : 1 }}
+                  >
+                    {alterandoStatus === 'CANCELADO' ? 'Carregando...' : 'Cancelar Agendamento'}
+                  </button>
+                </>
+              )}
+
+              {(agendamentoSelecionado.status === 'CONCLUIDO' || agendamentoSelecionado.status === 'CANCELADO') && (
+                <button 
+                  onClick={() => {
+                    setAgendamentoSelecionado(null);
+                    setErroStatus(null);
+                  }} 
+                  className="btn-secondary w-full justify-center"
+                >
+                  Fechar
+                </button>
+              )}
+            </div>
+          </div>
+        )}
       </Modal>
     </div>
   );
