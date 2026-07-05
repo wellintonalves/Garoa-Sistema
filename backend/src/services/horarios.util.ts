@@ -106,7 +106,7 @@ export class HorariosUtil {
     }
 
     const agora = new Date();
-    const slots = [];
+    const slots: Array<{ horario: string; disponivel: boolean; ocupado?: boolean; agendamentoId?: string; bloqueado?: boolean; motivoBloqueio?: string | null }> = [];
 
     // O gerador base será de 30 em 30 min (padrão)
     // Para verificação correta de disponibilidade, avaliamos duracaoMinutos.
