@@ -21,7 +21,7 @@ export const prisma = basePrisma.$extends({
         const ignoredModels = ['Barbearia', 'Usuario', 'Cliente', 'ClienteBarbearia', 'AprovacaoEdicao', 'BloqueioAgenda'];
         
         if (barbeariaId && !ignoredModels.includes(model)) {
-          if (['findMany', 'findFirst', 'findUnique', 'count', 'updateMany', 'deleteMany'].includes(operation)) {
+          if (['findMany', 'findFirst', 'findUnique', 'count', 'updateMany', 'deleteMany', 'aggregate', 'groupBy'].includes(operation)) {
             (args as any).where = { ...(args as any).where, barbeariaId };
           } else if (['create', 'createMany'].includes(operation)) {
             if (operation === 'create') {
