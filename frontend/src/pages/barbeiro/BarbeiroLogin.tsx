@@ -34,7 +34,7 @@ export function BarbeiroLogin() {
 
       {/* Logo */}
       <div className="flex flex-col items-center mt-12 mb-10 animate-fade-in">
-        <div className="w-20 h-20 rounded-none flex items-center justify-center mb-6"
+        <div className="w-20 h-20 rounded-full flex items-center justify-center mb-6"
           style={{ background: 'rgba(245, 158, 11, 0.10)' }}>
           <Scissors size={36} style={{ color: '#F59E0B' }} />
         </div>
@@ -52,7 +52,7 @@ export function BarbeiroLogin() {
           letterSpacing: '0.1em',
           color: '#94A3B8',
           marginTop: '8px',
-          textTransform: ''
+          textTransform: 'uppercase'
         }}>
           Garoa Barbearia
         </p>
@@ -102,7 +102,7 @@ export function BarbeiroLogin() {
         </div>
 
         <button type="submit" disabled={enviando}
-          className="flex items-center gap-2 py-3 bg-[#F59E0B] hover:bg-[#D97706] text-[#0F172A] font-bold  tracking-widest text-xs rounded transition-colors w-full justify-center"
+          className="flex items-center gap-2 py-3 bg-[#F59E0B] hover:bg-[#D97706] text-[#0F172A] font-bold uppercase tracking-widest text-xs rounded transition-colors w-full justify-center"
           style={{ padding: '14px', fontSize: '13px', marginTop: '8px' }}>
           {enviando ? 'Entrando...' : 'Entrar'}
         </button>

@@ -107,7 +107,7 @@ export function Agendar() {
     <div className="min-h-screen bg-[var(--fundo-pagina)] text-white flex flex-col font-body">
       {/* Header Público */}
       <header className="h-16 flex items-center justify-center bg-[var(--bg-surface)] border-b border-[var(--border)] sticky top-0 z-10">
-        <h1 className="font-display text-xl tracking-wider text-[var(--cor-primaria)] ">
+        <h1 className="font-display text-xl tracking-wider text-[var(--cor-primaria)] uppercase">
           {nomeBarbearia}
         </h1>
       </header>
@@ -116,7 +116,7 @@ export function Agendar() {
       <main className="flex-1 max-w-md w-full mx-auto p-4 flex flex-col">
         {etapa < 6 && (
           <div className="mb-6">
-            <div className="flex justify-between text-xs font-mono text-[var(--text-muted)] mb-2  tracking-widest">
+            <div className="flex justify-between text-xs font-mono text-[var(--text-muted)] mb-2 uppercase tracking-widest">
               <span>Etapa {etapa} de 5</span>
             </div>
             <div className="h-1 w-full bg-[var(--bg-surface2)] rounded overflow-hidden">
@@ -164,7 +164,7 @@ export function Agendar() {
             <button 
               onClick={() => setEtapa(2)}
               disabled={!servicoId}
-              className="mt-4 flex items-center justify-center gap-2 w-full py-3 bg-[var(--cor-primaria)] hover:bg-[var(--cor-primaria)] disabled:opacity-50 disabled:cursor-not-allowed text-black font-bold  tracking-widest text-sm rounded transition-colors"
+              className="mt-4 flex items-center justify-center gap-2 w-full py-3 bg-[var(--cor-primaria)] hover:bg-[var(--cor-primaria)] disabled:opacity-50 disabled:cursor-not-allowed text-black font-bold uppercase tracking-widest text-sm rounded transition-colors"
             >
               Avançar <ChevronRight size={18} />
             </button>
@@ -191,7 +191,7 @@ export function Agendar() {
                     : 'border-[var(--border)] bg-[var(--bg-surface)] hover:border-[var(--border-hover)]'
                 }`}
               >
-                <div className="w-12 h-12 rounded-none bg-[var(--bg-surface2)] flex items-center justify-center">
+                <div className="w-12 h-12 rounded-full bg-[var(--bg-surface2)] flex items-center justify-center">
                   <Scissors size={20} className="text-[var(--text-muted)]" />
                 </div>
                 <div>
@@ -210,7 +210,7 @@ export function Agendar() {
                       : 'border-[var(--border)] bg-[var(--bg-surface)] hover:border-[var(--border-hover)]'
                   }`}
                 >
-                  <div className="w-12 h-12 rounded-none bg-[var(--bg-surface2)] flex items-center justify-center overflow-hidden">
+                  <div className="w-12 h-12 rounded-full bg-[var(--bg-surface2)] flex items-center justify-center overflow-hidden">
                     {b.foto ? (
                       <img src={b.foto} alt={b.usuario.nome} className="w-full h-full object-cover" />
                     ) : (
@@ -229,7 +229,7 @@ export function Agendar() {
 
             <button 
               onClick={() => { setEtapa(3); buscarHorarios(data); }}
-              className="mt-4 flex items-center justify-center gap-2 w-full py-3 bg-[var(--cor-primaria)] hover:bg-[var(--cor-primaria)] text-black font-bold  tracking-widest text-sm rounded transition-colors"
+              className="mt-4 flex items-center justify-center gap-2 w-full py-3 bg-[var(--cor-primaria)] hover:bg-[var(--cor-primaria)] text-black font-bold uppercase tracking-widest text-sm rounded transition-colors"
             >
               Avançar <ChevronRight size={18} />
             </button>
@@ -248,7 +248,7 @@ export function Agendar() {
             </div>
             
             <div className="mb-4">
-              <label className="text-sm text-[var(--text-muted)] font-mono  tracking-widest mb-2 block">Selecione o Dia</label>
+              <label className="text-sm text-[var(--text-muted)] font-mono uppercase tracking-widest mb-2 block">Selecione o Dia</label>
               <div className="flex gap-2 overflow-x-auto pb-2 snap-x">
                 {proximosDias.map((d, i) => {
                   const dataIso = dataBrasilia(d);
@@ -263,9 +263,9 @@ export function Agendar() {
                           : 'border-[var(--border)] bg-[var(--bg-surface)]'
                       }`}
                     >
-                      <span className="text-[10px]  font-mono text-[var(--text-muted)]">{diasDaSemanaAbrev[d.getDay()]}</span>
+                      <span className="text-[10px] uppercase font-mono text-[var(--text-muted)]">{diasDaSemanaAbrev[d.getDay()]}</span>
                       <span className="text-xl font-bold font-display">{d.getDate()}</span>
-                      <span className="text-[10px]  font-mono text-[var(--text-muted)]">{d.toLocaleDateString('pt-BR', { month: 'short' })}</span>
+                      <span className="text-[10px] uppercase font-mono text-[var(--text-muted)]">{d.toLocaleDateString('pt-BR', { month: 'short' })}</span>
                     </div>
                   );
                 })}
@@ -273,7 +273,7 @@ export function Agendar() {
             </div>
 
             <div className="flex-1">
-              <label className="text-sm text-[var(--text-muted)] font-mono  tracking-widest mb-2 block">
+              <label className="text-sm text-[var(--text-muted)] font-mono uppercase tracking-widest mb-2 block">
                 {carregando ? 'Buscando...' : 'Horários Disponíveis'}
               </label>
               
@@ -309,7 +309,7 @@ export function Agendar() {
             <button 
               onClick={() => setEtapa(4)}
               disabled={!data || !horario}
-              className="mt-4 flex items-center justify-center gap-2 w-full py-3 bg-[var(--cor-primaria)] hover:bg-[var(--cor-primaria)] disabled:opacity-50 disabled:cursor-not-allowed text-black font-bold  tracking-widest text-sm rounded transition-colors"
+              className="mt-4 flex items-center justify-center gap-2 w-full py-3 bg-[var(--cor-primaria)] hover:bg-[var(--cor-primaria)] disabled:opacity-50 disabled:cursor-not-allowed text-black font-bold uppercase tracking-widest text-sm rounded transition-colors"
             >
               Avançar <ChevronRight size={18} />
             </button>
@@ -329,7 +329,7 @@ export function Agendar() {
             
             <div className="space-y-4">
               <div>
-                <label className="text-xs text-[var(--text-muted)] font-mono  tracking-widest mb-1 block">Nome Completo</label>
+                <label className="text-xs text-[var(--text-muted)] font-mono uppercase tracking-widest mb-1 block">Nome Completo</label>
                 <input 
                   type="text" 
                   value={cliente.nome}
@@ -339,7 +339,7 @@ export function Agendar() {
                 />
               </div>
               <div>
-                <label className="text-xs text-[var(--text-muted)] font-mono  tracking-widest mb-1 block">Telefone (WhatsApp)</label>
+                <label className="text-xs text-[var(--text-muted)] font-mono uppercase tracking-widest mb-1 block">Telefone (WhatsApp)</label>
                 <input 
                   type="tel" 
                   value={cliente.telefone}
@@ -349,7 +349,7 @@ export function Agendar() {
                 />
               </div>
               <div>
-                <label className="text-xs text-[var(--text-muted)] font-mono  tracking-widest mb-1 block">Observação (Opcional)</label>
+                <label className="text-xs text-[var(--text-muted)] font-mono uppercase tracking-widest mb-1 block">Observação (Opcional)</label>
                 <textarea 
                   value={cliente.observacoes}
                   onChange={(e) => setCliente({...cliente, observacoes: e.target.value})}
@@ -362,7 +362,7 @@ export function Agendar() {
             <button 
               onClick={() => setEtapa(5)}
               disabled={!cliente.nome || !cliente.telefone}
-              className="mt-auto flex items-center justify-center gap-2 w-full py-3 bg-[var(--cor-primaria)] hover:bg-[var(--cor-primaria)] disabled:opacity-50 disabled:cursor-not-allowed text-black font-bold  tracking-widest text-sm rounded transition-colors"
+              className="mt-auto flex items-center justify-center gap-2 w-full py-3 bg-[var(--cor-primaria)] hover:bg-[var(--cor-primaria)] disabled:opacity-50 disabled:cursor-not-allowed text-black font-bold uppercase tracking-widest text-sm rounded transition-colors"
             >
               Avançar <ChevronRight size={18} />
             </button>
@@ -382,29 +382,29 @@ export function Agendar() {
             
             <div className="bg-[var(--bg-surface)] border border-[var(--border)] rounded p-5 space-y-4">
               <div>
-                <p className="text-[10px] text-[var(--text-muted)] font-mono  tracking-widest mb-1">Serviço</p>
+                <p className="text-[10px] text-[var(--text-muted)] font-mono uppercase tracking-widest mb-1">Serviço</p>
                 <p className="font-bold">{servicoSelecionado?.nome}</p>
                 <p className="text-sm text-[var(--cor-primaria)] font-mono">R$ {Number(servicoSelecionado?.preco || 0).toFixed(2)}</p>
               </div>
               <div className="h-px bg-[var(--border)] w-full"></div>
               <div>
-                <p className="text-[10px] text-[var(--text-muted)] font-mono  tracking-widest mb-1">Profissional</p>
+                <p className="text-[10px] text-[var(--text-muted)] font-mono uppercase tracking-widest mb-1">Profissional</p>
                 <p className="font-bold">{barbeiroId ? barbeiroSelecionado?.usuario.nome : 'Sem preferência (Primeiro disponível)'}</p>
               </div>
               <div className="h-px bg-[var(--border)] w-full"></div>
               <div className="flex gap-8">
                 <div>
-                  <p className="text-[10px] text-[var(--text-muted)] font-mono  tracking-widest mb-1">Data</p>
+                  <p className="text-[10px] text-[var(--text-muted)] font-mono uppercase tracking-widest mb-1">Data</p>
                   <p className="font-bold">{new Date(data).toLocaleDateString('pt-BR')}</p>
                 </div>
                 <div>
-                  <p className="text-[10px] text-[var(--text-muted)] font-mono  tracking-widest mb-1">Horário</p>
+                  <p className="text-[10px] text-[var(--text-muted)] font-mono uppercase tracking-widest mb-1">Horário</p>
                   <p className="font-bold">{horario}</p>
                 </div>
               </div>
               <div className="h-px bg-[var(--border)] w-full"></div>
               <div>
-                <p className="text-[10px] text-[var(--text-muted)] font-mono  tracking-widest mb-1">Seus Dados</p>
+                <p className="text-[10px] text-[var(--text-muted)] font-mono uppercase tracking-widest mb-1">Seus Dados</p>
                 <p className="font-bold">{cliente.nome}</p>
                 <p className="text-sm text-[var(--text-muted)]">{cliente.telefone}</p>
               </div>
@@ -413,7 +413,7 @@ export function Agendar() {
             <button 
               onClick={confirmarAgendamento}
               disabled={carregando}
-              className="mt-auto flex items-center justify-center gap-2 w-full py-3 bg-[var(--success-text)] hover:bg-[#2e9c60] text-black font-bold  tracking-widest text-sm rounded transition-colors"
+              className="mt-auto flex items-center justify-center gap-2 w-full py-3 bg-[var(--success-text)] hover:bg-[#2e9c60] text-black font-bold uppercase tracking-widest text-sm rounded transition-colors"
             >
               {carregando ? 'Processando...' : 'Confirmar Agendamento'}
             </button>
@@ -432,7 +432,7 @@ export function Agendar() {
 
             <button 
               onClick={() => navigate('/fidelidade')}
-              className="mt-auto flex items-center justify-center gap-2 w-full py-3 bg-[var(--bg-surface)] border border-[var(--border)] hover:border-[var(--cor-primaria)] text-white font-bold  tracking-widest text-sm rounded transition-colors"
+              className="mt-auto flex items-center justify-center gap-2 w-full py-3 bg-[var(--bg-surface)] border border-[var(--border)] hover:border-[var(--cor-primaria)] text-white font-bold uppercase tracking-widest text-sm rounded transition-colors"
             >
               Ver meus Pontos de Fidelidade
             </button>

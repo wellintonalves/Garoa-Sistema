@@ -67,7 +67,7 @@ export function BarbeiroComissoes() {
           }}>
             <div className="flex items-center gap-3 mb-4">
               <DollarSign size={20} style={{ color: 'rgba(var(--cor-primaria-rgb), 0.15)' }} />
-              <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', letterSpacing: '0.15em', textTransform: '', color: 'var(--cor-icone)' }}>
+              <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--cor-icone)' }}>
                 Sua Comissão ({dados.percentualComissao}%)
               </span>
             </div>
@@ -88,7 +88,7 @@ export function BarbeiroComissoes() {
 
           {/* Histórico */}
           <div>
-            <h2 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', letterSpacing: '0.18em', textTransform: '', color: 'var(--cor-icone)', marginBottom: '12px' }}>
+            <h2 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--cor-icone)', marginBottom: '12px' }}>
               <TrendingUp size={12} className="inline mr-1" /> Histórico no Período
             </h2>
             {dados.lancamentos.length === 0 ? (

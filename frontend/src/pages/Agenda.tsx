@@ -493,7 +493,7 @@ export function Agenda() {
                       fontFamily: 'var(--fonte-interface)',
                       fontSize: '9px',
                       letterSpacing: '0.14em',
-                      textTransform: '',
+                      textTransform: 'uppercase',
                       color: 'var(--text-muted)',
                     }}
                   >
@@ -663,7 +663,7 @@ export function Agenda() {
                 fontFamily: 'var(--fonte-interface)',
                 fontSize: '9px',
                 letterSpacing: '0.1em',
-                textTransform: '',
+                textTransform: 'uppercase',
                 color: 'var(--text-muted)',
               }}
             >

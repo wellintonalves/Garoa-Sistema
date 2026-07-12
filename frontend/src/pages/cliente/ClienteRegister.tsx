@@ -43,13 +43,13 @@ export function ClienteRegister() {
       {/* Header */}
       <button onClick={() => navigate('/cliente')}
         className="flex items-center gap-2 mb-8"
-        style={{ color: '#94A3B8', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--fonte-interface)', fontSize: '11px', letterSpacing: '0.1em', textTransform: '' as const }}>
+        style={{ color: '#94A3B8', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--fonte-interface)', fontSize: '11px', letterSpacing: '0.1em', textTransform: 'uppercase' as const }}>
         <ArrowLeft size={16} /> Voltar
       </button>
 
       {/* Logo */}
       <div className="flex flex-col items-center mb-8">
-        <div className="w-16 h-16 rounded-none flex items-center justify-center mb-4"
+        <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4"
           style={{ background: 'rgba(245, 158, 11, 0.10)' }}>
           <Scissors size={28} style={{ color: '#F59E0B' }} />
         </div>
@@ -130,7 +130,7 @@ export function ClienteRegister() {
         </div>
 
         <button type="submit" disabled={enviando}
-          className="flex items-center gap-2 py-3 bg-[#F59E0B] hover:bg-[#D97706] text-[#0F172A] font-bold  tracking-widest text-xs rounded transition-colors w-full justify-center"
+          className="flex items-center gap-2 py-3 bg-[#F59E0B] hover:bg-[#D97706] text-[#0F172A] font-bold uppercase tracking-widest text-xs rounded transition-colors w-full justify-center"
           style={{ padding: '14px', fontSize: '13px', marginTop: '8px' }}>
           {enviando ? 'Criando...' : 'Criar Minha Conta'}
         </button>

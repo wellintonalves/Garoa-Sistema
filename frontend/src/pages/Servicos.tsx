@@ -180,7 +180,7 @@ export function Servicos() {
             <div className="flex flex-col gap-2">
               <div className="flex items-center gap-2">
                 <input type="color" value={form.cor} onChange={e => setForm({...form, cor: e.target.value})} style={{ width: '38px', height: '38px', padding: '0', border: '1px solid var(--border)', borderRadius: '4px', cursor: 'pointer', background: 'transparent' }} />
-                <input type="text" value={form.cor} onChange={e => setForm({...form, cor: e.target.value})} className="ds-input flex-1" style={{ textTransform: '' }} />
+                <input type="text" value={form.cor} onChange={e => setForm({...form, cor: e.target.value})} className="ds-input flex-1" style={{ textTransform: 'uppercase' }} />
               </div>
               <div className="flex flex-wrap gap-2 mt-1">
                 {coresSugeridas.map(c => (

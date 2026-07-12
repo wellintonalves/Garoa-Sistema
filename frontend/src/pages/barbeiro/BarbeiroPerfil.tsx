@@ -42,12 +42,12 @@ export function BarbeiroPerfil() {
           <img 
             src={perfil.foto} 
             alt={perfil.usuario.nome} 
-            className="w-24 h-24 rounded-none object-cover mb-4"
+            className="w-24 h-24 rounded-full object-cover mb-4"
             style={{ border: '2px solid rgba(var(--cor-primaria-rgb), 0.30)' }} 
           />
         ) : (
           <div 
-            className="w-24 h-24 rounded-none flex items-center justify-center mb-4"
+            className="w-24 h-24 rounded-full flex items-center justify-center mb-4"
             style={{ 
               background: 'rgba(var(--cor-primaria-rgb), 0.10)', 
               border: '2px solid rgba(var(--cor-primaria-rgb), 0.30)', 
@@ -71,7 +71,7 @@ export function BarbeiroPerfil() {
         <div className="p-4" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
           <div className="flex items-center gap-3 mb-2">
             <User size={16} style={{ color: 'var(--cor-icone)' }} />
-            <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--text-muted)', textTransform: '' }}>Comissão Padrão</span>
+            <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Comissão Padrão</span>
           </div>
           <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '16px', color: 'var(--text-primary)' }}>
             {perfil.comissaoPercent}%
@@ -81,7 +81,7 @@ export function BarbeiroPerfil() {
         <div className="p-4" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
           <div className="flex items-center gap-3 mb-3">
             <Scissors size={16} style={{ color: 'var(--cor-icone)' }} />
-            <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--text-muted)', textTransform: '' }}>Especialidades</span>
+            <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Especialidades</span>
           </div>
           <div className="flex flex-wrap gap-2">
             {perfil.especialidades.map((e, i) => (
@@ -93,7 +93,7 @@ export function BarbeiroPerfil() {
 
       {/* Aparência */}
       <div className="mb-8">
-        <h2 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', letterSpacing: '0.18em', textTransform: '' as const, color: 'var(--cor-icone)', marginBottom: '12px' }}>
+        <h2 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase' as const, color: 'var(--cor-icone)', marginBottom: '12px' }}>
           Aparência
         </h2>
         <div className="flex bg-surface border border-borda rounded">

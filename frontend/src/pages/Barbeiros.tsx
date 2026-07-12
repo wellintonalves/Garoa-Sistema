@@ -172,7 +172,7 @@ export function Barbeiros() {
             <div className="flex items-center gap-4 mb-4">
               {/* Avatar com iniciais ou foto */}
               {b.foto ? (
-                <img src={b.foto} alt={b.usuario.nome} className="w-12 h-12 rounded-none object-cover border-2 border-[var(--border)]" />
+                <img src={b.foto} alt={b.usuario.nome} className="w-12 h-12 rounded-full object-cover border-2 border-[var(--border)]" />
               ) : (
                 <div
                   className="flex items-center justify-center flex-shrink-0"
@@ -288,7 +288,7 @@ export function Barbeiros() {
                   fontFamily: 'var(--fonte-interface)',
                   fontSize: '9px',
                   letterSpacing: '0.12em',
-                  textTransform: '',
+                  textTransform: 'uppercase',
                   color: 'var(--text-muted)',
                   background: 'transparent',
                   border: 'none',
@@ -363,15 +363,15 @@ export function Barbeiros() {
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '13px' }}>
                     <div className="flex justify-between items-center">
-                      <span style={{ color: 'var(--text-muted)', fontFamily: 'var(--fonte-interface)', fontSize: '10px', letterSpacing: '0.1em', textTransform: '' }}>Produzido</span>
+                      <span style={{ color: 'var(--text-muted)', fontFamily: 'var(--fonte-interface)', fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Produzido</span>
                       <span style={{ color: 'var(--text-primary)', fontFamily: 'var(--fonte-numeros)', fontSize: '12px' }}>{fmt(b.bruto)}</span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span style={{ color: 'var(--text-muted)', fontFamily: 'var(--fonte-interface)', fontSize: '10px', letterSpacing: '0.1em', textTransform: '' }}>Comissão</span>
+                      <span style={{ color: 'var(--text-muted)', fontFamily: 'var(--fonte-interface)', fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Comissão</span>
                       <span style={{ color: 'var(--cor-icone)', fontFamily: 'var(--fonte-numeros)', fontSize: '12px', fontWeight: 500 }}>{fmt(b.comissao)}</span>
                     </div>
                     <div className="flex justify-between items-center" style={{ borderTop: '1px solid var(--border)', paddingTop: '8px', marginTop: '4px' }}>
-                      <span style={{ color: 'var(--text-muted)', fontFamily: 'var(--fonte-interface)', fontSize: '10px', letterSpacing: '0.1em', textTransform: '' }}>Líquido</span>
+                      <span style={{ color: 'var(--text-muted)', fontFamily: 'var(--fonte-interface)', fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Líquido</span>
                       <span style={{ color: 'var(--success-text)', fontFamily: 'var(--fonte-numeros)', fontSize: '12px', fontWeight: 500 }}>{fmt(b.liquido)}</span>
                     </div>
                   </div>
@@ -392,9 +392,9 @@ export function Barbeiros() {
             <label className="input-label">Foto do Barbeiro (Opcional, Max 2MB)</label>
             <div className="flex items-center gap-4">
               {form.foto ? (
-                <img src={form.foto} alt="Foto do Barbeiro" className="w-12 h-12 object-cover rounded-none border border-[var(--border)]" />
+                <img src={form.foto} alt="Foto do Barbeiro" className="w-12 h-12 object-cover rounded-full border border-[var(--border)]" />
               ) : (
-                <div className="w-12 h-12 bg-[rgba(var(--cor-primaria-rgb), 0.10)] text-[rgba(var(--cor-primaria-rgb), 0.15)] rounded-none flex items-center justify-center font-bold">
+                <div className="w-12 h-12 bg-[rgba(var(--cor-primaria-rgb), 0.10)] text-[rgba(var(--cor-primaria-rgb), 0.15)] rounded-full flex items-center justify-center font-bold">
                   {form.nome ? getIniciais(form.nome) : 'B'}
                 </div>
               )}
@@ -429,7 +429,7 @@ export function Barbeiros() {
             <div><label className="input-label">Cor</label>
             <div className="flex items-center gap-2">
               <input type="color" value={form.cor} onChange={e => setForm({...form, cor: e.target.value})} style={{ width: '38px', height: '38px', padding: '0', border: '1px solid var(--border)', borderRadius: '4px', cursor: 'pointer', background: 'transparent' }} />
-              <input type="text" value={form.cor} onChange={e => setForm({...form, cor: e.target.value})} className="ds-input flex-1" style={{ textTransform: '' }} />
+              <input type="text" value={form.cor} onChange={e => setForm({...form, cor: e.target.value})} className="ds-input flex-1" style={{ textTransform: 'uppercase' }} />
             </div></div>
           </div>
           <button onClick={salvarBarbeiro} className="btn-primary w-full justify-center">{editandoId ? "Salvar Alterações" : "Cadastrar"}</button>

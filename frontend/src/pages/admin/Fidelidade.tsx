@@ -436,7 +436,7 @@ function TabRecompensas({ showToast }: { showToast: (m: string, t?: 'ok' | 'erro
             <thead>
               <tr style={{ borderBottom: '1px solid var(--border)' }}>
                 {['Nome', 'Tipo / Valor', 'Pontos', 'Status', 'Ações'].map(h => (
-                  <th key={h} style={{ padding: '10px 12px', fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)', textAlign: 'left', textTransform: '', letterSpacing: '0.06em' }}>{h}</th>
+                  <th key={h} style={{ padding: '10px 12px', fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)', textAlign: 'left', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{h}</th>
                 ))}
               </tr>
             </thead>
@@ -768,7 +768,7 @@ function TabHistorico({ showToast }: { showToast: (m: string, t?: 'ok' | 'erro')
             <thead>
               <tr style={{ borderBottom: '1px solid var(--border)' }}>
                 {['Data', 'Cliente', 'Recompensa', 'Pontos', 'Status'].map(h => (
-                  <th key={h} style={{ padding: '10px 12px', fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)', textAlign: 'left', textTransform: '', letterSpacing: '0.06em' }}>{h}</th>
+                  <th key={h} style={{ padding: '10px 12px', fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)', textAlign: 'left', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{h}</th>
                 ))}
               </tr>
             </thead>
@@ -867,7 +867,7 @@ function TabPendentes({ showToast, onUpdateCount }: { showToast: (m: string, t?:
             <thead>
               <tr style={{ borderBottom: '1px solid var(--border)' }}>
                 {['Data', 'Cliente', 'Recompensa', 'Pontos', 'Ações'].map(h => (
-                  <th key={h} style={{ padding: '10px 12px', fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)', textAlign: 'left', textTransform: '', letterSpacing: '0.06em' }}>{h}</th>
+                  <th key={h} style={{ padding: '10px 12px', fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)', textAlign: 'left', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{h}</th>
                 ))}
               </tr>
             </thead>
@@ -929,7 +929,7 @@ function SectionTitle({ children, style }: { children: React.ReactNode; style?: 
   return (
     <h3 style={{
       fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)',
-      textTransform: '', letterSpacing: '0.08em', margin: '0 0 14px', ...style,
+      textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 14px', ...style,
     }}>
       {children}
     </h3>
@@ -939,7 +939,7 @@ function SectionTitle({ children, style }: { children: React.ReactNode; style?: 
 function FieldGroup({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
   return (
     <div>
-      <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)', textTransform: '', letterSpacing: '0.06em', display: 'block', marginBottom: '6px' }}>
+      <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', display: 'block', marginBottom: '6px' }}>
         {label}
       </label>
       {children}

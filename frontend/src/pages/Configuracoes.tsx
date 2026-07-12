@@ -169,7 +169,7 @@ export function Configuracoes() {
             </div>
             
             <div className="p-4 bg-fundo border border-zinc-800 rounded space-y-4">
-              <h3 className="text-sm font-bold text-[var(--cor-primaria)]  tracking-wider">Identidade Visual</h3>
+              <h3 className="text-sm font-bold text-[var(--cor-primaria)] uppercase tracking-wider">Identidade Visual</h3>
               
               <div>
                 <label className="block text-sm font-medium mb-1">Logo da Barbearia (Max 2MB)</label>
@@ -262,15 +262,15 @@ export function Configuracoes() {
                     <p className="text-sm font-bold text-emerald-400 mb-2">Detectamos estas cores na sua logo. Deseja aplicá-las no sistema?</p>
                     <div className="flex items-center gap-4 mb-4">
                       <div className="flex flex-col items-center gap-1">
-                        <div className="w-8 h-8 rounded-none border border-zinc-700 shadow" style={{ backgroundColor: sugestaoCores.primaria }}></div>
+                        <div className="w-8 h-8 rounded-full border border-zinc-700 shadow" style={{ backgroundColor: sugestaoCores.primaria }}></div>
                         <span className="text-[10px] text-zinc-400">{sugestaoCores.primaria}</span>
                       </div>
                       <div className="flex flex-col items-center gap-1">
-                        <div className="w-8 h-8 rounded-none border border-zinc-700 shadow" style={{ backgroundColor: sugestaoCores.secundaria }}></div>
+                        <div className="w-8 h-8 rounded-full border border-zinc-700 shadow" style={{ backgroundColor: sugestaoCores.secundaria }}></div>
                         <span className="text-[10px] text-zinc-400">{sugestaoCores.secundaria}</span>
                       </div>
                       <div className="flex flex-col items-center gap-1">
-                        <div className="w-8 h-8 rounded-none border border-zinc-700 shadow" style={{ backgroundColor: sugestaoCores.fundo }}></div>
+                        <div className="w-8 h-8 rounded-full border border-zinc-700 shadow" style={{ backgroundColor: sugestaoCores.fundo }}></div>
                         <span className="text-[10px] text-zinc-400">{sugestaoCores.fundo}</span>
                       </div>
                     </div>
@@ -304,7 +304,7 @@ export function Configuracoes() {
               </div>
 
               <div className="mt-4 p-4 rounded border border-zinc-700 bg-black/20 text-white">
-                <p className="text-xs opacity-70 mb-2  tracking-widest">Preview no App</p>
+                <p className="text-xs opacity-70 mb-2 uppercase tracking-widest">Preview no App</p>
                 
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3 mb-4">

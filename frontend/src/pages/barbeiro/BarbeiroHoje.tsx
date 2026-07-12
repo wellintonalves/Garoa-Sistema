@@ -107,7 +107,7 @@ export function BarbeiroHoje() {
       {/* Header */}
       <div className="mb-8 flex justify-between items-start">
         <div>
-          <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--cor-icone)', letterSpacing: '0.15em', textTransform: '' }}>
+          <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--cor-icone)', letterSpacing: '0.15em', textTransform: 'uppercase' }}>
             Hoje
           </p>
           <h1 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '28px', color: 'var(--text-primary)', letterSpacing: '0.04em' }}>
@@ -120,7 +120,7 @@ export function BarbeiroHoje() {
             <input type="checkbox" value="" className="sr-only peer" checked={trabalhandoAgora} onChange={toggleTrabalhando} disabled={atualizandoStatus} />
             <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div>
           </label>
-          <span className="text-[9px]  tracking-wider mt-1" style={{ color: trabalhandoAgora ? 'var(--success-text, #22c55e)' : 'var(--text-muted)' }}>
+          <span className="text-[9px] uppercase tracking-wider mt-1" style={{ color: trabalhandoAgora ? 'var(--success-text, #22c55e)' : 'var(--text-muted)' }}>
             {trabalhandoAgora ? 'Trabalhando' : 'Ausente'}
           </span>
         </div>
@@ -132,7 +132,7 @@ export function BarbeiroHoje() {
         <>
           {/* Pendentes */}
           <div className="mb-8">
-            <h2 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', letterSpacing: '0.18em', textTransform: '', color: 'var(--cor-icone)', marginBottom: '12px' }}>
+            <h2 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--cor-icone)', marginBottom: '12px' }}>
               Próximos Atendimentos ({pendentes.length})
             </h2>
             
@@ -184,7 +184,7 @@ export function BarbeiroHoje() {
           {/* Concluídos */}
           {concluidos.length > 0 && (
             <div>
-              <h2 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', letterSpacing: '0.18em', textTransform: '', color: 'var(--text-muted)', marginBottom: '12px' }}>
+              <h2 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '12px' }}>
                 Concluídos ({concluidos.length})
               </h2>
               <div className="flex flex-col gap-2">

@@ -362,7 +362,7 @@ export function Vendas() {
               fontFamily: 'var(--fonte-interface)',
               fontSize: '12px',
               letterSpacing: '0.08em',
-              textTransform: '',
+              textTransform: 'uppercase',
               cursor: 'pointer',
               marginBottom: '-1px',
             }}
@@ -526,7 +526,7 @@ export function Vendas() {
               {/* Ranking */}
               {resumoVendas.rankingProdutos.length > 0 && (
                 <div className="card">
-                  <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', letterSpacing: '0.1em', textTransform: '', color: 'var(--text-muted)', marginBottom: '12px' }}>
+                  <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '12px' }}>
                     Mais Vendidos
                   </p>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -809,7 +809,7 @@ function KpiCard({ icon, label, valor, sub, cor }: {
     <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
       <div className="flex items-center gap-2">
         <span style={{ color: cor }}>{icon}</span>
-        <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', letterSpacing: '0.1em', textTransform: '', color: 'var(--text-muted)' }}>
+        <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text-muted)' }}>
           {label}
         </span>
       </div>
