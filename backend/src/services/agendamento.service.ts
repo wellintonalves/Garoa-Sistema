@@ -218,7 +218,7 @@ export class AgendamentoService {
       include: { barbearia: true },
     });
 
-    const configDia = await HorariosUtil.getConfigDia(barbeiro?.barbeariaId, data);
+    const configDia = await HorariosUtil.getConfigDia(barbeiro?.barbeariaId, data, barbeiroId);
 
     const slots = HorariosUtil.gerarSlotsDisponiveis({
       dataStr: data,

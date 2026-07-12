@@ -3,6 +3,7 @@ import { useBarbeiroAuth } from '../../hooks/useBarbeiroAuth';
 import { useModoTema } from '../../hooks/useModoTema';
 import { User, Scissors, LogOut, Sun, Moon, Monitor, Camera, Phone, Star, Save, Clock } from 'lucide-react';
 import barbeiroApi from '../../api/barbeiroApi';
+import { BarbeiroHorariosCard } from './BarbeiroHorariosCard';
 
 interface PerfilBarbeiro {
   id: string;
@@ -256,16 +257,13 @@ export function BarbeiroPerfil() {
           <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Definida pelo administrador da barbearia.</p>
         </div>
 
-        {/* Horários (Placeholder para Fase 3 estendida) */}
-        <div className="p-6 rounded-2xl border flex flex-col gap-4 opacity-75" style={{ background: 'var(--bg-surface)', borderColor: 'var(--border)' }}>
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg" style={{ background: 'var(--bg-surface2)' }}><Clock size={16} style={{ color: 'var(--cor-primaria)' }} /></div>
-            <span className="text-xs uppercase tracking-wider font-semibold" style={{ color: 'var(--text-muted)' }}>Horários de Trabalho</span>
-          </div>
-          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
-            Siga os horários da barbearia por enquanto. (Em breve configuração independente)
-          </p>
-        </div>
+        {/* Horários */}
+        <BarbeiroHorariosCard 
+          horariosIniciais={perfil.horariosTrabalho}
+          onSuccess={carregarPerfil}
+          mostrarErro={mostrarErro}
+          mostrarSucesso={mostrarSucesso}
+        />
 
       </div>
 

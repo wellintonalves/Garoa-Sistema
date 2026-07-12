@@ -16,14 +16,25 @@ export interface DiaConfig {
 
 export class HorariosUtil {
   /** Retorna a configuração do dia da semana (domingo a sabado) para a data informada */
-  static async getConfigDia(barbeariaId: string | null | undefined, dataStr: string): Promise<DiaConfig> {
-    const config = await ConfiguracaoService.obter(barbeariaId);
-    const horarios = (config.horariosFuncionamento as any) || {};
-
+  static async getConfigDia(barbeariaId: string | null | undefined, dataStr: string, barbeiroId?: string | null): Promise<DiaConfig> {
     const [ano, mes, dia] = dataStr.split('-').map(Number);
     const dataRef = new Date(ano, mes - 1, dia); 
     const diasSemana = ['domingo', 'segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sabado'];
     const diaSemanaNome = diasSemana[dataRef.getDay()];
+
+    if (barbeiroId) {
+      const { prisma } = require('../lib/prisma');
+      const barbeiro = await prisma.barbeiro.findUnique({ where: { id: barbeiroId } });
+      if (barbeiro && barbeiro.horariosTrabalho) {
+        const horariosBarbeiro = barbeiro.horariosTrabalho as any;
+        if (horariosBarbeiro[diaSemanaNome]) {
+           return horariosBarbeiro[diaSemanaNome];
+        }
+      }
+    }
+
+    const config = await ConfiguracaoService.obter(barbeariaId);
+    const horarios = (config.horariosFuncionamento as any) || {};
 
     const configDia = horarios[diaSemanaNome];
     if (!configDia) {
@@ -35,6 +46,7 @@ export class HorariosUtil {
   /** Valida se um horário e duração específicos estão dentro do expediente e não cruzam o almoço */
   static async validarDentroDoFuncionamento(params: {
     barbeariaId: string | null | undefined;
+    barbeiroId?: string | null;
     dataHora: Date;
     duracaoMinutos: number;
   }): Promise<void> {
@@ -44,7 +56,7 @@ export class HorariosUtil {
     const dia = String(params.dataHora.getUTCDate()).padStart(2, '0');
     const dataSimples = `${ano}-${mes}-${dia}`;
 
-    const configDia = await this.getConfigDia(params.barbeariaId, dataSimples);
+    const configDia = await this.getConfigDia(params.barbeariaId, dataSimples, params.barbeiroId);
     if (configDia.fechado) {
       throw new Error('A barbearia está fechada neste dia.');
     }

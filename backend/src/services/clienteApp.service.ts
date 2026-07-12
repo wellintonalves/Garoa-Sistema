@@ -484,7 +484,7 @@ export class ClienteAppService {
       }
     });
 
-    const configDia = await HorariosUtil.getConfigDia(barbeariaId, data);
+    const configDia = await HorariosUtil.getConfigDia(barbeariaId, data, barbeiroId);
     
     const slotsInfo = HorariosUtil.gerarSlotsDisponiveis({
       dataStr: data,
@@ -515,6 +515,7 @@ export class ClienteAppService {
 
     await HorariosUtil.validarDentroDoFuncionamento({
       barbeariaId,
+      barbeiroId: dados.barbeiroId,
       dataHora,
       duracaoMinutos: servico.duracaoMinutos
     });

@@ -54,12 +54,6 @@ export class PublicoController {
       }
 
       const barbearia = await prisma.barbearia.findFirst();
-      const configDia = await HorariosUtil.getConfigDia(barbearia?.id, dataStr);
-
-      if (configDia.fechado) {
-        res.json([]);
-        return;
-      }
 
       const servico = await prisma.servico.findUnique({ where: { id: servicoId as string } });
       if (!servico) {
@@ -108,9 +102,12 @@ export class PublicoController {
             }
          });
          
+         const configDiaBarbeiro = await HorariosUtil.getConfigDia(barbearia?.id, dataStr, barb.id);
+         if (configDiaBarbeiro.fechado) continue;
+
          const slots = HorariosUtil.gerarSlotsDisponiveis({
            dataStr,
-           configDia,
+           configDia: configDiaBarbeiro,
            duracaoMinutos: duracaoTotal,
            agendamentos: agendamentosDoBarbeiro,
            bloqueios: bloqueiosDoBarbeiro
