@@ -94,11 +94,11 @@ export function ClienteLayout() {
       <aside className="hidden md:flex flex-col w-[220px] flex-shrink-0" style={{ background: 'var(--fundo-sidebar)', borderRight: '1px solid var(--borda)' }}>
         {/* Header (Letterhead) */}
         <div className="flex flex-col items-center justify-center py-8 border-b" style={{ borderColor: 'var(--borda)' }}>
-          <h1 style={{ fontFamily: 'var(--fonte-interface)', fontWeight: 600, fontSize: '14px', letterSpacing: '0.4em', textTransform: 'uppercase', color: 'var(--text-primary)' }}>
+          <h1 style={{ fontFamily: 'var(--fonte-interface)', fontWeight: 600, fontSize: '14px', letterSpacing: '0.4em', textTransform: '', color: 'var(--text-primary)' }}>
             {barbearia?.nome || 'BARBEARIA'}
           </h1>
           {barbearia?.createdAt && (
-            <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '8px', letterSpacing: '0.4em', color: 'var(--amber)', textTransform: 'uppercase', marginTop: '4px', marginBottom: '12px' }}>
+            <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '8px', letterSpacing: '0.4em', color: 'var(--amber)', textTransform: '', marginTop: '4px', marginBottom: '12px' }}>
               Desde {new Date(barbearia.createdAt).getFullYear()}
             </p>
           )}
@@ -133,7 +133,7 @@ export function ClienteLayout() {
         {/* Rodapé Sidebar (Perfil) */}
         <div className="p-4 border-t" style={{ borderColor: 'var(--borda)' }}>
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(var(--cor-primaria-rgb), 0.12)', color: 'var(--amber)', fontFamily: 'var(--fonte-interface)', fontSize: '12px', fontWeight: 600 }}>
+            <div className="w-8 h-8 rounded-none flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(var(--cor-primaria-rgb), 0.12)', color: 'var(--amber)', fontFamily: 'var(--fonte-interface)', fontSize: '12px', fontWeight: 600 }}>
               {cliente?.nome.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase() || 'CL'}
             </div>
             <div className="min-w-0">

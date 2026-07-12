@@ -1,6 +1,9 @@
 @import "tailwindcss";
 
 /* ================================================================
+@import "tailwindcss";
+
+/* ================================================================
    DESIGN SYSTEM — BARBEARIA URBANA
    Industrial refinado · Cantos retos · Âmbar como único acento
    ================================================================ */
@@ -8,7 +11,7 @@
 /* === TOKENS DE COR (CSS Custom Properties) === */
 :root {
   /* Fontes */
-  --fonte-interface: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --fonte-interface: 'Archivo', sans-serif;
   --fonte-numeros:   'JetBrains Mono', monospace;
 
   /* Modo escuro — padrão */
@@ -221,12 +224,18 @@ h1, h2, h3, h4, .titulo {
   text-transform: none;
   padding: 10px 20px;
   border: none;
-  border-radius: 6px;
+  border-radius: 0;
   cursor: pointer;
   transition: transform var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out), opacity var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
+}
+@media (max-width: 768px) {
+  .btn-primary {
+    min-height: 48px;
+  }
 }
 .btn-primary:hover {
   background: rgba(var(--cor-primaria-rgb), 0.15);
@@ -256,12 +265,18 @@ h1, h2, h3, h4, .titulo {
   text-transform: none;
   padding: 9px 20px;
   border: 1px solid var(--borda);
-  border-radius: 6px;
+  border-radius: 0;
   cursor: pointer;
   transition: transform var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out), opacity var(--dur-fast) var(--ease-out);
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
+}
+@media (max-width: 768px) {
+  .btn-secondary {
+    min-height: 48px;
+  }
 }
 .btn-secondary:hover {
   border-color: var(--border-hover);
@@ -277,7 +292,7 @@ h1, h2, h3, h4, .titulo {
   width: 100%;
   background: var(--fundo-input);
   border: 1px solid var(--borda-input);
-  border-radius: 6px;
+  border-radius: 0;
   padding: 10px 14px;
   color: var(--texto-principal);
   font-family: var(--fonte-interface);
@@ -300,7 +315,7 @@ h1, h2, h3, h4, .titulo {
   width: 100%;
   background: var(--fundo-input);
   border: 1px solid var(--borda-input);
-  border-radius: 6px;
+  border-radius: 0;
   padding: 10px 14px;
   color: var(--texto-principal);
   font-family: var(--fonte-interface);
@@ -319,7 +334,7 @@ h1, h2, h3, h4, .titulo {
   width: 100%;
   background: var(--fundo-input);
   border: 1px solid var(--borda-input);
-  border-radius: 6px;
+  border-radius: 0;
   padding: 10px 14px;
   color: var(--texto-principal);
   font-family: var(--fonte-interface);
@@ -368,7 +383,7 @@ h1, h2, h3, h4, .titulo {
   letter-spacing: 0.02em;
   text-transform: none;
   padding: 3px 10px;
-  border-radius: 4px;
+  border-radius: 0;
   display: inline-block;
   white-space: nowrap;
 }
@@ -415,6 +430,7 @@ h1, h2, h3, h4, .titulo {
   text-align: left;
   font-weight: 500;
   white-space: nowrap;
+  border-right: 1px solid var(--border);
 }
 .ds-table td {
   font-family: var(--fonte-interface);
@@ -422,6 +438,10 @@ h1, h2, h3, h4, .titulo {
   color: var(--text-primary);
   padding: 12px 12px;
   border-bottom: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+}
+.ds-table td:last-child, .ds-table th:last-child {
+  border-right: none;
 }
 .ds-table tbody tr:hover td {
   background: var(--bg-surface2);
@@ -709,7 +729,7 @@ h1, h2, h3, h4, .titulo {
   text-transform: none;
   padding: 8px 16px;
   border: none;
-  border-radius: 6px;
+  border-radius: 0;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -721,74 +741,6 @@ h1, h2, h3, h4, .titulo {
 }
 .btn-whatsapp:active {
   transform: scale(0.97);
-}
-
-/* === SECTION DIVIDER === */
-.section-divider {
-  font-family: var(--fonte-interface);
-  font-size: 11px;
-  letter-spacing: 0.02em;
-  text-transform: none;
-  color: var(--texto-secundario);
-  padding: 12px 0 8px;
-  margin-top: 16px;
-  border-bottom: 1px solid var(--borda);
-}
-
-/* ================================================================
-   REDESIGN TELA DO CLIENTE (V2)
-   ================================================================ */
-
-/* Section Label (Padrão Amber) */
-.section-label-amber {
-  font-family: var(--fonte-interface);
-  font-size: 9px;
-  letter-spacing: 0.32em;
-  text-transform: uppercase;
-  color: var(--amber);
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.section-label-amber::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: var(--borda);
-}
-
-/* Card Herói (Próximo Agendamento) */
-.hero-card {
-  background: linear-gradient(180deg, #161616 0%, #0F0F0F 100%);
-  border: 1px solid #2A2A2A;
-  border-radius: 8px;
-  padding: 22px 20px;
-  position: relative;
-  overflow: hidden;
-}
-.hero-card::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; bottom: 0;
-  width: 3px;
-  background: var(--amber);
-}
-
-/* Botões Ghost */
-.btn-ghost {
-  background: transparent;
-  border: 1px solid #2A2A2A;
-  color: #F5F5F5;
-  padding: 10px;
-  border-radius: 6px;
-  font-family: var(--fonte-interface);
-  font-size: 12px;
-  font-weight: 500;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
   cursor: pointer;
   transition: all 0.2s;
 }

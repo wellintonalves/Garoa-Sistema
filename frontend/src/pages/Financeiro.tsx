@@ -185,27 +185,27 @@ export function Financeiro() {
         <div className="metric-card" style={{ borderLeft: '2px solid var(--success-text)' }}>
           <div className="flex items-center gap-2 mb-2" style={{ color: 'var(--success-text)' }}>
             <TrendingUp size={14} strokeWidth={1.5} />
-            <span className="metric-label !mt-0 uppercase tracking-widest" style={{ color: 'var(--success-text)' }}>Serviços</span>
+            <span className="metric-label !mt-0  tracking-widest" style={{ color: 'var(--success-text)' }}>Serviços</span>
           </div>
           <p className="metric-value">{fmt(resumo?.entradasServicos || 0)}</p>
         </div>
         <div className="metric-card" style={{ borderLeft: '2px solid var(--success-text)' }}>
           <div className="flex items-center gap-2 mb-2" style={{ color: 'var(--success-text)' }}>
             <TrendingUp size={14} strokeWidth={1.5} />
-            <span className="metric-label !mt-0 uppercase tracking-widest" style={{ color: 'var(--success-text)' }}>Produtos</span>
+            <span className="metric-label !mt-0  tracking-widest" style={{ color: 'var(--success-text)' }}>Produtos</span>
           </div>
           <p className="metric-value">{fmt(resumo?.entradasProdutos || 0)}</p>
         </div>
         <div className="metric-card" style={{ borderLeft: '2px solid var(--error-text)' }}>
           <div className="flex items-center gap-2 mb-2" style={{ color: 'var(--error-text)' }}>
             <TrendingDown size={14} strokeWidth={1.5} />
-            <span className="metric-label !mt-0 uppercase tracking-widest" style={{ color: 'var(--error-text)' }}>Saídas</span>
+            <span className="metric-label !mt-0  tracking-widest" style={{ color: 'var(--error-text)' }}>Saídas</span>
           </div>
           <p className="metric-value">{fmt(resumo?.totalSaidas || 0)}</p>
         </div>
         <div className="metric-card" style={{ borderLeft: '2px solid var(--amber)' }}>
           <div className="flex items-center gap-2 mb-2" style={{ color: 'var(--cor-icone)' }}>
-            <span className="metric-label !mt-0 uppercase tracking-widest">Saldo</span>
+            <span className="metric-label !mt-0  tracking-widest">Saldo</span>
           </div>
           <p className="metric-value">{fmt(resumo?.saldo || 0)}</p>
           {resumo?.porFormaPagamento && (
@@ -246,8 +246,8 @@ export function Financeiro() {
           ))}
         </div>
         <div className="flex gap-4 mt-4">
-          <div className="flex items-center gap-1.5"><div style={{ width: '10px', height: '10px', background: 'var(--amber)' }} /><span className="metric-label !mt-0 uppercase tracking-widest">Entradas</span></div>
-          <div className="flex items-center gap-1.5"><div style={{ width: '10px', height: '10px', background: 'var(--bg-surface2)' }} /><span className="metric-label !mt-0 uppercase tracking-widest">Saídas</span></div>
+          <div className="flex items-center gap-1.5"><div style={{ width: '10px', height: '10px', background: 'var(--amber)' }} /><span className="metric-label !mt-0  tracking-widest">Entradas</span></div>
+          <div className="flex items-center gap-1.5"><div style={{ width: '10px', height: '10px', background: 'var(--bg-surface2)' }} /><span className="metric-label !mt-0  tracking-widest">Saídas</span></div>
         </div>
       </div>
 
@@ -345,7 +345,7 @@ export function Financeiro() {
                     fontFamily: 'var(--fonte-interface)',
                     fontSize: '11px',
                     letterSpacing: '0.1em',
-                    textTransform: 'uppercase',
+                    textTransform: '',
                     cursor: 'pointer',
                     background: isSelected ? 'var(--bg-surface2)' : 'transparent',
                     border: `1px solid ${isSelected ? activeColor : 'var(--border)'}`,

@@ -138,7 +138,7 @@ export function QrCodeScanner({ onResult, onClose }: QrCodeScannerProps) {
             fontSize: '11px',
             color: 'var(--cor-icone)',
             letterSpacing: '0.15em',
-            textTransform: 'uppercase' as const,
+            textTransform: '' as const,
           }}>
             Escanear QR Code
           </span>
@@ -222,7 +222,7 @@ export function QrCodeScanner({ onResult, onClose }: QrCodeScannerProps) {
                 padding: '10px 24px',
                 cursor: 'pointer',
                 letterSpacing: '0.1em',
-                textTransform: 'uppercase' as const,
+                textTransform: '' as const,
               }}
             >
               Voltar

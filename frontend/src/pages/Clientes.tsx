@@ -389,7 +389,7 @@ export function Clientes() {
                             fontFamily: 'var(--fonte-interface)',
                             fontSize: '9px',
                             letterSpacing: '0.12em',
-                            textTransform: 'uppercase',
+                            textTransform: '',
                             color: 'var(--text-muted)',
                             background: 'transparent',
                             border: 'none',
@@ -726,7 +726,7 @@ export function Clientes() {
                           </div>
                           <div style={{ textAlign: 'right' }}>
                             <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '16px', color: 'var(--cor-icone)' }}>R$ {Number(ag.valorCobrado).toFixed(2)}</p>
-                            <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '9px', letterSpacing: '0.1em', textTransform: 'uppercase', color: statusStyles[ag.status] || 'var(--text-muted)', marginTop: '2px' }}>
+                            <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '9px', letterSpacing: '0.1em', textTransform: '', color: statusStyles[ag.status] || 'var(--text-muted)', marginTop: '2px' }}>
                               {ag.status}
                             </p>
                           </div>

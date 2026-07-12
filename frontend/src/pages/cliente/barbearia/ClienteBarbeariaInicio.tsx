@@ -136,7 +136,7 @@ export function ClienteBarbeariaInicio() {
             )}
           </div>
 
-          <button onClick={() => navigate(`/cliente/barbearia/${barbeariaId}/agendar`)} className="hidden md:flex btn-primary" style={{ textTransform: 'uppercase', fontSize: '12px', fontWeight: 600 }}>
+          <button onClick={() => navigate(`/cliente/barbearia/${barbeariaId}/agendar`)} className="hidden md:flex btn-primary" style={{ textTransform: '', fontSize: '12px', fontWeight: 600 }}>
             <Plus size={16} /> Novo Agendamento
           </button>
         </div>
@@ -146,11 +146,11 @@ export function ClienteBarbeariaInicio() {
           <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translate(-50%, -50%) rotate(45deg)', width: '6px', height: '6px', background: 'var(--amber)' }} />
           <div className="w-full h-px absolute top-0" style={{ background: 'var(--borda)' }} />
 
-          <h1 style={{ fontFamily: 'var(--fonte-interface)', fontWeight: 600, fontSize: '22px', letterSpacing: '0.4em', textTransform: 'uppercase', color: 'var(--text-primary)' }}>
+          <h1 style={{ fontFamily: 'var(--fonte-interface)', fontWeight: 600, fontSize: '22px', letterSpacing: '0.4em', textTransform: '', color: 'var(--text-primary)' }}>
             {barbearia?.nome || 'BARBEARIA'}
           </h1>
           {barbearia?.createdAt && (
-            <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '9px', letterSpacing: '0.4em', color: 'var(--amber)', textTransform: 'uppercase', marginTop: '4px' }}>
+            <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '9px', letterSpacing: '0.4em', color: 'var(--amber)', textTransform: '', marginTop: '4px' }}>
               Desde {new Date(barbearia.createdAt).getFullYear()}
             </p>
           )}
@@ -164,7 +164,7 @@ export function ClienteBarbeariaInicio() {
           <div className="hero-card mb-8">
             <div className="flex flex-col md:flex-row md:items-start md:justify-between mb-4">
               <div>
-                <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '9px', letterSpacing: '0.32em', textTransform: 'uppercase', color: 'var(--amber)', marginBottom: '8px' }}>
+                <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '9px', letterSpacing: '0.32em', textTransform: '', color: 'var(--amber)', marginBottom: '8px' }}>
                   Próximo Atendimento
                 </p>
                 <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--text-muted)' }}>
@@ -220,7 +220,7 @@ export function ClienteBarbeariaInicio() {
               Que tal agendar um horário para o seu próximo corte?
             </p>
             <div className="md:hidden mt-6 w-full">
-              <button onClick={() => navigate(`/cliente/barbearia/${barbeariaId}/agendar`)} className="btn-primary w-full justify-center" style={{ padding: '14px', fontSize: '13px', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+              <button onClick={() => navigate(`/cliente/barbearia/${barbeariaId}/agendar`)} className="btn-primary w-full justify-center" style={{ padding: '14px', fontSize: '13px', fontWeight: 600, letterSpacing: '0.06em', textTransform: '' }}>
                 <Plus size={16} /> Novo Agendamento
               </button>
             </div>
@@ -230,7 +230,7 @@ export function ClienteBarbeariaInicio() {
         {/* Stats Grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
           <div className="stat-card relative overflow-hidden">
-            <p style={{ fontSize: '9px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Fidelidade</p>
+            <p style={{ fontSize: '9px', letterSpacing: '0.18em', textTransform: '', color: 'var(--text-muted)' }}>Fidelidade</p>
             <p className="mt-2" style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '22px', color: 'var(--text-primary)', lineHeight: 1 }}>{fidelidade.saldo} <span className="text-sm opacity-50">pts</span></p>
             <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--amber)', marginTop: '4px' }}>
               {fidelidade.proxima
@@ -243,7 +243,7 @@ export function ClienteBarbeariaInicio() {
           </div>
 
           <div className="stat-card">
-            <p style={{ fontSize: '9px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Visitas</p>
+            <p style={{ fontSize: '9px', letterSpacing: '0.18em', textTransform: '', color: 'var(--text-muted)' }}>Visitas</p>
             <p className="mt-2" style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '22px', color: 'var(--text-primary)', lineHeight: 1 }}>{sessoes}</p>
             {desdeStr && (
               <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--text-muted)', marginTop: '4px' }}>Desde {desdeStr}</p>
@@ -251,13 +251,13 @@ export function ClienteBarbeariaInicio() {
           </div>
 
           <div className="stat-card">
-            <p style={{ fontSize: '9px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Barbeiro Favorito</p>
+            <p style={{ fontSize: '9px', letterSpacing: '0.18em', textTransform: '', color: 'var(--text-muted)' }}>Barbeiro Favorito</p>
             <p className="mt-2" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '16px', fontWeight: 500, color: 'var(--text-primary)' }}>{favBarbeiro}</p>
             <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--text-muted)', marginTop: '4px' }}>{favCount > 0 ? `${favCount} atendimentos com ele` : 'Nenhum histórico'}</p>
           </div>
 
           <div className="stat-card">
-            <p style={{ fontSize: '9px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Último Corte</p>
+            <p style={{ fontSize: '9px', letterSpacing: '0.18em', textTransform: '', color: 'var(--text-muted)' }}>Último Corte</p>
             <p className="mt-2" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '16px', fontWeight: 500, color: 'var(--text-primary)' }}>{diasDesdeUltimo !== null ? `há ${diasDesdeUltimo} dia${diasDesdeUltimo > 1 ? 's' : ''}` : 'Nenhum'}</p>
             <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--amber)', marginTop: '4px' }}>Hora de marcar?</p>
           </div>
@@ -269,7 +269,7 @@ export function ClienteBarbeariaInicio() {
             <h2 className="section-label-amber mb-4">Histórico</h2>
 
             {/* Tabela (Desktop) */}
-            <div className="hidden md:block overflow-x-auto border border-[var(--borda)] rounded-md">
+            <div className="hidden md:block overflow-x-auto border border-[var(--borda)] rounded-none">
               <table className="w-full text-left" style={{ borderCollapse: 'collapse' }}>
                 <tbody>
                   {agendamentosPassados.map(a => (
@@ -297,7 +297,7 @@ export function ClienteBarbeariaInicio() {
                 </div>
               ))}
               {agendamentosPassados.length > 3 && (
-                <button className="py-4 text-center w-full mt-2" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '0.04em' }}>
+                <button className="py-4 text-center w-full mt-2" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', textTransform: '', color: 'var(--text-muted)', letterSpacing: '0.04em' }}>
                   Ver todo histórico →
                 </button>
               )}
@@ -308,11 +308,11 @@ export function ClienteBarbeariaInicio() {
 
       {/* Painel de Atalhos (Sidebar direita no Desktop, Empilhado no Mobile) */}
       <div className="w-full md:w-[280px] flex-shrink-0">
-        <div className="md:p-5 md:border md:border-[var(--borda)] md:rounded-lg md:bg-[var(--fundo-sidebar)]">
+        <div className="md:p-5 md:border md:border-[var(--borda)] md:rounded-none md:bg-[var(--fundo-sidebar)]">
           <h2 className="section-label-amber mb-4 md:mb-5">Atalhos</h2>
           <div className="flex flex-col gap-3">
             {ultimoConcluido && (
-              <button className="flex items-center gap-3 w-full text-left p-3 md:p-2.5 rounded-md border border-[var(--borda)] bg-[var(--fundo-input)] hover:bg-[var(--borda)] transition-colors">
+              <button className="flex items-center gap-3 w-full text-left p-3 md:p-2.5 rounded-none border border-[var(--borda)] bg-[var(--fundo-input)] hover:bg-[var(--borda)] transition-colors">
                 <div className="icon-box-disabled w-8 h-8"><RefreshCw size={14} /></div>
                 <div>
                   <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '13px', color: 'var(--text-primary)' }}>Repetir último corte</p>
@@ -321,17 +321,17 @@ export function ClienteBarbeariaInicio() {
               </button>
             )}
 
-            <button className="flex items-center gap-3 w-full text-left p-3 md:p-2.5 rounded-md border border-[var(--borda)] bg-[var(--fundo-input)] hover:bg-[var(--borda)] transition-colors">
+            <button className="flex items-center gap-3 w-full text-left p-3 md:p-2.5 rounded-none border border-[var(--borda)] bg-[var(--fundo-input)] hover:bg-[var(--borda)] transition-colors">
               <div className="icon-box-amber w-8 h-8"><Clock4 size={14} /></div>
               <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '13px', color: 'var(--text-primary)' }}>Ver horários hoje</p>
             </button>
 
-            <button onClick={() => navigate(`/cliente/barbearia/${barbeariaId}/chat`)} className="flex items-center gap-3 w-full text-left p-3 md:p-2.5 rounded-md border border-[var(--borda)] bg-[var(--fundo-input)] hover:bg-[var(--borda)] transition-colors">
+            <button onClick={() => navigate(`/cliente/barbearia/${barbeariaId}/chat`)} className="flex items-center gap-3 w-full text-left p-3 md:p-2.5 rounded-none border border-[var(--borda)] bg-[var(--fundo-input)] hover:bg-[var(--borda)] transition-colors">
               <div className="icon-box-amber w-8 h-8"><MessageCircle size={14} /></div>
               <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '13px', color: 'var(--text-primary)' }}>Falar com a barbearia</p>
             </button>
 
-            <button onClick={() => navigate(`/cliente/barbearia/${barbeariaId}/fidelidade`)} className="hidden md:flex items-center gap-3 w-full text-left p-3 md:p-2.5 rounded-md border border-[var(--borda)] bg-[var(--fundo-input)] hover:bg-[var(--borda)] transition-colors">
+            <button onClick={() => navigate(`/cliente/barbearia/${barbeariaId}/fidelidade`)} className="hidden md:flex items-center gap-3 w-full text-left p-3 md:p-2.5 rounded-none border border-[var(--borda)] bg-[var(--fundo-input)] hover:bg-[var(--borda)] transition-colors">
               <div className="icon-box-disabled w-8 h-8"><Star size={14} /></div>
               <div>
                 <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '13px', color: 'var(--text-primary)' }}>Fidelidade</p>
@@ -344,7 +344,7 @@ export function ClienteBarbeariaInicio() {
         {/* Mobile CTA */}
         {prox && (
           <div className="md:hidden mt-6 pb-6">
-            <button onClick={() => navigate(`/cliente/barbearia/${barbeariaId}/agendar`)} className="btn-primary w-full justify-center" style={{ padding: '14px', fontSize: '13px', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+            <button onClick={() => navigate(`/cliente/barbearia/${barbeariaId}/agendar`)} className="btn-primary w-full justify-center" style={{ padding: '14px', fontSize: '13px', fontWeight: 600, letterSpacing: '0.06em', textTransform: '' }}>
               <Plus size={16} /> Novo Agendamento
             </button>
           </div>

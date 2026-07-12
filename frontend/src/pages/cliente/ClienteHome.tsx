@@ -111,7 +111,7 @@ export function ClienteHome() {
       <div className="px-5 pt-8 pb-4" style={{ borderBottom: '1px solid var(--border)' }}>
         <div className="flex items-center justify-between mb-6">
           <div>
-            <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--cor-icone)', letterSpacing: '0.15em', textTransform: 'uppercase' as const }}>
+            <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--cor-icone)', letterSpacing: '0.15em', textTransform: '' as const }}>
               Olá,
             </p>
             <h1 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '28px', color: 'var(--text-primary)', letterSpacing: '0.04em' }}>
@@ -168,7 +168,7 @@ export function ClienteHome() {
                     </p>
                   )}
                 </div>
-                <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '9px', color: 'var(--cor-icone)', letterSpacing: '0.1em', textTransform: 'uppercase' as const }}>
+                <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '9px', color: 'var(--cor-icone)', letterSpacing: '0.1em', textTransform: '' as const }}>
                   Conectar
                 </span>
               </button>
@@ -185,7 +185,7 @@ export function ClienteHome() {
 
       {/* Minhas Barbearias */}
       <div className="flex-1 px-5 py-6">
-        <h2 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase' as const, color: 'var(--cor-icone)', marginBottom: '16px' }}>
+        <h2 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', letterSpacing: '0.18em', textTransform: '' as const, color: 'var(--cor-icone)', marginBottom: '16px' }}>
           Minhas Barbearias
         </h2>
 

@@ -68,7 +68,7 @@ export function ClienteBarbeariaAgendar() {
   if (sucesso) {
     return (
       <div className="flex flex-col items-center justify-center px-6 py-16 animate-fade-in max-w-md mx-auto h-full">
-        <div className="w-20 h-20 rounded-full flex items-center justify-center mb-6"
+        <div className="w-20 h-20 rounded-none flex items-center justify-center mb-6"
           style={{ background: 'rgba(34, 197, 94, 0.15)', border: '1px solid #22C55E' }}>
           <Check size={36} style={{ color: '#22C55E' }} />
         </div>
@@ -78,7 +78,7 @@ export function ClienteBarbeariaAgendar() {
         <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '14px', color: 'var(--text-muted)', textAlign: 'center', marginBottom: '32px' }}>
           Te esperamos no dia {new Date(dataSel + 'T00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })} às {horarioSel}.
         </p>
-        <button onClick={() => navigate(`/cliente/barbearia/${barbeariaId}`)} className="btn-primary w-full justify-center py-4" style={{ textTransform: 'uppercase', fontSize: '13px', fontWeight: 600, letterSpacing: '0.04em' }}>
+        <button onClick={() => navigate(`/cliente/barbearia/${barbeariaId}`)} className="btn-primary w-full justify-center py-4" style={{ textTransform: '', fontSize: '13px', fontWeight: 600, letterSpacing: '0.04em' }}>
           Voltar ao Início
         </button>
       </div>
@@ -108,7 +108,7 @@ export function ClienteBarbeariaAgendar() {
               <div className={`stepper-dot ${isAtivo ? 'active' : 'inactive'}`}>
                 {i + 1}
               </div>
-              <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '9px', fontWeight: isAtivo ? 600 : 400, color: isAtivo ? 'var(--amber)' : 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+              <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '9px', fontWeight: isAtivo ? 600 : 400, color: isAtivo ? 'var(--amber)' : 'var(--text-muted)', textTransform: '', letterSpacing: '0.04em' }}>
                 {e.label}
               </span>
             </div>
@@ -124,7 +124,7 @@ export function ClienteBarbeariaAgendar() {
             if (etapa === 'data') setEtapa('barbeiro');
             if (etapa === 'confirmacao') setEtapa('data');
           }} className="flex items-center gap-2 mb-4"
-            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontFamily: 'var(--fonte-interface)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontFamily: 'var(--fonte-interface)', fontSize: '11px', textTransform: '', letterSpacing: '0.04em' }}>
             <ArrowLeft size={14} /> Voltar
           </button>
         )}
@@ -148,7 +148,7 @@ export function ClienteBarbeariaAgendar() {
         <div className="flex flex-col gap-3">
           {servicos.map((s, idx) => (
             <button key={s.id} onClick={() => { setServicoSel(s); setEtapa('barbeiro'); }}
-              className="flex items-center justify-between p-4 w-full text-left transition-all rounded-md"
+              className="flex items-center justify-between p-4 w-full text-left transition-all rounded-none"
               style={{
                 background: servicoSel?.id === s.id ? 'rgba(var(--cor-primaria-rgb), 0.12)' : 'var(--fundo-sidebar)',
                 border: servicoSel?.id === s.id ? '1px solid var(--amber)' : '1px solid var(--borda)',
@@ -161,7 +161,7 @@ export function ClienteBarbeariaAgendar() {
                 <div>
                   <div className="flex items-center gap-2">
                     <p style={{ fontFamily: 'var(--fonte-interface)', fontWeight: 600, color: 'var(--text-primary)', fontSize: '15px' }}>{s.nome}</p>
-                    {idx === 0 && <span className="bg-[var(--amber)] text-black text-[9px] uppercase tracking-wider font-bold px-1.5 py-0.5 rounded-sm">Mais popular</span>}
+                    {idx === 0 && <span className="bg-[var(--amber)] text-black text-[9px]  tracking-wider font-bold px-1.5 py-0.5 rounded-none">Mais popular</span>}
                   </div>
                   <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>{s.duracaoMinutos} min de duração</p>
                 </div>
@@ -177,7 +177,7 @@ export function ClienteBarbeariaAgendar() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {barbeiros.map(b => (
             <button key={b.id} onClick={() => { setBarbeiroSel(b); setEtapa('data'); }}
-              className="flex items-center gap-4 p-4 w-full text-left transition-all rounded-md"
+              className="flex items-center gap-4 p-4 w-full text-left transition-all rounded-none"
               style={{
                 background: barbeiroSel?.id === b.id ? 'rgba(var(--cor-primaria-rgb), 0.12)' : 'var(--fundo-sidebar)',
                 border: barbeiroSel?.id === b.id ? '1px solid var(--amber)' : '1px solid var(--borda)',
@@ -187,10 +187,10 @@ export function ClienteBarbeariaAgendar() {
                 <img 
                   src={b.foto} 
                   alt={b.usuario.nome} 
-                  className="w-12 h-12 rounded-full object-cover border border-[var(--borda)]"
+                  className="w-12 h-12 rounded-none object-cover border border-[var(--borda)]"
                 />
               ) : (
-                <div className="w-12 h-12 flex items-center justify-center rounded-full bg-[var(--bg-surface)] border border-[var(--borda)] text-[var(--text-primary)] font-semibold font-interface">
+                <div className="w-12 h-12 flex items-center justify-center rounded-none bg-[var(--bg-surface)] border border-[var(--borda)] text-[var(--text-primary)] font-semibold font-interface">
                   {b.usuario.nome.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)}
                 </div>
               )}
@@ -198,7 +198,7 @@ export function ClienteBarbeariaAgendar() {
                 <p style={{ fontFamily: 'var(--fonte-interface)', fontWeight: 600, color: 'var(--text-primary)', fontSize: '15px' }}>{b.usuario.nome}</p>
                 <div className="flex gap-1.5 mt-1.5 flex-wrap">
                   {b.especialidades.slice(0, 2).map((e, i) => (
-                    <span key={i} style={{ fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.04em', background: 'var(--bg-surface)', padding: '2px 6px', borderRadius: '4px', border: '1px solid var(--borda)', color: 'var(--text-muted)' }}>{e}</span>
+                    <span key={i} style={{ fontSize: '9px', textTransform: '', letterSpacing: '0.04em', background: 'var(--bg-surface)', padding: '2px 6px', borderRadius: '4px', border: '1px solid var(--borda)', color: 'var(--text-muted)' }}>{e}</span>
                   ))}
                 </div>
               </div>
@@ -210,15 +210,15 @@ export function ClienteBarbeariaAgendar() {
       {/* Conteúdo Etapa 3: Data e Horário */}
       {etapa === 'data' && (
         <div>
-          <div className="mb-6 p-4 rounded-md" style={{ background: 'var(--fundo-sidebar)', border: '1px solid var(--borda)' }}>
-            <label className="block mb-2" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--text-muted)' }}>Escolha o dia</label>
+          <div className="mb-6 p-4 rounded-none" style={{ background: 'var(--fundo-sidebar)', border: '1px solid var(--borda)' }}>
+            <label className="block mb-2" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', textTransform: '', letterSpacing: '0.04em', color: 'var(--text-muted)' }}>Escolha o dia</label>
             <input type="date" value={dataSel} onChange={e => { setDataSel(e.target.value); setHorarioSel(''); }}
               min={hoje} className="w-full bg-[var(--fundo-input)] border border-[var(--borda)] rounded p-3 text-[var(--text-primary)] font-interface focus:outline-none focus:border-[var(--amber)] transition-colors outline-none" />
           </div>
 
           {dataSel && (
             <div>
-              <label className="block mb-3" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--text-muted)' }}>Horários Disponíveis</label>
+              <label className="block mb-3" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', textTransform: '', letterSpacing: '0.04em', color: 'var(--text-muted)' }}>Horários Disponíveis</label>
               {slots.length > 0 ? (
                 <div className="grid grid-cols-4 md:grid-cols-5 gap-2">
                   {slots.map(s => (
@@ -243,7 +243,7 @@ export function ClienteBarbeariaAgendar() {
                   ))}
                 </div>
               ) : (
-                <div className="p-6 text-center border border-dashed border-[var(--borda)] rounded-md">
+                <div className="p-6 text-center border border-dashed border-[var(--borda)] rounded-none">
                   <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '13px', color: 'var(--text-muted)' }}>Nenhum horário disponível neste dia.</p>
                 </div>
               )}
@@ -255,16 +255,16 @@ export function ClienteBarbeariaAgendar() {
       {/* Conteúdo Etapa 4: Confirmação (Recibo Elegante) */}
       {etapa === 'confirmacao' && (
         <div className="w-full max-w-sm mx-auto">
-          <div className="rounded-t-lg p-6 relative overflow-hidden" style={{ background: 'var(--fundo-sidebar)', border: '1px solid var(--borda)', borderBottom: 'none' }}>
+          <div className="rounded-none p-6 relative overflow-hidden" style={{ background: 'var(--fundo-sidebar)', border: '1px solid var(--borda)', borderBottom: 'none' }}>
             <div className="absolute top-0 left-0 right-0 h-1 bg-[var(--amber)]" />
-            <h3 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.2em', color: 'var(--text-muted)', textAlign: 'center', marginBottom: '24px' }}>
+            <h3 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', textTransform: '', letterSpacing: '0.2em', color: 'var(--text-muted)', textAlign: 'center', marginBottom: '24px' }}>
               Resumo do Agendamento
             </h3>
 
             <div className="flex flex-col gap-5">
               <div className="flex justify-between items-start">
                 <div>
-                  <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '2px' }}>Serviço</p>
+                  <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--text-muted)', textTransform: '', marginBottom: '2px' }}>Serviço</p>
                   <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '16px', fontWeight: 500, color: 'var(--text-primary)' }}>{servicoSel?.nome}</p>
                 </div>
                 <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '16px', color: 'var(--text-primary)' }}>{fmt(servicoSel?.preco || '0')}</p>
@@ -272,20 +272,20 @@ export function ClienteBarbeariaAgendar() {
 
               <div className="flex justify-between items-start">
                 <div>
-                  <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '2px' }}>Profissional</p>
+                  <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--text-muted)', textTransform: '', marginBottom: '2px' }}>Profissional</p>
                   <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '16px', fontWeight: 500, color: 'var(--text-primary)' }}>{barbeiroSel?.usuario.nome}</p>
                 </div>
               </div>
 
               <div className="flex justify-between items-start">
                 <div>
-                  <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '2px' }}>Data</p>
+                  <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--text-muted)', textTransform: '', marginBottom: '2px' }}>Data</p>
                   <p className="capitalize" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '16px', fontWeight: 500, color: 'var(--text-primary)' }}>
                     {new Date(dataSel + 'T00:00').toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: 'short' })}
                   </p>
                 </div>
                 <div className="text-right">
-                  <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '2px' }}>Horário</p>
+                  <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--text-muted)', textTransform: '', marginBottom: '2px' }}>Horário</p>
                   <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '16px', color: 'var(--amber)', fontWeight: 600 }}>{horarioSel}</p>
                 </div>
               </div>
@@ -306,7 +306,7 @@ export function ClienteBarbeariaAgendar() {
           <div className="mt-8">
             <button onClick={confirmarAgendamento} disabled={enviando}
               className="btn-primary w-full justify-center py-4"
-              style={{ fontSize: '14px', fontWeight: 600, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+              style={{ fontSize: '14px', fontWeight: 600, letterSpacing: '0.04em', textTransform: '' }}>
               {enviando ? 'Confirmando...' : 'Confirmar e Agendar'}
             </button>
           </div>

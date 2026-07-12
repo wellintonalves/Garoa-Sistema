@@ -14,7 +14,7 @@ export function FidelidadeTenant() {
   return (
     <div className='p-6'>
       <h2 className='text-xl text-orange-500 mb-4'>Fidelidade</h2>
-      <div className='bg-zinc-900 p-6 rounded-xl border border-zinc-800 mb-6'>
+      <div className='bg-zinc-900 p-6 rounded-none border border-zinc-800 mb-6'>
         <p className='text-center text-4xl font-black text-orange-500'>{fidelidade?.pontos || 0}</p>
         <p className='text-center text-zinc-400'>pontos</p>
       </div>

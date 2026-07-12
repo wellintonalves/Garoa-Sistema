@@ -44,7 +44,7 @@ export function Fidelidade() {
         <button onClick={() => navigate('/agendar')} className="text-[var(--cor-primaria)]">
           <ChevronLeft size={24} />
         </button>
-        <h1 className="font-display text-xl tracking-wider text-[var(--cor-primaria)] uppercase mx-auto pr-6">
+        <h1 className="font-display text-xl tracking-wider text-[var(--cor-primaria)]  mx-auto pr-6">
           Clube {nomeBarbearia}
         </h1>
       </header>
@@ -53,7 +53,7 @@ export function Fidelidade() {
         
         {!dados ? (
           <div className="animate-fade-in flex flex-col items-center">
-            <div className="w-20 h-20 bg-[var(--bg-surface2)] rounded-full flex items-center justify-center mb-6 border border-[var(--cor-primaria)]">
+            <div className="w-20 h-20 bg-[var(--bg-surface2)] rounded-none flex items-center justify-center mb-6 border border-[var(--cor-primaria)]">
               <Star className="text-[var(--cor-primaria)]" size={40} />
             </div>
             <h2 className="text-2xl font-bold font-display text-center mb-2">Seus Pontos</h2>
@@ -63,7 +63,7 @@ export function Fidelidade() {
 
             <form onSubmit={buscarFidelidade} className="w-full space-y-4">
               <div>
-                <label className="text-xs text-[var(--text-muted)] font-mono uppercase tracking-widest mb-1 block">Telefone (WhatsApp)</label>
+                <label className="text-xs text-[var(--text-muted)] font-mono  tracking-widest mb-1 block">Telefone (WhatsApp)</label>
                 <div className="relative">
                   <input 
                     type="tel" 
@@ -82,7 +82,7 @@ export function Fidelidade() {
               <button 
                 type="submit"
                 disabled={carregando || !telefone}
-                className="mt-4 flex items-center justify-center gap-2 w-full py-4 bg-[var(--cor-primaria)] hover:bg-[var(--cor-primaria)] disabled:opacity-50 text-black font-bold uppercase tracking-widest text-sm rounded transition-colors"
+                className="mt-4 flex items-center justify-center gap-2 w-full py-4 bg-[var(--cor-primaria)] hover:bg-[var(--cor-primaria)] disabled:opacity-50 text-black font-bold  tracking-widest text-sm rounded transition-colors"
               >
                 {carregando ? 'Buscando...' : 'Consultar'}
               </button>
@@ -99,15 +99,15 @@ export function Fidelidade() {
               <div className="absolute -top-10 -right-10 text-[var(--cor-primaria)] opacity-10">
                 <Award size={120} />
               </div>
-              <p className="text-xs text-[var(--cor-primaria)] font-mono uppercase tracking-widest mb-2">Saldo Atual</p>
+              <p className="text-xs text-[var(--cor-primaria)] font-mono  tracking-widest mb-2">Saldo Atual</p>
               <div className="flex items-baseline justify-center gap-2 mb-4">
                 <span className="text-5xl font-display font-bold text-white">{dados.pontosAcumulados}</span>
                 <span className="text-lg text-[var(--text-muted)]">pts</span>
               </div>
               
-              <div className="w-full bg-black/50 rounded-full h-3 mb-2 border border-[var(--border)]">
+              <div className="w-full bg-black/50 rounded-none h-3 mb-2 border border-[var(--border)]">
                 <div 
-                  className="bg-[var(--cor-primaria)] h-full rounded-full transition-all duration-1000" 
+                  className="bg-[var(--cor-primaria)] h-full rounded-none transition-all duration-1000" 
                   style={{ width: `${Math.min(100, (dados.pontosAcumulados / dados.meta) * 100)}%` }}
                 />
               </div>
@@ -131,7 +131,7 @@ export function Fidelidade() {
                 <div className="space-y-3">
                   {dados.historico.map((h, i) => (
                     <div key={i} className="flex items-center gap-4 p-3 bg-[var(--bg-surface)] rounded border border-[var(--border)]">
-                      <div className="w-10 h-10 rounded-full bg-[rgba(var(--cor-primaria-rgb), 0.10)] flex items-center justify-center flex-shrink-0">
+                      <div className="w-10 h-10 rounded-none bg-[rgba(var(--cor-primaria-rgb), 0.10)] flex items-center justify-center flex-shrink-0">
                         <Scissors size={16} className="text-[var(--cor-primaria)]" />
                       </div>
                       <div className="flex-1 overflow-hidden">
@@ -149,7 +149,7 @@ export function Fidelidade() {
 
             <button 
               onClick={() => setDados(null)}
-              className="mt-6 flex items-center justify-center w-full py-3 bg-transparent border border-[var(--border)] hover:border-[var(--cor-primaria)] text-white font-bold uppercase tracking-widest text-xs rounded transition-colors"
+              className="mt-6 flex items-center justify-center w-full py-3 bg-transparent border border-[var(--border)] hover:border-[var(--cor-primaria)] text-white font-bold  tracking-widest text-xs rounded transition-colors"
             >
               Consultar outro número
             </button>

@@ -50,7 +50,7 @@ export function ClientLayout() {
             <button
               key={tab.name}
               onClick={() => navigate(tab.path)}
-              className={`flex flex-col items-center justify-center w-full p-2 rounded-xl transition-all ${
+              className={`flex flex-col items-center justify-center w-full p-2 rounded-none transition-all ${
                 isActive ? 'text-orange-500' : 'text-zinc-500 hover:text-zinc-300'
               }`}
             >

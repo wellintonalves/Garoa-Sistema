@@ -113,7 +113,7 @@ export function Login() {
                 fontFamily: 'var(--fonte-interface)',
                 fontSize: '10px',
                 letterSpacing: '0.2em',
-                textTransform: 'uppercase',
+                textTransform: '',
                 color: 'var(--text-muted)',
                 marginTop: '8px',
               }}
@@ -374,7 +374,7 @@ export function Login() {
             fontFamily: 'var(--fonte-interface)',
             fontSize: '9px',
             letterSpacing: '0.14em',
-            textTransform: 'uppercase',
+            textTransform: '',
             color: 'var(--text-disabled)',
           }}
         >

@@ -74,7 +74,7 @@ export function ClienteCadastro() {
     fontFamily: 'var(--fonte-interface)',
     fontSize: '9px',
     letterSpacing: '0.18em',
-    textTransform: 'uppercase' as const,
+    textTransform: '' as const,
     color: '#94A3B8',
     marginBottom: '6px',
     display: 'block',
@@ -144,7 +144,7 @@ export function ClienteCadastro() {
             fontSize: '10px',
             letterSpacing: '0.1em',
             color: '#94A3B8',
-            textTransform: 'uppercase' as const,
+            textTransform: '' as const,
             padding: '8px 0',
             transition: 'color 0.2s',
           }}
@@ -209,7 +209,7 @@ export function ClienteCadastro() {
             fontSize: '10px',
             letterSpacing: '0.2em',
             color: '#94A3B8',
-            textTransform: 'uppercase' as const,
+            textTransform: '' as const,
             marginTop: '8px',
           }}>
             {nomeBarbearia} Barbearia
@@ -349,7 +349,7 @@ export function ClienteCadastro() {
               fontSize: '14px',
               fontWeight: 700,
               letterSpacing: '0.1em',
-              textTransform: 'uppercase' as const,
+              textTransform: '' as const,
               cursor: enviando ? 'not-allowed' : 'pointer',
               opacity: enviando ? 0.6 : 1,
               transition: 'all 0.3s ease',

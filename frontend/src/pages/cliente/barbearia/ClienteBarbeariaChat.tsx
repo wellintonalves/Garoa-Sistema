@@ -180,7 +180,7 @@ export function ClienteBarbeariaChat() {
       <div className="flex items-center justify-between px-3 md:px-5 py-3 md:py-4 border-b flex-shrink-0" style={{ borderColor: 'var(--borda)', background: 'var(--fundo-card)' }}>
         <div className="flex items-center gap-2 md:gap-3">
           <button
-            className="md:hidden p-2 -ml-2 rounded-full transition-colors chat-btn"
+            className="md:hidden p-2 -ml-2 rounded-none transition-colors chat-btn"
             onClick={(e) => {
               e.preventDefault();
               navigate(-1);
@@ -191,10 +191,10 @@ export function ClienteBarbeariaChat() {
             <ChevronLeft size={24} />
           </button>
           
-          <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 font-['Inter'] text-[13px] font-semibold"
+          <div className="w-10 h-10 rounded-none flex items-center justify-center flex-shrink-0 font-['Inter'] text-[13px] font-semibold"
             style={{ background: 'rgba(var(--cor-primaria-rgb), 0.15)', color: 'var(--cor-primaria)' }}>
             {barbearia?.logo ? (
-              <img src={barbearia.logo} alt="Logo" className="w-full h-full object-cover rounded-full" />
+              <img src={barbearia.logo} alt="Logo" className="w-full h-full object-cover rounded-none" />
             ) : (
               iniciais(barbearia?.nome)
             )}
@@ -211,7 +211,7 @@ export function ClienteBarbeariaChat() {
         
         <button 
           onClick={toggleMute}
-          className="p-2 rounded-full transition-colors hover:bg-black/5 dark:hover:bg-white/5 chat-btn"
+          className="p-2 rounded-none transition-colors hover:bg-black/5 dark:hover:bg-white/5 chat-btn"
           style={{ color: 'var(--texto-secundario)' }}
           title={isMuted ? "Ativar som" : "Desativar som"}
         >
@@ -223,8 +223,8 @@ export function ClienteBarbeariaChat() {
       <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-6 flex flex-col gap-1 pb-[env(safe-area-inset-bottom)]">
         {mensagens.length === 0 && !enviando && (
           <div className="flex flex-col items-center justify-center flex-1 gap-3 text-center opacity-60">
-            <div className="w-16 h-16 rounded-full flex items-center justify-center mb-2" style={{ background: 'rgba(var(--texto-secundario-rgb), 0.1)' }}>
-              <div className="w-8 h-8 rounded-full flex items-center justify-center font-['Inter'] font-semibold" style={{ background: 'var(--cor-primaria)', color: '#111827' }}>
+            <div className="w-16 h-16 rounded-none flex items-center justify-center mb-2" style={{ background: 'rgba(var(--texto-secundario-rgb), 0.1)' }}>
+              <div className="w-8 h-8 rounded-none flex items-center justify-center font-['Inter'] font-semibold" style={{ background: 'var(--cor-primaria)', color: '#111827' }}>
                 {iniciais(barbearia?.nome)}
               </div>
             </div>
@@ -238,7 +238,7 @@ export function ClienteBarbeariaChat() {
           <div key={grupo.data}>
             <div className="flex items-center gap-3 my-6">
               <div className="flex-1 h-px" style={{ background: 'var(--borda)' }} />
-              <span className="font-['Inter'] text-[11px] font-medium uppercase tracking-wider px-3 py-1 rounded-full bg-[var(--fundo-card)] border" style={{ color: 'var(--texto-secundario)', borderColor: 'var(--borda)' }}>
+              <span className="font-['Inter'] text-[11px] font-medium  tracking-wider px-3 py-1 rounded-full bg-[var(--fundo-card)] border" style={{ color: 'var(--texto-secundario)', borderColor: 'var(--borda)' }}>
                 {grupo.data}
               </span>
               <div className="flex-1 h-px" style={{ background: 'var(--borda)' }} />
@@ -250,8 +250,8 @@ export function ClienteBarbeariaChat() {
               const isLastInGroup = !nextMsg || nextMsg.remetente !== m.remetente;
               const marginBottom = isLastInGroup ? 'mb-4' : 'mb-1';
               const borderRadius = isCliente 
-                  ? (isLastInGroup ? 'rounded-2xl rounded-tr-sm' : 'rounded-2xl')
-                  : (isLastInGroup ? 'rounded-2xl rounded-tl-sm' : 'rounded-2xl');
+                  ? (isLastInGroup ? 'rounded-none rounded-tr-sm' : 'rounded-none')
+                  : (isLastInGroup ? 'rounded-none rounded-tl-sm' : 'rounded-none');
 
               return (
                 <div
@@ -306,7 +306,7 @@ export function ClienteBarbeariaChat() {
           placeholder="Mensagem"
           disabled={enviando}
           rows={1}
-          className="flex-1 rounded-2xl px-4 py-3 outline-none resize-none overflow-y-auto"
+          className="flex-1 rounded-none px-4 py-3 outline-none resize-none overflow-y-auto"
           style={{
             background: 'var(--fundo-pagina)',
             border: '1px solid var(--borda)',
@@ -326,7 +326,7 @@ export function ClienteBarbeariaChat() {
         <button
           type="submit"
           disabled={!texto.trim() || enviando}
-          className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 transition-all chat-btn disabled:opacity-50 disabled:scale-100"
+          className="w-12 h-12 rounded-none flex items-center justify-center flex-shrink-0 transition-all chat-btn disabled:opacity-50 disabled:scale-100"
           style={{
             background: 'var(--cor-primaria)',
             color: '#111827',

@@ -105,13 +105,13 @@ export function ClienteBarbeariaFidelidade() {
     <div className="px-5 py-6 animate-fade-in max-w-2xl mx-auto">
       {/* Alertas */}
       {mensagemSucesso && (
-        <div className="mb-6 bg-[rgba(34,197,94,0.1)] border border-[#22C55E] p-4 rounded-md flex items-center gap-3 animate-fade-in">
+        <div className="mb-6 bg-[rgba(34,197,94,0.1)] border border-[#22C55E] p-4 rounded-none flex items-center gap-3 animate-fade-in">
           <CheckCircle color="#22C55E" size={20} />
           <span className="text-[#22C55E] text-sm font-interface font-medium">{mensagemSucesso}</span>
         </div>
       )}
       {mensagemErro && (
-        <div className="mb-6 bg-[rgba(239,68,68,0.1)] border border-[#EF4444] p-4 rounded-md flex items-center gap-3 animate-fade-in">
+        <div className="mb-6 bg-[rgba(239,68,68,0.1)] border border-[#EF4444] p-4 rounded-none flex items-center gap-3 animate-fade-in">
           <XCircle color="#EF4444" size={20} />
           <span className="text-[#EF4444] text-sm font-interface font-medium">{mensagemErro}</span>
         </div>
@@ -156,7 +156,7 @@ export function ClienteBarbeariaFidelidade() {
             <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '42px', fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1 }}>
               {dados.saldo}
             </span>
-            <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--amber)', marginTop: '2px', fontWeight: 600 }}>
+            <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '12px', textTransform: '', letterSpacing: '0.1em', color: 'var(--amber)', marginTop: '2px', fontWeight: 600 }}>
               pontos
             </span>
           </div>
@@ -176,11 +176,11 @@ export function ClienteBarbeariaFidelidade() {
 
       {/* Recompensas */}
       <div className="mb-10">
-        <h2 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '16px', fontWeight: 600 }}>
+        <h2 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', letterSpacing: '0.18em', textTransform: '', color: 'var(--text-muted)', marginBottom: '16px', fontWeight: 600 }}>
           Prêmios Disponíveis
         </h2>
         {dados.recompensas.length === 0 ? (
-          <div className="p-6 text-center border border-dashed border-[var(--borda)] rounded-md">
+          <div className="p-6 text-center border border-dashed border-[var(--borda)] rounded-none">
              <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '13px', color: 'var(--text-muted)' }}>Nenhum prêmio disponível.</p>
           </div>
         ) : (
@@ -188,7 +188,7 @@ export function ClienteBarbeariaFidelidade() {
             {dados.recompensas.sort((a,b) => a.pontosNecessarios - b.pontosNecessarios).map(rec => {
               const podeResgatar = dados.saldo >= rec.pontosNecessarios;
               return (
-                <div key={rec.id} className="p-4 rounded-md flex items-center justify-between" style={{
+                <div key={rec.id} className="p-4 rounded-none flex items-center justify-between" style={{
                   background: 'var(--fundo-sidebar)',
                   border: podeResgatar ? '1px solid var(--amber)' : '1px solid var(--borda)',
                 }}>
@@ -204,12 +204,12 @@ export function ClienteBarbeariaFidelidade() {
                       onClick={() => resgatar(rec.id)}
                       disabled={resgatando === rec.id}
                       className="btn-ghost"
-                      style={{ padding: '8px 16px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.04em' }}
+                      style={{ padding: '8px 16px', fontSize: '11px', textTransform: '', letterSpacing: '0.04em' }}
                     >
                       {resgatando === rec.id ? 'Aguarde' : 'Resgatar'}
                     </button>
                   ) : (
-                    <div className="px-3 py-1.5 rounded bg-[var(--bg-surface)] border border-[var(--borda)]" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--text-disabled)', fontWeight: 600 }}>
+                    <div className="px-3 py-1.5 rounded bg-[var(--bg-surface)] border border-[var(--borda)]" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', textTransform: '', letterSpacing: '0.04em', color: 'var(--text-disabled)', fontWeight: 600 }}>
                       Bloqueado
                     </div>
                   )}
@@ -222,7 +222,7 @@ export function ClienteBarbeariaFidelidade() {
 
       {/* Código de Indicação */}
       {codigoIndicacao && (
-        <div className="mb-10 p-5 rounded-xl" style={{ background: 'var(--fundo-sidebar)', border: '1px solid var(--borda)' }}>
+        <div className="mb-10 p-5 rounded-none" style={{ background: 'var(--fundo-sidebar)', border: '1px solid var(--borda)' }}>
           <div className="flex items-center gap-2 mb-3">
             <Share2 size={16} style={{ color: 'var(--amber)' }} />
             <h2 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>
@@ -257,7 +257,7 @@ export function ClienteBarbeariaFidelidade() {
 
       {/* Histórico Timeline */}
       <div>
-        <h2 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '20px', fontWeight: 600 }}>
+        <h2 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', letterSpacing: '0.18em', textTransform: '', color: 'var(--text-muted)', marginBottom: '20px', fontWeight: 600 }}>
           Histórico
         </h2>
         {dados.historico.length === 0 ? (

@@ -254,7 +254,7 @@ export function AdminChat() {
         </div>
 
         <div className="px-3 py-3 border-b flex-shrink-0" style={{ borderColor: 'var(--borda)' }}>
-          <div className="flex items-center gap-2 rounded-md px-3 py-2 border transition-colors focus-within:border-[var(--cor-primaria)]" 
+          <div className="flex items-center gap-2 rounded-none px-3 py-2 border transition-colors focus-within:border-[var(--cor-primaria)]" 
                style={{ background: 'var(--fundo-pagina)', borderColor: 'var(--borda)' }}>
             <Search size={14} style={{ color: 'var(--texto-secundario)', flexShrink: 0 }} />
             <input
@@ -298,7 +298,7 @@ export function AdminChat() {
                 )}
                 
                 <div
-                  className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 font-['Inter'] text-[13px] font-semibold"
+                  className="w-10 h-10 rounded-none flex items-center justify-center flex-shrink-0 font-['Inter'] text-[13px] font-semibold"
                   style={{ background: 'rgba(var(--cor-primaria-rgb), 0.15)', color: 'var(--cor-primaria)' }}
                 >
                   {iniciais(c.clienteNome)}
@@ -324,7 +324,7 @@ export function AdminChat() {
                       </p>
                     )}
                     {c.naoLidas > 0 && (
-                      <span className="flex-shrink-0 ml-2 w-5 h-5 rounded-full flex items-center justify-center text-white font-['JetBrains_Mono'] text-[10px] font-bold"
+                      <span className="flex-shrink-0 ml-2 w-5 h-5 rounded-none flex items-center justify-center text-white font-['JetBrains_Mono'] text-[10px] font-bold"
                         style={{ background: 'var(--cor-primaria)' }}>
                         {c.naoLidas > 9 ? '9+' : c.naoLidas}
                       </span>
@@ -341,7 +341,7 @@ export function AdminChat() {
       <div className={`flex-1 flex-col h-full overflow-hidden ${clienteSelecionado ? 'flex' : 'hidden md:flex'}`}>
         {!clienteSelecionado ? (
           <div className="flex-1 flex flex-col items-center justify-center gap-4 text-center px-6">
-            <div className="w-20 h-20 rounded-full flex items-center justify-center mb-2" style={{ background: 'rgba(var(--texto-secundario-rgb), 0.1)' }}>
+            <div className="w-20 h-20 rounded-none flex items-center justify-center mb-2" style={{ background: 'rgba(var(--texto-secundario-rgb), 0.1)' }}>
               <MessageCircle size={40} strokeWidth={1.5} style={{ color: 'var(--texto-secundario)' }} />
             </div>
             <h2 className="font-['Inter'] text-lg font-medium" style={{ color: 'var(--texto-principal)' }}>
@@ -370,7 +370,7 @@ export function AdminChat() {
                   </svg>
                 </button>
                 
-                <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 font-['Inter'] text-[13px] font-semibold"
+                <div className="w-10 h-10 rounded-none flex items-center justify-center flex-shrink-0 font-['Inter'] text-[13px] font-semibold"
                   style={{ background: 'rgba(var(--cor-primaria-rgb), 0.15)', color: 'var(--cor-primaria)' }}>
                   {iniciais(clienteSelecionado.nome)}
                 </div>
@@ -386,7 +386,7 @@ export function AdminChat() {
               
               <button 
                 onClick={toggleMute}
-                className="p-2 rounded-full transition-colors hover:bg-black/5 dark:hover:bg-white/5 chat-btn"
+                className="p-2 rounded-none transition-colors hover:bg-black/5 dark:hover:bg-white/5 chat-btn"
                 style={{ color: 'var(--texto-secundario)' }}
                 title={isMuted ? "Ativar som" : "Desativar som"}
               >
@@ -409,7 +409,7 @@ export function AdminChat() {
                 <div key={grupo.data}>
                   <div className="flex items-center gap-3 my-6">
                     <div className="flex-1 h-px" style={{ background: 'var(--borda)' }} />
-                    <span className="font-['Inter'] text-[11px] font-medium uppercase tracking-wider px-3 py-1 rounded-full bg-[var(--fundo-card)] border" style={{ color: 'var(--texto-secundario)', borderColor: 'var(--borda)' }}>
+                    <span className="font-['Inter'] text-[11px] font-medium  tracking-wider px-3 py-1 rounded-full bg-[var(--fundo-card)] border" style={{ color: 'var(--texto-secundario)', borderColor: 'var(--borda)' }}>
                       {grupo.data}
                     </span>
                     <div className="flex-1 h-px" style={{ background: 'var(--borda)' }} />
@@ -421,8 +421,8 @@ export function AdminChat() {
                     const isLastInGroup = !nextMsg || nextMsg.remetente !== m.remetente;
                     const marginBottom = isLastInGroup ? 'mb-4' : 'mb-1';
                     const borderRadius = isAdmin 
-                        ? (isLastInGroup ? 'rounded-2xl rounded-tr-sm' : 'rounded-2xl')
-                        : (isLastInGroup ? 'rounded-2xl rounded-tl-sm' : 'rounded-2xl');
+                        ? (isLastInGroup ? 'rounded-none rounded-tr-sm' : 'rounded-none')
+                        : (isLastInGroup ? 'rounded-none rounded-tl-sm' : 'rounded-none');
 
                     return (
                       <div
@@ -477,7 +477,7 @@ export function AdminChat() {
                 placeholder="Digite sua mensagem..."
                 disabled={enviando}
                 rows={1}
-                className="flex-1 rounded-2xl px-4 py-3 outline-none resize-none overflow-y-auto"
+                className="flex-1 rounded-none px-4 py-3 outline-none resize-none overflow-y-auto"
                 style={{
                   background: 'var(--fundo-pagina)',
                   border: '1px solid var(--borda)',
@@ -497,7 +497,7 @@ export function AdminChat() {
               <button
                 type="submit"
                 disabled={!texto.trim() || enviando}
-                className="w-11 h-11 md:w-12 md:h-12 rounded-full flex items-center justify-center flex-shrink-0 transition-all chat-btn disabled:opacity-50 disabled:scale-100"
+                className="w-11 h-11 md:w-12 md:h-12 rounded-none flex items-center justify-center flex-shrink-0 transition-all chat-btn disabled:opacity-50 disabled:scale-100"
                 style={{
                   background: 'var(--cor-primaria)',
                   color: '#111827',
