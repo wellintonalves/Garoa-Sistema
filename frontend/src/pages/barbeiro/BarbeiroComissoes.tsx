@@ -1,6 +1,5 @@
-// Aba Comissões do barbeiro — métricas financeiras
 import { useState, useEffect } from 'react';
-import { DollarSign, Calendar as CalendarIcon, TrendingUp } from 'lucide-react';
+import { DollarSign, Calendar as CalendarIcon, TrendingUp, Scissors } from 'lucide-react';
 import barbeiroApi from '../../api/barbeiroApi';
 import { dataBrasilia, hojeBrasilia } from '../../utils/datas';
 
@@ -39,79 +38,92 @@ export function BarbeiroComissoes() {
   const fmt = (v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
   return (
-    <div className="px-5 py-6 animate-fade-in">
-      <h1 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '24px', color: 'var(--text-primary)', marginBottom: '20px', letterSpacing: '0.04em' }}>
+    <div className="px-4 py-6 md:px-8 max-w-4xl mx-auto animate-fade-in" style={{ fontFamily: 'var(--fonte-interface)' }}>
+      <h1 className="text-2xl md:text-3xl font-semibold mb-6" style={{ color: 'var(--text-primary)' }}>
         Comissões
       </h1>
 
       {/* Filtros de data */}
-      <div className="flex gap-2 mb-6">
-        <div className="flex-1">
-          <label className="input-label"><CalendarIcon size={10} className="inline mr-1" />Início</label>
-          <input type="date" value={inicio} onChange={e => setInicio(e.target.value)} className="ds-input" style={{ fontSize: '12px', padding: '10px' }} />
+      <div className="grid grid-cols-2 gap-4 mb-8">
+        <div>
+          <label className="input-label flex items-center gap-1"><CalendarIcon size={14} />Início</label>
+          <input type="date" value={inicio} onChange={e => setInicio(e.target.value)} className="ds-input" />
         </div>
-        <div className="flex-1">
-          <label className="input-label"><CalendarIcon size={10} className="inline mr-1" />Fim</label>
-          <input type="date" value={fim} onChange={e => setFim(e.target.value)} className="ds-input" style={{ fontSize: '12px', padding: '10px' }} />
+        <div>
+          <label className="input-label flex items-center gap-1"><CalendarIcon size={14} />Fim</label>
+          <input type="date" value={fim} onChange={e => setFim(e.target.value)} className="ds-input" />
         </div>
       </div>
 
       {carregando ? (
-        <p style={{ textAlign: 'center', color: 'var(--text-muted)', marginTop: '2rem' }}>Carregando...</p>
+        <div className="flex justify-center py-20" style={{ color: 'var(--text-muted)' }}>
+          <TrendingUp className="animate-spin mr-2" /> Calculando...
+        </div>
       ) : dados ? (
-        <>
+        <div className="space-y-6">
           {/* Card Principal */}
-          <div className="p-6 mb-6" style={{
-            background: 'linear-gradient(135deg, rgba(var(--cor-primaria-rgb), 0.10) 0%, var(--bg-surface) 100%)',
-            border: '1px solid var(--amber)',
+          <div className="p-6 md:p-8 rounded-2xl border relative overflow-hidden" style={{
+            background: 'var(--bg-surface)',
+            borderColor: 'var(--cor-primaria)'
           }}>
-            <div className="flex items-center gap-3 mb-4">
-              <DollarSign size={20} style={{ color: 'rgba(var(--cor-primaria-rgb), 0.15)' }} />
-              <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--cor-icone)' }}>
+            {/* Efeito de fundo */}
+            <div className="absolute top-0 right-0 w-32 h-32 opacity-10 rounded-bl-full pointer-events-none" style={{ background: 'var(--cor-primaria)' }}></div>
+            
+            <div className="flex items-center gap-3 mb-2 relative z-10">
+              <div className="p-2 rounded-lg" style={{ background: 'var(--bg-surface2)' }}>
+                <DollarSign size={20} style={{ color: 'var(--cor-primaria)' }} />
+              </div>
+              <span className="text-sm font-medium uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
                 Sua Comissão ({dados.percentualComissao}%)
               </span>
             </div>
-            <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '40px', color: 'rgba(var(--cor-primaria-rgb), 0.15)', lineHeight: 1 }}>
+            
+            <p className="text-4xl md:text-5xl font-bold mt-4 mb-8 relative z-10" style={{ color: 'var(--cor-primaria)' }}>
               {fmt(dados.valorComissao)}
             </p>
-            <div className="flex justify-between mt-6 pt-4" style={{ borderTop: '1px solid rgba(212, 130, 10, 0.2)' }}>
+            
+            <div className="grid grid-cols-2 gap-4 pt-6 border-t" style={{ borderColor: 'var(--border)' }}>
               <div>
-                <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '4px' }}>Valor Bruto</p>
-                <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '14px', color: 'var(--text-primary)', fontWeight: 600 }}>{fmt(dados.valorBruto)}</p>
+                <p className="text-xs uppercase tracking-wide mb-1" style={{ color: 'var(--text-muted)' }}>Valor Bruto</p>
+                <p className="text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>{fmt(dados.valorBruto)}</p>
               </div>
-              <div style={{ textAlign: 'right' }}>
-                <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '4px' }}>Atendimentos</p>
-                <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '14px', color: 'var(--text-primary)', fontWeight: 600 }}>{dados.totalAtendimentos}</p>
+              <div>
+                <p className="text-xs uppercase tracking-wide mb-1" style={{ color: 'var(--text-muted)' }}>Atendimentos</p>
+                <p className="text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>{dados.totalAtendimentos}</p>
               </div>
             </div>
           </div>
 
           {/* Histórico */}
-          <div>
-            <h2 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--cor-icone)', marginBottom: '12px' }}>
-              <TrendingUp size={12} className="inline mr-1" /> Histórico no Período
+          <div className="pt-4">
+            <h2 className="text-sm font-medium mb-4 flex items-center gap-2 uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
+              <TrendingUp size={16} /> Histórico de Lançamentos
             </h2>
+            
             {dados.lancamentos.length === 0 ? (
-              <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', color: 'var(--text-muted)', textAlign: 'center', padding: '2rem 0' }}>
-                Nenhum lançamento no período.
-              </p>
+              <div className="p-10 rounded-2xl border text-center flex flex-col items-center justify-center" style={{ background: 'var(--bg-surface)', borderColor: 'var(--border)' }}>
+                <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4" style={{ background: 'var(--bg-surface2)' }}>
+                  <Scissors size={28} style={{ color: 'var(--text-muted)' }} />
+                </div>
+                <p className="font-medium" style={{ color: 'var(--text-primary)' }}>Nenhum lançamento no período.</p>
+              </div>
             ) : (
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-3">
                 {dados.lancamentos.map(l => (
-                  <div key={l.id} className="p-3" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
-                    <div className="flex justify-between items-start mb-2">
-                      <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '13px', color: 'var(--text-primary)', fontWeight: 600 }}>
+                  <div key={l.id} className="p-4 rounded-xl border flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 transition-colors hover:bg-black/5" style={{ background: 'var(--bg-surface)', borderColor: 'var(--border)' }}>
+                    <div>
+                      <p className="font-semibold text-base" style={{ color: 'var(--text-primary)' }}>
                         {l.cliente}
                       </p>
-                      <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '13px', color: 'var(--cor-icone)' }}>
-                        +{fmt(l.valorComissao)}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--text-muted)' }}>
+                      <p className="text-sm mt-0.5" style={{ color: 'var(--text-muted)' }}>
                         {l.servico}
                       </p>
-                      <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '9px', color: 'var(--text-disabled)' }}>
+                    </div>
+                    <div className="flex sm:flex-col justify-between items-center sm:items-end w-full sm:w-auto">
+                      <span className="font-semibold text-lg" style={{ color: 'var(--cor-primaria)' }}>
+                        +{fmt(l.valorComissao)}
+                      </span>
+                      <p className="text-xs font-mono" style={{ color: 'var(--text-muted)' }}>
                         {new Date(l.data).toLocaleDateString('pt-BR')}
                       </p>
                     </div>
@@ -120,7 +132,7 @@ export function BarbeiroComissoes() {
               </div>
             )}
           </div>
-        </>
+        </div>
       ) : null}
     </div>
   );

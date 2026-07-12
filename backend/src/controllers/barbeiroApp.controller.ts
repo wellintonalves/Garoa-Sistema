@@ -117,6 +117,47 @@ export class BarbeiroAppController {
     }
   }
 
+  /** PUT /barbeiro/perfil */
+  static async atualizarPerfil(req: BarbeiroAuthRequest, res: Response): Promise<void> {
+    try {
+      const barbeiro = req.barbeiro;
+      if (!barbeiro) { res.status(401).json({ erro: 'Não autorizado' }); return; }
+
+      const dados = req.body;
+      const atualizado = await BarbeiroAppService.atualizarPerfil(barbeiro.barbeiroId, dados);
+      res.json(atualizado);
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : 'Erro ao atualizar perfil';
+      res.status(500).json({ erro: msg });
+    }
+  }
+
+  /** POST /barbeiro/foto */
+  static async uploadFoto(req: BarbeiroAuthRequest, res: Response): Promise<void> {
+    try {
+      const barbeiro = req.barbeiro;
+      if (!barbeiro) { res.status(401).json({ erro: 'Não autorizado' }); return; }
+
+      if (!req.file) {
+        res.status(400).json({ erro: 'Nenhuma imagem enviada' });
+        return;
+      }
+
+      const { SupabaseService } = require('../services/supabase.service');
+      const extension = req.file.originalname.split('.').pop() || 'jpg';
+      const fileName = `barbeiro-${barbeiro.barbeiroId}-${Date.now()}.${extension}`;
+      
+      const url = await SupabaseService.uploadImage('barbeiros', fileName, req.file.buffer, req.file.mimetype);
+      
+      // Salva a foto automaticamente no perfil
+      await BarbeiroAppService.atualizarPerfil(barbeiro.barbeiroId, { foto: url });
+
+      res.json({ url });
+    } catch (error: any) {
+      res.status(500).json({ erro: error.message || 'Erro no upload da foto' });
+    }
+  }
+
   /** PATCH /barbeiro/status-trabalho */
   static async atualizarStatusTrabalho(req: BarbeiroAuthRequest, res: Response): Promise<void> {
     try {

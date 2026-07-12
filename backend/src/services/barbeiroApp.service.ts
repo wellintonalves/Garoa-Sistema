@@ -210,6 +210,43 @@ export class BarbeiroAppService {
     return barbeiro;
   }
 
+  /** Atualizar Perfil do Barbeiro */
+  static async atualizarPerfil(
+    barbeiroId: string, 
+    dados: { nome?: string; telefone?: string; especialidades?: string[]; foto?: string; horariosTrabalho?: any }
+  ) {
+    const barbeiro = await prisma.barbeiro.findUnique({ where: { id: barbeiroId } });
+    if (!barbeiro) throw new Error('Barbeiro não encontrado');
+
+    const updateBarbeiroData: any = {};
+    if (dados.telefone !== undefined) updateBarbeiroData.telefone = dados.telefone;
+    if (dados.especialidades !== undefined) updateBarbeiroData.especialidades = dados.especialidades;
+    if (dados.foto !== undefined) updateBarbeiroData.foto = dados.foto;
+    if (dados.horariosTrabalho !== undefined) updateBarbeiroData.horariosTrabalho = dados.horariosTrabalho;
+
+    const [atualizado] = await prisma.$transaction([
+      prisma.barbeiro.update({
+        where: { id: barbeiroId },
+        data: updateBarbeiroData,
+        include: {
+          usuario: { select: { nome: true, email: true } },
+          barbearia: { select: { nome: true, slug: true, logo: true } },
+        }
+      }),
+      ...(dados.nome ? [
+        prisma.usuario.update({
+          where: { id: barbeiro.usuarioId },
+          data: { nome: dados.nome }
+        })
+      ] : [])
+    ]);
+
+    // O retorno da transaction já tem o nome atualizado caso tenha sido editado
+    if (dados.nome) atualizado.usuario.nome = dados.nome;
+
+    return atualizado;
+  }
+
   /** Resumo da semana (últimos 7 dias) */
   static async resumoSemana(barbeiroId: string, barbeariaId: string) {
     const hojeStr = diaBrasiliaStr();
