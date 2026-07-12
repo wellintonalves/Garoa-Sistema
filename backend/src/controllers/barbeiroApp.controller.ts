@@ -136,4 +136,17 @@ export class BarbeiroAppController {
       res.status(500).json({ erro: 'Erro ao atualizar status' });
     }
   }
+
+  /** GET /barbeiro/resumo-semana */
+  static async resumoSemana(req: BarbeiroAuthRequest, res: Response): Promise<void> {
+    try {
+      const barbeiro = req.barbeiro;
+      if (!barbeiro) { res.status(401).json({ erro: 'Não autorizado' }); return; }
+
+      const resumo = await BarbeiroAppService.resumoSemana(barbeiro.barbeiroId, barbeiro.barbeariaId);
+      res.json(resumo);
+    } catch (error) {
+      res.status(500).json({ erro: 'Erro ao buscar resumo' });
+    }
+  }
 }

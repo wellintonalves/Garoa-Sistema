@@ -209,4 +209,41 @@ export class BarbeiroAppService {
     if (!barbeiro) throw new Error('Barbeiro não encontrado');
     return barbeiro;
   }
+
+  /** Resumo da semana (últimos 7 dias) */
+  static async resumoSemana(barbeiroId: string, barbeariaId: string) {
+    const hojeStr = diaBrasiliaStr();
+    const dataFim = fimDiaBrasilia(hojeStr);
+    
+    const hoje = new Date(hojeStr + 'T12:00:00-03:00');
+    hoje.setDate(hoje.getDate() - 6);
+    const dataInicio = inicioDiaBrasilia(hoje.toISOString().split('T')[0]);
+
+    const agendamentos = await prisma.agendamento.findMany({
+      where: {
+        barbeiroId,
+        barbeariaId,
+        dataHora: { gte: dataInicio, lte: dataFim },
+        status: { in: ['CONCLUIDO', 'CONFIRMADO', 'AGUARDANDO'] },
+      },
+      select: { dataHora: true }
+    });
+
+    const porDia: Record<string, number> = {};
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(hoje);
+      d.setDate(d.getDate() + i);
+      const str = d.toISOString().split('T')[0];
+      porDia[str] = 0;
+    }
+
+    for (const ag of agendamentos) {
+      const dataStr = diaBrasiliaStr(ag.dataHora);
+      if (porDia[dataStr] !== undefined) {
+        porDia[dataStr]++;
+      }
+    }
+
+    return Object.keys(porDia).map(data => ({ data, atendimentos: porDia[data] }));
+  }
 }

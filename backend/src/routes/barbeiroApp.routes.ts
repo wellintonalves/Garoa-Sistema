@@ -18,5 +18,6 @@ router.get('/comissoes', BarbeiroAppController.comissoes);
 router.post('/concluir-agendamento/:id', BarbeiroAppController.concluirAgendamento);
 router.get('/perfil', BarbeiroAppController.perfil);
 router.patch('/status-trabalho', BarbeiroAppController.atualizarStatusTrabalho);
+router.get('/resumo-semana', BarbeiroAppController.resumoSemana);
 
 export default router;

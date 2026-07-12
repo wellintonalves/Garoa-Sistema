@@ -102,6 +102,7 @@ model Barbearia {
   resgatesRecompensa     ResgateRecompensa[]
   chatMensagens          ChatMensagem[]
   indicacoes             Indicacao[]
+  avaliacoes             Avaliacao[]
 
   @@map("barbearias")
 }
@@ -136,6 +137,9 @@ model Barbeiro {
   cor             String?  @default("#F97316") // Laranja
   ativo           Boolean  @default(true)
   trabalhandoAgora Boolean @default(false)
+  telefone        String?
+  horariosTrabalho Json?
+  avaliacaoMedia  Float?   @default(5.0)
 
   barbearia       Barbearia?             @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
   usuario         Usuario                @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
@@ -143,6 +147,7 @@ model Barbeiro {
   lancamentos     LancamentoFinanceiro[]
   aprovacoes      AprovacaoEdicao[]
   bloqueiosAgenda BloqueioAgenda[]
+  avaliacoes      Avaliacao[]
 
   @@index([barbeariaId])
   @@map("barbeiros")
@@ -181,6 +186,7 @@ model Cliente {
   chatMensagens      ChatMensagem[]
   indicacoesFeitas   Indicacao[]         @relation("Indicador")
   indicacaoRecebida  Indicacao[]         @relation("Indicado")
+  avaliacoes         Avaliacao[]
 
   @@index([barbeariaId])
   @@map("clientes")
@@ -253,6 +259,7 @@ model Agendamento {
   servico  Servico  @relation(fields: [servicoId], references: [id], onDelete: Cascade)
 
   lancamentos LancamentoFinanceiro[]
+  avaliacao   Avaliacao?
 
   @@index([barbeariaId, dataHora])
   @@index([clienteId])
@@ -443,4 +450,23 @@ model BoasVindasConcedida {
 
   @@unique([clienteId, barbeariaId])
   @@map("boas_vindas_concedidas")
+}
+
+model Avaliacao {
+  id            String   @id @default(uuid())
+  barbeariaId   String?
+  barbeiroId    String
+  clienteId     String
+  agendamentoId String   @unique
+  nota          Int
+  comentario    String?
+  data          DateTime @default(now())
+
+  barbearia   Barbearia?  @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
+  barbeiro    Barbeiro    @relation(fields: [barbeiroId], references: [id], onDelete: Cascade)
+  cliente     Cliente     @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+  agendamento Agendamento @relation(fields: [agendamentoId], references: [id], onDelete: Cascade)
+
+  @@index([barbeiroId])
+  @@map("avaliacoes")
 }
