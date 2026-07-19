@@ -102,6 +102,7 @@ export function Agenda() {
     const d = new Date(); d.setDate(d.getDate() - d.getDay() + 1); d.setHours(0, 0, 0, 0); return d;
   });
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [viewMode, setViewMode] = useState<'day' | 'week'>('day');
   const [diaMobile, setDiaMobile] = useState(() => {
     const d = new Date(); d.setHours(0, 0, 0, 0); return d;
   });
@@ -294,6 +295,51 @@ export function Agenda() {
     }
   }
 
+  
+  const renderCelula = (ags: Agendamento[], bls: Bloqueio[], key: string, getOffset: (idx: number) => number) => (
+    <div key={key} style={{ borderLeft: '1px solid var(--border)', height: '48px', position: 'relative' }}>
+      {bls.map((bl, idx) => (
+        <div key={bl.id} className="truncate cursor-pointer" onClick={() => removerBloqueio(bl.id)} title="Clique para remover bloqueio"
+          style={{
+            padding: '4px 8px', background: 'repeating-linear-gradient(45deg, var(--bg-surface2), var(--bg-surface2) 10px, transparent 10px, transparent 20px)',
+            borderLeft: `3px solid var(--text-muted)`, color: 'var(--text-muted)', fontFamily: 'var(--fonte-interface)', fontSize: isMobile ? '11px' : '12px',
+            borderRadius: '0 4px 4px 0', lineHeight: 1.2, position: 'absolute', top: '2px', left: '2px', right: '2px', height: '44px', zIndex: 5 + idx
+          }}>
+          <p className="truncate pr-1" style={{ fontWeight: 600, marginBottom: '2px' }}>{bl.barbeiro.usuario.nome}</p>
+          <p className="truncate" style={{ fontSize: isMobile ? '11px' : '12px' }}>Bloqueado</p>
+        </div>
+      ))}
+      {ags.map((ag, idx) => {
+        const st = statusStyles[ag.status] || statusStyles['AGUARDANDO'];
+                const isConcluido = ag.status === 'CONCLUIDO';
+        const cor = st.color;
+        const bg = st.bg;
+        
+        const duracao = ag.servico.duracaoMinutos || 30;
+        const heightPx = Math.max(44, (duracao / 30) * 49 - 5);
+
+        return (
+          <div key={ag.id} className="cursor-pointer flex flex-col overflow-hidden" onClick={() => setAgendamentoSelecionado(ag)}
+            style={{
+              padding: '6px 8px', background: bg, borderLeft: `3px solid ${cor}`, color: 'var(--text-primary)', opacity: isConcluido ? 0.7 : 1,
+              fontFamily: 'var(--fonte-interface)', fontSize: isMobile ? '11px' : '12px', position: 'absolute', top: '2px', left: `${2 + (getOffset(idx) * 10)}px`, right: '2px',
+              height: `${heightPx}px`, zIndex: 10 + idx, borderRadius: '0 4px 4px 0', lineHeight: 1.2
+            }}>
+            <div className="flex justify-between items-start mb-1.5">
+              <p className="truncate pr-1" style={{ fontWeight: 600 }}>{ag.cliente.usuario.nome}</p>
+              {ag.origem === 'ONLINE' && <span className="bg-[var(--cor-primaria)] text-black px-1 rounded text-[8px] font-bold shrink-0">WEB</span>}
+            </div>
+            <div>
+              <p className="truncate" style={{ fontFamily: 'var(--fonte-interface)', fontSize: isMobile ? '11px' : '12px', background: 'transparent', color: 'var(--text-primary)', padding: 0, borderRadius: 0, display: 'inline-block', maxWidth: '100%', lineHeight: 1.2 }}>
+                {ag.servico.nome}
+              </p>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+
   if (carregando) return <SkeletonPage />;
 
   return (
@@ -349,6 +395,9 @@ export function Agenda() {
             </button>
           </div>
           <div className="flex flex-wrap gap-2">
+            <button onClick={() => setViewMode(v => v === 'day' ? 'week' : 'day')} className="btn-secondary flex-1 sm:flex-none justify-center">
+              {viewMode === 'day' ? 'Visão Semana' : 'Visão Dia'}
+            </button>
             <button onClick={() => setModalBloqueioAberto(true)} className="btn-secondary flex-1 sm:flex-none justify-center">
               Bloquear Horário
             </button>
@@ -471,188 +520,110 @@ export function Agenda() {
       </div>
 
       {/* Calendário semanal/diário */}
-      <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', overflowX: 'auto', width: '100%' }}>
+      <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', overflowX: 'auto', width: '100%', position: 'relative' }}>
         <div style={{ minWidth: isMobile ? '100%' : '700px' }}>
-          {/* Cabeçalho dos dias */}
-          <div style={{ display: 'grid', gridTemplateColumns: `60px repeat(${diasExibidos.length}, 1fr)`, borderBottom: '1px solid var(--border)' }}>
-            <div style={{ padding: '8px' }} />
-            {diasExibidos.map((dia, i) => {
-              const isHoje = dia.toDateString() === new Date().toDateString();
-              return (
-                <div
-                  key={i}
-                  className="text-center"
-                  style={{
-                    padding: '12px',
-                    borderLeft: '1px solid var(--border)',
-                    background: isHoje ? 'rgba(var(--cor-primaria-rgb), 0.10)' : 'transparent',
-                  }}
-                >
-                  <p
-                    style={{
-                      fontFamily: 'var(--fonte-interface)',
-                      fontSize: '9px',
-                      letterSpacing: '0.14em',
-                      textTransform: 'uppercase',
-                      color: 'var(--text-muted)',
-                    }}
-                  >
-                    {diasSemana[dia.getDay()]}
-                  </p>
-                  <p
-                    style={{
-                      fontFamily: 'var(--fonte-interface)',
-                      fontSize: '24px',
-                      color: isHoje ? 'var(--amber)' : 'var(--text-primary)',
-                      lineHeight: 1.2,
-                    }}
-                  >
-                    {dia.getDate()}
-                  </p>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Grid de horários */}
-          {horarios.map((horario) => (
-            <div key={horario} style={{ display: 'grid', gridTemplateColumns: `60px repeat(${diasExibidos.length}, 1fr)`, borderBottom: '1px solid var(--border)' }}>
-              <div
-                className="text-right pr-3 pt-3"
-                style={{
-                  padding: '8px',
-                  fontFamily: 'var(--fonte-interface)',
-                  fontSize: '10px',
-                  color: 'var(--text-disabled)',
-                  letterSpacing: '0.04em',
-                  height: '48px'
-                }}
-              >
-                {horario}
-              </div>
-              {diasExibidos.map((dia, diaIdx) => {
-                const diaISO = dataBrasilia(dia);
-
-                const agendamentosDoCelula = agendamentos.filter((ag) => {
-                  const d = new Date(ag.dataHora);
-                  const dataBR = getDataBrasilia(d);
-                  const hm = getHoraMinutoBrasilia(d);
-                  const horarioAg = `${String(hm.hora).padStart(2, '0')}:${String(hm.minuto).padStart(2, '0')}`;
-                  
-                  const checkBarbeiro = filtroBarbeiro === 'todos' || ag.barbeiroId === filtroBarbeiro;
-                  return dataBR === diaISO && horarioAg === horario && checkBarbeiro;
-                });
-
-                const bloqueiosDaCelula = bloqueios.filter((bl) => {
-                  const dInicio = new Date(bl.dataInicio);
-                  const dFim = new Date(bl.dataFim);
-                  const dtAtual = new Date(diaISO + 'T' + horario + ':00-03:00'); // Hora do slot atual em SP
-
-                  // Consideramos o bloqueio na célula se o slot começar dentro do bloqueio
-                  const dentroBloqueio = dtAtual >= dInicio && dtAtual < dFim;
-                  
-                  const checkBarbeiro = filtroBarbeiro === 'todos' || bl.barbeiroId === filtroBarbeiro;
-                  return dentroBloqueio && checkBarbeiro;
-                });
-
-                return (
-                  <div key={diaIdx} style={{ borderLeft: '1px solid var(--border)', height: '48px', position: 'relative' }}>
-                    {bloqueiosDaCelula.map((bl, idx) => (
-                      <div
-                        key={bl.id}
-                        className="truncate cursor-pointer"
-                        onClick={() => removerBloqueio(bl.id)}
-                        title="Clique para remover bloqueio"
-                        style={{
-                          padding: '4px 8px',
-                          background: 'repeating-linear-gradient(45deg, var(--bg-surface2), var(--bg-surface2) 10px, transparent 10px, transparent 20px)',
-                          borderLeft: `3px solid var(--text-muted)`,
-                          color: 'var(--text-muted)',
-                          fontFamily: 'var(--fonte-interface)',
-                          fontSize: isMobile ? '11px' : '12px',
-                          borderRadius: '0 4px 4px 0',
-                          lineHeight: 1.2,
-                          position: 'absolute',
-                          top: '2px',
-                          left: '2px',
-                          right: '2px',
-                          height: '44px',
-                          zIndex: 5 + idx
-                        }}
-                      >
-                        <p className="truncate pr-1" style={{ fontWeight: 600, marginBottom: '2px' }}>{bl.barbeiro.usuario.nome}</p>
-                        <p className="truncate" style={{ fontSize: isMobile ? '11px' : '12px' }}>Bloqueado: {bl.motivo || 'Indisponível'}</p>
+          {(() => {
+            const barbeirosExibidos = filtroBarbeiro === 'todos' ? barbeiros : barbeiros.filter(b => b.id === filtroBarbeiro);
+            const cols = viewMode === 'day' ? barbeirosExibidos.length : diasExibidos.length;
+            const agora = new Date();
+                        const horariosExibidos = horarios; // Pode filtrar baseado nos barbeiros
+            
+            return (
+              <>
+                {/* Cabeçalho das colunas */}
+                <div style={{ display: 'grid', gridTemplateColumns: `60px repeat(${Math.max(cols, 1)}, 1fr)`, borderBottom: '1px solid var(--border)' }}>
+                  <div style={{ padding: '8px' }} />
+                  {viewMode === 'day' ? barbeirosExibidos.map((b) => (
+                    <div key={b.id} className="text-center" style={{ padding: '12px', borderLeft: '1px solid var(--border)' }}>
+                      <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)' }}>{b.usuario.nome}</p>
+                    </div>
+                  )) : diasExibidos.map((dia, i) => {
+                    const isHoje = dia.toDateString() === agora.toDateString();
+                    return (
+                      <div key={i} className="text-center" style={{ padding: '12px', borderLeft: '1px solid var(--border)', background: isHoje ? 'rgba(var(--cor-primaria-rgb), 0.10)' : 'transparent' }}>
+                        <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '9px', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--text-muted)' }}>{diasSemana[dia.getDay()]}</p>
+                        <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '24px', color: isHoje ? 'var(--amber)' : 'var(--text-primary)', lineHeight: 1.2 }}>{dia.getDate()}</p>
                       </div>
-                    ))}
+                    );
+                  })}
+                  {cols === 0 && <div style={{ padding: '12px', borderLeft: '1px solid var(--border)' }}><p className="text-center text-zinc-500 text-sm">Nenhum barbeiro disponível</p></div>}
+                </div>
 
-                    {agendamentosDoCelula.map((ag, idx) => {
-                      const isCancelado = ag.status === 'CANCELADO';
-                      const isConcluido = ag.status === 'CONCLUIDO';
-                      const corB = isCancelado ? '#ef4444' : getBarbeiroColor(ag.barbeiroId, barbeiros);
-                      const bgB = isCancelado ? '#ef444420' : (corB + '20');
-                      
-                      const corS = ag.servico.cor || '#22C55E';
-                      const bgS = corS + '30';
-                      
-                      const duracao = ag.servico.duracaoMinutos || 30;
-                      const heightPx = Math.max(44, (duracao / 30) * 49 - 5);
+                {/* Grid de horários */}
+                <div style={{ position: 'relative' }}>
+                  {/* Linha do Agora */}
+                  {viewMode === 'day' && diaMobile.toDateString() === agora.toDateString() && (
+                    <div style={{
+                      position: 'absolute',
+                      left: '60px',
+                      right: 0,
+                      top: `${((agora.getHours() - 8) * 60 + agora.getMinutes()) * (48 / 30)}px`,
+                      borderTop: '2px solid var(--cor-primaria)',
+                      zIndex: 40,
+                      pointerEvents: 'none'
+                    }}>
+                      <div style={{ position: 'absolute', left: '-4px', top: '-5px', width: '8px', height: '8px', borderRadius: '50%', background: 'var(--cor-primaria)' }} />
+                    </div>
+                  )}
 
-                      return (
-                        <div
-                          key={ag.id}
-                          className="cursor-pointer flex flex-col overflow-hidden"
-                          onClick={() => setAgendamentoSelecionado(ag)}
-                          style={{
-                            padding: '6px 8px',
-                            background: bgB,
-                            borderLeft: `3px solid ${corB}`,
-                            color: 'var(--text-primary)',
-                            opacity: isConcluido ? 0.7 : 1,
-                            fontFamily: 'var(--fonte-interface)',
-                            fontSize: isMobile ? '11px' : '12px',
-                            position: 'absolute',
-                            top: '2px',
-                            left: `${2 + (idx * 10)}px`,
-                            right: '2px',
-                            height: `${heightPx}px`,
-                            zIndex: 10 + idx,
-                            borderRadius: '0 4px 4px 0',
-                            lineHeight: 1.2
-                          }}
-                        >
-                          <div className="flex justify-between items-start mb-1.5">
-                            <p className="truncate pr-1" style={{ fontWeight: 600 }}>{ag.cliente.usuario.nome}</p>
-                            {ag.origem === 'ONLINE' && (
-                              <span className="bg-[var(--cor-primaria)] text-black px-1 rounded text-[8px] font-bold shrink-0">WEB</span>
-                            )}
-                          </div>
-                          <div>
-                            <p className="truncate" style={{ 
-                              fontFamily: 'var(--fonte-interface)', 
-                              fontSize: isMobile ? '11px' : '12px', 
-                              background: bgS, 
-                              color: 'var(--text-primary)',
-                              padding: '3px 6px', 
-                              borderRadius: '4px', 
-                              display: 'inline-block', 
-                              border: `1px solid ${corS}50`,
-                              maxWidth: '100%',
-                              lineHeight: 1.2
-                            }}>
-                              {ag.servico.nome}
-                            </p>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                );
-              })}
-            </div>
-          ))}
+                  {horariosExibidos.map((horario) => (
+                    <div key={horario} style={{ display: 'grid', gridTemplateColumns: `60px repeat(${Math.max(cols, 1)}, 1fr)`, borderBottom: '1px solid var(--border)' }}>
+                      <div className="text-right pr-3 pt-3" style={{ padding: '8px', fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--text-disabled)', letterSpacing: '0.04em', height: '48px' }}>
+                        {horario}
+                      </div>
+                      
+                      {viewMode === 'day' ? barbeirosExibidos.map((barbeiro) => {
+                        const diaISO = dataBrasilia(diaMobile);
+                        
+                        const ags = agendamentos.filter(ag => {
+                          const d = new Date(ag.dataHora);
+                          const dataBR = getDataBrasilia(d);
+                          const hm = getHoraMinutoBrasilia(d);
+                          const horarioAg = `${String(hm.hora).padStart(2, '0')}:${String(hm.minuto).padStart(2, '0')}`;
+                          return dataBR === diaISO && horarioAg === horario && ag.barbeiroId === barbeiro.id;
+                        });
+
+                        const bls = bloqueios.filter(bl => {
+                          const dInicio = new Date(bl.dataInicio);
+                          const dFim = new Date(bl.dataFim);
+                          const dtAtual = new Date(diaISO + 'T' + horario + ':00-03:00');
+                          return dtAtual >= dInicio && dtAtual < dFim && bl.barbeiroId === barbeiro.id;
+                        });
+
+                        return renderCelula(ags, bls, barbeiro.id, idx => idx);
+                      }) : diasExibidos.map((dia, diaIdx) => {
+                        const diaISO = dataBrasilia(dia);
+                        
+                        const ags = agendamentos.filter(ag => {
+                          const d = new Date(ag.dataHora);
+                          const dataBR = getDataBrasilia(d);
+                          const hm = getHoraMinutoBrasilia(d);
+                          const horarioAg = `${String(hm.hora).padStart(2, '0')}:${String(hm.minuto).padStart(2, '0')}`;
+                          const checkBarbeiro = filtroBarbeiro === 'todos' || ag.barbeiroId === filtroBarbeiro;
+                          return dataBR === diaISO && horarioAg === horario && checkBarbeiro;
+                        });
+
+                        const bls = bloqueios.filter(bl => {
+                          const dInicio = new Date(bl.dataInicio);
+                          const dFim = new Date(bl.dataFim);
+                          const dtAtual = new Date(diaISO + 'T' + horario + ':00-03:00');
+                          const checkBarbeiro = filtroBarbeiro === 'todos' || bl.barbeiroId === filtroBarbeiro;
+                          return dtAtual >= dInicio && dtAtual < dFim && checkBarbeiro;
+                        });
+
+                        return renderCelula(ags, bls, String(diaIdx), idx => idx);
+                      })}
+                      {cols === 0 && <div style={{ borderLeft: '1px solid var(--border)', height: '48px' }} />}
+                    </div>
+                  ))}
+                </div>
+              </>
+            );
+          })()}
         </div>
       </div>
-
+      
+      
       {/* Legenda */}
       <div className="flex flex-wrap gap-4">
         {Object.entries(statusStyles).map(([status, st]) => (

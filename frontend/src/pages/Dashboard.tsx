@@ -95,8 +95,7 @@ export function Dashboard() {
     (valor || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
   // Cálculo para o gráfico
-  const maxFaturamento = dados?.porDia ? Math.max(...dados.porDia.map((d) => Math.max(d.entradas, d.produtos)), 1) : 1;
-
+  
   return (
     <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
       {/* Header */}
@@ -269,64 +268,52 @@ export function Dashboard() {
           </div>
 
           {/* Gráfico de Faturamento */}
-          <div className="card">
+          <div className="card" style={{ padding: '24px', background: 'var(--superficie-1)', border: '1px solid var(--borda)', borderRadius: '14px', boxShadow: '0 2px 8px rgba(0,0,0,0.2)' }}>
             <h3 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '24px' }}>
               Faturamento Dia a Dia
             </h3>
             
-            {dados.porDia.length > 0 && dados.porDia.some(dia => dia.entradas > 0) ? (
-              <div style={{ height: '220px', display: 'flex', alignItems: 'flex-end', gap: '4px', position: 'relative', paddingTop: '20px' }}>
-                {/* Linhas de grade horizontais */}
-                <div style={{ position: 'absolute', top: '0', left: '0', right: '0', borderTop: '1px dashed var(--border)', zIndex: 0 }}></div>
-                <div style={{ position: 'absolute', top: '50%', left: '0', right: '0', borderTop: '1px dashed var(--border)', zIndex: 0 }}></div>
-                <div style={{ position: 'absolute', bottom: '0', left: '0', right: '0', borderTop: '1px solid var(--border)', zIndex: 0 }}></div>
+            {dados.porDia.length > 0 && dados.porDia.some(dia => (dia.entradas + dia.produtos) > 0) ? (
+              <div style={{ height: '220px', position: 'relative', width: '100%' }}>
+                {(() => {
+                  const data = dados.porDia;
+                  const maxVal = Math.max(...data.map(d => d.entradas + d.produtos), 1);
+                  const viewBoxWidth = 1000;
+                  const viewBoxHeight = 220;
+                  
+                  const points = data.map((d, i) => {
+                    const x = data.length > 1 ? (i / (data.length - 1)) * viewBoxWidth : viewBoxWidth / 2;
+                    const val = d.entradas + d.produtos;
+                    const y = viewBoxHeight - (maxVal > 0 ? (val / maxVal) * viewBoxHeight * 0.9 : 0); // 0.9 to leave some top margin
+                    return { x, y, val, original: d };
+                  });
 
-                {/* Barras */}
-                {dados.porDia.map((dia, idx) => {
-                  const totalDia = dia.entradas + dia.produtos;
-                  const altura = maxFaturamento > 0 ? (totalDia / maxFaturamento) * 100 : 0;
-                  const dataObj = new Date(dia.data + 'T12:00:00');
-                  const isHoje = dia.data === hojeStr;
+                  const linePath = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
+                  const areaPath = `${linePath} L ${points[points.length - 1].x} ${viewBoxHeight} L ${points[0].x} ${viewBoxHeight} Z`;
 
                   return (
-                    <div key={idx} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end', height: '100%', zIndex: 1, position: 'relative', minWidth: '20px' }}>
-                      {/* Tooltip ao passar o mouse */}
-                      <div className="chart-tooltip" style={{ opacity: 0, position: 'absolute', bottom: '100%', marginBottom: '8px', background: 'var(--bg-surface2)', border: '1px solid var(--border)', padding: '6px 8px', borderRadius: '4px', whiteSpace: 'nowrap', pointerEvents: 'none', transition: 'opacity 0.2s', zIndex: 10 }}>
-                        <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--text-muted)' }}>{dataObj.toLocaleDateString('pt-BR')}</p>
-                        <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '12px', fontWeight: 700, color: 'var(--text-primary)' }}>{formatarMoeda(totalDia)}</p>
-                      </div>
-
-                      <div 
-                        style={{ 
-                          width: '100%', 
-                          maxWidth: '30px', 
-                          height: `${altura}%`, 
-                          background: isHoje ? 'rgba(var(--cor-primaria-rgb), 0.15)' : 'var(--amber)', 
-                          minHeight: totalDia > 0 ? '4px' : '0',
-                          transition: 'height 0.4s ease-out',
-                          cursor: 'pointer'
-                        }}
-                        onMouseEnter={(e) => {
-                          const tooltip = e.currentTarget.previousSibling as HTMLElement;
-                          if (tooltip) tooltip.style.opacity = '1';
-                        }}
-                        onMouseLeave={(e) => {
-                          const tooltip = e.currentTarget.previousSibling as HTMLElement;
-                          if (tooltip) tooltip.style.opacity = '0';
-                        }}
-                      />
+                    <svg viewBox={`0 0 ${viewBoxWidth} ${viewBoxHeight}`} style={{ width: '100%', height: '100%', overflow: 'visible' }} preserveAspectRatio="none">
+                      <path d={areaPath} fill="var(--cor-primaria)" style={{ opacity: 0.1 }} />
+                      <path d={linePath} fill="none" stroke="var(--cor-primaria)" strokeWidth="2.5" />
                       
-                      {/* Mostrar rótulo do dia X se couber, senão a cada N dias para não embolar */}
-                      {dados.porDia.length <= 14 || idx % Math.ceil(dados.porDia.length / 10) === 0 ? (
-                        <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '9px', color: 'var(--text-muted)', marginTop: '8px', transform: 'rotate(-45deg)', whiteSpace: 'nowrap' }}>
-                          {dataObj.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
-                        </span>
-                      ) : (
-                        <span style={{ marginTop: '8px', height: '12px' }}></span>
-                      )}
-                    </div>
+                      {/* Pontos interativos (invisíveis, disparam tooltip no hover - CSS simples) */}
+                      {points.map((p, i) => (
+                        <g key={i} style={{ cursor: 'crosshair' }} className="group">
+                          {/* Área invisível larga para hover mais fácil */}
+                          <line x1={p.x} y1={0} x2={p.x} y2={viewBoxHeight} stroke="transparent" strokeWidth={viewBoxWidth / Math.max(points.length, 1)} />
+                          {/* Bolinha realçada no hover */}
+                          <circle cx={p.x} cy={p.y} r="4" fill="var(--superficie-1)" stroke="var(--cor-primaria)" strokeWidth="2" style={{ opacity: 0, transition: 'opacity 0.2s' }} className="group-hover:opacity-100" />
+                          <text x={p.x} y={viewBoxHeight + 20} textAnchor="middle" fill="var(--texto-terciario)" fontSize="12px" fontFamily="var(--fonte-numeros)" className="opacity-0 group-hover:opacity-100 transition-opacity">
+                            {new Date(p.original.data + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
+                          </text>
+                          <text x={p.x} y={p.y - 10} textAnchor="middle" fill="var(--texto-principal)" fontSize="14px" fontWeight="600" fontFamily="var(--fonte-numeros)" className="opacity-0 group-hover:opacity-100 transition-opacity">
+                            {formatarMoeda(p.val)}
+                          </text>
+                        </g>
+                      ))}
+                    </svg>
                   );
-                })}
+                })()}
               </div>
             ) : (
               <div style={{ height: '220px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>

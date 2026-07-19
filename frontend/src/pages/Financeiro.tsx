@@ -1,8 +1,10 @@
 // Página Financeiro — industrial
 import { useEffect, useState } from 'react';
-import { Plus, TrendingUp, TrendingDown, Edit2, Trash2, Loader2 } from 'lucide-react';
+import { Plus, TrendingUp, TrendingDown, Edit2, Trash2, Loader2 , DollarSign } from 'lucide-react';
 import { Modal } from '../components/Modal';
 import { SkeletonPage } from '../components/Skeleton';
+import { StatCard } from '../components/StatCard';
+
 import api from '../api/client';
 import { hojeBrasilia } from '../utils/datas';
 
@@ -182,43 +184,10 @@ export function Financeiro() {
 
       {/* Resumo do dia */}
       <div className="dashboard-grid">
-        <div className="metric-card" style={{ borderLeft: '2px solid var(--success-text)' }}>
-          <div className="flex items-center gap-2 mb-2" style={{ color: 'var(--success-text)' }}>
-            <TrendingUp size={14} strokeWidth={1.5} />
-            <span className="metric-label !mt-0 uppercase tracking-widest" style={{ color: 'var(--success-text)' }}>Serviços</span>
-          </div>
-          <p className="metric-value">{fmt(resumo?.entradasServicos || 0)}</p>
-        </div>
-        <div className="metric-card" style={{ borderLeft: '2px solid var(--success-text)' }}>
-          <div className="flex items-center gap-2 mb-2" style={{ color: 'var(--success-text)' }}>
-            <TrendingUp size={14} strokeWidth={1.5} />
-            <span className="metric-label !mt-0 uppercase tracking-widest" style={{ color: 'var(--success-text)' }}>Produtos</span>
-          </div>
-          <p className="metric-value">{fmt(resumo?.entradasProdutos || 0)}</p>
-        </div>
-        <div className="metric-card" style={{ borderLeft: '2px solid var(--error-text)' }}>
-          <div className="flex items-center gap-2 mb-2" style={{ color: 'var(--error-text)' }}>
-            <TrendingDown size={14} strokeWidth={1.5} />
-            <span className="metric-label !mt-0 uppercase tracking-widest" style={{ color: 'var(--error-text)' }}>Saídas</span>
-          </div>
-          <p className="metric-value">{fmt(resumo?.totalSaidas || 0)}</p>
-        </div>
-        <div className="metric-card" style={{ borderLeft: '2px solid var(--amber)' }}>
-          <div className="flex items-center gap-2 mb-2" style={{ color: 'var(--cor-icone)' }}>
-            <span className="metric-label !mt-0 uppercase tracking-widest">Saldo</span>
-          </div>
-          <p className="metric-value">{fmt(resumo?.saldo || 0)}</p>
-          {resumo?.porFormaPagamento && (
-            <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-              {Object.entries(resumo.porFormaPagamento).map(([k, v]) => (
-                <div key={k} className="flex justify-between" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px' }}>
-                  <span style={{ color: 'var(--text-muted)' }}>{labelsForma[k] || k}</span>
-                  <span style={{ color: 'var(--text-primary)' }}>{fmt(v)}</span>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+        <StatCard titulo="Serviços" valor={fmt(resumo?.entradasServicos || 0)} icone={TrendingUp} />
+        <StatCard titulo="Produtos" valor={fmt(resumo?.entradasProdutos || 0)} icone={TrendingUp} />
+        <StatCard titulo="Saídas" valor={fmt(resumo?.totalSaidas || 0)} icone={TrendingDown} alerta={true} />
+        <StatCard titulo="Saldo" valor={fmt(resumo?.saldo || 0)} icone={DollarSign} />
       </div>
 
       {/* Mini gráfico 7 dias */}

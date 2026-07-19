@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Calendar as CalendarIcon, Clock, Ban, X } from 'lucide-react';
+import { Calendar as CalendarIcon, Clock, Ban } from 'lucide-react';
 import barbeiroApi from '../../api/barbeiroApi';
 import { hojeBrasilia } from '../../utils/datas';
 import { Modal } from '../../components/Modal';
@@ -87,13 +87,26 @@ export function BarbeiroAgenda() {
     }
   }
 
-  const fmtHora = (d: string) => new Date(d).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-  
+    
   // Ordena eventos misturados (bloqueios e agendamentos) por hora para exibir em uma timeline simples
-  const eventos = [
-    ...agendamentos.map(a => ({ tipo: 'AGENDAMENTO', time: new Date(a.dataHora).getTime(), data: a })),
-    ...bloqueios.map(b => ({ tipo: 'BLOQUEIO', time: new Date(b.dataInicio).getTime(), data: b }))
-  ].sort((a, b) => a.time - b.time);
+  
+
+  const horarios = [
+    '08:00', '08:30', '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
+    '12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '15:00', '15:30',
+    '16:00', '16:30', '17:00', '17:30', '18:00', '18:30', '19:00', '19:30', '20:00'
+  ];
+  
+  const statusStyles: Record<string, { bg: string, color: string, border: string }> = {
+    'AGUARDANDO': { bg: 'var(--bg-surface2)', color: 'var(--cor-primaria)', border: 'var(--cor-primaria)' },
+    'CONFIRMADO': { bg: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', border: '#3b82f6' },
+    'CONCLUIDO': { bg: 'rgba(34, 197, 94, 0.1)', color: 'var(--success-text)', border: 'var(--success-text)' },
+    'CANCELADO': { bg: 'rgba(239, 68, 68, 0.1)', color: 'var(--error-text)', border: 'var(--error-text)' },
+  };
+
+  const hoje = new Date();
+  const agoraStr = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}-${String(hoje.getDate()).padStart(2, '0')}`;
+  const isHoje = dataSel === agoraStr;
 
   return (
     <div className="px-4 py-6 md:px-8 max-w-4xl mx-auto animate-fade-in" style={{ fontFamily: 'var(--fonte-interface)' }}>
@@ -129,86 +142,87 @@ export function BarbeiroAgenda() {
         />
       </div>
 
-      {/* Lista de Agendamentos e Bloqueios */}
+      {/* Lista de Agendamentos e Bloqueios (Formato Calendário) */}
       {carregando ? (
         <div className="flex justify-center py-20" style={{ color: 'var(--text-muted)' }}>
           <Clock className="animate-spin mr-2" /> Carregando agenda...
         </div>
-      ) : eventos.length === 0 ? (
-        <div className="p-10 rounded-2xl border text-center flex flex-col items-center justify-center" style={{ background: 'var(--bg-surface)', borderColor: 'var(--border)' }}>
-          <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4" style={{ background: 'var(--bg-surface2)' }}>
-            <CalendarIcon size={28} style={{ color: 'var(--text-muted)' }} />
-          </div>
-          <p className="font-medium" style={{ color: 'var(--text-primary)' }}>Agenda vazia neste dia</p>
-          <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>Você não possui agendamentos ou bloqueios para esta data.</p>
-        </div>
       ) : (
-        <div className="flex flex-col gap-4 relative">
-          {/* Linha vertical da timeline */}
-          <div className="absolute left-[38px] top-6 bottom-6 w-0.5" style={{ background: 'var(--border)' }}></div>
-          
-          {eventos.map((ev) => {
-            if (ev.tipo === 'BLOQUEIO') {
-              const b = ev.data as Bloqueio;
-              return (
-                <div key={b.id} className="flex items-start gap-4 relative">
-                  <div className="mt-4 p-2 rounded-full z-10" style={{ background: 'var(--bg-surface)', border: '2px solid var(--text-muted)' }}>
-                    <Ban size={14} style={{ color: 'var(--text-muted)' }} />
-                  </div>
-                  <div className="flex-1 p-4 rounded-xl border flex justify-between items-center transition-all opacity-80 hover:opacity-100" style={{ background: 'repeating-linear-gradient(45deg, var(--bg-surface), var(--bg-surface) 10px, var(--bg-surface2) 10px, var(--bg-surface2) 20px)', borderColor: 'var(--border)' }}>
-                    <div>
-                      <p className="font-semibold text-sm" style={{ color: 'var(--text-primary)' }}>Período Bloqueado</p>
-                      <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
-                        {fmtHora(b.dataInicio)} às {fmtHora(b.dataFim)} • {b.motivo || 'Motivo não informado'}
-                      </p>
-                    </div>
-                    <button onClick={() => removerBloqueio(b.id)} className="p-2 rounded-lg hover:bg-black/10" style={{ color: 'var(--error-text)' }} title="Remover Bloqueio">
-                      <X size={16} />
-                    </button>
-                  </div>
-                </div>
-              );
-            } else {
-              const a = ev.data as AgendamentoAgenda;
-              const isConcluido = a.status === 'CONCLUIDO';
-              const isCancelado = a.status === 'CANCELADO';
+        <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', overflowX: 'hidden', width: '100%', position: 'relative' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: `60px 1fr`, borderBottom: '1px solid var(--border)' }}>
+            <div style={{ padding: '8px' }} />
+            <div className="text-center" style={{ padding: '12px', borderLeft: '1px solid var(--border)', background: isHoje ? 'rgba(var(--cor-primaria-rgb), 0.10)' : 'transparent' }}>
+              <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)' }}>Seus Agendamentos</p>
+            </div>
+          </div>
+          <div style={{ position: 'relative' }}>
+            {isHoje && (
+              <div style={{
+                position: 'absolute', left: '60px', right: 0,
+                top: `${((hoje.getHours() - 8) * 60 + hoje.getMinutes()) * (48 / 30)}px`,
+                borderTop: '2px solid var(--cor-primaria)', zIndex: 40, pointerEvents: 'none'
+              }}>
+                <div style={{ position: 'absolute', left: '-4px', top: '-5px', width: '8px', height: '8px', borderRadius: '50%', background: 'var(--cor-primaria)' }} />
+              </div>
+            )}
+            
+            {horarios.map((horario) => {
+              const dtBase = `${dataSel}T${horario}:00-03:00`;
               
-              let corIndicador = 'var(--cor-primaria)';
-              let bgIndicador = 'var(--bg-surface2)';
-              if (isConcluido) { corIndicador = 'var(--success-text)'; bgIndicador = 'rgba(34, 197, 94, 0.1)'; }
-              if (isCancelado) { corIndicador = 'var(--error-text)'; bgIndicador = 'rgba(239, 68, 68, 0.1)'; }
+              const ags = agendamentos.filter(ag => {
+                const h = new Date(ag.dataHora).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                return h === horario;
+              });
+
+              const bls = bloqueios.filter(bl => {
+                const dtAtual = new Date(dtBase);
+                return dtAtual >= new Date(bl.dataInicio) && dtAtual < new Date(bl.dataFim);
+              });
 
               return (
-                <div key={a.id} className="flex items-start gap-4 relative">
-                  <div className="mt-5 p-2 rounded-full z-10 font-mono text-xs font-semibold shadow-sm" style={{ background: bgIndicador, color: corIndicador, border: `2px solid ${corIndicador}` }}>
-                    {fmtHora(a.dataHora)}
+                <div key={horario} style={{ display: 'grid', gridTemplateColumns: `60px 1fr`, borderBottom: '1px solid var(--border)' }}>
+                  <div className="text-right pr-3 pt-3" style={{ padding: '8px', fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--text-disabled)', letterSpacing: '0.04em', height: '48px' }}>
+                    {horario}
                   </div>
-                  
-                  <div className={`flex-1 p-5 rounded-2xl border-l-4 shadow-sm transition-transform hover:translate-y-[-2px]`} style={{ background: 'var(--bg-surface)', borderLeftColor: corIndicador, borderTop: '1px solid var(--border)', borderRight: '1px solid var(--border)', borderBottom: '1px solid var(--border)', opacity: isCancelado ? 0.6 : 1 }}>
-                    <div className="flex justify-between items-start mb-2">
-                      <p className="font-semibold text-lg" style={{ color: 'var(--text-primary)' }}>
-                        {a.cliente.usuario.nome}
-                      </p>
-                      <span className={`text-xs px-2 py-1 rounded-md font-medium uppercase tracking-wider`} style={{ background: bgIndicador, color: corIndicador }}>
-                        {a.status}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-4 text-sm" style={{ color: 'var(--text-muted)' }}>
-                      <span>{a.servico.nome}</span>
-                      <span className="w-1 h-1 rounded-full bg-current opacity-50"></span>
-                      <span className="font-mono">{a.servico.duracaoMinutos || 30} min</span>
-                      {a.valorCobrado && (
-                        <>
-                          <span className="w-1 h-1 rounded-full bg-current opacity-50"></span>
-                          <span className="font-semibold" style={{ color: 'var(--text-primary)' }}>R$ {Number(a.valorCobrado).toFixed(2)}</span>
-                        </>
-                      )}
-                    </div>
+                  <div style={{ borderLeft: '1px solid var(--border)', height: '48px', position: 'relative' }}>
+                    {bls.map((bl, idx) => (
+                      <div key={bl.id} className="cursor-pointer truncate" onClick={() => removerBloqueio(bl.id)}
+                        style={{
+                          padding: '4px 8px', background: 'repeating-linear-gradient(45deg, var(--bg-surface2), var(--bg-surface2) 10px, transparent 10px, transparent 20px)',
+                          borderLeft: `3px solid var(--text-muted)`, color: 'var(--text-muted)', fontFamily: 'var(--fonte-interface)', fontSize: '11px',
+                          borderRadius: '0 4px 4px 0', position: 'absolute', top: '2px', left: '2px', right: '2px', height: '44px', zIndex: 5 + idx
+                        }}>
+                        <p className="truncate" style={{ fontWeight: 600 }}>Bloqueado: {bl.motivo || 'Indisponível'}</p>
+                      </div>
+                    ))}
+                    {ags.map((ag, idx) => {
+                      const st = statusStyles[ag.status] || statusStyles['AGUARDANDO'];
+                      const isConcluido = ag.status === 'CONCLUIDO';
+                      const heightPx = Math.max(44, ((ag.servico.duracaoMinutos || 30) / 30) * 49 - 5);
+                      
+                      return (
+                        <div key={ag.id} className="cursor-pointer flex flex-col overflow-hidden shadow-sm"
+                          style={{
+                            padding: '6px 8px', background: st.bg, borderLeft: `3px solid ${st.border}`, color: 'var(--text-primary)', opacity: isConcluido ? 0.7 : 1,
+                            fontFamily: 'var(--fonte-interface)', fontSize: '11px', position: 'absolute', top: '2px', left: `${2 + (idx * 10)}px`, right: '2px',
+                            height: `${heightPx}px`, zIndex: 10 + idx, borderRadius: '0 4px 4px 0', lineHeight: 1.2
+                          }}>
+                          <div className="flex justify-between items-start mb-1.5">
+                            <p className="truncate pr-1" style={{ fontWeight: 600 }}>{ag.cliente.usuario.nome}</p>
+                          </div>
+                          <div>
+                            <p className="truncate" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px' }}>
+                              {ag.servico.nome} ({ag.servico.duracaoMinutos} min)
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               );
-            }
-          })}
+            })}
+          </div>
         </div>
       )}
 
