@@ -243,10 +243,10 @@ export function AdminChat() {
         style={{ borderColor: 'var(--borda)' }}
       >
         <div className="px-4 py-4 border-b flex-shrink-0" style={{ borderColor: 'var(--borda)' }}>
-          <h1 className="font-['Inter'] text-base font-semibold" style={{ color: 'var(--texto-principal)' }}>
+          <h1 className="font-sans text-base font-semibold" style={{ color: 'var(--texto-principal)' }}>
             Conversas
           </h1>
-          <p className="font-['Inter'] text-[11px] mt-0.5" style={{ color: 'var(--texto-secundario)' }}>
+          <p className="font-sans text-[11px] mt-0.5" style={{ color: 'var(--texto-secundario)' }}>
             {conversas.reduce((s, c) => s + c.naoLidas, 0) > 0
               ? `${conversas.reduce((s, c) => s + c.naoLidas, 0)} não lidas`
               : 'Todas as conversas'}
@@ -261,7 +261,7 @@ export function AdminChat() {
               value={busca}
               onChange={e => setBusca(e.target.value)}
               placeholder="Buscar cliente..."
-              className="flex-1 bg-transparent outline-none font-['Inter'] text-xs"
+              className="flex-1 bg-transparent outline-none font-sans text-xs"
               style={{ color: 'var(--texto-principal)' }}
             />
           </div>
@@ -271,7 +271,7 @@ export function AdminChat() {
           {conversasFiltradas.length === 0 && (
             <div className="flex flex-col items-center justify-center py-12 gap-3" style={{ color: 'var(--texto-secundario)' }}>
               <MessageCircle size={32} strokeWidth={1} />
-              <p className="font-['Inter'] text-[13px]">
+              <p className="font-sans text-[13px]">
                 {busca ? 'Nenhum resultado' : 'Nenhuma conversa ainda'}
               </p>
             </div>
@@ -298,7 +298,7 @@ export function AdminChat() {
                 )}
                 
                 <div
-                  className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 font-['Inter'] text-[13px] font-semibold"
+                  className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 font-sans text-[13px] font-semibold"
                   style={{ background: 'rgba(var(--cor-primaria-rgb), 0.15)', color: 'var(--cor-primaria)' }}
                 >
                   {iniciais(c.clienteNome)}
@@ -306,7 +306,7 @@ export function AdminChat() {
                 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">
-                    <p className="truncate font-['Inter'] text-[13px] font-semibold" style={{ color: 'var(--texto-principal)' }}>
+                    <p className="truncate font-sans text-[13px] font-semibold" style={{ color: 'var(--texto-principal)' }}>
                       {c.clienteNome}
                     </p>
                     <span className="font-['JetBrains_Mono'] text-[10px] ml-2 flex-shrink-0" style={{ color: 'var(--texto-secundario)' }}>
@@ -315,11 +315,11 @@ export function AdminChat() {
                   </div>
                   <div className="flex items-center justify-between mt-0.5">
                     {c.outroDigitando ? (
-                      <p className="truncate font-['Inter'] text-[11px] italic" style={{ color: 'var(--cor-primaria)' }}>
+                      <p className="truncate font-sans text-[11px] italic" style={{ color: 'var(--cor-primaria)' }}>
                         digitando...
                       </p>
                     ) : (
-                      <p className="truncate font-['Inter'] text-[11px]" style={{ color: 'var(--texto-secundario)' }}>
+                      <p className="truncate font-sans text-[11px]" style={{ color: 'var(--texto-secundario)' }}>
                         {c.ultimoRemetente === 'ADMIN' ? 'Você: ' : ''}{c.ultimaMensagem}
                       </p>
                     )}
@@ -344,10 +344,10 @@ export function AdminChat() {
             <div className="w-20 h-20 rounded-full flex items-center justify-center mb-2" style={{ background: 'rgba(var(--texto-secundario-rgb), 0.1)' }}>
               <MessageCircle size={40} strokeWidth={1.5} style={{ color: 'var(--texto-secundario)' }} />
             </div>
-            <h2 className="font-['Inter'] text-lg font-medium" style={{ color: 'var(--texto-principal)' }}>
+            <h2 className="font-sans text-lg font-medium" style={{ color: 'var(--texto-principal)' }}>
               Selecione uma conversa
             </h2>
-            <p className="font-['Inter'] text-[13px] max-w-[280px]" style={{ color: 'var(--texto-secundario)' }}>
+            <p className="font-sans text-[13px] max-w-[280px]" style={{ color: 'var(--texto-secundario)' }}>
               Escolha um cliente à esquerda para ver as mensagens e responder.
             </p>
           </div>
@@ -370,15 +370,15 @@ export function AdminChat() {
                   </svg>
                 </button>
                 
-                <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 font-['Inter'] text-[13px] font-semibold"
+                <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 font-sans text-[13px] font-semibold"
                   style={{ background: 'rgba(var(--cor-primaria-rgb), 0.15)', color: 'var(--cor-primaria)' }}>
                   {iniciais(clienteSelecionado.nome)}
                 </div>
                 <div className="flex flex-col justify-center">
-                  <p className="font-['Inter'] text-[14px] font-medium leading-tight capitalize" style={{ color: 'var(--texto-principal)' }}>
+                  <p className="font-sans text-[14px] font-medium leading-tight capitalize" style={{ color: 'var(--texto-principal)' }}>
                     {clienteSelecionado.nome.toLowerCase()}
                   </p>
-                  <p className="font-['Inter'] text-[11px] mt-0.5" style={{ color: clienteDigitando ? 'var(--cor-primaria)' : 'var(--texto-secundario)' }}>
+                  <p className="font-sans text-[11px] mt-0.5" style={{ color: clienteDigitando ? 'var(--cor-primaria)' : 'var(--texto-secundario)' }}>
                     {clienteDigitando ? <span className="italic">digitando...</span> : 'Cliente'}
                   </p>
                 </div>
@@ -399,7 +399,7 @@ export function AdminChat() {
               {mensagens.length === 0 && !enviando && (
                 <div className="flex flex-col items-center justify-center flex-1 gap-3 text-center opacity-60">
                   <MessageCircle size={32} strokeWidth={1} style={{ color: 'var(--texto-secundario)' }} />
-                  <p className="font-['Inter'] text-[13px]" style={{ color: 'var(--texto-secundario)' }}>
+                  <p className="font-sans text-[13px]" style={{ color: 'var(--texto-secundario)' }}>
                     Inicie a conversa com {clienteSelecionado.nome}.
                   </p>
                 </div>
@@ -409,7 +409,7 @@ export function AdminChat() {
                 <div key={grupo.data}>
                   <div className="flex items-center gap-3 my-6">
                     <div className="flex-1 h-px" style={{ background: 'var(--borda)' }} />
-                    <span className="font-['Inter'] text-[11px] font-medium uppercase tracking-wider px-3 py-1 rounded-full bg-[var(--fundo-card)] border" style={{ color: 'var(--texto-secundario)', borderColor: 'var(--borda)' }}>
+                    <span className="font-sans text-[11px] font-medium uppercase tracking-wider px-3 py-1 rounded-full bg-[var(--fundo-card)] border" style={{ color: 'var(--texto-secundario)', borderColor: 'var(--borda)' }}>
                       {grupo.data}
                     </span>
                     <div className="flex-1 h-px" style={{ background: 'var(--borda)' }} />
@@ -437,7 +437,7 @@ export function AdminChat() {
                               : { background: 'var(--fundo-card)', border: '1px solid var(--borda)', color: 'var(--texto-principal)' }
                           }
                         >
-                          <p className="font-['Inter'] text-[14px] leading-relaxed whitespace-pre-wrap break-words pr-1">
+                          <p className="font-sans text-[14px] leading-relaxed whitespace-pre-wrap break-words pr-1">
                             {m.texto}
                           </p>
                           <div className="flex items-center justify-end gap-1 mt-1 font-['JetBrains_Mono'] text-[10px]">
@@ -482,7 +482,7 @@ export function AdminChat() {
                   background: 'var(--fundo-pagina)',
                   border: '1px solid var(--borda)',
                   color: 'var(--texto-principal)',
-                  fontFamily: 'var(--fonte-interface), Inter, sans-serif',
+                  fontFamily: 'var(--fonte-interface)',
                   fontSize: '14px',
                   minHeight: '44px',
                   maxHeight: '120px',

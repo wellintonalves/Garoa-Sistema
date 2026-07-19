@@ -1,0 +1,1 @@
+Em QUALQUER alteração de UI/estilo do Valen Barber, siga rigorosamente o design.md na raiz do projeto: tipografia Montserrat, ícones Phosphor, cores/tokens SEMPRE via variáveis de tema (--cor-primaria, etc.) e NUNCA hardcode, além dos padrões de botões, cards, inputs, números (Stripe), tabelas, badges, navegação e agenda. Não introduza cores, fontes ou estilos fora do design.md.

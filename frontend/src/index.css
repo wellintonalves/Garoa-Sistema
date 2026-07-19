@@ -8,54 +8,63 @@
 /* === TOKENS DE COR (CSS Custom Properties) === */
 :root {
   /* Fontes */
-  --fonte-interface: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  --fonte-numeros:   'JetBrains Mono', monospace;
+  --fonte-interface: 'Montserrat', system-ui, sans-serif;
+  --fonte-numeros:   'Montserrat', system-ui, sans-serif;
 
   /* Modo escuro — padrão */
   --fundo-pagina:      #0A0A0A;
-  --fundo-card:        #141414;
-  --fundo-input:       #1A1A1A;
-  --fundo-sidebar:     #111111;
-  --borda:             #1F1F1F;
-  --borda-input:       #2A2A2A;
-  --texto-principal:   #F5F5F5;
-  --texto-secundario:  #999999;
-  --texto-placeholder: #888888;
-  --texto-label:       #A3A3A3;
+  --superficie-1:      #141414;
+  --superficie-2:      #1E1E1E;
+  --borda:             #262626;
+  --borda-forte:       #333333;
+  --texto-principal:   #F4F4F4;
+  --texto-secundario:  #8F8F8F;
+  --texto-terciario:   #666666;
+  --cor-primaria:      #F59E0B;
+  --texto-sobre-primaria: #2A1C00;
+  --cor-primaria-texto: #F59E0B;
 
-  /* Aliases legados de fontes removidos */
+  /* Cores semânticas / Alertas (fixas) */
+  --sucesso: #34D399;
+  --aviso: #FBBF24;
+  --perigo: #F87171;
+  --info: var(--cor-primaria);
 
-  /* Aliases de compatibilidade — vocabulário antigo → novos tokens */
-  --bg-primary:     var(--fundo-pagina);
-  --bg-surface:     var(--fundo-sidebar);
-  --bg-card:        var(--fundo-card);
-  --bg-input:       var(--fundo-input);
-  --surface:        var(--fundo-card);
-  --card-bg:        var(--fundo-card);
-
-  --text-primary:   var(--texto-principal);
+  /* Aliases para manter a aplicação antiga rodando até removermos (compatibilidade) */
+  --bg-primary: var(--fundo-pagina);
+  --bg-surface: var(--superficie-1);
+  --bg-surface2: var(--superficie-2);
+  --bg-card: var(--superficie-1);
+  --bg-input: transparent;
+  --surface: var(--superficie-1);
+  --card-bg: var(--superficie-1);
+  --fundo-card: var(--superficie-1);
+  --fundo-input: transparent;
+  --fundo-sidebar: var(--superficie-1);
+  
+  --text-primary: var(--texto-principal);
   --text-secondary: var(--texto-secundario);
-  --text-muted:     var(--texto-secundario);
-  --text-placeholder: var(--texto-placeholder);
+  --text-muted: var(--texto-secundario);
+  --text-placeholder: var(--texto-terciario);
+  --texto-placeholder: var(--texto-terciario);
+  --texto-label: var(--texto-secundario);
+  --text-disabled: var(--texto-terciario);
 
-  --border:         var(--borda);
-  --border-hover:   var(--borda-input);
+  --border: var(--borda);
+  --borda-input: var(--borda);
+  --border-hover: var(--cor-primaria);
+  
+  --font-heading: var(--fonte-interface);
 
-  --font-heading:   var(--fonte-interface);
+  --error-text: var(--perigo);
+  --success-text: var(--sucesso);
+  --warning-text: var(--aviso);
+  --cor-alerta: var(--perigo);
+  --cor-alerta-rgb: 248, 113, 113;
 
-  --error-text:     #EF4444;
-  --success-text:   #22C55E;
-  --warning-text:   #F59E0B;
-  --cor-alerta:       var(--error-text);
-  --cor-alerta-rgb:   239, 68, 68;
-
-  /* Cor de destaque padrão do sistema (sobrescrita pelo tema da barbearia) */
-  --amber:              #F59E0B;
-  --cor-primaria:       #F59E0B;
-  --cor-primaria-rgb:   245, 158, 11;
-  --cor-icone:          #F59E0B;
-  --bg-surface2:        #1A1A1A;
-  --text-disabled:      #404040;
+  --amber: var(--cor-primaria);
+  --cor-primaria-rgb: 245, 158, 11;
+  --cor-icone: var(--cor-primaria-texto);
 
   /* === TOKENS DE MOTION === */
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
@@ -68,30 +77,37 @@
 
 :root.light {
   /* Modo claro */
-  --fundo-pagina:      #F5F5F5;
-  --fundo-card:        #FFFFFF;
-  --fundo-input:       #F0F0F0;
-  --fundo-sidebar:     #FFFFFF;
-  --borda:             #E5E5E5;
-  --bg-surface2:       #E5E5E5;
-  --text-disabled:     #A0A0A0;
-  --borda-input:       #D4D4D4;
-  --texto-principal:   #0A0A0A;
-  --texto-secundario:  #595959;  /* 5.04:1 on #F5F5F5 — WCAG AA */
-  --texto-placeholder: #A0A0A0;
-  --texto-label:       #737373;  /* melhor que #A0A0A0 para labels em fundo claro */
+  --fundo-pagina:      #FDF8EF;
+  --superficie-1:      #FFFFFF;
+  --superficie-2:      #FBF4E8;
+  --borda:             #EFE9DB;
+  --borda-forte:       #E3DBCB;
+  --texto-principal:   #1A1712;
+  --texto-secundario:  #6E675C;
+  --texto-terciario:   #9A9186;
+  --cor-primaria:      #F59E0B;
+  --texto-sobre-primaria: #2A1C00;
+  --cor-primaria-texto: #9A6300;
 
-  /* Cores de destaque — versão mais escura para contraste suficiente no fundo claro */
-  --amber:              #B45309;  /* 4.61:1 on #F5F5F5 (era #F59E0B = 1.97:1) */
-  --cor-primaria:       #B45309;
-  --cor-primaria-rgb:   180, 83, 9;
-  --cor-icone:          #B45309;
-  --error-text:         #DC2626;  /* 4.43:1 on #F5F5F5 (era #EF4444 = 3.45:1) */
-  --success-text:       #15803D;  /* 4.60:1 on #F5F5F5 (era #22C55E = 2.09:1) */
-  --warning-text:       #B45309;  /* reusa amber-700 para consistência */
-  --cor-alerta:         var(--error-text);
-  --cor-alerta-rgb:     220, 38, 38;
+  /* Aliases compatibilidade modo claro */
+  --fundo-card: var(--superficie-1);
+  --fundo-input: transparent;
+  --fundo-sidebar: var(--superficie-1);
+  --bg-surface2: var(--superficie-2);
+  --text-disabled: var(--texto-terciario);
+  --borda-input: var(--borda);
+  --texto-label: var(--texto-secundario);
+
+  --amber: var(--cor-primaria);
+  --cor-primaria-rgb: 245, 158, 11;
+  --cor-icone: var(--cor-primaria-texto);
+  --error-text: #C0392B; 
+  --success-text: #1A9E6A; 
+  --warning-text: var(--cor-primaria-texto); 
+  --cor-alerta: var(--error-text);
+  --cor-alerta-rgb: 192, 57, 43;
 }
+
 
 /* Aplicação global das fontes */
 body {
@@ -213,151 +229,156 @@ h1, h2, h3, h4, .titulo {
 /* === BOTÕES === */
 .btn-primary {
   background: var(--cor-primaria);
-  color: #0A0A0A;
+  color: var(--texto-sobre-primaria);
   font-family: var(--fonte-interface);
-  font-size: 13px;
-  font-weight: 500;
-  letter-spacing: 0;
-  text-transform: none;
-  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 11px 20px;
+  border-radius: 10px;
+  min-height: 44px;
   border: none;
-  border-radius: 6px;
   cursor: pointer;
-  transition: transform var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out), opacity var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+  transition: transform .06s ease, box-shadow .15s ease, filter .15s ease;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
+  box-shadow: 0 1px 2px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.28);
 }
 .btn-primary:hover {
-  background: rgba(var(--cor-primaria-rgb), 0.15);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 0 0 rgba(0,0,0,0.3), 0 8px 16px rgba(0,0,0,0.2);
+  filter: brightness(1.05);
+  box-shadow: 0 2px 6px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.30);
 }
 .btn-primary:active {
-  transform: translateY(2px);
-  box-shadow: 0 2px 0 0 rgba(0,0,0,0.3);
-
-  transform: scale(0.97);
+  transform: translateY(1px);
+  box-shadow: 0 1px 1px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.20);
 }
 .btn-primary:disabled {
   opacity: 0.5;
   cursor: not-allowed;
   transform: none;
   box-shadow: none;
+  filter: none;
 }
 
 .btn-secondary {
   background: transparent;
-  color: var(--texto-principal);
+  border: 1px solid color-mix(in srgb, var(--cor-primaria-texto) 55%, transparent);
+  color: var(--cor-primaria-texto);
   font-family: var(--fonte-interface);
-  font-size: 13px;
-  font-weight: 500;
-  letter-spacing: 0;
-  text-transform: none;
-  padding: 9px 20px;
-  border: 1px solid var(--borda);
-  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 11px 20px;
+  border-radius: 10px;
+  min-height: 44px;
   cursor: pointer;
-  transition: transform var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out), opacity var(--dur-fast) var(--ease-out);
+  transition: transform .06s ease, background .15s ease;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
 }
 .btn-secondary:hover {
-  border-color: var(--border-hover);
-  color: var(--amber);
+  background: color-mix(in srgb, var(--cor-primaria) 12%, transparent);
 }
 .btn-secondary:active {
-  transform: scale(0.97);
+  transform: translateY(1px);
 }
 
 /* === INPUTS E SELECTS === */
 .input,
 .ds-input {
   width: 100%;
-  background: var(--fundo-input);
-  border: 1px solid var(--borda-input);
-  border-radius: 6px;
-  padding: 10px 14px;
+  background: transparent;
+  border: 1px solid var(--borda);
+  border-radius: 10px;
+  padding: 0 14px;
   color: var(--texto-principal);
   font-family: var(--fonte-interface);
-  font-size: 13px;
-  letter-spacing: 0;
+  font-size: 14px;
   outline: none;
-  transition: transform var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out), opacity var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
-  min-height: 40px;
+  transition: border-color var(--dur-fast), box-shadow var(--dur-fast);
+  height: 44px;
 }
 .input:focus,
 .ds-input:focus {
-  border-color: var(--amber);
+  border-color: var(--cor-primaria);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--cor-primaria) 28%, transparent);
 }
 .input::placeholder,
 .ds-input::placeholder {
-  color: var(--text-muted);
+  color: var(--texto-terciario);
 }
 
 .ds-select {
   width: 100%;
-  background: var(--fundo-input);
-  border: 1px solid var(--borda-input);
-  border-radius: 6px;
-  padding: 10px 14px;
+  background: transparent;
+  border: 1px solid var(--borda);
+  border-radius: 10px;
+  padding: 0 14px;
   color: var(--texto-principal);
   font-family: var(--fonte-interface);
-  font-size: 13px;
-  letter-spacing: 0;
+  font-size: 14px;
   outline: none;
-  transition: all var(--dur-fast) var(--ease-out);
-  min-height: 40px;
+  transition: border-color var(--dur-fast), box-shadow var(--dur-fast);
+  height: 44px;
   cursor: pointer;
 }
 .ds-select:focus {
-  border-color: var(--amber);
+  border-color: var(--cor-primaria);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--cor-primaria) 28%, transparent);
 }
 
 .ds-textarea {
   width: 100%;
-  background: var(--fundo-input);
-  border: 1px solid var(--borda-input);
-  border-radius: 6px;
+  background: transparent;
+  border: 1px solid var(--borda);
+  border-radius: 10px;
   padding: 10px 14px;
   color: var(--texto-principal);
   font-family: var(--fonte-interface);
-  font-size: 13px;
-  letter-spacing: 0;
+  font-size: 14px;
   outline: none;
-  transition: all var(--dur-fast) var(--ease-out);
-  resize: none;
+  transition: border-color var(--dur-fast), box-shadow var(--dur-fast);
+  resize: vertical;
 }
 .ds-textarea:focus {
-  border-color: var(--amber);
+  border-color: var(--cor-primaria);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--cor-primaria) 28%, transparent);
 }
 
 .input-label {
   font-family: var(--fonte-interface);
   font-size: 12px;
-  letter-spacing: 0.02em;
-  text-transform: none;
+  font-weight: 600;
   color: var(--texto-secundario);
   margin-bottom: 6px;
   display: block;
-  font-weight: 500;
 }
 
 /* === CARDS === */
 .card {
-  background: var(--bg-surface);
-  border: 1px solid var(--border);
-  border-radius: 0;
-  padding: 1.25rem;
+  background: var(--superficie-1);
+  border: 1px solid var(--borda);
+  border-radius: 14px;
+  padding: 18px 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.45);
+}
+
+:root.light .card {
+  box-shadow: 0 1px 3px rgba(60,50,30,.07), 0 5px 14px rgba(60,50,30,.05);
 }
 
 .card-featured {
-  background: var(--bg-surface);
-  border: 1px solid var(--border);
-  border-left: 2px solid var(--amber);
-  border-radius: 0;
-  padding: 1.25rem;
+  background: var(--superficie-1);
+  border: 2px solid color-mix(in srgb, var(--cor-primaria) 35%, var(--borda));
+  border-radius: 14px;
+  padding: 18px 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.45);
+}
+
+:root.light .card-featured {
+  box-shadow: 0 1px 3px rgba(60,50,30,.07), 0 5px 14px rgba(60,50,30,.05);
 }
 
 /* === BADGES === */

@@ -191,7 +191,7 @@ export function ClienteBarbeariaChat() {
             <ChevronLeft size={24} />
           </button>
           
-          <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 font-['Inter'] text-[13px] font-semibold"
+          <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 font-sans text-[13px] font-semibold"
             style={{ background: 'rgba(var(--cor-primaria-rgb), 0.15)', color: 'var(--cor-primaria)' }}>
             {barbearia?.logo ? (
               <img src={barbearia.logo} alt="Logo" className="w-full h-full object-cover rounded-full" />
@@ -200,10 +200,10 @@ export function ClienteBarbeariaChat() {
             )}
           </div>
           <div className="flex flex-col justify-center max-w-[180px] md:max-w-none">
-            <p className="font-['Inter'] text-[14px] md:text-[15px] font-medium leading-tight truncate" style={{ color: 'var(--texto-principal)' }}>
+            <p className="font-sans text-[14px] md:text-[15px] font-medium leading-tight truncate" style={{ color: 'var(--texto-principal)' }}>
               {barbearia?.nome || 'Barbearia'}
             </p>
-            <p className="font-['Inter'] text-[11px] mt-0.5" style={{ color: adminDigitando ? 'var(--cor-primaria)' : 'var(--texto-secundario)' }}>
+            <p className="font-sans text-[11px] mt-0.5" style={{ color: adminDigitando ? 'var(--cor-primaria)' : 'var(--texto-secundario)' }}>
               {adminDigitando ? <span className="italic">digitando...</span> : 'Atendimento'}
             </p>
           </div>
@@ -224,11 +224,11 @@ export function ClienteBarbeariaChat() {
         {mensagens.length === 0 && !enviando && (
           <div className="flex flex-col items-center justify-center flex-1 gap-3 text-center opacity-60">
             <div className="w-16 h-16 rounded-full flex items-center justify-center mb-2" style={{ background: 'rgba(var(--texto-secundario-rgb), 0.1)' }}>
-              <div className="w-8 h-8 rounded-full flex items-center justify-center font-['Inter'] font-semibold" style={{ background: 'var(--cor-primaria)', color: '#111827' }}>
+              <div className="w-8 h-8 rounded-full flex items-center justify-center font-sans font-semibold" style={{ background: 'var(--cor-primaria)', color: '#111827' }}>
                 {iniciais(barbearia?.nome)}
               </div>
             </div>
-            <p className="font-['Inter'] text-[13px]" style={{ color: 'var(--texto-secundario)' }}>
+            <p className="font-sans text-[13px]" style={{ color: 'var(--texto-secundario)' }}>
               Envie uma mensagem para falar conosco.
             </p>
           </div>
@@ -238,7 +238,7 @@ export function ClienteBarbeariaChat() {
           <div key={grupo.data}>
             <div className="flex items-center gap-3 my-6">
               <div className="flex-1 h-px" style={{ background: 'var(--borda)' }} />
-              <span className="font-['Inter'] text-[11px] font-medium uppercase tracking-wider px-3 py-1 rounded-full bg-[var(--fundo-card)] border" style={{ color: 'var(--texto-secundario)', borderColor: 'var(--borda)' }}>
+              <span className="font-sans text-[11px] font-medium uppercase tracking-wider px-3 py-1 rounded-full bg-[var(--fundo-card)] border" style={{ color: 'var(--texto-secundario)', borderColor: 'var(--borda)' }}>
                 {grupo.data}
               </span>
               <div className="flex-1 h-px" style={{ background: 'var(--borda)' }} />
@@ -266,7 +266,7 @@ export function ClienteBarbeariaChat() {
                         : { background: 'var(--fundo-card)', border: '1px solid var(--borda)', color: 'var(--texto-principal)' }
                     }
                   >
-                    <p className="font-['Inter'] text-[14px] leading-relaxed whitespace-pre-wrap break-words pr-1">
+                    <p className="font-sans text-[14px] leading-relaxed whitespace-pre-wrap break-words pr-1">
                       {m.texto}
                     </p>
                     <div className="flex items-center justify-end gap-1 mt-1 font-['JetBrains_Mono'] text-[10px]">
@@ -311,7 +311,7 @@ export function ClienteBarbeariaChat() {
             background: 'var(--fundo-pagina)',
             border: '1px solid var(--borda)',
             color: 'var(--texto-principal)',
-            fontFamily: 'var(--fonte-interface), Inter, sans-serif',
+            fontFamily: 'var(--fonte-interface)',
             fontSize: '15px',
             minHeight: '48px',
             maxHeight: '120px',

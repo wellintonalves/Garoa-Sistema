@@ -2,10 +2,10 @@
 import { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import {
-  LayoutDashboard, Calendar, Scissors, ListChecks,
-  Users, DollarSign, ChevronLeft, ChevronRight, LogOut,
-  BarChart3, X, Settings, MessageCircle, Star, ShoppingCart
-} from 'lucide-react';
+  SquaresFour, CalendarBlank, Scissors, Package,
+  Users, Wallet, CaretLeft, CaretRight, SignOut,
+  ChartBar, X, Gear, ChatCircle, Gift, UsersThree
+} from '@phosphor-icons/react';
 import { useAuth } from '../hooks/useAuth';
 import api from '../api/client';
 import { ToggleModo } from './ToggleModo';
@@ -16,17 +16,17 @@ interface SidebarProps {
 }
 
 const menuItems = [
-  { path: '/admin', label: 'Dashboard', icon: LayoutDashboard },
-  { path: '/admin/agenda', label: 'Agenda', icon: Calendar },
-  { path: '/admin/barbeiros', label: 'Barbeiros', icon: Scissors },
-  { path: '/admin/servicos', label: 'Serviços', icon: ListChecks },
+  { path: '/admin', label: 'Dashboard', icon: SquaresFour },
+  { path: '/admin/agenda', label: 'Agenda', icon: CalendarBlank },
+  { path: '/admin/barbeiros', label: 'Barbeiros', icon: UsersThree },
+  { path: '/admin/servicos', label: 'Serviços', icon: Scissors },
   { path: '/admin/clientes', label: 'Clientes', icon: Users },
-  { path: '/admin/financeiro', label: 'Financeiro', icon: DollarSign },
-  { path: '/admin/relatorios', label: 'Relatórios', icon: BarChart3 },
-  { path: '/admin/vendas', label: 'Vendas', icon: ShoppingCart },
-  { path: '/admin/fidelidade', label: 'Fidelidade', icon: Star },
-  { path: '/admin/chat', label: 'Chat', icon: MessageCircle },
-  { path: '/admin/configuracoes', label: 'Configurações', icon: Settings },
+  { path: '/admin/financeiro', label: 'Financeiro', icon: Wallet },
+  { path: '/admin/relatorios', label: 'Relatórios', icon: ChartBar },
+  { path: '/admin/vendas', label: 'Estoque', icon: Package },
+  { path: '/admin/fidelidade', label: 'Fidelidade', icon: Gift },
+  { path: '/admin/chat', label: 'Chat', icon: ChatCircle },
+  { path: '/admin/configuracoes', label: 'Configurações', icon: Gear },
 ];
 
 export function Sidebar({ mobileOpen, onCloseMobile }: SidebarProps) {
@@ -104,7 +104,7 @@ export function Sidebar({ mobileOpen, onCloseMobile }: SidebarProps) {
             onClick={onCloseMobile}
             style={{ color: 'var(--text-muted)' }}
           >
-            <X size={20} strokeWidth={1.5} />
+            <X size={20} weight="regular" />
           </button>
         </div>
 
@@ -125,8 +125,12 @@ export function Sidebar({ mobileOpen, onCloseMobile }: SidebarProps) {
                 `nav-item ${isActive ? 'active' : ''}`
               }
             >
-              <Icon size={16} strokeWidth={1.5} className="flex-shrink-0" />
-              {!recolhido && <span className="truncate">{label}</span>}
+              {({ isActive }) => (
+                <>
+                  <Icon size={20} weight={isActive ? "fill" : "regular"} className="flex-shrink-0" />
+                  {!recolhido && <span className="truncate">{label}</span>}
+                </>
+              )}
             </NavLink>
           ))}
         </nav>
@@ -178,7 +182,7 @@ export function Sidebar({ mobileOpen, onCloseMobile }: SidebarProps) {
             onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--error-text)'; }}
             onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-muted)'; }}
           >
-            <LogOut size={16} strokeWidth={1.5} className="flex-shrink-0" />
+            <SignOut size={20} weight="regular" className="flex-shrink-0" />
             {!recolhido && <span>Sair</span>}
           </button>
         </div>
@@ -197,7 +201,7 @@ export function Sidebar({ mobileOpen, onCloseMobile }: SidebarProps) {
           onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--text-primary)'; e.currentTarget.style.borderColor = 'var(--border-hover)'; }}
           onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.borderColor = 'var(--border)'; }}
         >
-          {recolhido ? <ChevronRight size={12} strokeWidth={1.5} /> : <ChevronLeft size={12} strokeWidth={1.5} />}
+          {recolhido ? <CaretRight size={14} weight="regular" /> : <CaretLeft size={14} weight="regular" />}
         </button>
       </aside>
     </>

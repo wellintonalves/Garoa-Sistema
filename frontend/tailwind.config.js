@@ -8,12 +8,15 @@ export default {
     extend: {
       colors: {
         primaria: 'var(--cor-primaria)',
-        secundaria: 'var(--cor-secundaria)',
-        'cor-texto': 'var(--cor-texto)',
-        fundo: 'var(--cor-fundo)',
+        'primaria-texto': 'var(--cor-primaria-texto)',
+        fundo: 'var(--fundo-pagina)',
+        'fundo-card': 'var(--superficie-1)',
+        'texto': 'var(--texto-principal)',
+        'texto-secundario': 'var(--texto-secundario)',
       },
       fontFamily: {
-        titulo: ['var(--fonte-titulo)', 'sans-serif'],
+        sans: ['var(--fonte-interface)', 'sans-serif'],
+        mono: ['var(--fonte-numeros)', 'monospace'],
       }
     },
   },

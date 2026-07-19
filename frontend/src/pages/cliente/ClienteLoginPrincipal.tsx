@@ -44,7 +44,7 @@ export function ClienteLoginPrincipal() {
       flexDirection: isMobile ? 'column' : 'row',
       minHeight: '100vh',
       width: '100vw',
-      fontFamily: "'Inter', -apple-system, sans-serif",
+      fontFamily: "var(--fonte-interface)",
       overflow: isMobile ? 'auto' : 'hidden',
     }}>
 

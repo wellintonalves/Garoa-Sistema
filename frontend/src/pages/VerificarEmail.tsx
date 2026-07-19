@@ -110,7 +110,7 @@ export function VerificarEmail() {
       <div style={{
         height: '100vh', width: '100vw', background: '#0A0A0A',
         display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-        fontFamily: "'Inter', -apple-system, sans-serif",
+        fontFamily: "var(--fonte-interface)",
       }}>
         <CheckCircle size={48} color="#10B981" strokeWidth={1.5} style={{ marginBottom: '16px' }} />
         <h2 style={{ fontSize: '20px', fontWeight: 600, color: '#F5F5F5', margin: '0 0 8px' }}>
@@ -127,7 +127,7 @@ export function VerificarEmail() {
     <div style={{
       display: 'flex', flexDirection: isMobile ? 'column' : 'row',
       minHeight: '100vh', width: '100vw',
-      fontFamily: "'Inter', -apple-system, sans-serif",
+      fontFamily: "var(--fonte-interface)",
       overflow: isMobile ? 'auto' : 'hidden',
     }}>
 
