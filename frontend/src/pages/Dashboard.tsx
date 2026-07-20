@@ -18,6 +18,11 @@ interface DadosDashboard {
   ticketMedio: number;
   servicoMaisRealizado: { nome: string; count: number; total: number } | null;
   porDia: Array<{ data: string; entradas: number; produtos: number; saidas: number }>;
+  variacaoFaturamento?: number;
+  variacaoServicos?: number;
+  variacaoProdutos?: number;
+  variacaoAtendimentos?: number;
+  variacaoTicket?: number;
 }
 
 function getPeriodDates(period: 'hoje' | 'esta_semana' | 'este_mes' | 'mes_anterior') {
@@ -211,18 +216,24 @@ export function Dashboard() {
               icone={DollarSign}
               subtexto="Faturamento"
               destaque
+              delta={dados.variacaoServicos}
+              comparacao="vs. período anterior"
             />
             <StatCard
               titulo="Produtos"
               valor={formatarMoeda(dados.faturamentoProdutos)}
               icone={DollarSign}
               subtexto="Faturamento"
+              delta={dados.variacaoProdutos}
+              comparacao="vs. período anterior"
             />
             <StatCard
               titulo="Atendimentos"
               valor={String(dados.totalAtendimentos)}
               icone={CalendarCheck}
               subtexto="Concluídos no período"
+              delta={dados.variacaoAtendimentos}
+              comparacao="vs. período anterior"
             />
             <StatCard
               titulo="Pendentes"
@@ -246,6 +257,8 @@ export function Dashboard() {
               valor={formatarMoeda(dados.ticketMedio)}
               icone={TrendingUp}
               subtexto="Por atendimento no período"
+              delta={dados.variacaoTicket}
+              comparacao="vs. período anterior"
             />
             <div className="metric-card animate-fade-in" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
               <div className="flex items-center justify-between mb-3">
@@ -274,28 +287,44 @@ export function Dashboard() {
             </h3>
             
             {dados.porDia.length > 0 && dados.porDia.some(dia => (dia.entradas + dia.produtos) > 0) ? (
-              <div style={{ height: '220px', position: 'relative', width: '100%' }}>
+              <div style={{ height: '240px', position: 'relative', width: '100%', paddingBottom: '20px' }}>
                 {(() => {
                   const data = dados.porDia;
                   const maxVal = Math.max(...data.map(d => d.entradas + d.produtos), 1);
                   const viewBoxWidth = 1000;
-                  const viewBoxHeight = 220;
+                  const viewBoxHeight = 200;
                   
                   const points = data.map((d, i) => {
                     const x = data.length > 1 ? (i / (data.length - 1)) * viewBoxWidth : viewBoxWidth / 2;
                     const val = d.entradas + d.produtos;
-                    const y = viewBoxHeight - (maxVal > 0 ? (val / maxVal) * viewBoxHeight * 0.9 : 0); // 0.9 to leave some top margin
+                    const y = viewBoxHeight - (maxVal > 0 ? (val / maxVal) * viewBoxHeight * 0.8 : 0); // 0.8 to leave top margin
                     return { x, y, val, original: d };
                   });
 
                   const linePath = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
                   const areaPath = `${linePath} L ${points[points.length - 1].x} ${viewBoxHeight} L ${points[0].x} ${viewBoxHeight} Z`;
+                  
+                  // Decide quantos labels de X mostrar para não encavalar
+                  const maxLabels = 7;
+                  const step = Math.ceil(points.length / maxLabels);
 
                   return (
-                    <svg viewBox={`0 0 ${viewBoxWidth} ${viewBoxHeight}`} style={{ width: '100%', height: '100%', overflow: 'visible' }} preserveAspectRatio="none">
+                    <svg viewBox={`0 0 ${viewBoxWidth} ${viewBoxHeight + 30}`} style={{ width: '100%', height: '100%', overflow: 'visible' }} preserveAspectRatio="none">
                       <path d={areaPath} fill="var(--cor-primaria)" style={{ opacity: 0.1 }} />
                       <path d={linePath} fill="none" stroke="var(--cor-primaria)" strokeWidth="2.5" />
                       
+                      {/* Eixo X Rótulos Estáticos */}
+                      {points.map((p, i) => {
+                        if (i % step === 0 || i === points.length - 1) {
+                          return (
+                            <text key={`label-${i}`} x={p.x} y={viewBoxHeight + 20} textAnchor="middle" fill="var(--texto-secundario)" fontSize="12px" fontFamily="var(--fonte-numeros)">
+                              {new Date(p.original.data + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
+                            </text>
+                          );
+                        }
+                        return null;
+                      })}
+
                       {/* Pontos interativos (invisíveis, disparam tooltip no hover - CSS simples) */}
                       {points.map((p, i) => (
                         <g key={i} style={{ cursor: 'crosshair' }} className="group">
@@ -303,9 +332,6 @@ export function Dashboard() {
                           <line x1={p.x} y1={0} x2={p.x} y2={viewBoxHeight} stroke="transparent" strokeWidth={viewBoxWidth / Math.max(points.length, 1)} />
                           {/* Bolinha realçada no hover */}
                           <circle cx={p.x} cy={p.y} r="4" fill="var(--superficie-1)" stroke="var(--cor-primaria)" strokeWidth="2" style={{ opacity: 0, transition: 'opacity 0.2s' }} className="group-hover:opacity-100" />
-                          <text x={p.x} y={viewBoxHeight + 20} textAnchor="middle" fill="var(--texto-terciario)" fontSize="12px" fontFamily="var(--fonte-numeros)" className="opacity-0 group-hover:opacity-100 transition-opacity">
-                            {new Date(p.original.data + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
-                          </text>
                           <text x={p.x} y={p.y - 10} textAnchor="middle" fill="var(--texto-principal)" fontSize="14px" fontWeight="600" fontFamily="var(--fonte-numeros)" className="opacity-0 group-hover:opacity-100 transition-opacity">
                             {formatarMoeda(p.val)}
                           </text>

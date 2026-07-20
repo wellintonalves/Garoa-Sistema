@@ -318,8 +318,17 @@ export class FinanceiroService {
     const dataInicio = inicioDiaBrasilia(inicio);
     const dataFim = fimDiaBrasilia(fim);
 
-    // --- Executa as queries em paralelo ---
-    const [lancamentos, agendamentos, todosEstoque] = await Promise.all([
+    // Calcular período anterior equivalente
+    const diffTime = dataFim.getTime() - dataInicio.getTime();
+    const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24)); // número de dias (0 se for o mesmo dia)
+    
+    // Período anterior (mesma quantidade de dias, terminando 1 dia antes do dataInicio)
+    const dataFimAnterior = new Date(dataInicio.getTime() - 1);
+    const dataInicioAnterior = new Date(dataFimAnterior.getTime() - (diffDays * 24 * 60 * 60 * 1000));
+    dataInicioAnterior.setHours(0, 0, 0, 0);
+
+    // --- Executa as queries em paralelo (Atual e Anterior) ---
+    const [lancamentos, agendamentos, todosEstoque, lancamentosAnteriores, agendamentosAnteriores] = await Promise.all([
       prisma.lancamentoFinanceiro.findMany({
         where: { data: { gte: dataInicio, lte: dataFim } } as any,
         include: { servico: { select: { nome: true } } },
@@ -329,13 +338,19 @@ export class FinanceiroService {
         where: { dataHora: { gte: dataInicio, lte: dataFim } },
         select: { status: true },
       }),
-      prisma.estoque.findMany()
+      prisma.estoque.findMany(),
+      prisma.lancamentoFinanceiro.findMany({
+        where: { data: { gte: dataInicioAnterior, lte: dataFimAnterior } } as any,
+      }),
+      prisma.agendamento.findMany({
+        where: { dataHora: { gte: dataInicioAnterior, lte: dataFimAnterior } },
+        select: { status: true },
+      })
     ]);
 
     let faturamentoServicos = 0;
     let faturamentoProdutos = 0;
     let totalSaidas = 0;
-    let totalAtendimentos = 0;
     const porDia: Record<string, { entradas: number; produtos: number; saidas: number }> = {};
     const servicoContagem: Record<string, { nome: string; count: number; total: number }> = {};
 
@@ -352,7 +367,6 @@ export class FinanceiroService {
         } else {
           faturamentoServicos += valor;
           porDia[diaKey].entradas += valor;
-          if (l.barbeiroId) totalAtendimentos++;
 
           // Contagem de serviços
           if (l.servicoId && l.servico) {
@@ -369,6 +383,39 @@ export class FinanceiroService {
       }
     });
 
+    // --- Agendamentos no período Atual ---
+    const concluidos = agendamentos.filter((a: any) => a.status === 'CONCLUIDO').length;
+    const pendentes = agendamentos.filter((a: any) => a.status === 'AGUARDANDO' || a.status === 'CONFIRMADO').length;
+
+    // --- Processar Período Anterior ---
+    let antFaturamentoServicos = 0;
+    let antFaturamentoProdutos = 0;
+    
+    lancamentosAnteriores.forEach((l: any) => {
+      const valor = Number(l.valor);
+      if (l.tipo === 'ENTRADA') {
+        if (l.categoria === CATEGORIA_VENDA_PRODUTO) {
+          antFaturamentoProdutos += valor;
+        } else {
+          antFaturamentoServicos += valor;
+        }
+      }
+    });
+
+    const antConcluidos = agendamentosAnteriores.filter((a: any) => a.status === 'CONCLUIDO').length;
+    const antFaturamentoTotal = antFaturamentoServicos + antFaturamentoProdutos;
+    const faturamentoTotal = faturamentoServicos + faturamentoProdutos;
+
+    // Ticket médio
+    const ticketMedio = concluidos > 0 ? faturamentoServicos / concluidos : 0;
+    const antTicketMedio = antConcluidos > 0 ? antFaturamentoServicos / antConcluidos : 0;
+
+    // Função auxiliar para calcular variação %
+    const calcVar = (atual: number, anterior: number) => {
+      if (anterior === 0) return atual > 0 ? 100 : 0;
+      return ((atual - anterior) / anterior) * 100;
+    };
+
     // Preencher dias sem lançamento no range
     const porDiaCompleto: Array<{ data: string; entradas: number; produtos: number; saidas: number }> = [];
     const cursor = new Date(inicio);
@@ -384,32 +431,39 @@ export class FinanceiroService {
       cursor.setDate(cursor.getDate() + 1);
     }
 
-    // Ticket médio (apenas serviços)
-    const ticketMedio = totalAtendimentos > 0 ? faturamentoServicos / totalAtendimentos : 0;
-
     // Serviço mais realizado
     const servicoMaisRealizado = Object.values(servicoContagem).sort((a, b) => b.count - a.count)[0] || null;
-
-    // --- Agendamentos no período ---
-    const concluidos = agendamentos.filter((a: any) => a.status === 'CONCLUIDO').length;
-    const pendentes = agendamentos.filter((a: any) => a.status === 'AGUARDANDO' || a.status === 'CONFIRMADO').length;
 
     // --- Estoque baixo (snapshot atual, não depende de período) ---
     const estoqueBaixo = todosEstoque.filter((i: any) => i.quantidade <= i.quantidadeMinima).length;
 
     return {
-      totalEntradas: faturamentoServicos + faturamentoProdutos,
+      totalEntradas: faturamentoTotal,
       faturamentoServicos,
       faturamentoProdutos,
-      faturamentoTotal: faturamentoServicos + faturamentoProdutos,
+      faturamentoTotal,
       totalSaidas,
-      saldo: (faturamentoServicos + faturamentoProdutos) - totalSaidas,
+      saldo: faturamentoTotal - totalSaidas,
       totalAtendimentos: concluidos,
       pendentes,
       estoqueBaixo,
       ticketMedio,
       servicoMaisRealizado,
       porDia: porDiaCompleto,
+      // Variações percentuais
+      variacaoFaturamento: calcVar(faturamentoTotal, antFaturamentoTotal),
+      variacaoServicos: calcVar(faturamentoServicos, antFaturamentoServicos),
+      variacaoProdutos: calcVar(faturamentoProdutos, antFaturamentoProdutos),
+      variacaoAtendimentos: calcVar(concluidos, antConcluidos),
+      variacaoTicket: calcVar(ticketMedio, antTicketMedio),
+      // Valores brutos anteriores caso o front precise
+      anterior: {
+        faturamentoTotal: antFaturamentoTotal,
+        faturamentoServicos: antFaturamentoServicos,
+        faturamentoProdutos: antFaturamentoProdutos,
+        totalAtendimentos: antConcluidos,
+        ticketMedio: antTicketMedio
+      }
     };
   }
 }

@@ -327,7 +327,7 @@ export function Clientes() {
                   {clientes.map(c => (
                     <tr key={c.id} style={{ cursor: 'pointer' }} onClick={() => abrirPerfil(c.id)}>
                       {/* Avatar + Nome */}
-                      <td>
+                      <td data-label="Cliente">
                         <div className="flex items-center gap-3">
                           <div
                             className="flex items-center justify-center flex-shrink-0"
@@ -350,7 +350,7 @@ export function Clientes() {
                         </div>
                       </td>
                       {/* Contato */}
-                      <td>
+                      <td data-label="Contato">
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                           <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
                             <Mail size={10} /> {c.usuario?.email || '—'}
@@ -361,27 +361,27 @@ export function Clientes() {
                         </div>
                       </td>
                       {/* Última visita */}
-                      <td style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--text-muted)' }}>
+                      <td data-label="Última Visita" style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--text-muted)' }}>
                         {formatarData(c.ultimoAtendimento)}
                       </td>
                       {/* Visitas */}
-                      <td style={{ textAlign: 'center', fontFamily: 'var(--fonte-interface)', fontSize: '20px', color: 'var(--text-primary)' }}>
+                      <td data-label="Visitas" style={{ textAlign: 'center', fontFamily: 'var(--fonte-interface)', fontSize: '20px', color: 'var(--text-primary)' }}>
                         {c.totalVisitas}
                       </td>
                       {/* Gasto total */}
-                      <td style={{ textAlign: 'right', fontFamily: 'var(--fonte-numeros)', fontSize: '12px', color: 'rgba(var(--cor-primaria-rgb), 0.15)' }}>
+                      <td data-label="Gasto Total" style={{ textAlign: 'right', fontFamily: 'var(--fonte-numeros)', fontSize: '12px', color: 'rgba(var(--cor-primaria-rgb), 0.15)' }}>
                         {formatarMoeda(c.totalGasto)}
                       </td>
                       {/* Pontos */}
-                      <td style={{ textAlign: 'center', fontFamily: 'var(--fonte-interface)', fontSize: '18px', color: c.cor }}>
+                      <td data-label="Pontos" style={{ textAlign: 'center', fontFamily: 'var(--fonte-interface)', fontSize: '18px', color: c.cor }}>
                         {c.pontosAtuais}
                       </td>
                       {/* Badge nível */}
-                      <td style={{ textAlign: 'center' }}>
+                      <td data-label="Nível" style={{ textAlign: 'center' }}>
                         <span className={`badge ${badgeClass(c.nivel)}`}>{c.nivel}</span>
                       </td>
                       {/* Ações */}
-                      <td style={{ textAlign: 'right' }} onClick={e => e.stopPropagation()}>
+                      <td data-label="Ações" style={{ textAlign: 'right' }} onClick={e => e.stopPropagation()}>
                         <button
                           onClick={() => abrirPerfil(c.id)}
                           className="transition-colors"
