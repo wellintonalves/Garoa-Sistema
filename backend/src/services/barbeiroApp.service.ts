@@ -24,7 +24,11 @@ export class BarbeiroAppService {
         papel: 'BARBEIRO',
         ...(barbeariaId ? { barbeariaId } : {}),
       },
-      include: { barbeiro: { include: { barbearia: { select: { id: true, nome: true, slug: true } } } } },
+      include: {
+        barbeiro: {
+          include: { barbearia: { select: { id: true, nome: true, slug: true } } },
+        },
+      },
     });
 
     const comBarbeiro = candidatos.filter((u) => u.barbeiro !== null);
@@ -32,7 +36,7 @@ export class BarbeiroAppService {
       throw new Error('Email ou senha incorretos');
     }
 
-    // Testa a senha contra cada candidato — não assume que o primeiro é o certo
+    // Testa a senha contra CADA candidato — não assume que o primeiro é o certo
     const combinam: typeof comBarbeiro = [];
     for (const u of comBarbeiro) {
       if (await bcrypt.compare(senha, u.senha)) combinam.push(u);
@@ -44,7 +48,7 @@ export class BarbeiroAppService {
 
     const ativos = combinam.filter((u) => u.barbeiro!.ativo);
 
-    // Só reporta "desativada" se de fato a senha bateu e TODAS as contas estão inativas
+    // Só reporta "desativada" se a senha bateu e TODAS as contas estão inativas
     if (ativos.length === 0) {
       throw new Error('Conta de barbeiro desativada');
     }
