@@ -1,29 +1,28 @@
 import { useCallback } from 'react';
 import api from '../api/client';
 import clienteApi from '../api/clienteApi';
-import { gerarCorIcone } from '../utils/cores';
+import { aplicarTema as aplicarTemaFn, TemaBarbearia } from '../theme/aplicarTema';
 
-export interface TemaBarbearia {
-  corPrimaria?: string;
+export type { TemaBarbearia };
+
+export function obterModoAtual(): 'claro' | 'escuro' {
+  if (typeof window === 'undefined') return 'escuro';
+  const modoSalvo = localStorage.getItem('garoa-modo-tema') || 'auto';
+  const ehEscuro =
+    modoSalvo === 'dark' ||
+    (modoSalvo === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  return ehEscuro ? 'escuro' : 'claro';
 }
 
 export function useTema() {
-  const aplicarTema = useCallback((tema: TemaBarbearia) => {
-    const root = document.documentElement;
-
-    if (tema.corPrimaria) {
-      root.style.setProperty('--cor-primaria', tema.corPrimaria);
-      root.style.setProperty('--amber', tema.corPrimaria);
-
-      const r = parseInt(tema.corPrimaria.slice(1,3), 16);
-      const g = parseInt(tema.corPrimaria.slice(3,5), 16);
-      const b = parseInt(tema.corPrimaria.slice(5,7), 16);
-      root.style.setProperty('--cor-primaria-rgb', `${r},${g},${b}`);
-      root.style.setProperty('--cor-icone', gerarCorIcone(tema.corPrimaria));
-    }
+  const aplicarTema = useCallback((tema: TemaBarbearia, modo?: 'claro' | 'escuro') => {
+    const modoAlvo = modo || obterModoAtual();
+    aplicarTemaFn(tema, modoAlvo);
 
     // Salvar no localStorage como cache
-    localStorage.setItem('temaBarbearia', JSON.stringify(tema));
+    if (tema) {
+      localStorage.setItem('temaBarbearia', JSON.stringify(tema));
+    }
   }, []);
 
   /**
@@ -32,10 +31,14 @@ export function useTema() {
    */
   const limparTema = useCallback(() => {
     const root = document.documentElement;
-    root.style.removeProperty('--cor-primaria');
-    root.style.removeProperty('--amber');
-    root.style.removeProperty('--cor-primaria-rgb');
-    root.style.removeProperty('--cor-icone');
+    const tokens = [
+      '--cor-primaria', '--amber', '--cor-primaria-rgb', '--cor-icone',
+      '--fundo-pagina', '--fundo-superficie', '--superficie-1', '--fundo-superficie-2',
+      '--superficie-2', '--fundo-superficie-3', '--superficie-3', '--borda', '--borda-sutil',
+      '--borda-media', '--borda-forte', '--texto-principal', '--texto-secundario', '--texto-terciario',
+      '--cor-primaria-hover', '--cor-primaria-ativa', '--cor-primaria-texto', '--texto-sobre-primaria'
+    ];
+    tokens.forEach(t => root.style.removeProperty(t));
     localStorage.removeItem('temaBarbearia');
   }, []);
 

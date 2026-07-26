@@ -5,6 +5,39 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Sistema de gestão completo para barbearia — agendamentos, barbeiros, serviços, financeiro e estoque" />
     <title>Garoa Barbearia — Sistema de Gestão</title>
+    <script>
+      (function() {
+        try {
+          var modoSalvo = localStorage.getItem('garoa-modo-tema') || 'auto';
+          var ehEscuro = modoSalvo === 'dark' || (modoSalvo === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          var modo = ehEscuro ? 'escuro' : 'claro';
+          document.documentElement.setAttribute('data-tema', modo);
+          if (!ehEscuro) document.documentElement.classList.add('light');
+          else document.documentElement.classList.remove('light');
+
+          var cacheTema = localStorage.getItem('temaBarbearia');
+          if (cacheTema) {
+            var tema = JSON.parse(cacheTema);
+            var bloco = (tema && tema[modo]) ? tema[modo] : null;
+            if (bloco) {
+              for (var k in bloco) {
+                if (typeof bloco[k] === 'string') {
+                  document.documentElement.style.setProperty('--' + k, bloco[k]);
+                }
+              }
+              if (bloco['cor-primaria']) {
+                document.documentElement.style.setProperty('--amber', bloco['cor-primaria']);
+              }
+            } else if (tema && tema.corPrimaria) {
+              document.documentElement.style.setProperty('--cor-primaria', tema.corPrimaria);
+              document.documentElement.style.setProperty('--amber', tema.corPrimaria);
+            }
+          }
+        } catch (e) {
+          console.error('Erro no bootstrap do tema', e);
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

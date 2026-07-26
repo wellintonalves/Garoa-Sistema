@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { aplicarTema } from '../theme/aplicarTema';
 
 export type ModoTema = 'auto' | 'light' | 'dark';
 
@@ -6,14 +7,28 @@ const STORAGE_KEY = 'garoa-modo-tema';
 
 function aplicarModo(modo: ModoTema) {
   const root = document.documentElement;
-  
+  let ehEscuro = false;
+
   if (modo === 'auto') {
-    const prefereDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    root.classList.toggle('light', !prefereDark);
-  } else if (modo === 'light') {
-    root.classList.add('light');
+    ehEscuro = window.matchMedia('(prefers-color-scheme: dark)').matches;
   } else {
-    root.classList.remove('light');
+    ehEscuro = modo === 'dark';
+  }
+
+  root.classList.toggle('light', !ehEscuro);
+  const modoAlvo = ehEscuro ? 'escuro' : 'claro';
+  root.setAttribute('data-tema', modoAlvo);
+
+  const cache = localStorage.getItem('temaBarbearia');
+  if (cache) {
+    try {
+      const tema = JSON.parse(cache);
+      aplicarTema(tema, modoAlvo);
+    } catch (e) {
+      console.error('Erro ao re-aplicar tema no modo', e);
+    }
+  } else {
+    aplicarTema({}, modoAlvo);
   }
 }
 
