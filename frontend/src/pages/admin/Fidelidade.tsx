@@ -37,14 +37,14 @@ function Toast({ msg, tipo, onClose }: { msg: string; tipo: 'ok' | 'erro'; onClo
     <div style={{
       position: 'fixed', bottom: '24px', right: '24px', zIndex: 9999,
       display: 'flex', alignItems: 'center', gap: '10px',
-      background: tipo === 'ok' ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)',
-      border: `1px solid ${tipo === 'ok' ? 'rgba(34,197,94,0.4)' : 'rgba(239,68,68,0.4)'}`,
+      background: tipo === 'ok' ? 'var(--sucesso-fundo)' : 'var(--perigo-fundo)',
+      border: `1px solid ${tipo === 'ok' ? 'var(--sucesso-fundo)' : 'var(--perigo-fundo)'}`,
       borderRadius: '10px', padding: '12px 16px', boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
       maxWidth: '340px', backdropFilter: 'blur(8px)',
     }}>
-      {tipo === 'ok' ? <CheckCircle size={16} color="#22C55E" /> : <AlertCircle size={16} color="#EF4444" />}
-      <span style={{ fontSize: '13px', color: tipo === 'ok' ? '#22C55E' : '#EF4444' }}>{msg}</span>
-      <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#666', marginLeft: '4px' }}>
+      {tipo === 'ok' ? <CheckCircle size={16} color="var(--sucesso)" /> : <AlertCircle size={16} color="var(--perigo)" />}
+      <span style={{ fontSize: '13px', color: tipo === 'ok' ? 'var(--sucesso)' : 'var(--perigo)' }}>{msg}</span>
+      <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--texto-terciario)', marginLeft: '4px' }}>
         <X size={14} />
       </button>
     </div>
@@ -78,9 +78,9 @@ export function Fidelidade() {
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
         <div style={{
           width: '40px', height: '40px', borderRadius: '10px',
-          background: 'rgba(245,158,11,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          background: 'rgba(var(--cor-primaria-rgb), 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}>
-          <Star size={20} color="var(--amber, #F59E0B)" />
+          <Star size={20} color="var(--cor-primaria)" />
         </div>
         <div>
           <h1 style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
@@ -105,8 +105,8 @@ export function Fidelidade() {
             <button key={t.id} onClick={() => setTab(t.id)} style={{
               flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
               gap: '6px', padding: '8px 12px', border: 'none', borderRadius: '7px', cursor: 'pointer',
-              background: active ? 'var(--amber, #F59E0B)' : 'transparent',
-              color: active ? '#000' : 'var(--text-muted)',
+              background: active ? 'var(--cor-primaria)' : 'transparent',
+              color: active ? 'var(--texto-sobre-primaria)' : 'var(--text-muted)',
               fontSize: '12px', fontWeight: active ? 600 : 400, transition: 'all 0.15s',
               whiteSpace: 'nowrap'
             }}>
@@ -114,8 +114,8 @@ export function Fidelidade() {
               {t.label}
               {t.count !== undefined && t.count > 0 && (
                 <span style={{
-                  background: active ? '#000' : 'var(--amber, #F59E0B)',
-                  color: active ? 'var(--amber, #F59E0B)' : '#000',
+                  background: active ? 'var(--texto-sobre-primaria)' : 'var(--cor-primaria)',
+                  color: active ? 'var(--cor-primaria)' : 'var(--texto-sobre-primaria)',
                   padding: '2px 6px', borderRadius: '10px', fontSize: '10px', fontWeight: 700
                 }}>
                   {t.count}
@@ -203,7 +203,7 @@ function TabRegras({ showToast }: { showToast: (m: string, t?: 'ok' | 'erro') =>
   if (carregando) return <Spinner />;
 
   const inputStyle: React.CSSProperties = {
-    width: '100%', background: 'var(--bg-input, #1A1A1A)',
+    width: '100%', background: 'var(--fundo-input)',
     border: '1px solid var(--border)', borderRadius: '8px',
     padding: '9px 12px', color: 'var(--text-primary)', fontSize: '13px',
     fontFamily: 'inherit', boxSizing: 'border-box',
@@ -290,8 +290,8 @@ function TabRegras({ showToast }: { showToast: (m: string, t?: 'ok' | 'erro') =>
                     </div>
                     {regra && regra.pontos > 0 && (
                       <span style={{
-                        fontSize: '10px', background: 'rgba(245,158,11,0.15)',
-                        color: 'var(--amber, #F59E0B)', padding: '2px 8px', borderRadius: '20px',
+                        fontSize: '10px', background: 'rgba(var(--cor-primaria-rgb), 0.15)',
+                        color: 'var(--cor-primaria)', padding: '2px 8px', borderRadius: '20px',
                       }}>
                         Personalizado
                       </span>
@@ -323,11 +323,11 @@ function TabRegras({ showToast }: { showToast: (m: string, t?: 'ok' | 'erro') =>
               </FieldGroup>
             </div>
             <div style={{
-              marginTop: '12px', padding: '12px', background: 'rgba(245,158,11,0.06)',
-              border: '1px solid rgba(245,158,11,0.2)', borderRadius: '8px',
+              marginTop: '12px', padding: '12px', background: 'rgba(var(--cor-primaria-rgb), 0.15)',
+              border: '1px solid rgba(var(--cor-primaria-rgb), 0.15)', borderRadius: '8px',
             }}>
               <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: 0, lineHeight: 1.6 }}>
-                <strong style={{ color: 'var(--amber, #F59E0B)' }}>Como funciona a indicação:</strong> cada cliente tem um
+                <strong style={{ color: 'var(--cor-primaria)' }}>Como funciona a indicação:</strong> cada cliente tem um
                 código de indicação único visível na área de fidelidade do app. Quando um amigo entra com esse código ao
                 conectar-se à barbearia, os pontos de boas-vindas são creditados para o novo cliente imediatamente.
                 Os pontos de indicação são creditados para quem indicou assim que o amigo conclui o primeiro agendamento.
@@ -340,7 +340,7 @@ function TabRegras({ showToast }: { showToast: (m: string, t?: 'ok' | 'erro') =>
       <div style={{ marginTop: '20px' }}>
         <button type="submit" disabled={salvando} style={{
           display: 'flex', alignItems: 'center', gap: '8px',
-          padding: '11px 24px', background: 'var(--amber, #F59E0B)', color: '#000',
+          padding: '11px 24px', background: 'var(--cor-primaria)', color: 'var(--texto-sobre-primaria)',
           border: 'none', borderRadius: '8px', cursor: salvando ? 'not-allowed' : 'pointer',
           fontSize: '13px', fontWeight: 600, opacity: salvando ? 0.7 : 1, transition: 'opacity 0.15s',
         }}>
@@ -409,7 +409,7 @@ function TabRecompensas({ showToast }: { showToast: (m: string, t?: 'ok' | 'erro
   if (carregando) return <Spinner />;
 
   const inputStyle: React.CSSProperties = {
-    width: '100%', background: 'var(--bg-input, #1A1A1A)',
+    width: '100%', background: 'var(--fundo-input)',
     border: '1px solid var(--border)', borderRadius: '8px',
     padding: '9px 12px', color: 'var(--text-primary)', fontSize: '13px',
     fontFamily: 'inherit', boxSizing: 'border-box',
@@ -421,7 +421,7 @@ function TabRecompensas({ showToast }: { showToast: (m: string, t?: 'ok' | 'erro
         <SectionTitle style={{ margin: 0 }}>Recompensas cadastradas</SectionTitle>
         <button onClick={() => abrirModal()} style={{
           display: 'flex', alignItems: 'center', gap: '6px',
-          padding: '8px 14px', background: 'var(--amber, #F59E0B)', color: '#000',
+          padding: '8px 14px', background: 'var(--cor-primaria)', color: 'var(--texto-sobre-primaria)',
           border: 'none', borderRadius: '7px', cursor: 'pointer', fontSize: '12px', fontWeight: 600,
         }}>
           <Plus size={14} /> Nova Recompensa
@@ -450,15 +450,15 @@ function TabRecompensas({ showToast }: { showToast: (m: string, t?: 'ok' | 'erro
                         `Desconto R$${Number(rec.valorDesconto).toFixed(2)}`}
                   </td>
                   <td style={{ padding: '12px' }}>
-                    <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--amber, #F59E0B)' }}>
+                    <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--cor-primaria)' }}>
                       {rec.pontosNecessarios} pts
                     </span>
                   </td>
                   <td style={{ padding: '12px' }}>
                     <span style={{
                       fontSize: '11px', padding: '3px 10px', borderRadius: '20px',
-                      background: rec.ativo ? 'rgba(34,197,94,0.12)' : 'rgba(239,68,68,0.12)',
-                      color: rec.ativo ? '#22C55E' : '#EF4444',
+                      background: rec.ativo ? 'var(--sucesso-fundo)' : 'var(--perigo-fundo)',
+                      color: rec.ativo ? 'var(--sucesso)' : 'var(--perigo)',
                     }}>
                       {rec.ativo ? 'Ativo' : 'Inativo'}
                     </span>
@@ -522,9 +522,9 @@ function TabRecompensas({ showToast }: { showToast: (m: string, t?: 'ok' | 'erro
                 fontSize: '13px', color: 'var(--text-muted)',
               }}>Cancelar</button>
               <button type="submit" style={{
-                flex: 1, padding: '10px', background: 'var(--amber, #F59E0B)',
+                flex: 1, padding: '10px', background: 'var(--cor-primaria)',
                 border: 'none', borderRadius: '8px', cursor: 'pointer',
-                fontSize: '13px', fontWeight: 600, color: '#000',
+                fontSize: '13px', fontWeight: 600, color: 'var(--texto-sobre-primaria)',
               }}>Salvar</button>
             </div>
           </form>
@@ -609,7 +609,7 @@ function TabClientes({ showToast }: { showToast: (m: string, t?: 'ok' | 'erro') 
           type="text" placeholder="Buscar por nome ou email..."
           value={busca} onChange={e => setBusca(e.target.value)}
           style={{
-            padding: '8px 12px', background: 'var(--bg-input, #1A1A1A)',
+            padding: '8px 12px', background: 'var(--fundo-input)',
             border: '1px solid var(--border)', borderRadius: '7px',
             color: 'var(--text-primary)', fontSize: '13px', fontFamily: 'inherit',
             width: '220px',
@@ -632,8 +632,8 @@ function TabClientes({ showToast }: { showToast: (m: string, t?: 'ok' | 'erro') 
               }} onClick={() => toggleExpand(c.id)}>
                 <div style={{
                   width: '36px', height: '36px', borderRadius: '50%', flexShrink: 0,
-                  background: 'rgba(245,158,11,0.12)', display: 'flex', alignItems: 'center',
-                  justifyContent: 'center', fontSize: '13px', fontWeight: 700, color: 'var(--amber, #F59E0B)',
+                  background: 'rgba(var(--cor-primaria-rgb), 0.15)', display: 'flex', alignItems: 'center',
+                  justifyContent: 'center', fontSize: '13px', fontWeight: 700, color: 'var(--cor-primaria)',
                 }}>
                   {c.nome.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}
                 </div>
@@ -642,7 +642,7 @@ function TabClientes({ showToast }: { showToast: (m: string, t?: 'ok' | 'erro') 
                   <p style={{ margin: '2px 0 0', fontSize: '11px', color: 'var(--text-muted)' }}>{c.email}</p>
                 </div>
                 <div style={{ textAlign: 'right', marginRight: '8px' }}>
-                  <p style={{ margin: 0, fontSize: '16px', fontWeight: 700, color: 'var(--amber, #F59E0B)' }}>
+                  <p style={{ margin: 0, fontSize: '16px', fontWeight: 700, color: 'var(--cor-primaria)' }}>
                     {c.saldo} pts
                   </p>
                   <p style={{ margin: 0, fontSize: '10px', color: 'var(--text-muted)' }}>
@@ -675,7 +675,7 @@ function TabClientes({ showToast }: { showToast: (m: string, t?: 'ok' | 'erro') 
                           <div key={h.id} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <span style={{
                               fontSize: '12px', fontWeight: 700, minWidth: '50px', textAlign: 'right',
-                              color: h.pontos > 0 ? '#22C55E' : '#EF4444',
+                              color: h.pontos > 0 ? 'var(--sucesso)' : 'var(--perigo)',
                             }}>
                               {h.pontos > 0 ? '+' : ''}{h.pontos}
                             </span>
@@ -700,12 +700,12 @@ function TabClientes({ showToast }: { showToast: (m: string, t?: 'ok' | 'erro') 
       {ajusteModal && (
         <Modal title={`Ajustar pontos — ${ajusteModal.nome}`} onClose={() => setAjusteModal(null)}>
           <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '16px' }}>
-            Saldo atual: <strong style={{ color: 'var(--amber, #F59E0B)' }}>{ajusteModal.saldo} pts</strong>
+            Saldo atual: <strong style={{ color: 'var(--cor-primaria)' }}>{ajusteModal.saldo} pts</strong>
           </p>
           <form onSubmit={salvarAjuste} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
             <FieldGroup label="Pontos (use valor negativo para deduzir)" hint="Ex: 50 para adicionar, -20 para descontar">
               <input required type="number" style={{
-                width: '100%', background: 'var(--bg-input, #1A1A1A)',
+                width: '100%', background: 'var(--fundo-input)',
                 border: '1px solid var(--border)', borderRadius: '8px',
                 padding: '9px 12px', color: 'var(--text-primary)', fontSize: '13px',
                 fontFamily: 'inherit', boxSizing: 'border-box',
@@ -714,7 +714,7 @@ function TabClientes({ showToast }: { showToast: (m: string, t?: 'ok' | 'erro') 
             </FieldGroup>
             <FieldGroup label="Motivo / Descrição">
               <input required type="text" style={{
-                width: '100%', background: 'var(--bg-input, #1A1A1A)',
+                width: '100%', background: 'var(--fundo-input)',
                 border: '1px solid var(--border)', borderRadius: '8px',
                 padding: '9px 12px', color: 'var(--text-primary)', fontSize: '13px',
                 fontFamily: 'inherit', boxSizing: 'border-box',
@@ -728,9 +728,9 @@ function TabClientes({ showToast }: { showToast: (m: string, t?: 'ok' | 'erro') 
                 cursor: 'pointer', fontSize: '13px', color: 'var(--text-muted)',
               }}>Cancelar</button>
               <button type="submit" disabled={salvando} style={{
-                flex: 1, padding: '10px', background: 'var(--amber, #F59E0B)',
+                flex: 1, padding: '10px', background: 'var(--cor-primaria)',
                 border: 'none', borderRadius: '8px', cursor: salvando ? 'not-allowed' : 'pointer',
-                fontSize: '13px', fontWeight: 600, color: '#000', opacity: salvando ? 0.7 : 1,
+                fontSize: '13px', fontWeight: 600, color: 'var(--texto-sobre-primaria)', opacity: salvando ? 0.7 : 1,
               }}>
                 {salvando ? 'Salvando...' : 'Confirmar Ajuste'}
               </button>
@@ -785,15 +785,15 @@ function TabHistorico({ showToast }: { showToast: (m: string, t?: 'ok' | 'erro')
                     {r.recompensa?.nome}
                   </td>
                   <td style={{ padding: '12px' }}>
-                    <span style={{ fontSize: '13px', fontWeight: 700, color: '#EF4444' }}>
+                    <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--perigo)' }}>
                       -{r.pontosUsados} pts
                     </span>
                   </td>
                   <td style={{ padding: '12px' }}>
                     <span style={{
                       fontSize: '11px', padding: '3px 10px', borderRadius: '20px',
-                      background: r.status === 'CONFIRMADO' ? 'rgba(34,197,94,0.12)' : r.status === 'PENDENTE' ? 'rgba(245,158,11,0.12)' : 'rgba(239,68,68,0.12)',
-                      color: r.status === 'CONFIRMADO' ? '#22C55E' : r.status === 'PENDENTE' ? '#F59E0B' : '#EF4444',
+                      background: r.status === 'CONFIRMADO' ? 'var(--sucesso-fundo)' : r.status === 'PENDENTE' ? 'rgba(var(--cor-primaria-rgb), 0.15)' : 'var(--perigo-fundo)',
+                      color: r.status === 'CONFIRMADO' ? 'var(--sucesso)' : r.status === 'PENDENTE' ? 'var(--cor-primaria)' : 'var(--perigo)',
                     }}>
                       {r.status}
                     </span>
@@ -884,20 +884,20 @@ function TabPendentes({ showToast, onUpdateCount }: { showToast: (m: string, t?:
                     {r.recompensa?.nome}
                   </td>
                   <td style={{ padding: '12px' }}>
-                    <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--amber, #F59E0B)' }}>
+                    <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--cor-primaria)' }}>
                       {r.pontosUsados} pts
                     </span>
                   </td>
                   <td style={{ padding: '12px' }}>
                     <div style={{ display: 'flex', gap: '8px' }}>
                       <button onClick={() => confirmar(r.id)} disabled={acaoId === r.id} style={{
-                        padding: '6px 12px', background: 'rgba(34,197,94,0.15)', color: '#22C55E',
-                        border: '1px solid rgba(34,197,94,0.3)', borderRadius: '6px', cursor: 'pointer',
+                        padding: '6px 12px', background: 'var(--sucesso-fundo)', color: 'var(--sucesso)',
+                        border: '1px solid var(--sucesso-fundo)', borderRadius: '6px', cursor: 'pointer',
                         fontSize: '11px', fontWeight: 600, opacity: acaoId === r.id ? 0.5 : 1
                       }}>Confirmar</button>
                       <button onClick={() => cancelar(r.id)} disabled={acaoId === r.id} style={{
-                        padding: '6px 12px', background: 'rgba(239,68,68,0.15)', color: '#EF4444',
-                        border: '1px solid rgba(239,68,68,0.3)', borderRadius: '6px', cursor: 'pointer',
+                        padding: '6px 12px', background: 'var(--perigo-fundo)', color: 'var(--perigo)',
+                        border: '1px solid var(--perigo-fundo)', borderRadius: '6px', cursor: 'pointer',
                         fontSize: '11px', fontWeight: 600, opacity: acaoId === r.id ? 0.5 : 1
                       }}>Cancelar</button>
                     </div>
@@ -952,12 +952,12 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean
   return (
     <button type="button" onClick={() => onChange(!checked)} style={{
       width: '40px', height: '22px', borderRadius: '11px', border: 'none', cursor: 'pointer',
-      background: checked ? 'var(--amber, #F59E0B)' : 'var(--border)',
+      background: checked ? 'var(--cor-primaria)' : 'var(--border)',
       position: 'relative', transition: 'background 0.2s', flexShrink: 0,
     }}>
       <span style={{
         position: 'absolute', top: '3px', left: checked ? '21px' : '3px',
-        width: '16px', height: '16px', borderRadius: '50%', background: '#fff',
+        width: '16px', height: '16px', borderRadius: '50%', background: 'var(--superficie)',
         transition: 'left 0.2s',
       }} />
     </button>
@@ -967,10 +967,10 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean
 function IconBtn({ children, onClick, title, danger }: { children: React.ReactNode; onClick: () => void; title?: string; danger?: boolean }) {
   return (
     <button onClick={onClick} title={title} style={{
-      padding: '6px', background: danger ? 'rgba(239,68,68,0.1)' : 'rgba(255,255,255,0.05)',
-      border: `1px solid ${danger ? 'rgba(239,68,68,0.2)' : 'var(--border)'}`,
+      padding: '6px', background: danger ? 'var(--perigo-fundo)' : 'rgba(255,255,255,0.05)',
+      border: `1px solid ${danger ? 'var(--perigo-fundo)' : 'var(--border)'}`,
       borderRadius: '6px', cursor: 'pointer',
-      color: danger ? '#EF4444' : 'var(--text-muted)', display: 'flex', alignItems: 'center',
+      color: danger ? 'var(--perigo)' : 'var(--text-muted)', display: 'flex', alignItems: 'center',
     }}>
       {children}
     </button>
@@ -1015,7 +1015,7 @@ function Spinner() {
     <div style={{ display: 'flex', justifyContent: 'center', padding: '60px' }}>
       <div style={{
         width: '28px', height: '28px', borderRadius: '50%',
-        border: '2px solid var(--border)', borderTopColor: 'var(--amber, #F59E0B)',
+        border: '2px solid var(--border)', borderTopColor: 'var(--cor-primaria)',
         animation: 'spin 0.7s linear infinite',
       }} />
     </div>

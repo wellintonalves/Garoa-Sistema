@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Gear as Settings, FloppyDisk as Save, QrCode, Star } from '@phosphor-icons/react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/client';
+import { CORES_REFERENCIA } from '../styles/tokens';
 import { QRCodeSVG } from 'qrcode.react';
 import { useTema } from '../hooks/useTema';
 // @ts-ignore
@@ -153,7 +154,7 @@ export function Configuracoes() {
     <div className="animate-fade-in space-y-6">
       <div className="flex items-center gap-3 mb-6">
         <Settings className="text-[var(--cor-primaria)]" size={24} />
-        <h1 className="text-2xl font-bold font-display tracking-wide text-white">
+        <h1 className="text-2xl font-bold font-display tracking-wide text-[var(--texto-principal)]">
           Configurações
         </h1>
       </div>
@@ -161,28 +162,28 @@ export function Configuracoes() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Minha Barbearia */}
         <div className="bg-[var(--bg-surface)] border border-[var(--border)] rounded p-6 shadow">
-          <h2 className="text-xl font-bold mb-4 text-white">Minha Barbearia</h2>
+          <h2 className="text-xl font-bold mb-4 text-[var(--texto-principal)]">Minha Barbearia</h2>
           <form onSubmit={salvarBarbearia} className="space-y-4">
             <div>
               <label className="block text-sm font-medium mb-1">Nome da Barbearia</label>
-              <input type="text" className="form-input w-full p-2 bg-black/50 border border-[var(--border)] rounded" value={barbearia.nome || ''} onChange={e => setBarbearia({...barbearia, nome: e.target.value})} required />
+              <input type="text" className="form-input w-full p-2 bg-[var(--superficie)] border border-[var(--border)] rounded" value={barbearia.nome || ''} onChange={e => setBarbearia({...barbearia, nome: e.target.value})} required />
             </div>
             
-            <div className="p-4 bg-fundo border border-zinc-800 rounded space-y-4">
+            <div className="p-4 bg-fundo border bg-[var(--superficie-2)] border-[var(--borda)] rounded space-y-4">
               <h3 className="text-sm font-bold text-[var(--cor-primaria)] uppercase tracking-wider">Identidade Visual</h3>
               
               <div>
                 <label className="block text-sm font-medium mb-1">Logo da Barbearia (Max 2MB)</label>
                 <div className="flex items-center gap-4 max-w-full overflow-hidden">
                   {barbearia.logo && (
-                    <img src={barbearia.logo} alt="Logo" className="w-16 h-16 object-cover rounded bg-black/50 border border-[var(--border)] flex-shrink-0" />
+                    <img src={barbearia.logo} alt="Logo" className="w-16 h-16 object-cover rounded bg-[var(--superficie)] border border-[var(--border)] flex-shrink-0" />
                   )}
                   <div className="flex flex-col gap-2 min-w-0 flex-1">
                     <div className="flex items-center gap-2 max-w-full overflow-hidden">
-                      <label htmlFor="logo-upload" className="cursor-pointer bg-[var(--cor-primaria)] text-black font-bold px-4 py-2 rounded text-sm whitespace-nowrap flex-shrink-0 hover:opacity-90 transition-opacity">
+                      <label htmlFor="logo-upload" className="cursor-pointer bg-[var(--cor-primaria)] text-[var(--texto-sobre-primaria)] font-bold px-4 py-2 rounded text-sm whitespace-nowrap flex-shrink-0 hover:opacity-90 transition-opacity">
                         Escolher Arquivo
                       </label>
-                      <span className="text-sm text-zinc-400 truncate">
+                      <span className="text-sm text-[var(--texto-secundario)] truncate">
                         {nomeArquivo ? nomeArquivo : 'Nenhum arquivo selecionado'}
                       </span>
                     </div>
@@ -238,7 +239,7 @@ export function Configuracoes() {
                              canvas.height = img.height || 256;
                              const ctx = canvas.getContext('2d');
                              if (ctx) {
-                               ctx.fillStyle = '#ffffff';
+                               ctx.fillStyle = 'var(--texto-principal)';
                                ctx.fillRect(0, 0, canvas.width, canvas.height);
                                ctx.drawImage(img, 0, 0);
                                const newImg = new Image();
@@ -258,20 +259,20 @@ export function Configuracoes() {
                 </div>
                 
                 {sugestaoCores && (
-                  <div className="mt-4 p-4 border border-emerald-500/30 bg-emerald-500/10 rounded animate-fade-in">
+                  <div className="mt-4 p-4 border border-[var(--sucesso)]/30 bg-[var(--sucesso)]/10 rounded animate-fade-in">
                     <p className="text-sm font-bold text-emerald-400 mb-2">Detectamos estas cores na sua logo. Deseja aplicá-las no sistema?</p>
                     <div className="flex items-center gap-4 mb-4">
                       <div className="flex flex-col items-center gap-1">
-                        <div className="w-8 h-8 rounded-full border border-zinc-700 shadow" style={{ backgroundColor: sugestaoCores.primaria }}></div>
-                        <span className="text-[10px] text-zinc-400">{sugestaoCores.primaria}</span>
+                        <div className="w-8 h-8 rounded-full border bg-[var(--superficie-2)] border-[var(--borda)] shadow" style={{ backgroundColor: sugestaoCores.primaria }}></div>
+                        <span className="text-[10px] text-[var(--texto-secundario)]">{sugestaoCores.primaria}</span>
                       </div>
                       <div className="flex flex-col items-center gap-1">
-                        <div className="w-8 h-8 rounded-full border border-zinc-700 shadow" style={{ backgroundColor: sugestaoCores.secundaria }}></div>
-                        <span className="text-[10px] text-zinc-400">{sugestaoCores.secundaria}</span>
+                        <div className="w-8 h-8 rounded-full border bg-[var(--superficie-2)] border-[var(--borda)] shadow" style={{ backgroundColor: sugestaoCores.secundaria }}></div>
+                        <span className="text-[10px] text-[var(--texto-secundario)]">{sugestaoCores.secundaria}</span>
                       </div>
                       <div className="flex flex-col items-center gap-1">
-                        <div className="w-8 h-8 rounded-full border border-zinc-700 shadow" style={{ backgroundColor: sugestaoCores.fundo }}></div>
-                        <span className="text-[10px] text-zinc-400">{sugestaoCores.fundo}</span>
+                        <div className="w-8 h-8 rounded-full border bg-[var(--superficie-2)] border-[var(--borda)] shadow" style={{ backgroundColor: sugestaoCores.fundo }}></div>
+                        <span className="text-[10px] text-[var(--texto-secundario)]">{sugestaoCores.fundo}</span>
                       </div>
                     </div>
                     <div className="flex gap-3">
@@ -282,13 +283,13 @@ export function Configuracoes() {
                           corPrimaria: sugestaoCores.primaria
                         });
                         setSugestaoCores(null);
-                      }} className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded">
+                      }} className="px-3 py-1.5 bg-[var(--sucesso)] hover:bg-[var(--sucesso)] text-[var(--texto-principal)] text-xs font-bold rounded">
                         Aplicar cores sugeridas
                       </button>
                       <button type="button" onClick={() => {
                         setBarbearia({ ...barbearia, logo: sugestaoCores.logoBase64 });
                         setSugestaoCores(null);
-                      }} className="px-3 py-1.5 bg-transparent border border-zinc-600 hover:bg-zinc-800 text-zinc-300 text-xs rounded">
+                      }} className="px-3 py-1.5 bg-transparent border border-[var(--borda)] hover:bg-[var(--superficie-2)] border-[var(--borda)] text-[var(--texto-secundario)] text-xs rounded">
                         Ignorar
                       </button>
                     </div>
@@ -298,12 +299,12 @@ export function Configuracoes() {
 
               <div className="grid grid-cols-1 gap-4">
                 <div>
-                  <label className="block text-xs text-zinc-400 mb-1">Cor Primária (Destaques)</label>
-                  <input type="color" className="w-full h-10 bg-transparent rounded cursor-pointer" value={barbearia.corPrimaria || '#ff6b00'} onChange={e => setBarbearia({...barbearia, corPrimaria: e.target.value})} required />
+                  <label className="block text-xs text-[var(--texto-secundario)] mb-1">Cor Primária (Destaques)</label>
+                  <input type="color" className="w-full h-10 bg-transparent rounded cursor-pointer" value={barbearia.corPrimaria || CORES_REFERENCIA.primariaLaranja} onChange={e => setBarbearia({...barbearia, corPrimaria: e.target.value})} required />
                 </div>
               </div>
 
-              <div className="mt-4 p-4 rounded border border-zinc-700 bg-black/20 text-white">
+              <div className="mt-4 p-4 rounded border bg-[var(--superficie-2)] border-[var(--borda)] bg-[var(--superficie)] text-[var(--texto-principal)]">
                 <p className="text-xs opacity-70 mb-2 uppercase tracking-widest">Preview no App</p>
                 
                 <div className="flex items-center justify-between">
@@ -311,7 +312,7 @@ export function Configuracoes() {
                     {barbearia.logo ? (
                       <img src={barbearia.logo} alt="Logo" className="h-8 object-contain" />
                     ) : (
-                       <div className="h-8 w-8 bg-black/20 rounded flex items-center justify-center">L</div>
+                       <div className="h-8 w-8 bg-[var(--superficie)] rounded flex items-center justify-center">L</div>
                     )}
                     <h1 className="text-2xl m-0 font-bold" style={{ fontFamily: 'var(--fonte-interface)' }}>
                       {barbearia.nome || 'GAROA BARBEARIA'}
@@ -324,35 +325,35 @@ export function Configuracoes() {
                   <p className="mt-1" style={{ fontFamily: 'var(--fonte-numeros)' }}>R$ 45,00 — 10:30</p>
                 </div>
 
-                <button type="button" className="px-4 py-2 rounded font-bold text-black text-sm" style={{ backgroundColor: barbearia.corPrimaria || '#ff6b00', fontFamily: 'var(--fonte-interface)' }}>
+                <button type="button" className="px-4 py-2 rounded font-bold text-[var(--texto-sobre-primaria)] text-sm" style={{ backgroundColor: barbearia.corPrimaria || CORES_REFERENCIA.primariaLaranja, fontFamily: 'var(--fonte-interface)' }}>
                   Agendar Horário
                 </button>
               </div>
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Slug (URL)</label>
-              <input type="text" className="form-input w-full p-2 bg-black/50 border border-[var(--border)] rounded" value={barbearia.slug || ''} onChange={e => setBarbearia({...barbearia, slug: e.target.value})} required />
-              <p className="text-xs text-zinc-500 mt-1 break-all">Sua url será: {window.location.origin}/cliente/home?slug={barbearia.slug || '...'}</p>
+              <input type="text" className="form-input w-full p-2 bg-[var(--superficie)] border border-[var(--border)] rounded" value={barbearia.slug || ''} onChange={e => setBarbearia({...barbearia, slug: e.target.value})} required />
+              <p className="text-xs text-[var(--texto-secundario)] mt-1 break-all">Sua url será: {window.location.origin}/cliente/home?slug={barbearia.slug || '...'}</p>
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Endereço</label>
-              <input type="text" className="form-input w-full p-2 bg-black/50 border border-[var(--border)] rounded" value={barbearia.endereco || ''} onChange={e => setBarbearia({...barbearia, endereco: e.target.value})} />
+              <input type="text" className="form-input w-full p-2 bg-[var(--superficie)] border border-[var(--border)] rounded" value={barbearia.endereco || ''} onChange={e => setBarbearia({...barbearia, endereco: e.target.value})} />
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Telefone</label>
-              <input type="text" className="form-input w-full p-2 bg-black/50 border border-[var(--border)] rounded" value={barbearia.telefone || ''} onChange={e => setBarbearia({...barbearia, telefone: e.target.value})} />
+              <input type="text" className="form-input w-full p-2 bg-[var(--superficie)] border border-[var(--border)] rounded" value={barbearia.telefone || ''} onChange={e => setBarbearia({...barbearia, telefone: e.target.value})} />
             </div>
 
             {/* Campos de Horário de Funcionamento removidos (agora centralizados por dia) */}
             
-            <div className="p-4 bg-fundo border border-zinc-800 rounded flex justify-between items-center">
+            <div className="p-4 bg-fundo border bg-[var(--superficie-2)] border-[var(--borda)] rounded flex justify-between items-center">
               <div>
-                <p className="text-zinc-400 text-sm">Clientes Cadastrados</p>
+                <p className="text-[var(--texto-secundario)] text-sm">Clientes Cadastrados</p>
                 <p className="text-2xl font-bold text-primaria">{barbearia.clientesCount || 0}</p>
               </div>
             </div>
 
-            <button type="submit" disabled={salvandoBarbearia} className="mt-4 flex items-center justify-center gap-2 w-full py-2.5 bg-[var(--cor-primaria)] hover:bg-[var(--cor-primaria)] text-black font-bold rounded transition-colors">
+            <button type="submit" disabled={salvandoBarbearia} className="mt-4 flex items-center justify-center gap-2 w-full py-2.5 bg-[var(--cor-primaria)] hover:bg-[var(--cor-primaria)] text-[var(--texto-sobre-primaria)] font-bold rounded transition-colors">
               <Save size={20} />
               {salvandoBarbearia ? 'Salvando...' : 'Salvar Barbearia'}
             </button>
@@ -361,7 +362,7 @@ export function Configuracoes() {
 
         {/* Horários de Funcionamento */}
         <div className="bg-[var(--bg-surface)] border border-[var(--border)] rounded p-6 shadow">
-          <h2 className="text-xl font-bold mb-4 text-white">Horário de Funcionamento</h2>
+          <h2 className="text-xl font-bold mb-4 text-[var(--texto-principal)]">Horário de Funcionamento</h2>
           {erro && <p className="text-[var(--error-text)] mb-4">{erro}</p>}
           
           <form onSubmit={salvar} className="space-y-4">
@@ -369,14 +370,14 @@ export function Configuracoes() {
               const configDia = horarios[dia.key] || { fechado: true, abertura: '', fechamento: '' };
               
               return (
-                <div key={dia.key} className="flex flex-wrap items-center gap-3 p-3 bg-black/20 rounded">
+                <div key={dia.key} className="flex flex-wrap items-center gap-3 p-3 bg-[var(--superficie)] rounded">
                   <div className="min-w-[120px] flex items-center gap-2">
                     <input
                       type="checkbox"
                       id={`check-${dia.key}`}
                       checked={!configDia.fechado}
                       onChange={(e) => handleChange(dia.key, 'fechado', !e.target.checked)}
-                      className="w-4 h-4 rounded border-[var(--border)] bg-black/50 text-[var(--cor-primaria)] focus:ring-[var(--cor-primaria)]"
+                      className="w-4 h-4 rounded border-[var(--border)] bg-[var(--superficie)] text-[var(--cor-primaria)] focus:ring-[var(--cor-primaria)]"
                     />
                     <label htmlFor={`check-${dia.key}`} className="text-sm font-medium">
                       {dia.label}
@@ -390,7 +391,7 @@ export function Configuracoes() {
                           type="time"
                           value={configDia.abertura || ''}
                           onChange={(e) => handleChange(dia.key, 'abertura', e.target.value)}
-                          className="form-input flex-1 p-2 bg-black/50 rounded border border-[var(--border)]"
+                          className="form-input flex-1 p-2 bg-[var(--superficie)] rounded border border-[var(--border)]"
                           required
                         />
                         <span>às</span>
@@ -398,14 +399,14 @@ export function Configuracoes() {
                           type="time"
                           value={configDia.fechamento || ''}
                           onChange={(e) => handleChange(dia.key, 'fechamento', e.target.value)}
-                          className="form-input flex-1 p-2 bg-black/50 rounded border border-[var(--border)]"
+                          className="form-input flex-1 p-2 bg-[var(--superficie)] rounded border border-[var(--border)]"
                           required
                         />
                       </div>
                       
                       {/* Almoço */}
-                      <div className="flex items-center justify-between mt-1 pt-2 border-t border-zinc-800/50">
-                        <label htmlFor={`toggle-almoco-${dia.key}`} className="text-sm text-zinc-400 cursor-pointer">
+                      <div className="flex items-center justify-between mt-1 pt-2 border-t bg-[var(--superficie-2)] border-[var(--borda)]/50">
+                        <label htmlFor={`toggle-almoco-${dia.key}`} className="text-sm text-[var(--texto-secundario)] cursor-pointer">
                           Tem almoço?
                         </label>
                         <button
@@ -419,7 +420,7 @@ export function Configuracoes() {
                           }}
                         >
                           <span
-                            className="inline-block h-3 w-3 transform rounded-full bg-white transition-transform"
+                            className="inline-block h-3 w-3 transform rounded-full bg-[var(--superficie)] transition-transform"
                             style={{
                               transform: configDia.temAlmoco ? 'translateX(16px)' : 'translateX(2px)',
                             }}
@@ -433,15 +434,15 @@ export function Configuracoes() {
                             type="time"
                             value={configDia.almocoInicio || ''}
                             onChange={(e) => handleChange(dia.key, 'almocoInicio', e.target.value)}
-                            className="form-input flex-1 p-2 bg-black/50 rounded border border-[var(--border)] text-sm"
+                            className="form-input flex-1 p-2 bg-[var(--superficie)] rounded border border-[var(--border)] text-sm"
                             required
                           />
-                          <span className="text-sm text-zinc-400">às</span>
+                          <span className="text-sm text-[var(--texto-secundario)]">às</span>
                           <input
                             type="time"
                             value={configDia.almocoFim || ''}
                             onChange={(e) => handleChange(dia.key, 'almocoFim', e.target.value)}
-                            className="form-input flex-1 p-2 bg-black/50 rounded border border-[var(--border)] text-sm"
+                            className="form-input flex-1 p-2 bg-[var(--superficie)] rounded border border-[var(--border)] text-sm"
                             required
                           />
                         </div>
@@ -459,7 +460,7 @@ export function Configuracoes() {
             <button
               type="submit"
               disabled={salvando}
-              className="mt-6 flex items-center justify-center gap-2 w-full py-2.5 bg-[var(--cor-primaria)] hover:bg-[var(--cor-primaria)] text-black font-bold rounded transition-colors"
+              className="mt-6 flex items-center justify-center gap-2 w-full py-2.5 bg-[var(--cor-primaria)] hover:bg-[var(--cor-primaria)] text-[var(--texto-sobre-primaria)] font-bold rounded transition-colors"
             >
               <Save size={20} />
               {salvando ? 'Salvando...' : 'Salvar Horários'}
@@ -471,13 +472,13 @@ export function Configuracoes() {
         <div className="bg-[var(--bg-surface)] border border-[var(--border)] rounded p-6 shadow h-fit">
           <div className="flex items-center gap-2 mb-4">
             <QrCode className="text-[var(--cor-primaria)]" size={24} />
-            <h2 className="text-xl font-bold text-white">QR Code de Agendamento</h2>
+            <h2 className="text-xl font-bold text-[var(--texto-principal)]">QR Code de Agendamento</h2>
           </div>
           <p className="text-sm text-[var(--text-muted)] mb-6">
             Imprima este QR Code e coloque na sua barbearia para que os clientes possam acessar o seu App.
           </p>
           
-          <div className="flex flex-col items-center justify-center p-6 bg-white rounded">
+          <div className="flex flex-col items-center justify-center p-6 bg-[var(--superficie)] rounded">
             <QRCodeSVG 
               id="qr-code-svg" 
               value={urlQR} 
@@ -495,11 +496,11 @@ export function Configuracoes() {
             />
           </div>
           
-          <div className="mt-4 p-3 bg-black/30 rounded border border-[var(--border)] text-center break-all text-sm font-mono text-[var(--cor-primaria)]">
+          <div className="mt-4 p-3 bg-[var(--superficie)] rounded border border-[var(--border)] text-center break-all text-sm font-mono text-[var(--cor-primaria)]">
             {urlQR}
           </div>
 
-          <button onClick={handleDownloadQR} className="mt-4 w-full flex items-center justify-center gap-2 py-2 bg-zinc-800 hover:bg-zinc-700 text-white font-bold rounded transition-colors border border-[var(--border)]">
+          <button onClick={handleDownloadQR} className="mt-4 w-full flex items-center justify-center gap-2 py-2 bg-[var(--superficie-2)] border-[var(--borda)] hover:bg-[var(--superficie-2)] border-[var(--borda)] text-[var(--texto-principal)] font-bold rounded transition-colors border border-[var(--border)]">
              <QrCode size={20} />
              Baixar QR Code (PNG)
           </button>
@@ -509,18 +510,18 @@ export function Configuracoes() {
         <div className="bg-[var(--bg-surface)] border border-[var(--border)] rounded p-6 shadow col-span-1 lg:col-span-2 mt-6">
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <div className="flex items-center gap-3">
-              <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(245,158,11,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Star size={20} color="#F59E0B" />
+              <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(var(--cor-primaria-rgb), 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Star size={20} color="var(--cor-primaria)" />
               </div>
               <div>
-                <h3 className="text-base font-bold text-white">Programa de Fidelidade</h3>
-                <p className="text-sm text-zinc-400 mt-0.5">Configure pontos, recompensas e acompanhe clientes</p>
+                <h3 className="text-base font-bold text-[var(--texto-principal)]">Programa de Fidelidade</h3>
+                <p className="text-sm text-[var(--texto-secundario)] mt-0.5">Configure pontos, recompensas e acompanhe clientes</p>
               </div>
             </div>
             <button
               onClick={() => navigate('/admin/fidelidade')}
               className="flex items-center gap-2 px-5 py-2.5 rounded font-semibold text-sm transition-colors"
-              style={{ background: '#F59E0B', color: '#000', border: 'none', cursor: 'pointer' }}
+              style={{ background: 'var(--cor-primaria)', color: 'var(--texto-sobre-primaria)', border: 'none', cursor: 'pointer' }}
             >
               <Star size={16} />
               Gerenciar Fidelidade

@@ -11,61 +11,7 @@
   /* Fontes */
   --fonte-interface: var(--fonte-sans);
   --fonte-numeros:   var(--fonte-mono);
-
-  /* Modo escuro — padrão */
-  --fundo-pagina:      #0A0A0A;
-  --superficie-1:      #141414;
-  --superficie-2:      #1E1E1E;
-  --borda:             #262626;
-  --borda-forte:       #333333;
-  --texto-principal:   #F4F4F4;
-  --texto-secundario:  #8F8F8F;
-  --texto-terciario:   #666666;
-  --cor-primaria:      #F59E0B;
-  --texto-sobre-primaria: #2A1C00;
-  --cor-primaria-texto: #F59E0B;
-
-  /* Cores semânticas / Alertas (fixas) */
-  --sucesso: #34D399;
-  --aviso: #FBBF24;
-  --perigo: #F87171;
-  --info: var(--cor-primaria);
-
-  /* Aliases para manter a aplicação antiga rodando até removermos (compatibilidade) */
-  --bg-primary: var(--fundo-pagina);
-  --bg-surface: var(--superficie-1);
-  --bg-surface2: var(--superficie-2);
-  --bg-card: var(--superficie-1);
-  --bg-input: transparent;
-  --surface: var(--superficie-1);
-  --card-bg: var(--superficie-1);
-  --fundo-card: var(--superficie-1);
-  --fundo-input: transparent;
-  --fundo-sidebar: var(--superficie-1);
-  
-  --text-primary: var(--texto-principal);
-  --text-secondary: var(--texto-secundario);
-  --text-muted: var(--texto-secundario);
-  --text-placeholder: var(--texto-terciario);
-  --texto-placeholder: var(--texto-terciario);
-  --texto-label: var(--texto-secundario);
-  --text-disabled: var(--texto-terciario);
-
-  --border: var(--borda);
-  --borda-input: var(--borda);
-  --border-hover: var(--cor-primaria);
-  
-  --font-heading: var(--fonte-interface);
-
-  --error-text: var(--perigo);
-  --success-text: var(--sucesso);
-  --warning-text: var(--aviso);
-  --cor-alerta: var(--perigo);
-  --cor-alerta-rgb: 248, 113, 113;
-
-  --amber: var(--cor-primaria);
-  --cor-primaria-rgb: 245, 158, 11;
-  --cor-icone: var(--cor-primaria-texto);
+  --font-heading:    var(--fonte-sans);
 
   /* === TOKENS DE MOTION === */
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
@@ -74,39 +20,6 @@
   --dur-fast: 150ms;
   --dur-base: 250ms;
   --dur-slow: 400ms;
-}
-
-:root.light {
-  /* Modo claro */
-  --fundo-pagina:      #FDF8EF;
-  --superficie-1:      #FFFFFF;
-  --superficie-2:      #FBF4E8;
-  --borda:             #EFE9DB;
-  --borda-forte:       #E3DBCB;
-  --texto-principal:   #1A1712;
-  --texto-secundario:  #6E675C;
-  --texto-terciario:   #9A9186;
-  --cor-primaria:      #F59E0B;
-  --texto-sobre-primaria: #2A1C00;
-  --cor-primaria-texto: #9A6300;
-
-  /* Aliases compatibilidade modo claro */
-  --fundo-card: var(--superficie-1);
-  --fundo-input: transparent;
-  --fundo-sidebar: var(--superficie-1);
-  --bg-surface2: var(--superficie-2);
-  --text-disabled: var(--texto-terciario);
-  --borda-input: var(--borda);
-  --texto-label: var(--texto-secundario);
-
-  --amber: var(--cor-primaria);
-  --cor-primaria-rgb: 245, 158, 11;
-  --cor-icone: var(--cor-primaria-texto);
-  --error-text: #C0392B; 
-  --success-text: #1A9E6A; 
-  --warning-text: var(--cor-primaria-texto); 
-  --cor-alerta: var(--error-text);
-  --cor-alerta-rgb: 192, 57, 43;
 }
 
 
@@ -406,8 +319,8 @@ h1, h2, h3, h4, .titulo {
 }
 
 .badge-confirmed {
-  background: #1A3D2A;
-  color: var(--success-text);
+  background: var(--sucesso-fundo);
+  color: var(--sucesso);
 }
 .badge-pending {
   background: rgba(var(--cor-primaria-rgb), 0.10);
@@ -699,24 +612,24 @@ h1, h2, h3, h4, .titulo {
 
 /* === BADGES DE FIDELIDADE === */
 .badge-bronze {
-  background: rgba(205, 127, 50, 0.15);
-  color: #CD7F32;
-  border: 1px solid rgba(205, 127, 50, 0.3);
+  background: var(--cor-bronze-fundo);
+  color: var(--cor-bronze);
+  border: 1px solid var(--cor-bronze-borda);
 }
 .badge-prata {
-  background: rgba(192, 192, 192, 0.15);
-  color: #C0C0C0;
-  border: 1px solid rgba(192, 192, 192, 0.3);
+  background: var(--cor-prata-fundo);
+  color: var(--cor-prata);
+  border: 1px solid var(--cor-prata-borda);
 }
 .badge-ouro {
-  background: rgba(255, 215, 0, 0.15);
-  color: #FFD700;
-  border: 1px solid rgba(255, 215, 0, 0.3);
+  background: var(--cor-ouro-fundo);
+  color: var(--cor-ouro);
+  border: 1px solid var(--cor-ouro-borda);
 }
 .badge-diamante {
-  background: rgba(0, 191, 255, 0.12);
-  color: #00BFFF;
-  border: 1px solid rgba(0, 191, 255, 0.3);
+  background: var(--cor-diamante-fundo);
+  color: var(--cor-diamante);
+  border: 1px solid var(--cor-diamante-borda);
 }
 
 /* === BARRA DE PROGRESSO === */
@@ -780,8 +693,8 @@ h1, h2, h3, h4, .titulo {
 
 /* === BOTÃO WHATSAPP === */
 .btn-whatsapp {
-  background: #25D366;
-  color: #fff;
+  background: var(--cor-whatsapp);
+  color: var(--fundo-pagina);
   font-family: var(--fonte-interface);
   font-size: 12px;
   font-weight: 500;
@@ -797,7 +710,7 @@ h1, h2, h3, h4, .titulo {
   transition: transform var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out), opacity var(--dur-fast) var(--ease-out);
 }
 .btn-whatsapp:hover {
-  background: #1DA851;
+  background: var(--cor-whatsapp-hover);
 }
 .btn-whatsapp:active {
   transform: scale(0.97);
@@ -840,8 +753,8 @@ h1, h2, h3, h4, .titulo {
 
 /* Card Herói (Próximo Agendamento) */
 .hero-card {
-  background: linear-gradient(180deg, #161616 0%, #0F0F0F 100%);
-  border: 1px solid #2A2A2A;
+  background: var(--superficie-1);
+  border: 1px solid var(--borda);
   border-radius: 8px;
   padding: 22px 20px;
   position: relative;
@@ -858,8 +771,8 @@ h1, h2, h3, h4, .titulo {
 /* Botões Ghost */
 .btn-ghost {
   background: transparent;
-  border: 1px solid #2A2A2A;
-  color: #F5F5F5;
+  border: 1px solid var(--borda);
+  color: var(--texto-principal);
   padding: 10px;
   border-radius: 6px;
   font-family: var(--fonte-interface);
@@ -873,11 +786,11 @@ h1, h2, h3, h4, .titulo {
   transition: all 0.2s;
 }
 .btn-ghost:hover {
-  background: #1A1A1A;
+  background: var(--superficie-2);
 }
 .btn-ghost-amber {
   background: transparent;
-  border: 1px solid rgba(245, 158, 11, 0.4);
+  border: 1px solid rgba(var(--cor-primaria-rgb), 0.4);
   color: var(--amber);
   padding: 10px;
   border-radius: 6px;
@@ -928,7 +841,7 @@ h1, h2, h3, h4, .titulo {
 }
 .stepper-dot.active {
   background: var(--amber);
-  color: #0A0A0A;
+  color: var(--texto-sobre-primaria);
   border: none;
 }
 .stepper-dot.inactive {

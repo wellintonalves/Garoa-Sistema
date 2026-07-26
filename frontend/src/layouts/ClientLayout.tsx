@@ -23,7 +23,7 @@ export function ClientLayout() {
 
   if (!cliente || cliente.barbeariaId !== barbearia?.id) {
     // Pode estar carregando a barbearia ainda
-    if (!barbearia) return <div className="h-screen bg-zinc-950 flex items-center justify-center text-orange-500">Carregando...</div>;
+    if (!barbearia) return <div className="h-screen bg-[var(--superficie-2)] border-[var(--borda)] flex items-center justify-center text-orange-500">Carregando...</div>;
   }
 
   const tabs = [

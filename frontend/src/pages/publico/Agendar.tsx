@@ -104,7 +104,7 @@ export function Agendar() {
   });
 
   return (
-    <div className="min-h-screen bg-[var(--fundo-pagina)] text-white flex flex-col font-body">
+    <div className="min-h-screen bg-[var(--fundo-pagina)] text-[var(--texto-principal)] flex flex-col font-body">
       {/* Header Público */}
       <header className="h-16 flex items-center justify-center bg-[var(--bg-surface)] border-b border-[var(--border)] sticky top-0 z-10">
         <h1 className="font-display text-xl tracking-wider text-[var(--cor-primaria)] uppercase">
@@ -164,7 +164,7 @@ export function Agendar() {
             <button 
               onClick={() => setEtapa(2)}
               disabled={!servicoId}
-              className="mt-4 flex items-center justify-center gap-2 w-full py-3 bg-[var(--cor-primaria)] hover:bg-[var(--cor-primaria)] disabled:opacity-50 disabled:cursor-not-allowed text-black font-bold uppercase tracking-widest text-sm rounded transition-colors"
+              className="mt-4 flex items-center justify-center gap-2 w-full py-3 bg-[var(--cor-primaria)] hover:bg-[var(--cor-primaria)] disabled:opacity-50 disabled:cursor-not-allowed text-[var(--texto-sobre-primaria)] font-bold uppercase tracking-widest text-sm rounded transition-colors"
             >
               Avançar <ChevronRight size={18} />
             </button>
@@ -229,7 +229,7 @@ export function Agendar() {
 
             <button 
               onClick={() => { setEtapa(3); buscarHorarios(data); }}
-              className="mt-4 flex items-center justify-center gap-2 w-full py-3 bg-[var(--cor-primaria)] hover:bg-[var(--cor-primaria)] text-black font-bold uppercase tracking-widest text-sm rounded transition-colors"
+              className="mt-4 flex items-center justify-center gap-2 w-full py-3 bg-[var(--cor-primaria)] hover:bg-[var(--cor-primaria)] text-[var(--texto-sobre-primaria)] font-bold uppercase tracking-widest text-sm rounded transition-colors"
             >
               Avançar <ChevronRight size={18} />
             </button>
@@ -295,7 +295,7 @@ export function Agendar() {
                       onClick={() => setHorario(h)}
                       className={`p-2 text-center rounded border cursor-pointer font-mono text-sm transition-all ${
                         horario === h
-                          ? 'border-[var(--cor-primaria)] bg-[var(--cor-primaria)] text-black font-bold'
+                          ? 'border-[var(--cor-primaria)] bg-[var(--cor-primaria)] text-[var(--texto-sobre-primaria)] font-bold'
                           : 'border-[var(--border)] bg-[var(--bg-surface)] hover:border-[rgba(var(--cor-primaria-rgb), 0.10)]'
                       }`}
                     >
@@ -309,7 +309,7 @@ export function Agendar() {
             <button 
               onClick={() => setEtapa(4)}
               disabled={!data || !horario}
-              className="mt-4 flex items-center justify-center gap-2 w-full py-3 bg-[var(--cor-primaria)] hover:bg-[var(--cor-primaria)] disabled:opacity-50 disabled:cursor-not-allowed text-black font-bold uppercase tracking-widest text-sm rounded transition-colors"
+              className="mt-4 flex items-center justify-center gap-2 w-full py-3 bg-[var(--cor-primaria)] hover:bg-[var(--cor-primaria)] disabled:opacity-50 disabled:cursor-not-allowed text-[var(--texto-sobre-primaria)] font-bold uppercase tracking-widest text-sm rounded transition-colors"
             >
               Avançar <ChevronRight size={18} />
             </button>
@@ -334,7 +334,7 @@ export function Agendar() {
                   type="text" 
                   value={cliente.nome}
                   onChange={(e) => setCliente({...cliente, nome: e.target.value})}
-                  className="w-full p-3 bg-[var(--bg-surface)] border border-[var(--border)] rounded focus:outline-none focus:border-[var(--cor-primaria)] text-white"
+                  className="w-full p-3 bg-[var(--bg-surface)] border border-[var(--border)] rounded focus:outline-none focus:border-[var(--cor-primaria)] text-[var(--texto-principal)]"
                   placeholder="Seu nome"
                 />
               </div>
@@ -344,7 +344,7 @@ export function Agendar() {
                   type="tel" 
                   value={cliente.telefone}
                   onChange={(e) => setCliente({...cliente, telefone: e.target.value})}
-                  className="w-full p-3 bg-[var(--bg-surface)] border border-[var(--border)] rounded focus:outline-none focus:border-[var(--cor-primaria)] text-white"
+                  className="w-full p-3 bg-[var(--bg-surface)] border border-[var(--border)] rounded focus:outline-none focus:border-[var(--cor-primaria)] text-[var(--texto-principal)]"
                   placeholder="(00) 00000-0000"
                 />
               </div>
@@ -353,7 +353,7 @@ export function Agendar() {
                 <textarea 
                   value={cliente.observacoes}
                   onChange={(e) => setCliente({...cliente, observacoes: e.target.value})}
-                  className="w-full p-3 bg-[var(--bg-surface)] border border-[var(--border)] rounded focus:outline-none focus:border-[var(--cor-primaria)] text-white h-24 resize-none"
+                  className="w-full p-3 bg-[var(--bg-surface)] border border-[var(--border)] rounded focus:outline-none focus:border-[var(--cor-primaria)] text-[var(--texto-principal)] h-24 resize-none"
                   placeholder="Algum detalhe para o barbeiro?"
                 />
               </div>
@@ -362,7 +362,7 @@ export function Agendar() {
             <button 
               onClick={() => setEtapa(5)}
               disabled={!cliente.nome || !cliente.telefone}
-              className="mt-auto flex items-center justify-center gap-2 w-full py-3 bg-[var(--cor-primaria)] hover:bg-[var(--cor-primaria)] disabled:opacity-50 disabled:cursor-not-allowed text-black font-bold uppercase tracking-widest text-sm rounded transition-colors"
+              className="mt-auto flex items-center justify-center gap-2 w-full py-3 bg-[var(--cor-primaria)] hover:bg-[var(--cor-primaria)] disabled:opacity-50 disabled:cursor-not-allowed text-[var(--texto-sobre-primaria)] font-bold uppercase tracking-widest text-sm rounded transition-colors"
             >
               Avançar <ChevronRight size={18} />
             </button>
@@ -413,7 +413,7 @@ export function Agendar() {
             <button 
               onClick={confirmarAgendamento}
               disabled={carregando}
-              className="mt-auto flex items-center justify-center gap-2 w-full py-3 bg-[var(--success-text)] hover:bg-[#2e9c60] text-black font-bold uppercase tracking-widest text-sm rounded transition-colors"
+              className="mt-auto flex items-center justify-center gap-2 w-full py-3 bg-[var(--sucesso)] hover:opacity-90 text-[var(--texto-sobre-primaria)] font-bold uppercase tracking-widest text-sm rounded transition-all"
             >
               {carregando ? 'Processando...' : 'Confirmar Agendamento'}
             </button>
@@ -423,8 +423,8 @@ export function Agendar() {
         {/* ETAPA 6: SUCESSO */}
         {etapa === 6 && (
           <div className="animate-fade-in flex flex-col items-center justify-center gap-4 flex-1 text-center py-10">
-            <CheckCircle size={64} className="text-[var(--success-text)] mb-4" />
-            <h2 className="text-2xl font-bold font-display tracking-wide text-white">Agendamento Confirmado!</h2>
+            <CheckCircle size={64} className="text-[var(--sucesso)] mb-4" />
+            <h2 className="text-2xl font-bold font-display tracking-wide text-[var(--texto-principal)]">Agendamento Confirmado!</h2>
             <p className="text-[var(--text-muted)] mb-8">
               Tudo certo, {cliente.nome.split(' ')[0]}! Seu horário foi reservado com sucesso.<br/><br/>
               Te esperamos na <strong>{nomeBarbearia}</strong> dia {new Date(data).toLocaleDateString('pt-BR')} às {horario}.
@@ -432,7 +432,7 @@ export function Agendar() {
 
             <button 
               onClick={() => navigate('/fidelidade')}
-              className="mt-auto flex items-center justify-center gap-2 w-full py-3 bg-[var(--bg-surface)] border border-[var(--border)] hover:border-[var(--cor-primaria)] text-white font-bold uppercase tracking-widest text-sm rounded transition-colors"
+              className="mt-auto flex items-center justify-center gap-2 w-full py-3 bg-[var(--bg-surface)] border border-[var(--border)] hover:border-[var(--cor-primaria)] text-[var(--texto-principal)] font-bold uppercase tracking-widest text-sm rounded transition-colors"
             >
               Ver meus Pontos de Fidelidade
             </button>

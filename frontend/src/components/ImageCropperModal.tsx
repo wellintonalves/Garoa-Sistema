@@ -33,7 +33,7 @@ export function ImageCropperModal({ aberto, onFechar, imageSrc, onCropComplete }
 
   return (
     <Modal aberto={aberto} onFechar={onFechar} titulo="Ajustar Foto">
-      <div style={{ position: 'relative', width: '100%', height: '400px', background: '#333', borderRadius: '8px', overflow: 'hidden' }}>
+      <div style={{ position: 'relative', width: '100%', height: '400px', background: 'var(--superficie-3)', borderRadius: '8px', overflow: 'hidden' }}>
         <Cropper
           image={imageSrc}
           crop={crop}

@@ -61,7 +61,7 @@ export function ClienteCadastro() {
     border: '1px solid rgba(255,255,255,0.08)',
     borderRadius: '10px',
     padding: '14px 14px 14px 42px',
-    color: '#FFFFFF',
+    color: 'var(--texto-principal)',
     fontFamily: 'var(--fonte-interface)',
     fontSize: '13px',
     letterSpacing: '0.02em',
@@ -75,7 +75,7 @@ export function ClienteCadastro() {
     fontSize: '9px',
     letterSpacing: '0.18em',
     textTransform: 'uppercase' as const,
-    color: '#94A3B8',
+    color: 'var(--texto-secundario)',
     marginBottom: '6px',
     display: 'block',
   };
@@ -89,7 +89,7 @@ export function ClienteCadastro() {
   };
 
   function handleFocus(e: React.FocusEvent<HTMLInputElement>) {
-    e.currentTarget.style.borderColor = '#F59E0B';
+    e.currentTarget.style.borderColor = 'var(--cor-primaria)';
     e.currentTarget.style.background = 'rgba(255,255,255,0.06)';
   }
 
@@ -104,7 +104,7 @@ export function ClienteCadastro() {
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
-      background: 'linear-gradient(180deg, #0A0A0A 0%, #141414 40%, #1A1408 100%)',
+      background: 'var(--fundo-pagina)',
       position: 'relative',
       overflow: 'hidden',
     }}>
@@ -143,16 +143,16 @@ export function ClienteCadastro() {
             fontFamily: 'var(--fonte-interface)',
             fontSize: '10px',
             letterSpacing: '0.1em',
-            color: '#94A3B8',
+            color: 'var(--texto-secundario)',
             textTransform: 'uppercase' as const,
             padding: '8px 0',
             transition: 'color 0.2s',
           }}
           onMouseEnter={(e) => {
-            (e.currentTarget as HTMLElement).style.color = '#F59E0B';
+            (e.currentTarget as HTMLElement).style.color = 'var(--cor-primaria)';
           }}
           onMouseLeave={(e) => {
-            (e.currentTarget as HTMLElement).style.color = '#94A3B8';
+            (e.currentTarget as HTMLElement).style.color = 'var(--texto-secundario)';
           }}
         >
           <ArrowLeft size={14} strokeWidth={1.5} />
@@ -187,18 +187,18 @@ export function ClienteCadastro() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            background: 'linear-gradient(135deg, #F59E0B 0%, rgba(245, 158, 11, 0.15) 100%)',
+            background: 'rgba(var(--cor-primaria-rgb), 0.15)',
             boxShadow: '0 0 40px rgba(212, 130, 10, 0.25)',
             marginBottom: '1rem',
           }}>
-            <Scissors size={28} style={{ color: '#0A0A0A' }} />
+            <Scissors size={28} style={{ color: 'var(--cor-primaria)' }} />
           </div>
 
           <h1 style={{
             fontFamily: 'var(--fonte-interface)',
             fontSize: '36px',
             letterSpacing: '0.06em',
-            color: '#FFFFFF',
+            color: 'var(--texto-principal)',
             lineHeight: 1,
           }}>
             Criar Conta
@@ -208,7 +208,7 @@ export function ClienteCadastro() {
             fontFamily: 'var(--fonte-interface)',
             fontSize: '10px',
             letterSpacing: '0.2em',
-            color: '#94A3B8',
+            color: 'var(--texto-secundario)',
             textTransform: 'uppercase' as const,
             marginTop: '8px',
           }}>
@@ -325,7 +325,7 @@ export function ClienteCadastro() {
                     <button
                       type="button"
                       onClick={() => setMostrarSenha(!mostrarSenha)}
-                      style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#525252', padding: 0 }}
+                      style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--texto-terciario)', padding: 0 }}
                     >
                       {mostrarSenha ? <EyeOff size={14} strokeWidth={1.5} /> : <Eye size={14} strokeWidth={1.5} />}
                     </button>
@@ -341,10 +341,10 @@ export function ClienteCadastro() {
               width: '100%',
               padding: '15px',
               marginTop: '8px',
-              background: 'linear-gradient(135deg, #F59E0B 0%, #E09818 100%)',
+              background: 'var(--cor-primaria)',
               border: 'none',
               borderRadius: '10px',
-              color: '#0A0A0A',
+              color: 'var(--texto-sobre-primaria)',
               fontFamily: 'var(--fonte-interface)',
               fontSize: '14px',
               fontWeight: 700,
@@ -383,15 +383,15 @@ export function ClienteCadastro() {
               fontFamily: 'var(--fonte-interface)',
               fontSize: '12px',
               letterSpacing: '0.08em',
-              color: '#F59E0B',
+              color: 'var(--cor-primaria)',
               padding: '8px',
               transition: 'color 0.2s',
             }}
             onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.color = 'rgba(245, 158, 11, 0.15)';
+              (e.currentTarget as HTMLElement).style.color = 'rgba(var(--cor-primaria-rgb), 0.15)';
             }}
             onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.color = '#F59E0B';
+              (e.currentTarget as HTMLElement).style.color = 'var(--cor-primaria)';
             }}
           >
             Já tenho conta, entrar

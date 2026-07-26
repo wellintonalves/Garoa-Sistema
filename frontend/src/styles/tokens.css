@@ -63,7 +63,7 @@
   /* Texto */
   --texto-principal: #1A1712;
   --texto-secundario: #6E675C;
-  --texto-terciario: #9A9186;
+  --texto-terciario: #736B60;
   --texto-inverso: #F4F4F4;
   --texto-desabilitado: #C5BDB0;
   --texto-label: #6E675C;
@@ -96,6 +96,59 @@
   --elevacao-1: 0 1px 3px rgba(26, 23, 18, 0.08);
   --elevacao-2: 0 4px 6px rgba(26, 23, 18, 0.12);
   --elevacao-3: 0 10px 15px rgba(26, 23, 18, 0.15);
+
+  /* Superfícies e Aliases Legados / Componentes */
+  --superficie-1: var(--fundo-superficie);
+  --superficie-2: var(--fundo-superficie-2);
+  --superficie-3: var(--fundo-superficie-3);
+  --bg-primary: var(--fundo-pagina);
+  --bg-surface: var(--fundo-superficie);
+  --bg-surface2: var(--fundo-superficie-2);
+  --bg-card: var(--fundo-superficie);
+  --bg-input: transparent;
+  --surface: var(--fundo-superficie);
+  --card-bg: var(--fundo-superficie);
+  --fundo-card: var(--fundo-superficie);
+  --fundo-input: transparent;
+  --fundo-sidebar: var(--fundo-superficie);
+
+  /* Texto Aliases */
+  --text-primary: var(--texto-principal);
+  --text-secondary: var(--texto-secundario);
+  --text-muted: var(--texto-terciario);
+  --text-placeholder: var(--texto-terciario);
+  --texto-placeholder: var(--texto-terciario);
+  --text-disabled: var(--texto-desabilitado);
+  --error-text: var(--erro);
+  --success-text: var(--sucesso);
+  --warning-text: var(--aviso);
+  --cor-alerta: var(--erro);
+  --cor-primaria-texto: #9A6300;
+  --amber: var(--cor-primaria);
+  --cor-primaria-rgb: 245, 158, 11;
+  --cor-icone: var(--texto-secundario);
+
+  /* Bordas Aliases */
+  --borda: var(--borda-sutil);
+  --border: var(--borda-sutil);
+  --borda-input: var(--borda-media);
+  --border-hover: var(--borda-forte);
+
+  /* Níveis de Fidelidade e Específicos */
+  --cor-bronze: #CD7F32;
+  --cor-bronze-fundo: rgba(205, 127, 50, 0.15);
+  --cor-bronze-borda: rgba(205, 127, 50, 0.3);
+  --cor-prata: #C0C0C0;
+  --cor-prata-fundo: rgba(192, 192, 192, 0.15);
+  --cor-prata-borda: rgba(192, 192, 192, 0.3);
+  --cor-ouro: #FFD700;
+  --cor-ouro-fundo: rgba(255, 215, 0, 0.15);
+  --cor-ouro-borda: rgba(255, 215, 0, 0.3);
+  --cor-diamante: #00BFFF;
+  --cor-diamante-fundo: rgba(0, 191, 255, 0.12);
+  --cor-diamante-borda: rgba(0, 191, 255, 0.3);
+  --cor-whatsapp: #25D366;
+  --cor-whatsapp-hover: #1DA851;
 }
 
 /* 3. Tokens Semânticos — Modo Escuro — Seção 3.2 */
@@ -110,7 +163,7 @@
   /* Texto */
   --texto-principal: #F4F4F4;
   --texto-secundario: #8F8F8F;
-  --texto-terciario: #666666;
+  --texto-terciario: #949494;
   --texto-inverso: #1A1712;
   --texto-desabilitado: #4A4A4A;
   --texto-label: #8F8F8F;
@@ -143,6 +196,59 @@
   --elevacao-1: 0 1px 3px rgba(0, 0, 0, 0.3);
   --elevacao-2: 0 4px 6px rgba(0, 0, 0, 0.4);
   --elevacao-3: 0 10px 15px rgba(0, 0, 0, 0.5);
+
+  /* Superfícies e Aliases Legados / Componentes */
+  --superficie-1: var(--fundo-superficie);
+  --superficie-2: var(--fundo-superficie-2);
+  --superficie-3: var(--fundo-superficie-3);
+  --bg-primary: var(--fundo-pagina);
+  --bg-surface: var(--fundo-superficie);
+  --bg-surface2: var(--fundo-superficie-2);
+  --bg-card: var(--fundo-superficie);
+  --bg-input: transparent;
+  --surface: var(--fundo-superficie);
+  --card-bg: var(--fundo-superficie);
+  --fundo-card: var(--fundo-superficie);
+  --fundo-input: transparent;
+  --fundo-sidebar: var(--fundo-superficie);
+
+  /* Texto Aliases */
+  --text-primary: var(--texto-principal);
+  --text-secondary: var(--texto-secundario);
+  --text-muted: var(--texto-terciario);
+  --text-placeholder: var(--texto-terciario);
+  --texto-placeholder: var(--texto-terciario);
+  --text-disabled: var(--texto-desabilitado);
+  --error-text: var(--erro);
+  --success-text: var(--sucesso);
+  --warning-text: var(--aviso);
+  --cor-alerta: var(--erro);
+  --cor-primaria-texto: var(--cor-primaria);
+  --amber: var(--cor-primaria);
+  --cor-primaria-rgb: 245, 158, 11;
+  --cor-icone: var(--texto-secundario);
+
+  /* Bordas Aliases */
+  --borda: var(--borda-sutil);
+  --border: var(--borda-sutil);
+  --borda-input: var(--borda-media);
+  --border-hover: var(--borda-forte);
+
+  /* Níveis de Fidelidade e Específicos */
+  --cor-bronze: #CD7F32;
+  --cor-bronze-fundo: rgba(205, 127, 50, 0.15);
+  --cor-bronze-borda: rgba(205, 127, 50, 0.3);
+  --cor-prata: #C0C0C0;
+  --cor-prata-fundo: rgba(192, 192, 192, 0.15);
+  --cor-prata-borda: rgba(192, 192, 192, 0.3);
+  --cor-ouro: #FFD700;
+  --cor-ouro-fundo: rgba(255, 215, 0, 0.15);
+  --cor-ouro-borda: rgba(255, 215, 0, 0.3);
+  --cor-diamante: #00BFFF;
+  --cor-diamante-fundo: rgba(0, 191, 255, 0.12);
+  --cor-diamante-borda: rgba(0, 191, 255, 0.3);
+  --cor-whatsapp: #25D366;
+  --cor-whatsapp-hover: #1DA851;
 }
 
 /* 4. Tipografia, Espaçamento, Raio e Breakpoints — Seções 5, 6 e 9 */

@@ -118,12 +118,12 @@ export function BarbeiroHoje() {
     <div className="px-4 py-6 md:px-8 max-w-7xl mx-auto animate-fade-in" style={{ fontFamily: 'var(--fonte-interface)' }}>
       {/* Feedbacks */}
       {sucessoMsg && (
-        <div className="bg-green-100 text-green-800 p-3 rounded-lg mb-4 text-sm font-medium border border-green-200">
+        <div className="bg-[var(--sucesso-fundo)] text-[var(--sucesso)] p-3 rounded-lg mb-4 text-sm font-medium border border-[var(--sucesso)]">
           {sucessoMsg}
         </div>
       )}
       {erroMsg && !concluindoAg && (
-        <div className="bg-red-100 text-red-800 p-3 rounded-lg mb-4 text-sm font-medium border border-red-200">
+        <div className="bg-[var(--perigo-fundo)] text-[var(--perigo)] p-3 rounded-lg mb-4 text-sm font-medium border border-[var(--perigo)]">
           {erroMsg}
         </div>
       )}
@@ -142,7 +142,7 @@ export function BarbeiroHoje() {
         <div className="flex flex-col items-center p-2 rounded-xl border" style={{ background: 'var(--bg-surface)', borderColor: 'var(--border)' }}>
           <label className="relative inline-flex items-center cursor-pointer">
             <input type="checkbox" className="sr-only peer" checked={trabalhandoAgora} onChange={toggleTrabalhando} disabled={atualizandoStatus} />
-            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all" style={{ backgroundColor: trabalhandoAgora ? 'var(--cor-primaria)' : '' }}></div>
+            <div className="w-11 h-6 bg-[var(--superficie-2)] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-[var(--borda)] after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-[var(--superficie)] after:border-[var(--borda)] after:border after:rounded-full after:h-5 after:w-5 after:transition-all" style={{ backgroundColor: trabalhandoAgora ? 'var(--cor-primaria)' : '' }}></div>
           </label>
           <span className="text-xs font-medium mt-1" style={{ color: trabalhandoAgora ? 'var(--cor-primaria)' : 'var(--text-muted)' }}>
             {trabalhandoAgora ? 'Disponível' : 'Ausente'}
@@ -208,15 +208,15 @@ export function BarbeiroHoje() {
                 Ações Rápidas
               </h3>
               <div className="flex flex-col">
-                <button onClick={() => navigate('/barbeiro/agenda')} className="flex items-center gap-3 p-4 text-left transition-colors text-sm hover:bg-black/10" style={{ color: 'var(--text-primary)' }}>
+                <button onClick={() => navigate('/barbeiro/agenda')} className="flex items-center gap-3 p-4 text-left transition-colors text-sm hover:bg-[var(--superficie)]" style={{ color: 'var(--text-primary)' }}>
                   <Calendar size={18} style={{ color: 'var(--cor-primaria)' }} />
                   Ver agenda completa
                 </button>
-                <button disabled className="flex items-center gap-3 p-4 text-left transition-colors text-sm border-t opacity-60 hover:bg-black/10" style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}>
+                <button disabled className="flex items-center gap-3 p-4 text-left transition-colors text-sm border-t opacity-60 hover:bg-[var(--superficie)]" style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}>
                   <Plus size={18} />
                   Atendimento avulso (em breve)
                 </button>
-                <button disabled className="flex items-center gap-3 p-4 text-left transition-colors text-sm border-t opacity-60 hover:bg-black/10" style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}>
+                <button disabled className="flex items-center gap-3 p-4 text-left transition-colors text-sm border-t opacity-60 hover:bg-[var(--superficie)]" style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}>
                   <Ban size={18} />
                   Bloquear horário (em breve)
                 </button>
@@ -254,7 +254,7 @@ export function BarbeiroHoje() {
             <div>
               <h2 className="text-sm font-medium mb-4 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
                 Próximos Atendimentos 
-                <span className="text-white text-xs px-2 py-0.5 rounded-full" style={{ background: 'var(--cor-primaria)' }}>{pendentes.length}</span>
+                <span className="text-[var(--texto-principal)] text-xs px-2 py-0.5 rounded-full" style={{ background: 'var(--cor-primaria)' }}>{pendentes.length}</span>
               </h2>
               
               {pendentes.length === 0 ? (
@@ -296,7 +296,7 @@ export function BarbeiroHoje() {
                           setFormaPagamento('PIX');
                           setErroMsg('');
                         }}
-                        className="w-full py-3 px-4 text-white font-medium rounded-xl text-sm flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
+                        className="w-full py-3 px-4 text-[var(--texto-principal)] font-medium rounded-xl text-sm flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
                         style={{ background: 'var(--cor-primaria)' }}
                       >
                         <Check size={16} /> Concluir Atendimento
@@ -330,8 +330,8 @@ export function BarbeiroHoje() {
                           </p>
                         </div>
                       </div>
-                      <div className="bg-green-100 p-1.5 rounded-full">
-                        <Check size={14} className="text-green-600" />
+                      <div className="bg-[var(--sucesso-fundo)] p-1.5 rounded-full">
+                        <Check size={14} className="text-[var(--sucesso)]" />
                       </div>
                     </div>
                   ))}
@@ -361,7 +361,7 @@ export function BarbeiroHoje() {
             </div>
 
             {erroMsg && (
-              <div className="bg-red-50 text-red-600 text-sm p-3 rounded-lg border border-red-200">
+              <div className="bg-[var(--perigo-fundo)] text-[var(--perigo)] text-sm p-3 rounded-lg border border-[var(--perigo)]">
                 {erroMsg}
               </div>
             )}
@@ -385,7 +385,7 @@ export function BarbeiroHoje() {
             <button 
               onClick={confirmarConclusao}
               disabled={!!concluindoId}
-              className="w-full py-3.5 text-white font-medium rounded-xl flex justify-center items-center gap-2 hover:opacity-90 transition-opacity disabled:opacity-50 mt-2"
+              className="w-full py-3.5 text-[var(--texto-principal)] font-medium rounded-xl flex justify-center items-center gap-2 hover:opacity-90 transition-opacity disabled:opacity-50 mt-2"
               style={{ background: 'var(--cor-primaria)' }}
             >
               {concluindoId ? 'Processando...' : 'Confirmar e Finalizar'}

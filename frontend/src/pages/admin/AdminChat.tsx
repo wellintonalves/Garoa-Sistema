@@ -324,7 +324,7 @@ export function AdminChat() {
                       </p>
                     )}
                     {c.naoLidas > 0 && (
-                      <span className="flex-shrink-0 ml-2 w-5 h-5 rounded-full flex items-center justify-center text-white font-['JetBrains_Mono'] text-[10px] font-bold"
+                      <span className="flex-shrink-0 ml-2 w-5 h-5 rounded-full flex items-center justify-center text-[var(--texto-principal)] font-['JetBrains_Mono'] text-[10px] font-bold"
                         style={{ background: 'var(--cor-primaria)' }}>
                         {c.naoLidas > 9 ? '9+' : c.naoLidas}
                       </span>
@@ -386,7 +386,7 @@ export function AdminChat() {
               
               <button 
                 onClick={toggleMute}
-                className="p-2 rounded-full transition-colors hover:bg-black/5 dark:hover:bg-white/5 chat-btn"
+                className="p-2 rounded-full transition-colors hover:bg-[var(--superficie)] dark:hover:bg-[var(--superficie)] chat-btn"
                 style={{ color: 'var(--texto-secundario)' }}
                 title={isMuted ? "Ativar som" : "Desativar som"}
               >
@@ -433,7 +433,7 @@ export function AdminChat() {
                           className={`max-w-[65%] px-3.5 py-2.5 ${borderRadius} shadow-sm relative`}
                           style={
                             isAdmin
-                              ? { background: 'var(--cor-primaria)', color: '#111827' }
+                              ? { background: 'var(--cor-primaria)', color: 'var(--texto-sobre-primaria)' }
                               : { background: 'var(--fundo-card)', border: '1px solid var(--borda)', color: 'var(--texto-principal)' }
                           }
                         >
@@ -447,7 +447,7 @@ export function AdminChat() {
                             {isAdmin && (
                               <span className="flex items-center">
                                 {m.lida ? (
-                                  <CheckCheck size={14} className="text-blue-600" />
+                                  <CheckCheck size={14} className="text-[var(--info)]" />
                                 ) : (
                                   <Check size={14} style={{ color: 'rgba(0,0,0,0.5)' }} />
                                 )}
@@ -500,7 +500,7 @@ export function AdminChat() {
                 className="w-11 h-11 md:w-12 md:h-12 rounded-full flex items-center justify-center flex-shrink-0 transition-all chat-btn disabled:opacity-50 disabled:scale-100"
                 style={{
                   background: 'var(--cor-primaria)',
-                  color: '#111827',
+                  color: 'var(--texto-sobre-primaria)',
                   cursor: (!texto.trim() || enviando) ? 'not-allowed' : 'pointer',
                   border: 'none',
                 }}

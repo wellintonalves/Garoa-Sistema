@@ -211,7 +211,7 @@ export function ClienteBarbeariaChat() {
         
         <button 
           onClick={toggleMute}
-          className="p-2 rounded-full transition-colors hover:bg-black/5 dark:hover:bg-white/5 chat-btn"
+          className="p-2 rounded-full transition-colors hover:bg-[var(--superficie)] dark:hover:bg-[var(--superficie)] chat-btn"
           style={{ color: 'var(--texto-secundario)' }}
           title={isMuted ? "Ativar som" : "Desativar som"}
         >
@@ -224,7 +224,7 @@ export function ClienteBarbeariaChat() {
         {mensagens.length === 0 && !enviando && (
           <div className="flex flex-col items-center justify-center flex-1 gap-3 text-center opacity-60">
             <div className="w-16 h-16 rounded-full flex items-center justify-center mb-2" style={{ background: 'rgba(var(--texto-secundario-rgb), 0.1)' }}>
-              <div className="w-8 h-8 rounded-full flex items-center justify-center font-sans font-semibold" style={{ background: 'var(--cor-primaria)', color: '#111827' }}>
+              <div className="w-8 h-8 rounded-full flex items-center justify-center font-sans font-semibold" style={{ background: 'var(--cor-primaria)', color: 'var(--texto-sobre-primaria)' }}>
                 {iniciais(barbearia?.nome)}
               </div>
             </div>
@@ -262,7 +262,7 @@ export function ClienteBarbeariaChat() {
                     className={`max-w-[75%] md:max-w-[65%] px-3.5 py-2.5 ${borderRadius} shadow-sm relative`}
                     style={
                       isCliente
-                        ? { background: 'var(--cor-primaria)', color: '#111827' }
+                        ? { background: 'var(--cor-primaria)', color: 'var(--texto-sobre-primaria)' }
                         : { background: 'var(--fundo-card)', border: '1px solid var(--borda)', color: 'var(--texto-principal)' }
                     }
                   >
@@ -276,7 +276,7 @@ export function ClienteBarbeariaChat() {
                       {isCliente && (
                         <span className="flex items-center">
                           {m.lida ? (
-                            <Checks size={16} weight="bold" className="text-blue-500" />
+                            <Checks size={16} weight="bold" className="text-[var(--info)]" />
                           ) : (
                             <Check size={16} weight="bold" style={{ color: 'rgba(0,0,0,0.5)' }} />
                           )}
@@ -329,7 +329,7 @@ export function ClienteBarbeariaChat() {
           className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 transition-all chat-btn disabled:opacity-50 disabled:scale-100"
           style={{
             background: 'var(--cor-primaria)',
-            color: '#111827',
+            color: 'var(--texto-sobre-primaria)',
             cursor: (!texto.trim() || enviando) ? 'not-allowed' : 'pointer',
             border: 'none',
           }}

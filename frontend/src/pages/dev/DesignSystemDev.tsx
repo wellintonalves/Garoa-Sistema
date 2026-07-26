@@ -22,6 +22,7 @@ import {
   EstadoVazio,
 } from '../../components/ui';
 import { Search, Calendar } from 'lucide-react';
+import { CORES_CATEGORIA_SERVICO } from '../../styles/tokens';
 
 const ConteudoDev: React.FC = () => {
   const { modo, setModo } = useModoTema();
@@ -326,11 +327,11 @@ const ConteudoDev: React.FC = () => {
           <div
             data-tema="claro"
             style={{
-              background: '#FDFBF7', /* Fundo claro explicitamente forçado para a demo */
-              color: '#1A1712',
+              background: CORES_CATEGORIA_SERVICO.claroDemoBg, /* Fundo claro explicitamente forçado para a demo */
+              color: CORES_CATEGORIA_SERVICO.claroDemoText,
               padding: 'var(--espaco-6)',
               borderRadius: 'var(--raio-lg)',
-              border: '1px solid #EFE9DB',
+              border: `1px solid ${CORES_CATEGORIA_SERVICO.claroDemoBorder}`,
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--espaco-4)' }}>
@@ -340,7 +341,7 @@ const ConteudoDev: React.FC = () => {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--espaco-4)' }}>
               <Card>
                 <h4 style={{ fontWeight: 500, marginBottom: 'var(--espaco-1)' }}>Superfície em repouso</h4>
-                <p style={{ fontSize: '0.8125rem', color: '#6E675C' }}>Texto secundário sobre o card no tema claro.</p>
+                <p style={{ fontSize: '0.8125rem', color: CORES_CATEGORIA_SERVICO.claroDemoSub }}>Texto secundário sobre o card no tema claro.</p>
               </Card>
               <div style={{ display: 'flex', gap: 'var(--espaco-2)' }}>
                 <Botao variante="primario" style={{ flex: 1 }}>Primário</Botao>
@@ -353,11 +354,11 @@ const ConteudoDev: React.FC = () => {
           <div
             data-tema="escuro"
             style={{
-              background: '#0A0A0A', /* Fundo escuro explicitamente forçado para a demo */
-              color: '#F4F4F4',
+              background: 'var(--texto-sobre-primaria)', /* Fundo escuro explicitamente forçado para a demo */
+              color: CORES_CATEGORIA_SERVICO.escuroDemoText,
               padding: 'var(--espaco-6)',
               borderRadius: 'var(--raio-lg)',
-              border: '1px solid #262626',
+              border: '1px solid var(--superficie-3)',
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--espaco-4)' }}>
@@ -367,7 +368,7 @@ const ConteudoDev: React.FC = () => {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--espaco-4)' }}>
               <Card>
                 <h4 style={{ fontWeight: 500, marginBottom: 'var(--espaco-1)' }}>Superfície em repouso</h4>
-                <p style={{ fontSize: '0.8125rem', color: '#8F8F8F' }}>Texto secundário sobre o card no tema escuro.</p>
+                <p style={{ fontSize: '0.8125rem', color: CORES_CATEGORIA_SERVICO.escuroDemoSub }}>Texto secundário sobre o card no tema escuro.</p>
               </Card>
               <div style={{ display: 'flex', gap: 'var(--espaco-2)' }}>
                 <Botao variante="primario" style={{ flex: 1 }}>Primário</Botao>

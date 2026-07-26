@@ -145,7 +145,7 @@ export function AprovacoesPopup() {
           </button>
           <button 
             className="btn-primary" 
-            style={{ flex: 1, background: 'var(--success-text)', color: '#000' }}
+            style={{ flex: 1, background: 'var(--sucesso)', color: 'var(--texto-sobre-primaria)' }}
             onClick={() => handleAprovar(atual.id)}
             disabled={carregando}
           >

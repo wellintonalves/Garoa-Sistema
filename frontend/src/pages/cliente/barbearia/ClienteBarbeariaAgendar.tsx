@@ -264,13 +264,13 @@ export function ClienteBarbeariaAgendar() {
                   cursor: 'pointer',
                 }}>
                 <div className="flex items-center gap-4">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${isSel ? 'bg-[var(--amber)] text-[#0a0a0a]' : 'bg-[var(--superficie-2)] text-[var(--text-muted)] border border-[var(--borda)]'}`}>
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${isSel ? 'bg-[var(--amber)] text-[var(--texto-sobre-primaria)]' : 'bg-[var(--superficie-2)] text-[var(--text-muted)] border border-[var(--borda)]'}`}>
                     <Scissors size={18} />
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
                       <p style={{ fontFamily: 'var(--fonte-interface)', fontWeight: 600, color: 'var(--text-primary)', fontSize: '15px' }}>{s.nome}</p>
-                      {idx === 0 && <span className="bg-[var(--amber)] text-black text-[9px] uppercase tracking-wider font-bold px-1.5 py-0.5 rounded-sm">Mais popular</span>}
+                      {idx === 0 && <span className="bg-[var(--amber)] text-[var(--texto-sobre-primaria)] text-[9px] uppercase tracking-wider font-bold px-1.5 py-0.5 rounded-sm">Mais popular</span>}
                     </div>
                     <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>{s.duracaoMinutos} min de duração</p>
                   </div>
@@ -371,7 +371,7 @@ export function ClienteBarbeariaAgendar() {
                         textAlign: 'center',
                         cursor: s.disponivel ? 'pointer' : 'not-allowed',
                         background: horarioSel === s.horario ? 'var(--amber)' : s.disponivel ? 'var(--fundo-sidebar)' : 'transparent',
-                        color: horarioSel === s.horario ? '#0A0A0A' : s.disponivel ? 'var(--text-primary)' : 'var(--text-disabled)',
+                        color: horarioSel === s.horario ? 'var(--texto-sobre-primaria)' : s.disponivel ? 'var(--text-primary)' : 'var(--text-disabled)',
                         border: horarioSel === s.horario ? '1px solid var(--amber)' : s.disponivel ? '1px solid var(--borda)' : '1px dashed var(--borda)',
                         opacity: s.disponivel ? 1 : 0.3,
                         borderRadius: '6px',

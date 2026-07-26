@@ -6,6 +6,7 @@ import { Modal } from '../components/Modal';
 import { SkeletonPage } from '../components/Skeleton';
 import { dataBrasilia } from '../utils/datas';
 import api from '../api/client';
+import { PALETA_CORES_BARBEIROS } from '../styles/tokens';
 
 /** Extrai hora e minuto de um Date no fuso de Brasília */
 function getHoraMinutoBrasilia(date: Date): { hora: number; minuto: number } {
@@ -63,7 +64,7 @@ interface Bloqueio {
 const statusStyles: Record<string, { bg: string; border: string; color: string }> = {
   AGUARDANDO:  { bg: 'rgba(var(--cor-primaria-rgb), 0.10)', border: 'var(--amber)', color: 'rgba(var(--cor-primaria-rgb), 0.15)' },
   CONFIRMADO:  { bg: 'var(--bg-surface2)', border: 'var(--border-hover)', color: 'var(--text-primary)' },
-  CONCLUIDO:   { bg: '#1A3D2A', border: 'var(--success-text)', color: 'var(--success-text)' },
+  CONCLUIDO:   { bg: 'var(--sucesso-fundo)', border: 'var(--sucesso)', color: 'var(--sucesso)' },
   CANCELADO:   { bg: 'var(--error)', border: 'var(--error-text)', color: 'var(--error-text)' },
 };
 
@@ -77,11 +78,7 @@ const statusLabels: Record<string, string> = {
 const diasSemana = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 const horarios = Array.from({ length: 22 }, (_, i) => `${String(Math.floor(i / 2) + 8).padStart(2, '0')}:${i % 2 === 0 ? '00' : '30'}`);
 
-const PALETA_CORES = [
-  '#EF4444', '#F59E0B', '#10B981', '#3B82F6', '#8B5CF6',
-  '#EC4899', '#14B8A6', '#D946EF', '#F97316', '#0EA5E9',
-  '#84CC16', '#6366F1'
-];
+const PALETA_CORES = PALETA_CORES_BARBEIROS;
 
 function getBarbeiroColor(id: string, listaBarbeiros: {id: string}[] = []): string {
   if (!id) return PALETA_CORES[0];
@@ -327,7 +324,7 @@ export function Agenda() {
             }}>
             <div className="flex justify-between items-start mb-1.5">
               <p className="truncate pr-1" style={{ fontWeight: 600 }}>{ag.cliente.usuario.nome}</p>
-              {ag.origem === 'ONLINE' && <span className="bg-[var(--cor-primaria)] text-black px-1 rounded text-[8px] font-bold shrink-0">WEB</span>}
+              {ag.origem === 'ONLINE' && <span className="bg-[var(--cor-primaria)] text-[var(--texto-sobre-primaria)] px-1 rounded text-[8px] font-bold shrink-0">WEB</span>}
             </div>
             <div>
               <p className="truncate" style={{ fontFamily: 'var(--fonte-interface)', fontSize: isMobile ? '11px' : '12px', background: 'transparent', color: 'var(--text-primary)', padding: 0, borderRadius: 0, display: 'inline-block', maxWidth: '100%', lineHeight: 1.2 }}>
@@ -481,7 +478,7 @@ export function Agenda() {
                 textAlign: 'left',
                 minHeight: '44px',
               }}
-              className="hover:bg-zinc-800 transition-colors"
+              className="hover:bg-[var(--superficie-2)] border-[var(--borda)] transition-colors"
             >
               <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: 'var(--amber)' }} />
               Todos os barbeiros
@@ -508,7 +505,7 @@ export function Agenda() {
                     textAlign: 'left',
                     minHeight: '44px',
                   }}
-                  className="hover:bg-zinc-800 transition-colors"
+                  className="hover:bg-[var(--superficie-2)] border-[var(--borda)] transition-colors"
                 >
                   <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: cor }} />
                   {b.usuario.nome}
@@ -546,7 +543,7 @@ export function Agenda() {
                       </div>
                     );
                   })}
-                  {cols === 0 && <div style={{ padding: '12px', borderLeft: '1px solid var(--border)' }}><p className="text-center text-zinc-500 text-sm">Nenhum barbeiro disponível</p></div>}
+                  {cols === 0 && <div style={{ padding: '12px', borderLeft: '1px solid var(--border)' }}><p className="text-center text-[var(--texto-secundario)] text-sm">Nenhum barbeiro disponível</p></div>}
                 </div>
 
                 {/* Grid de horários */}
@@ -648,7 +645,7 @@ export function Agenda() {
       <Modal aberto={modalAberto} onFechar={() => setModalAberto(false)} titulo="Novo Agendamento">
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           {erroSalvar && (
-            <div style={{ padding: '12px', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid var(--error-text)', borderRadius: '6px', color: 'var(--error-text)', fontFamily: 'var(--fonte-interface)', fontSize: '13px', fontWeight: 500 }}>
+            <div style={{ padding: '12px', background: 'var(--perigo-fundo)', border: '1px solid var(--error-text)', borderRadius: '6px', color: 'var(--error-text)', fontFamily: 'var(--fonte-interface)', fontSize: '13px', fontWeight: 500 }}>
               {erroSalvar}
             </div>
           )}
@@ -720,7 +717,7 @@ export function Agenda() {
             <label className="input-label">Motivo (Opcional)</label>
             <input type="text" value={formBloqueio.motivo} onChange={(e) => setFormBloqueio({ ...formBloqueio, motivo: e.target.value })} placeholder="Ex: Almoço, Atestado" className="ds-input" />
           </div>
-          <button onClick={criarBloqueio} className="btn-secondary w-full justify-center text-white bg-red-600 hover:bg-red-700">
+          <button onClick={criarBloqueio} className="btn-secondary w-full justify-center text-[var(--texto-principal)] bg-[var(--perigo)] hover:bg-[var(--perigo)]">
             Confirmar Bloqueio
           </button>
         </div>
@@ -738,7 +735,7 @@ export function Agenda() {
         {agendamentoSelecionado && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             {erroStatus && (
-              <div style={{ padding: '12px', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid var(--error-text)', borderRadius: '6px', color: 'var(--error-text)', fontFamily: 'var(--fonte-interface)', fontSize: '13px', fontWeight: 500 }}>
+              <div style={{ padding: '12px', background: 'var(--perigo-fundo)', border: '1px solid var(--error-text)', borderRadius: '6px', color: 'var(--error-text)', fontFamily: 'var(--fonte-interface)', fontSize: '13px', fontWeight: 500 }}>
                 {erroStatus}
               </div>
             )}
@@ -766,7 +763,7 @@ export function Agenda() {
                     onClick={() => mudarStatus('CONCLUIDO')} 
                     className="btn-secondary w-full justify-center"
                     disabled={alterandoStatus !== null}
-                    style={{ background: '#1A3D2A', color: 'var(--success-text)', opacity: alterandoStatus !== null ? 0.7 : 1 }}
+                    style={{ background: 'var(--sucesso-fundo)', color: 'var(--sucesso)', opacity: alterandoStatus !== null ? 0.7 : 1 }}
                   >
                     {alterandoStatus === 'CONCLUIDO' ? 'Carregando...' : 'Concluir Agendamento'}
                   </button>
@@ -787,7 +784,7 @@ export function Agenda() {
                     onClick={() => mudarStatus('CONCLUIDO')} 
                     className="btn-secondary w-full justify-center"
                     disabled={alterandoStatus !== null}
-                    style={{ background: '#1A3D2A', color: 'var(--success-text)', opacity: alterandoStatus !== null ? 0.7 : 1 }}
+                    style={{ background: 'var(--sucesso-fundo)', color: 'var(--sucesso)', opacity: alterandoStatus !== null ? 0.7 : 1 }}
                   >
                     {alterandoStatus === 'CONCLUIDO' ? 'Carregando...' : 'Concluir Agendamento'}
                   </button>

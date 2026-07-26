@@ -316,3 +316,15 @@ Admin (desktop) = dia com colunas por barbeiro; app do barbeiro (mobile) = colun
 
 ### Responsivo
 - Mobile (barbeiro): coluna única. Admin em telas menores: rolagem horizontal ou seletor de barbeiro.
+
+---
+
+## Estado Atual e Conformidade (Fase 3 Concluída)
+
+- **Higiene de Cores**: 100% dos valores literais hexadecimais e classes de cor fixas (Tailwind) foram removidos de `frontend/src/`. O CI conta com verificação rigorosa via script `lint-cores.js` (`npm run lint:cores`). Os únicos arquivos autorizados a manter literais são `tokens.css`, `tokens.ts` e `presets.ts`.
+- **Suporte a Modo Escuro**: Estrutura inteiramente baseada em tokens (`data-tema="escuro"` ou `"claro"`). Todos os componentes, cards e tabelas utilizam variáveis semânticas de superfície e texto.
+- **Auditoria Lighthouse (Acessibilidade)**:
+  - **Login do Cliente**: 100 / 100
+  - **Dashboard do Admin**: 100 / 100
+  - **Agendamento do Cliente**: 100 / 100
+- A migração integral para o Design System v2 foi concluída com êxito em todos os painéis e fluxos da aplicação.

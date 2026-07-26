@@ -49,7 +49,7 @@ export function Sidebar({ mobileOpen, onCloseMobile }: SidebarProps) {
       {/* Overlay Mobile */}
       {mobileOpen && (
         <div 
-          className="fixed inset-0 bg-black/60 z-40 md:hidden" 
+          className="fixed inset-0 bg-[var(--superficie)] z-40 md:hidden" 
           onClick={onCloseMobile}
         />
       )}

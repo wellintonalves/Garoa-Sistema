@@ -4,6 +4,7 @@ import { Plus, Check, X, PencilSimple } from '@phosphor-icons/react';
 import { Modal } from '../components/Modal';
 import { SkeletonPage } from '../components/Skeleton';
 import api from '../api/client';
+import { CORES_CATEGORIA_SERVICO } from '../styles/tokens';
 
 interface Servico {
   id: string; nome: string; descricao: string | null;
@@ -16,13 +17,13 @@ export function Servicos() {
   const [editandoId, setEditandoId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState({ nome: '', preco: '', duracaoMinutos: '', comissaoPercent: '' });
   const [modalAberto, setModalAberto] = useState(false);
-  const [form, setForm] = useState({ nome: '', descricao: '', preco: '', duracaoMinutos: '', comissaoPercent: '50', cor: '#22C55E' });
+  const [form, setForm] = useState({ nome: '', descricao: '', preco: '', duracaoMinutos: '', comissaoPercent: '50', cor: 'var(--sucesso)' });
 
   const coresSugeridas = [
-    { cor: '#22C55E', nome: 'Verde (Cortes)' },
-    { cor: '#3B82F6', nome: 'Azul (Barba)' },
-    { cor: '#A855F7', nome: 'Roxo (Tratamentos)' },
-    { cor: '#EAB308', nome: 'Amarelo (Combos)' },
+    { cor: 'var(--sucesso)', nome: 'Verde (Cortes)' },
+    { cor: 'var(--info)', nome: 'Azul (Barba)' },
+    { cor: CORES_CATEGORIA_SERVICO.roxo, nome: 'Roxo (Tratamentos)' },
+    { cor: CORES_CATEGORIA_SERVICO.amarelo, nome: 'Amarelo (Combos)' },
   ];
 
   async function carregar() {
@@ -51,7 +52,7 @@ export function Servicos() {
   async function criarServico() {
     try {
       await api.post('/servicos', { nome: form.nome, descricao: form.descricao || undefined, preco: Number(form.preco), duracaoMinutos: Number(form.duracaoMinutos), comissaoPercent: Number(form.comissaoPercent), cor: form.cor });
-      setModalAberto(false); setForm({ nome: '', descricao: '', preco: '', duracaoMinutos: '', comissaoPercent: '50', cor: '#22C55E' }); carregar();
+      setModalAberto(false); setForm({ nome: '', descricao: '', preco: '', duracaoMinutos: '', comissaoPercent: '50', cor: 'var(--sucesso)' }); carregar();
     } catch (e) { console.error(e); }
   }
 
@@ -132,7 +133,7 @@ export function Servicos() {
                       <button
                         onClick={() => salvarEdicao(s.id)}
                         className="flex items-center justify-center transition-colors"
-                        style={{ width: '28px', height: '28px', color: 'var(--success-text)', background: 'transparent', border: 'none', cursor: 'pointer' }}
+                        style={{ width: '28px', height: '28px', color: 'var(--sucesso)', background: 'transparent', border: 'none', cursor: 'pointer' }}
                       >
                         <Check size={14} />
                       </button>

@@ -132,12 +132,12 @@ export function BarbeiroHorariosCard({ horariosIniciais, onSuccess, mostrarErro,
                   {NOMES_DIAS[dia]}
                 </span>
                 <label className="flex items-center gap-2 cursor-pointer text-xs font-medium">
-                  <span style={{ color: conf.fechado ? 'var(--error-text)' : 'var(--success-text)' }}>
+                  <span style={{ color: conf.fechado ? 'var(--error-text)' : 'var(--sucesso)' }}>
                     {conf.fechado ? 'Folga' : 'Trabalho'}
                   </span>
                   <input type="checkbox" className="hidden" checked={!conf.fechado} onChange={(e) => handleChange(dia, 'fechado', !e.target.checked)} />
-                  <div className={`w-8 h-4 rounded-full relative transition-colors ${conf.fechado ? 'bg-gray-300 dark:bg-gray-700' : ''}`} style={{ background: conf.fechado ? '' : 'var(--cor-primaria)' }}>
-                    <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-transform ${conf.fechado ? 'left-0.5' : 'translate-x-4'}`} />
+                  <div className={`w-8 h-4 rounded-full relative transition-colors ${conf.fechado ? 'bg-[var(--superficie-2)] border-[var(--borda)]' : ''}`} style={{ background: conf.fechado ? '' : 'var(--cor-primaria)' }}>
+                    <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-[var(--superficie)] transition-transform ${conf.fechado ? 'left-0.5' : 'translate-x-4'}`} />
                   </div>
                 </label>
               </div>
@@ -155,7 +155,7 @@ export function BarbeiroHorariosCard({ horariosIniciais, onSuccess, mostrarErro,
 
                   <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                     <label className="flex items-center gap-2 cursor-pointer text-xs">
-                      <input type="checkbox" checked={conf.temAlmoco} onChange={e => handleChange(dia, 'temAlmoco', e.target.checked)} className="rounded text-orange-500 focus:ring-orange-500 border-gray-300" />
+                      <input type="checkbox" checked={conf.temAlmoco} onChange={e => handleChange(dia, 'temAlmoco', e.target.checked)} className="rounded text-orange-500 focus:ring-orange-500 border-[var(--borda)]" />
                       <span style={{ color: 'var(--text-primary)' }}>Tem Intervalo?</span>
                     </label>
 

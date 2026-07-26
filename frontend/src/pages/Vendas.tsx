@@ -294,7 +294,7 @@ export function Vendas() {
             {totalItensCarrinho > 0 && (
               <span style={{
                 background: 'var(--amber)',
-                color: '#000',
+                color: 'var(--texto-sobre-primaria)',
                 borderRadius: '10px',
                 padding: '1px 7px',
                 fontSize: '11px',
@@ -335,14 +335,14 @@ export function Vendas() {
             label="Lucro Estimado"
             valor={fmt(kpis.lucroEstimado)}
             sub="receita potencial – custo"
-            cor="var(--success-text)"
+            cor="var(--sucesso)"
           />
           <KpiCard
             icon={<AlertTriangle size={16} strokeWidth={1.5} />}
             label="Alertas"
             valor={String(kpis.alertas)}
             sub={kpis.alertas === 1 ? 'produto abaixo do mínimo' : 'produtos abaixo do mínimo'}
-            cor={kpis.alertas > 0 ? '#ef4444' : 'var(--text-muted)'}
+            cor={kpis.alertas > 0 ? 'var(--perigo)' : 'var(--text-muted)'}
           />
         </div>
       )}
@@ -430,7 +430,7 @@ export function Vendas() {
                             style={{ width: '80px', minHeight: '32px', padding: '6px 8px' }}
                           />
                         ) : (
-                          <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '12px', color: baixo ? '#ef4444' : 'var(--text-primary)' }}>
+                          <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '12px', color: baixo ? 'var(--perigo)' : 'var(--text-primary)' }}>
                             {item.quantidade} <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>{item.unidade}</span>
                           </span>
                         )}
@@ -442,7 +442,7 @@ export function Vendas() {
                       <td style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '12px', color: semPreco ? 'var(--text-disabled)' : 'var(--amber)' }}>
                         {item.precoVenda ? fmt(Number(item.precoVenda)) : '—'}
                       </td>
-                      <td style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '12px', color: 'var(--success-text)' }}>
+                      <td style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '12px', color: 'var(--sucesso)' }}>
                         {margem(item.custo, item.precoVenda)}
                       </td>
                       <td>
@@ -454,10 +454,10 @@ export function Vendas() {
                         <div className="flex items-center justify-end gap-1">
                           {editandoQtdId === item.id ? (
                             <>
-                              <IconBtn onClick={() => salvarQtd(item.id)} color="var(--success-text)" title="Salvar">
+                              <IconBtn onClick={() => salvarQtd(item.id)} color="var(--sucesso)" title="Salvar">
                                 <Check size={14} strokeWidth={1.5} />
                               </IconBtn>
-                              <IconBtn onClick={() => setEditandoQtdId(null)} color="#ef4444" title="Cancelar">
+                              <IconBtn onClick={() => setEditandoQtdId(null)} color="var(--perigo)" title="Cancelar">
                                 <X size={14} strokeWidth={1.5} />
                               </IconBtn>
                             </>
@@ -520,7 +520,7 @@ export function Vendas() {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '12px' }}>
                 <KpiCard icon={<DollarSign size={16} strokeWidth={1.5} />} label="Receita no Período" valor={fmt(resumoVendas.totalReceita)} sub={`${resumoVendas.totalUnidades} unidades vendidas`} cor="var(--amber)" />
                 <KpiCard icon={<Package size={16} strokeWidth={1.5} />} label="Custo Total" valor={fmt(resumoVendas.totalCusto)} sub="custo dos produtos vendidos" cor="var(--text-muted)" />
-                <KpiCard icon={<TrendingUp size={16} strokeWidth={1.5} />} label="Lucro Líquido" valor={fmt(resumoVendas.totalLucro)} sub="receita − custo" cor="var(--success-text)" />
+                <KpiCard icon={<TrendingUp size={16} strokeWidth={1.5} />} label="Lucro Líquido" valor={fmt(resumoVendas.totalLucro)} sub="receita − custo" cor="var(--sucesso)" />
               </div>
 
               {/* Ranking */}
@@ -538,7 +538,7 @@ export function Vendas() {
                         </div>
                         <div className="flex gap-4" style={{ textAlign: 'right' }}>
                           <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '12px', color: 'var(--amber)' }}>{fmt(p.receita)}</span>
-                          <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '12px', color: 'var(--success-text)' }}>{fmt(p.lucro)}</span>
+                          <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '12px', color: 'var(--sucesso)' }}>{fmt(p.lucro)}</span>
                         </div>
                       </div>
                     ))}
@@ -580,7 +580,7 @@ export function Vendas() {
                           <td style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '12px', color: 'var(--amber)' }}>
                             {fmt(Number(v.precoVenda) * v.quantidade)}
                           </td>
-                          <td style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '12px', color: 'var(--success-text)' }}>
+                          <td style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '12px', color: 'var(--sucesso)' }}>
                             {fmt(Number(v.lucro))}
                           </td>
                           <td style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', color: 'var(--text-muted)' }}>
@@ -631,7 +631,7 @@ export function Vendas() {
           {form.custo && form.precoVenda && (
             <div style={{ background: 'var(--bg-surface2)', borderRadius: '6px', padding: '10px 14px', display: 'flex', justifyContent: 'space-between' }}>
               <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', color: 'var(--text-muted)' }}>Margem estimada</span>
-              <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '13px', color: 'var(--success-text)', fontWeight: 600 }}>
+              <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '13px', color: 'var(--sucesso)', fontWeight: 600 }}>
                 {margem(form.custo, form.precoVenda)}
               </span>
             </div>
@@ -646,7 +646,7 @@ export function Vendas() {
       <Modal aberto={modalCarrinho} onFechar={() => setModalCarrinho(false)} titulo="Carrinho de Vendas">
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           {erroCarrinho && (
-            <div style={{ padding: '12px', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid var(--error-text)', borderRadius: '6px', color: 'var(--error-text)', fontFamily: 'var(--fonte-interface)', fontSize: '13px', fontWeight: 500 }}>
+            <div style={{ padding: '12px', background: 'var(--perigo-fundo)', border: '1px solid var(--error-text)', borderRadius: '6px', color: 'var(--error-text)', fontFamily: 'var(--fonte-interface)', fontSize: '13px', fontWeight: 500 }}>
               {erroCarrinho}
             </div>
           )}
@@ -739,7 +739,7 @@ export function Vendas() {
                         width: '26px', height: '26px',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         background: 'transparent', border: 'none',
-                        cursor: 'pointer', color: '#ef4444', borderRadius: '4px',
+                        cursor: 'pointer', color: 'var(--perigo)', borderRadius: '4px',
                       }}
                       title="Remover"
                     >
@@ -754,7 +754,7 @@ export function Vendas() {
                 <SumRow label={`${carrinho.length} produto${carrinho.length > 1 ? 's' : ''} · ${totalItensCarrinho} unidade${totalItensCarrinho > 1 ? 's' : ''}`} valor={fmt(totalCarrinho)} cor="var(--amber)" />
                 <SumRow label="Custo estimado" valor={fmt(custoCarrinho)} cor="var(--text-muted)" />
                 <div style={{ borderTop: '1px solid var(--border)', paddingTop: '8px', marginTop: '4px' }}>
-                  <SumRow label="Lucro estimado" valor={fmt(lucroCarrinho)} cor="var(--success-text)" bold />
+                  <SumRow label="Lucro estimado" valor={fmt(lucroCarrinho)} cor="var(--sucesso)" bold />
                 </div>
               </div>
 

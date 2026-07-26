@@ -115,13 +115,13 @@ export function ClienteBarbeariaFidelidade() {
     <div className="px-5 py-6 animate-fade-in max-w-2xl mx-auto pb-16">
       {/* Alertas */}
       {mensagemSucesso && (
-        <div className="mb-6 p-4 rounded-md flex items-center gap-3 animate-fade-in" style={{ background: 'rgba(34,197,94,0.1)', border: '1px solid var(--sucesso)' }}>
+        <div className="mb-6 p-4 rounded-md flex items-center gap-3 animate-fade-in" style={{ background: 'var(--sucesso-fundo)', border: '1px solid var(--sucesso)' }}>
           <CheckCircle weight="fill" style={{ color: 'var(--sucesso)' }} size={20} />
           <span style={{ color: 'var(--sucesso)', fontSize: '13px', fontFamily: 'var(--fonte-interface)', fontWeight: 600 }}>{mensagemSucesso}</span>
         </div>
       )}
       {mensagemErro && (
-        <div className="mb-6 p-4 rounded-md flex items-center gap-3 animate-fade-in" style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid var(--erro)' }}>
+        <div className="mb-6 p-4 rounded-md flex items-center gap-3 animate-fade-in" style={{ background: 'var(--perigo-fundo)', border: '1px solid var(--erro)' }}>
           <XCircle weight="fill" style={{ color: 'var(--erro)' }} size={20} />
           <span style={{ color: 'var(--erro)', fontSize: '13px', fontFamily: 'var(--fonte-interface)', fontWeight: 600 }}>{mensagemErro}</span>
         </div>
@@ -254,7 +254,7 @@ export function ClienteBarbeariaFidelidade() {
               {codigoIndicacao}
             </div>
             <button onClick={copiarCodigo} style={{
-              padding: '12px 16px', background: copiado ? 'rgba(34,197,94,0.15)' : 'rgba(245,158,11,0.12)',
+              padding: '12px 16px', background: copiado ? 'var(--sucesso-fundo)' : 'rgba(var(--cor-primaria-rgb), 0.15)',
               border: `1px solid ${copiado ? 'var(--sucesso)' : 'var(--amber)'}`,
               borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px',
               color: copiado ? 'var(--sucesso)' : 'var(--amber)', fontSize: '12px', fontFamily: 'var(--fonte-interface)',
@@ -293,8 +293,8 @@ export function ClienteBarbeariaFidelidade() {
                       {h.tipo === 'RESGATE' && h.status && (
                         <span style={{ 
                           marginLeft: '8px', fontSize: '10px', padding: '2px 6px', borderRadius: '4px', fontWeight: 600,
-                          background: h.status === 'CONFIRMADO' ? 'rgba(34,197,94,0.1)' : h.status === 'PENDENTE' ? 'rgba(245,158,11,0.1)' : 'rgba(239,68,68,0.1)',
-                          color: h.status === 'CONFIRMADO' ? 'var(--sucesso)' : h.status === 'PENDENTE' ? '#F59E0B' : 'var(--erro)'
+                          background: h.status === 'CONFIRMADO' ? 'var(--sucesso-fundo)' : h.status === 'PENDENTE' ? 'rgba(var(--cor-primaria-rgb), 0.1)' : 'var(--perigo-fundo)',
+                          color: h.status === 'CONFIRMADO' ? 'var(--sucesso)' : h.status === 'PENDENTE' ? 'var(--cor-primaria)' : 'var(--perigo)'
                         }}>
                           {h.status}
                         </span>

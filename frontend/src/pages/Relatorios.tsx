@@ -310,7 +310,7 @@ export function Relatorios() {
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                       <div className="flex justify-between" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px' }}><span style={{ color: 'var(--text-muted)' }}>Produzido:</span><span style={{ color: 'var(--text-primary)' }}>{fmt(b.bruto)}</span></div>
                       <div className="flex justify-between" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px' }}><span style={{ color: 'var(--text-muted)' }}>Comissão:</span><span style={{ color: 'var(--error-text)' }}>{fmt(b.comissao)}</span></div>
-                      <div className="flex justify-between" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', borderTop: '1px solid var(--border)', paddingTop: '8px', marginTop: '4px' }}><span style={{ color: 'var(--text-muted)' }}>Líquido:</span><span style={{ color: 'var(--success-text)', fontWeight: 500 }}>{fmt(b.liquido)}</span></div>
+                      <div className="flex justify-between" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', borderTop: '1px solid var(--border)', paddingTop: '8px', marginTop: '4px' }}><span style={{ color: 'var(--text-muted)' }}>Líquido:</span><span style={{ color: 'var(--sucesso)', fontWeight: 500 }}>{fmt(b.liquido)}</span></div>
                     </div>
                   </div>
                 ))}
@@ -361,7 +361,7 @@ export function Relatorios() {
                       </td>
                       <td style={{ textAlign: 'right', fontFamily: 'var(--fonte-numeros)', fontSize: '12px', color: 'var(--text-primary)' }}>{fmt(l.valor)}</td>
                       <td style={{ textAlign: 'right', fontFamily: 'var(--fonte-numeros)', fontSize: '12px', color: 'var(--error-text)' }}>{l.valorComissao ? fmt(l.valorComissao) : '—'}</td>
-                      <td style={{ textAlign: 'right', fontFamily: 'var(--fonte-numeros)', fontSize: '12px', color: 'var(--success-text)', fontWeight: 500 }}>{l.valorLiquido ? fmt(l.valorLiquido) : fmt(l.valor)}</td>
+                      <td style={{ textAlign: 'right', fontFamily: 'var(--fonte-numeros)', fontSize: '12px', color: 'var(--sucesso)', fontWeight: 500 }}>{l.valorLiquido ? fmt(l.valorLiquido) : fmt(l.valor)}</td>
                       <td style={{ textAlign: 'center', verticalAlign: 'middle' }}>
                         <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', alignItems: 'center' }}>
                           <button

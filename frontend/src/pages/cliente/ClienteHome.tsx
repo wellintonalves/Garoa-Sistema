@@ -255,19 +255,19 @@ export function ClienteHome() {
           bottom: '24px',
           left: '50%',
           transform: 'translateX(-50%)',
-          background: 'linear-gradient(135deg, #065f46, #064e3b)',
-          border: '1px solid #10b981',
+          background: 'var(--sucesso-fundo)',
+          border: '1px solid var(--sucesso)',
           padding: '14px 24px',
           display: 'flex',
           alignItems: 'center',
           gap: '10px',
           zIndex: 10000,
-          boxShadow: '0 8px 30px rgba(16, 185, 129, 0.3)',
+          boxShadow: '0 8px 30px var(--sucesso-fundo)',
           animation: 'slideUp 0.3s ease-out',
           maxWidth: '90vw',
         }}>
-          <CheckCircle size={20} style={{ color: '#34d399', flexShrink: 0 }} />
-          <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '13px', color: '#d1fae5', fontWeight: 600 }}>
+          <CheckCircle size={20} style={{ color: 'var(--sucesso)', flexShrink: 0 }} />
+          <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '13px', color: 'var(--texto-principal)', fontWeight: 600 }}>
             {mensagemSucesso}
           </span>
         </div>
@@ -280,19 +280,19 @@ export function ClienteHome() {
           bottom: '24px',
           left: '50%',
           transform: 'translateX(-50%)',
-          background: 'linear-gradient(135deg, #7f1d1d, #991b1b)',
-          border: '1px solid #ef4444',
+          background: 'var(--perigo-fundo)',
+          border: '1px solid var(--perigo)',
           padding: '14px 24px',
           display: 'flex',
           alignItems: 'center',
           gap: '10px',
           zIndex: 10000,
-          boxShadow: '0 8px 30px rgba(239, 68, 68, 0.3)',
+          boxShadow: '0 8px 30px var(--perigo-fundo)',
           animation: 'slideUp 0.3s ease-out',
           maxWidth: '90vw',
         }}>
-          <XCircle size={20} style={{ color: '#fca5a5', flexShrink: 0 }} />
-          <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '13px', color: '#fecaca', fontWeight: 600 }}>
+          <XCircle size={20} style={{ color: 'var(--perigo)', flexShrink: 0 }} />
+          <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '13px', color: 'var(--texto-principal)', fontWeight: 600 }}>
             {mensagemErro}
           </span>
         </div>

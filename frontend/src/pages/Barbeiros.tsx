@@ -9,6 +9,7 @@ import { SkeletonPage, SkeletonCard } from '../components/Skeleton';
 import { useNavigate } from 'react-router-dom';
 import { dataBrasilia, hojeBrasilia } from '../utils/datas';
 import api from '../api/client';
+import { CORES_REFERENCIA } from '../styles/tokens';
 
 interface Barbeiro {
   id: string;
@@ -35,7 +36,7 @@ export function Barbeiros() {
   const [imagemParaCortar, setImagemParaCortar] = useState<string>('');
   const [editandoId, setEditandoId] = useState<string | null>(null);
   const [confirmandoExclusao, setConfirmandoExclusao] = useState<Barbeiro | null>(null);
-  const [form, setForm] = useState({ nome: '', email: '', senha: '', foto: '', especialidades: '', comissaoPercent: '50', cor: '#F97316' });
+  const [form, setForm] = useState({ nome: '', email: '', senha: '', foto: '', especialidades: '', comissaoPercent: '50', cor: CORES_REFERENCIA.corPadraoBarbeiro });
   const navigate = useNavigate();
 
   // Seção de comissões
@@ -71,7 +72,7 @@ export function Barbeiros() {
 
   function abrirModalNovo() {
     setEditandoId(null);
-    setForm({ nome: '', email: '', senha: '', foto: '', especialidades: '', comissaoPercent: '50', cor: '#F97316' });
+    setForm({ nome: '', email: '', senha: '', foto: '', especialidades: '', comissaoPercent: '50', cor: CORES_REFERENCIA.corPadraoBarbeiro });
     setModalAberto(true);
   }
 
@@ -84,7 +85,7 @@ export function Barbeiros() {
       foto: b.foto || '',
       especialidades: b.especialidades.join(', '),
       comissaoPercent: String(b.comissaoPercent),
-      cor: b.cor || '#F97316',
+      cor: b.cor || CORES_REFERENCIA.corPadraoBarbeiro,
     });
     setModalAberto(true);
   }
@@ -117,7 +118,7 @@ export function Barbeiros() {
       
       setModalAberto(false);
       setEditandoId(null);
-      setForm({ nome: '', email: '', senha: '', foto: '', especialidades: '', comissaoPercent: '50', cor: '#F97316' });
+      setForm({ nome: '', email: '', senha: '', foto: '', especialidades: '', comissaoPercent: '50', cor: CORES_REFERENCIA.corPadraoBarbeiro });
       carregar();
     } catch (err: any) {
       console.error(err);
@@ -220,7 +221,7 @@ export function Barbeiros() {
                 <div
                   className="flex-shrink-0 badge"
                   style={b.ativo
-                    ? { background: '#1A3D2A', color: 'var(--success-text)' }
+                    ? { background: 'var(--sucesso-fundo)', color: 'var(--sucesso)' }
                     : { background: 'var(--bg-surface2)', color: 'var(--text-disabled)' }
                   }
                 >
@@ -249,7 +250,7 @@ export function Barbeiros() {
                       background: 'none',
                       border: 'none',
                       cursor: 'pointer',
-                      color: 'var(--error, #ef4444)',
+                      color: 'var(--perigo)',
                       padding: '4px',
                       display: 'flex',
                       alignItems: 'center',
@@ -373,7 +374,7 @@ export function Barbeiros() {
                     </div>
                     <div className="flex justify-between items-center" style={{ borderTop: '1px solid var(--border)', paddingTop: '8px', marginTop: '4px' }}>
                       <span style={{ color: 'var(--text-muted)', fontFamily: 'var(--fonte-interface)', fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Líquido</span>
-                      <span style={{ color: 'var(--success-text)', fontFamily: 'var(--fonte-numeros)', fontSize: '12px', fontWeight: 500 }}>{fmt(b.liquido)}</span>
+                      <span style={{ color: 'var(--sucesso)', fontFamily: 'var(--fonte-numeros)', fontSize: '12px', fontWeight: 500 }}>{fmt(b.liquido)}</span>
                     </div>
                   </div>
                 </div>
@@ -411,7 +412,7 @@ export function Barbeiros() {
                   reader.readAsDataURL(file);
                   e.target.value = '';
                 }
-              }} className="text-sm text-zinc-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-bold file:bg-[var(--bg-surface2)] file:text-white hover:file:bg-zinc-700 cursor-pointer" />
+              }} className="text-sm text-[var(--texto-secundario)] file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-bold file:bg-[var(--bg-surface2)] file:text-[var(--texto-principal)] hover:file:bg-[var(--superficie-2)] border-[var(--borda)] cursor-pointer" />
             </div>
           </div>
           <div><label className="input-label">Nome</label>

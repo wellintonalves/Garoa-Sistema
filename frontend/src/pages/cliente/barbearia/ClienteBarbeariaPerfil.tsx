@@ -144,13 +144,13 @@ export function ClienteBarbeariaPerfil() {
       {/* Header do Perfil (Avatar + Badge) */}
       <div className="flex flex-col items-center justify-center text-center mb-8">
         <div className="relative mb-4">
-          <div className="w-24 h-24 rounded-full flex items-center justify-center bg-[var(--fundo-sidebar)] border-2 border-[var(--amber)] shadow-lg shadow-amber-900/10">
+          <div className="w-24 h-24 rounded-full flex items-center justify-center bg-[var(--fundo-sidebar)] border-2 border-[var(--amber)] shadow-md">
             <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '32px', color: 'var(--amber)', fontWeight: 700 }}>
               {perfil?.usuario.nome ? perfil.usuario.nome.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) : <User size={32} />}
             </span>
           </div>
           {tier.show && (
-            <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-[var(--amber)] text-black rounded-full px-3 py-1 flex items-center gap-1 shadow-md whitespace-nowrap border border-black/10">
+            <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-[var(--amber)] text-[var(--texto-sobre-primaria)] rounded-full px-3 py-1 flex items-center gap-1 shadow-md whitespace-nowrap border border-[var(--borda)]">
               <Medal size={14} weight="fill" />
               <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 700 }}>
                 {tier.label}
@@ -226,7 +226,7 @@ export function ClienteBarbeariaPerfil() {
           </div>
 
           {mensagem && (
-            <div className={`p-3 rounded border text-xs font-interface font-medium flex items-center justify-center ${mensagem.includes('Erro') ? 'bg-[rgba(239,68,68,0.1)] border-[var(--erro)] text-[var(--erro)]' : 'bg-[rgba(34,197,94,0.1)] border-[var(--sucesso)] text-[var(--sucesso)]'}`}>
+            <div className={`p-3 rounded border text-xs font-interface font-medium flex items-center justify-center ${mensagem.includes('Erro') ? 'bg-[var(--perigo-fundo)] border-[var(--erro)] text-[var(--erro)]' : 'bg-[var(--sucesso-fundo)] border-[var(--sucesso)] text-[var(--sucesso)]'}`}>
               {mensagem}
             </div>
           )}
@@ -245,7 +245,7 @@ export function ClienteBarbeariaPerfil() {
         <div className="flex bg-[var(--fundo-input)] border border-[var(--borda)] rounded-md overflow-hidden p-1 gap-1">
           <button
             onClick={() => setModo('light')}
-            className={`flex-1 py-2 rounded flex flex-col items-center justify-center gap-1.5 transition-all ${modo === 'light' ? 'text-black bg-[var(--amber)] shadow-sm font-bold' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'}`}
+            className={`flex-1 py-2 rounded flex flex-col items-center justify-center gap-1.5 transition-all ${modo === 'light' ? 'text-[var(--texto-sobre-primaria)] bg-[var(--amber)] shadow-sm font-bold' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'}`}
           >
             <Sun size={18} weight={modo === 'light' ? 'fill' : 'regular'} />
             <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Claro</span>
@@ -253,7 +253,7 @@ export function ClienteBarbeariaPerfil() {
 
           <button
             onClick={() => setModo('dark')}
-            className={`flex-1 py-2 rounded flex flex-col items-center justify-center gap-1.5 transition-all ${modo === 'dark' ? 'text-black bg-[var(--amber)] shadow-sm font-bold' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'}`}
+            className={`flex-1 py-2 rounded flex flex-col items-center justify-center gap-1.5 transition-all ${modo === 'dark' ? 'text-[var(--texto-sobre-primaria)] bg-[var(--amber)] shadow-sm font-bold' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'}`}
           >
             <Moon size={18} weight={modo === 'dark' ? 'fill' : 'regular'} />
             <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Escuro</span>
@@ -261,7 +261,7 @@ export function ClienteBarbeariaPerfil() {
 
           <button
             onClick={() => setModo('auto')}
-            className={`flex-1 py-2 rounded flex flex-col items-center justify-center gap-1.5 transition-all ${modo === 'auto' ? 'text-black bg-[var(--amber)] shadow-sm font-bold' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'}`}
+            className={`flex-1 py-2 rounded flex flex-col items-center justify-center gap-1.5 transition-all ${modo === 'auto' ? 'text-[var(--texto-sobre-primaria)] bg-[var(--amber)] shadow-sm font-bold' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'}`}
           >
             <Monitor size={18} weight={modo === 'auto' ? 'fill' : 'regular'} />
             <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Auto</span>
@@ -298,8 +298,8 @@ export function ClienteBarbeariaPerfil() {
       {/* Botão sair */}
       <div className="pt-4">
         <button onClick={handleLogout}
-          className="w-full flex items-center justify-center gap-2 py-4 rounded-md transition-all hover:bg-[rgba(239,68,68,0.15)]"
-          style={{ background: 'rgba(239,68,68,0.08)', color: 'var(--erro)', border: '1px solid rgba(239,68,68,0.2)', fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 600 }}>
+          className="w-full flex items-center justify-center gap-2 py-4 rounded-md transition-all hover:bg-[var(--perigo-fundo)]"
+          style={{ background: 'var(--perigo-fundo)', color: 'var(--erro)', border: '1px solid var(--perigo-fundo)', fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 600 }}>
           <SignOut size={18} weight="bold" /> Sair da Conta
         </button>
       </div>

@@ -34,7 +34,7 @@ export function AdminLogin() {
   }
 
   return (
-    <div style={{
+    <main style={{
       minHeight: '100dvh',
       width: '100vw',
       background: 'var(--fundo-pagina)',
@@ -133,7 +133,8 @@ export function AdminLogin() {
               <button
                 type="button"
                 onClick={() => setMostrarSenha(!mostrarSenha)}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--texto-terciario)', display: 'flex', alignItems: 'center', padding: 0 }}
+                aria-label={mostrarSenha ? "Ocultar senha" : "Mostrar senha"}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--texto-terciario)', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px', padding: 0 }}
               >
                 {mostrarSenha ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
@@ -214,6 +215,6 @@ export function AdminLogin() {
           </button>
         </div>
       </div>
-    </div>
+    </main>
   );
 }

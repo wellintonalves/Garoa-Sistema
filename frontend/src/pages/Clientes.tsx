@@ -59,7 +59,7 @@ interface Recompensa {
 
 /* ─── Helpers ──────────────────────────────────────────────── */
 const statusStyles: Record<string, string> = {
-  CONCLUIDO: 'var(--success-text)',
+  CONCLUIDO: 'var(--sucesso)',
   CONFIRMADO: 'var(--text-primary)',
   AGUARDANDO: 'rgba(var(--cor-primaria-rgb), 0.15)',
   CANCELADO: 'var(--error-text)',
@@ -759,7 +759,7 @@ export function Clientes() {
                                   {formatarData(p.data)}
                                 </p>
                               </div>
-                              <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '18px', color: 'var(--success-text)' }}>
+                              <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '18px', color: 'var(--sucesso)' }}>
                                 +{p.pontos}
                               </span>
                             </div>

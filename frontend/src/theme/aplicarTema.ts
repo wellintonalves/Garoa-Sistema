@@ -1,5 +1,6 @@
 import { textoSobre } from '../utils/contraste';
 import { presets, PRESET_LEGADO, BlocoTokensTema } from './presets';
+import { CORES_REFERENCIA } from '../styles/tokens';
 
 export interface TemaBarbearia {
   preset?: string;
@@ -51,6 +52,6 @@ export function aplicarTema(tema: TemaBarbearia | null | undefined, modo: 'claro
   }
 
   // derivado automaticamente, nunca fixo:
-  const primaria = getComputedStyle(raiz).getPropertyValue('--cor-primaria').trim() || '#F59E0B';
+  const primaria = getComputedStyle(raiz).getPropertyValue('--cor-primaria').trim() || CORES_REFERENCIA.primariaPadrao;
   raiz.style.setProperty('--texto-sobre-primaria', textoSobre(primaria));
 }

@@ -110,7 +110,7 @@ export function BarbeiroComissoes() {
             ) : (
               <div className="flex flex-col gap-3">
                 {dados.lancamentos.map(l => (
-                  <div key={l.id} className="p-4 rounded-xl border flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 transition-colors hover:bg-black/5" style={{ background: 'var(--bg-surface)', borderColor: 'var(--border)' }}>
+                  <div key={l.id} className="p-4 rounded-xl border flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 transition-colors hover:bg-[var(--superficie)]" style={{ background: 'var(--bg-surface)', borderColor: 'var(--border)' }}>
                     <div>
                       <p className="font-semibold text-base" style={{ color: 'var(--text-primary)' }}>
                         {l.cliente}

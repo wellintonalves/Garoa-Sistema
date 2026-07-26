@@ -249,7 +249,7 @@ export function Financeiro() {
               onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
             >
               <div className="flex items-center gap-3">
-                <div style={{ width: '8px', height: '8px', background: l.tipo === 'ENTRADA' ? 'var(--success-text)' : 'var(--error-text)' }} />
+                <div style={{ width: '8px', height: '8px', background: l.tipo === 'ENTRADA' ? 'var(--sucesso)' : 'var(--error-text)' }} />
                 <div>
                   <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '13px', fontWeight: 500, color: 'var(--text-primary)' }}>{l.categoria}</p>
                   <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px' }}>
@@ -260,7 +260,7 @@ export function Financeiro() {
               </div>
               <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>
                 <div>
-                  <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '14px', fontWeight: 500, color: l.tipo === 'ENTRADA' ? 'var(--success-text)' : 'var(--error-text)' }}>
+                  <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '14px', fontWeight: 500, color: l.tipo === 'ENTRADA' ? 'var(--sucesso)' : 'var(--error-text)' }}>
                     {l.tipo === 'ENTRADA' ? '+' : '-'} {fmt(Number(l.valor))}
                   </p>
                   <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '9px', letterSpacing: '0.04em', color: 'var(--text-muted)', marginTop: '2px' }}>
@@ -299,14 +299,14 @@ export function Financeiro() {
       <Modal aberto={modalAberto} onFechar={() => setModalAberto(false)} titulo={editId ? "Editar Lançamento" : "Novo Lançamento"}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           {erroSalvar && (
-            <div style={{ padding: '12px', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid var(--error-text)', borderRadius: '6px', color: 'var(--error-text)', fontFamily: 'var(--fonte-interface)', fontSize: '13px', fontWeight: 500 }}>
+            <div style={{ padding: '12px', background: 'var(--perigo-fundo)', border: '1px solid var(--error-text)', borderRadius: '6px', color: 'var(--error-text)', fontFamily: 'var(--fonte-interface)', fontSize: '13px', fontWeight: 500 }}>
               {erroSalvar}
             </div>
           )}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {(['ENTRADA', 'SAIDA'] as const).map(t => {
               const isSelected = form.tipo === t;
-              const activeColor = t === 'ENTRADA' ? 'var(--success-text)' : 'var(--error-text)';
+              const activeColor = t === 'ENTRADA' ? 'var(--sucesso)' : 'var(--error-text)';
               return (
                 <button
                   key={t}
@@ -367,7 +367,7 @@ export function Financeiro() {
           {form.tipo === 'ENTRADA' && form.barbeiroId && form.valor && (
             <div style={{ padding: '12px', background: 'var(--bg-surface2)', border: '1px solid var(--border)', fontFamily: 'var(--fonte-interface)', fontSize: '11px', color: 'var(--text-primary)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
               <p>Comissão do Barbeiro: <strong style={{ color: 'var(--cor-icone)' }}>{fmt(previaComissao)}</strong></p>
-              <p>Líquido Barbearia: <strong style={{ color: 'var(--success-text)' }}>{fmt(previaLiquido)}</strong></p>
+              <p>Líquido Barbearia: <strong style={{ color: 'var(--sucesso)' }}>{fmt(previaLiquido)}</strong></p>
             </div>
           )}
 

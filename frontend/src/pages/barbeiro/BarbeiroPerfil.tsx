@@ -112,12 +112,12 @@ export function BarbeiroPerfil() {
       
       {/* Feedbacks */}
       {sucessoMsg && (
-        <div className="bg-green-100 text-green-800 p-3 rounded-lg mb-4 text-sm font-medium border border-green-200">
+        <div className="bg-[var(--sucesso-fundo)] text-[var(--sucesso)] p-3 rounded-lg mb-4 text-sm font-medium border border-[var(--sucesso)]">
           {sucessoMsg}
         </div>
       )}
       {erroMsg && (
-        <div className="bg-red-100 text-red-800 p-3 rounded-lg mb-4 text-sm font-medium border border-red-200">
+        <div className="bg-[var(--perigo-fundo)] text-[var(--perigo)] p-3 rounded-lg mb-4 text-sm font-medium border border-[var(--perigo)]">
           {erroMsg}
         </div>
       )}
@@ -167,7 +167,7 @@ export function BarbeiroPerfil() {
             onClick={() => fileInputRef.current?.click()}
             disabled={uploading}
             className="absolute bottom-4 right-0 p-2 rounded-full shadow-md hover:scale-110 transition-transform"
-            style={{ background: 'var(--cor-primaria)', color: '#fff' }}
+            style={{ background: 'var(--cor-primaria)', color: 'var(--superficie)' }}
             title="Alterar Foto"
           >
             {uploading ? <Clock size={16} className="animate-spin" /> : <Camera size={16} />}
@@ -275,7 +275,7 @@ export function BarbeiroPerfil() {
         <div className="flex rounded-xl overflow-hidden border" style={{ background: 'var(--bg-surface)', borderColor: 'var(--border)' }}>
           <button 
             onClick={() => setModo('light')}
-            className={`flex-1 py-4 flex flex-col items-center gap-2 transition-colors ${modo === 'light' ? 'bg-black/5 dark:bg-white/5' : 'hover:bg-black/5 dark:hover:bg-white/5'}`}
+            className={`flex-1 py-4 flex flex-col items-center gap-2 transition-colors ${modo === 'light' ? 'bg-[var(--superficie)] dark:bg-[var(--superficie)]' : 'hover:bg-[var(--superficie)] dark:hover:bg-[var(--superficie)]'}`}
             style={{ color: modo === 'light' ? 'var(--cor-primaria)' : 'var(--text-muted)' }}
           >
             <Sun size={20} />
@@ -284,7 +284,7 @@ export function BarbeiroPerfil() {
           <div className="w-[1px]" style={{ background: 'var(--border)' }} />
           <button 
             onClick={() => setModo('dark')}
-            className={`flex-1 py-4 flex flex-col items-center gap-2 transition-colors ${modo === 'dark' ? 'bg-black/5 dark:bg-white/5' : 'hover:bg-black/5 dark:hover:bg-white/5'}`}
+            className={`flex-1 py-4 flex flex-col items-center gap-2 transition-colors ${modo === 'dark' ? 'bg-[var(--superficie)] dark:bg-[var(--superficie)]' : 'hover:bg-[var(--superficie)] dark:hover:bg-[var(--superficie)]'}`}
             style={{ color: modo === 'dark' ? 'var(--cor-primaria)' : 'var(--text-muted)' }}
           >
             <Moon size={20} />
@@ -293,7 +293,7 @@ export function BarbeiroPerfil() {
           <div className="w-[1px]" style={{ background: 'var(--border)' }} />
           <button 
             onClick={() => setModo('auto')}
-            className={`flex-1 py-4 flex flex-col items-center gap-2 transition-colors ${modo === 'auto' ? 'bg-black/5 dark:bg-white/5' : 'hover:bg-black/5 dark:hover:bg-white/5'}`}
+            className={`flex-1 py-4 flex flex-col items-center gap-2 transition-colors ${modo === 'auto' ? 'bg-[var(--superficie)] dark:bg-[var(--superficie)]' : 'hover:bg-[var(--superficie)] dark:hover:bg-[var(--superficie)]'}`}
             style={{ color: modo === 'auto' ? 'var(--cor-primaria)' : 'var(--text-muted)' }}
           >
             <Monitor size={20} />
@@ -303,7 +303,7 @@ export function BarbeiroPerfil() {
       </div>
 
       <button onClick={handleLogout}
-        className="w-full flex justify-center items-center gap-2 py-4 rounded-xl border text-sm font-medium transition-colors hover:bg-red-500/10"
+        className="w-full flex justify-center items-center gap-2 py-4 rounded-xl border text-sm font-medium transition-colors hover:bg-[var(--perigo)]/10"
         style={{ color: 'var(--error-text)', borderColor: 'var(--error-text)' }}>
         <LogOut size={16} /> Sair da Conta
       </button>

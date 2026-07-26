@@ -70,7 +70,7 @@ export const tokens = {
       texto: {
         principal: '#1A1712',
         secundario: '#6E675C',
-        terciario: '#9A9186',
+        terciario: '#736B60',
         inverso: '#F4F4F4',
         desabilitado: '#C5BDB0',
         label: '#6E675C',
@@ -116,7 +116,7 @@ export const tokens = {
       texto: {
         principal: '#F4F4F4',
         secundario: '#8F8F8F',
-        terciario: '#666666',
+        terciario: '#949494',
         inverso: '#1A1712',
         desabilitado: '#4A4A4A',
         label: '#8F8F8F',
@@ -189,3 +189,30 @@ export const tokens = {
     '2xl': '1536px',
   },
 } as const;
+
+export const CORES_REFERENCIA = {
+  escuro: '#141413',
+  claro: '#faf9f5',
+  primariaPadrao: '#F59E0B',
+  corPadraoBarbeiro: '#F97316',
+  primariaLaranja: '#ff6b00',
+};
+
+export const PALETA_CORES_BARBEIROS = [
+  'var(--perigo)', 'var(--cor-primaria)', 'var(--sucesso)', 'var(--info)',
+  'var(--destaque)', '#14B8A6', '#D946EF', '#F97316', '#0EA5E9',
+  '#84CC16', 'var(--info)'
+];
+
+export const CORES_CATEGORIA_SERVICO = {
+  roxo: '#A855F7',
+  amarelo: '#EAB308',
+  verde: '#2e9c60',
+  claroDemoBg: '#FDFBF7',
+  claroDemoText: '#1A1712',
+  claroDemoBorder: '#EFE9DB',
+  claroDemoSub: '#6E675C',
+  escuroDemoSub: '#8F8F8F',
+  escuroDemoText: '#F4F4F4',
+};
+

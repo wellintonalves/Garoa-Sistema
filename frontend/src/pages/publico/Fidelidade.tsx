@@ -38,7 +38,7 @@ export function Fidelidade() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--fundo-pagina)] text-white flex flex-col font-body">
+    <div className="min-h-screen bg-[var(--fundo-pagina)] text-[var(--texto-principal)] flex flex-col font-body">
       {/* Header Público */}
       <header className="h-16 flex items-center px-4 bg-[var(--bg-surface)] border-b border-[var(--border)] sticky top-0 z-10">
         <button onClick={() => navigate('/agendar')} className="text-[var(--cor-primaria)]">
@@ -69,7 +69,7 @@ export function Fidelidade() {
                     type="tel" 
                     value={telefone}
                     onChange={(e) => setTelefone(e.target.value)}
-                    className="w-full p-4 pl-12 bg-[var(--bg-surface)] border border-[var(--border)] rounded focus:outline-none focus:border-[var(--cor-primaria)] text-white text-lg"
+                    className="w-full p-4 pl-12 bg-[var(--bg-surface)] border border-[var(--border)] rounded focus:outline-none focus:border-[var(--cor-primaria)] text-[var(--texto-principal)] text-lg"
                     placeholder="(00) 00000-0000"
                     required
                   />
@@ -82,7 +82,7 @@ export function Fidelidade() {
               <button 
                 type="submit"
                 disabled={carregando || !telefone}
-                className="mt-4 flex items-center justify-center gap-2 w-full py-4 bg-[var(--cor-primaria)] hover:bg-[var(--cor-primaria)] disabled:opacity-50 text-black font-bold uppercase tracking-widest text-sm rounded transition-colors"
+                className="mt-4 flex items-center justify-center gap-2 w-full py-4 bg-[var(--cor-primaria)] hover:bg-[var(--cor-primaria)] disabled:opacity-50 text-[var(--texto-sobre-primaria)] font-bold uppercase tracking-widest text-sm rounded transition-colors"
               >
                 {carregando ? 'Buscando...' : 'Consultar'}
               </button>
@@ -91,7 +91,7 @@ export function Fidelidade() {
         ) : (
           <div className="animate-fade-in space-y-6">
             <div className="text-center">
-              <h2 className="text-xl font-display text-[var(--text-muted)]">Olá, <span className="text-white">{dados.cliente}</span></h2>
+              <h2 className="text-xl font-display text-[var(--text-muted)]">Olá, <span className="text-[var(--texto-principal)]">{dados.cliente}</span></h2>
             </div>
 
             {/* Cartão de Pontos */}
@@ -101,18 +101,18 @@ export function Fidelidade() {
               </div>
               <p className="text-xs text-[var(--cor-primaria)] font-mono uppercase tracking-widest mb-2">Saldo Atual</p>
               <div className="flex items-baseline justify-center gap-2 mb-4">
-                <span className="text-5xl font-display font-bold text-white">{dados.pontosAcumulados}</span>
+                <span className="text-5xl font-display font-bold text-[var(--texto-principal)]">{dados.pontosAcumulados}</span>
                 <span className="text-lg text-[var(--text-muted)]">pts</span>
               </div>
               
-              <div className="w-full bg-black/50 rounded-full h-3 mb-2 border border-[var(--border)]">
+              <div className="w-full bg-[var(--superficie)] rounded-full h-3 mb-2 border border-[var(--border)]">
                 <div 
                   className="bg-[var(--cor-primaria)] h-full rounded-full transition-all duration-1000" 
                   style={{ width: `${Math.min(100, (dados.pontosAcumulados / dados.meta) * 100)}%` }}
                 />
               </div>
               <p className="text-sm text-[var(--text-muted)]">
-                Faltam <strong className="text-white">{dados.pontosFaltantes} pontos</strong> para sua próxima recompensa!
+                Faltam <strong className="text-[var(--texto-principal)]">{dados.pontosFaltantes} pontos</strong> para sua próxima recompensa!
               </p>
             </div>
 
@@ -149,7 +149,7 @@ export function Fidelidade() {
 
             <button 
               onClick={() => setDados(null)}
-              className="mt-6 flex items-center justify-center w-full py-3 bg-transparent border border-[var(--border)] hover:border-[var(--cor-primaria)] text-white font-bold uppercase tracking-widest text-xs rounded transition-colors"
+              className="mt-6 flex items-center justify-center w-full py-3 bg-transparent border border-[var(--border)] hover:border-[var(--cor-primaria)] text-[var(--texto-principal)] font-bold uppercase tracking-widest text-xs rounded transition-colors"
             >
               Consultar outro número
             </button>

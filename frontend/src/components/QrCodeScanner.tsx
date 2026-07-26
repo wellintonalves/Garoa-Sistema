@@ -145,17 +145,9 @@ export function QrCodeScanner({ onResult, onClose }: QrCodeScannerProps) {
         </div>
         <button
           onClick={onClose}
-          style={{
-            background: 'rgba(255,255,255,0.1)',
-            border: '1px solid rgba(255,255,255,0.2)',
-            padding: '8px',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
+          style={{ border: 'none', background: 'none', color: 'var(--texto-principal)', cursor: 'pointer', padding: 4, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
         >
-          <X size={20} style={{ color: '#fff' }} />
+          <X size={20} style={{ color: 'var(--texto-principal)' }} />
         </button>
       </div>
 
@@ -182,7 +174,7 @@ export function QrCodeScanner({ onResult, onClose }: QrCodeScannerProps) {
             <p style={{
               fontFamily: 'var(--fonte-interface)',
               fontSize: '14px',
-              color: '#fff',
+              color: 'var(--texto-principal)',
             }}>
               Abrindo câmera...
             </p>
@@ -202,11 +194,11 @@ export function QrCodeScanner({ onResult, onClose }: QrCodeScannerProps) {
             textAlign: 'center',
             padding: '40px 20px',
           }}>
-            <AlertCircle size={40} style={{ color: '#ef4444', margin: '0 auto 16px' }} />
+            <AlertCircle size={40} style={{ color: 'var(--perigo)', margin: '0 auto 16px' }} />
             <p style={{
               fontFamily: 'var(--fonte-interface)',
               fontSize: '14px',
-              color: '#ef4444',
+              color: 'var(--perigo)',
               marginBottom: '16px',
             }}>
               {erro}

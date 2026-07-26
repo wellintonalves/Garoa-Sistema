@@ -99,9 +99,9 @@ export function BarbeiroAgenda() {
   
   const statusStyles: Record<string, { bg: string, color: string, border: string }> = {
     'AGUARDANDO': { bg: 'var(--bg-surface2)', color: 'var(--cor-primaria)', border: 'var(--cor-primaria)' },
-    'CONFIRMADO': { bg: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', border: '#3b82f6' },
-    'CONCLUIDO': { bg: 'rgba(34, 197, 94, 0.1)', color: 'var(--success-text)', border: 'var(--success-text)' },
-    'CANCELADO': { bg: 'rgba(239, 68, 68, 0.1)', color: 'var(--error-text)', border: 'var(--error-text)' },
+    'CONFIRMADO': { bg: 'rgba(var(--info-rgb, 59, 130, 246), 0.15)', color: 'var(--info)', border: 'var(--info)' },
+    'CONCLUIDO': { bg: 'var(--sucesso-fundo)', color: 'var(--sucesso)', border: 'var(--sucesso)' },
+    'CANCELADO': { bg: 'var(--perigo-fundo)', color: 'var(--error-text)', border: 'var(--error-text)' },
   };
 
   const hoje = new Date();
@@ -112,12 +112,12 @@ export function BarbeiroAgenda() {
     <div className="px-4 py-6 md:px-8 max-w-4xl mx-auto animate-fade-in" style={{ fontFamily: 'var(--fonte-interface)' }}>
       {/* Feedbacks */}
       {sucessoMsg && (
-        <div className="bg-green-100 text-green-800 p-3 rounded-lg mb-4 text-sm font-medium border border-green-200">
+        <div className="bg-[var(--sucesso-fundo)] text-[var(--sucesso)] p-3 rounded-lg mb-4 text-sm font-medium border border-[var(--sucesso)]">
           {sucessoMsg}
         </div>
       )}
       {erroMsg && (
-        <div className="bg-red-100 text-red-800 p-3 rounded-lg mb-4 text-sm font-medium border border-red-200">
+        <div className="bg-[var(--perigo-fundo)] text-[var(--perigo)] p-3 rounded-lg mb-4 text-sm font-medium border border-[var(--perigo)]">
           {erroMsg}
         </div>
       )}
