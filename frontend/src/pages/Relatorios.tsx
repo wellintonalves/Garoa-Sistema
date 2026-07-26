@@ -1,6 +1,8 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Filter, DollarSign, Users, Scissors, TrendingUp, AlertCircle, Pencil, X, Trash2, Plus } from 'lucide-react';
+import { Funnel, CurrencyDollar, Users, Scissors, TrendUp as TrendingUp, WarningCircle, PencilSimple, X, Trash, Plus } from '@phosphor-icons/react';
+import { Modal } from '../components/Modal';
+import { Botao } from '../components/ui/Botao';
 import { SkeletonTable } from '../components/Skeleton';
 import { StatCard } from '../components/StatCard';
 import api from '../api/client';
@@ -60,9 +62,10 @@ export function Relatorios() {
 
   // Estados para edição de lançamento
   const [lancamentoEditando, setLancamentoEditando] = useState<Lancamento | null>(null);
-    const [valoresEdit, setValoresEdit] = useState({ valor: '', comissao: '', formaPagamento: '', servicoId: '' });
+  const [valoresEdit, setValoresEdit] = useState({ valor: '', comissao: '', formaPagamento: '', servicoId: '' });
   const [servicosAdicionais, setServicosAdicionais] = useState<any[]>([]);
   const [salvandoEdicao, setSalvandoEdicao] = useState(false);
+  const [confirmandoExclusao, setConfirmandoExclusao] = useState<string | null>(null);
 
   useEffect(() => {
     async function carregar() {
@@ -134,10 +137,10 @@ export function Relatorios() {
     });
   };
 
-    const excluirLancamento = async (id: string) => {
-    if (!confirm('Tem certeza que deseja excluir este lançamento?')) return;
+  const excluirLancamento = async (id: string) => {
     try {
       const res = await api.delete(`/financeiro/${id}`);
+      setConfirmandoExclusao(null);
       if (res.data?.status === 'PENDENTE') {
         alert('Este lançamento pertence a um barbeiro. Uma solicitação de exclusão foi enviada para aprovação do barbeiro.');
       } else {
@@ -231,7 +234,7 @@ export function Relatorios() {
           </select>
         </div>
         <button onClick={buscarRelatorio} className="btn-primary" disabled={carregando}>
-          <Filter size={14} strokeWidth={1.5} /> {carregando ? 'Buscando...' : 'Filtrar'}
+          <Funnel size={14} /> {carregando ? 'Buscando...' : 'Filtrar'}
         </button>
       </div>
 
@@ -250,7 +253,7 @@ export function Relatorios() {
             padding: '1.25rem',
           }}
         >
-          <AlertCircle size={20} style={{ color: 'var(--error-text)', flexShrink: 0 }} />
+          <WarningCircle size={20} style={{ color: 'var(--error-text)', flexShrink: 0 }} />
           <div>
             <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)' }}>
               Erro ao carregar relatório
@@ -276,7 +279,7 @@ export function Relatorios() {
             <StatCard
               titulo="Receita Produtos"
               valor={fmt(relatorio.consolidado.totalProdutos)}
-              icone={DollarSign}
+              icone={CurrencyDollar}
               subtexto="Soma de produtos vendidos"
             />
             <StatCard
@@ -366,14 +369,14 @@ export function Relatorios() {
                             style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}
                             title="Editar lançamento"
                           >
-                            <Pencil size={14} />
+                            <PencilSimple size={14} />
                           </button>
                           <button
-                            onClick={() => excluirLancamento(l.id)}
+                            onClick={() => setConfirmandoExclusao(l.id)}
                             style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--error-text)' }}
                             title="Excluir lançamento"
                           >
-                            <Trash2 size={14} />
+                            <Trash size={14} />
                           </button>
                         </div>
                       </td>
@@ -529,6 +532,29 @@ export function Relatorios() {
           </div>
         </div>
       )}
+
+      <Modal aberto={!!confirmandoExclusao} onFechar={() => setConfirmandoExclusao(null)} titulo="Excluir Lançamento">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '14px', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+            Tem certeza que deseja excluir este lançamento?
+            <br />Esta ação não pode ser desfeita.
+          </p>
+          <div className="flex gap-3 justify-end">
+            <Botao
+              variante="fantasma"
+              onClick={() => setConfirmandoExclusao(null)}
+            >
+              Cancelar
+            </Botao>
+            <Botao
+              variante="destrutivo"
+              onClick={() => confirmandoExclusao && excluirLancamento(confirmandoExclusao)}
+            >
+              Excluir
+            </Botao>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }

@@ -1,20 +1,18 @@
-import { type LucideIcon } from 'lucide-react';
+import React from 'react';
 
 interface StatCardProps {
   titulo: string;
   valor: string;
-  icone: LucideIcon;
+  icone: React.ElementType;
   subtexto?: string;
   destaque?: boolean;
   alerta?: boolean;
-  // Novas props para o Delta
-  delta?: number; // porcentagem ou valor, positivo ou negativo
-  deltaTipo?: 'alta' | 'baixa' | 'neutro'; // forçado, ou calculado pelo delta
-  comparacao?: string; // ex: "vs. mês anterior"
+  delta?: number;
+  deltaTipo?: 'alta' | 'baixa' | 'neutro';
+  comparacao?: string;
 }
 
 export function StatCard({ titulo, valor, icone: Icone, subtexto, alerta, delta, deltaTipo, comparacao }: StatCardProps) {
-  // Define o tipo de delta se não for passado explicitamente mas houver valor de delta
   let tipoDeltaCalculado = deltaTipo || 'neutro';
   if (!deltaTipo && delta !== undefined) {
     tipoDeltaCalculado = delta > 0 ? 'alta' : delta < 0 ? 'baixa' : 'neutro';
@@ -38,9 +36,9 @@ export function StatCard({ titulo, valor, icone: Icone, subtexto, alerta, delta,
       style={{ 
         background: 'var(--superficie-1)', 
         border: '1px solid var(--borda)', 
-        borderRadius: '14px', 
-        padding: '16px 20px',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.2)', // Shadow base, ideal seria classe, mas manteremos simples
+        borderRadius: '12px', 
+        padding: '20px',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
         display: 'flex',
         flexDirection: 'column',
         gap: '8px'
@@ -58,7 +56,7 @@ export function StatCard({ titulo, valor, icone: Icone, subtexto, alerta, delta,
         >
           {titulo}
         </span>
-        <Icone size={16} style={{ color: 'var(--texto-terciario)' }} />
+        <Icone size={18} style={{ color: 'var(--texto-terciario)' }} />
       </div>
 
       <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>

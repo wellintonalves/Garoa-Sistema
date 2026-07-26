@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Settings, Save, QrCode, Star } from 'lucide-react';
+import { Gear as Settings, FloppyDisk as Save, QrCode, Star } from '@phosphor-icons/react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/client';
 import { QRCodeSVG } from 'qrcode.react';

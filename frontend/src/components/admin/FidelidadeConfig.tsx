@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Save, Plus, Edit, Trash, Gift } from 'lucide-react';
+import { FloppyDisk as Save, Plus, PencilSimple as Edit, Trash, Gift } from '@phosphor-icons/react';
 import api from '../../api/client';
 
 export function FidelidadeConfig() {

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { DollarSign, Calendar as CalendarIcon, TrendingUp, Scissors } from 'lucide-react';
+import { CurrencyDollar as DollarSign, Calendar as CalendarIcon, TrendUp as TrendingUp, Scissors } from '@phosphor-icons/react';
 import barbeiroApi from '../../api/barbeiroApi';
 import { dataBrasilia, hojeBrasilia } from '../../utils/datas';
 

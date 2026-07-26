@@ -1,7 +1,7 @@
 // force redeploy
 // Página de Agenda — calendário semanal com estética industrial
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { ChevronLeft, ChevronRight, Plus, ChevronDown } from 'lucide-react';
+import { CaretLeft, CaretRight, Plus, CaretDown } from '@phosphor-icons/react';
 import { Modal } from '../components/Modal';
 import { SkeletonPage } from '../components/Skeleton';
 import { dataBrasilia } from '../utils/datas';
@@ -369,7 +369,7 @@ export function Agenda() {
               className="p-2 transition-colors flex items-center justify-center"
               style={{ color: 'var(--text-muted)', background: 'transparent', border: 'none', cursor: 'pointer', minHeight: isMobile ? '44px' : '32px', minWidth: isMobile ? '44px' : '32px' }}
             >
-              <ChevronLeft size={16} strokeWidth={1.5} />
+              <CaretLeft size={16} />
             </button>
             <span
               className="px-3 min-w-[180px] text-center"
@@ -391,7 +391,7 @@ export function Agenda() {
               className="p-2 transition-colors flex items-center justify-center"
               style={{ color: 'var(--text-muted)', background: 'transparent', border: 'none', cursor: 'pointer', minHeight: isMobile ? '44px' : '32px', minWidth: isMobile ? '44px' : '32px' }}
             >
-              <ChevronRight size={16} strokeWidth={1.5} />
+              <CaretRight size={16} />
             </button>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -402,7 +402,7 @@ export function Agenda() {
               Bloquear Horário
             </button>
             <button onClick={abrirModal} className="btn-primary flex-1 sm:flex-none justify-center">
-              <Plus size={14} strokeWidth={1.5} /> Novo Agendamento
+              <Plus size={14} /> Novo Agendamento
             </button>
           </div>
         </div>
@@ -442,7 +442,7 @@ export function Agenda() {
               </>
             )}
           </div>
-          <ChevronDown size={16} strokeWidth={1.5} style={{ color: 'var(--text-muted)' }} />
+          <CaretDown size={16} style={{ color: 'var(--text-muted)' }} />
         </button>
 
         {dropdownAberto && (

@@ -1,9 +1,9 @@
 // Página de Clientes — estética industrial com dados ricos
 import { useEffect, useState, useCallback, useRef } from 'react';
 import {
-  Search, Users, Calendar, TrendingUp, DollarSign, Gift,
-  Star, Phone, Mail, X, Plus, MessageCircle, Cake,
-} from 'lucide-react';
+  MagnifyingGlass, Users, Calendar, TrendUp as TrendingUp, CurrencyDollar, Gift,
+  Star, Phone, Envelope, X, Plus, ChatCircle, Cake,
+} from '@phosphor-icons/react';
 import { StatCard } from '../components/StatCard';
 import { SkeletonCard } from '../components/Skeleton';
 import api from '../api/client';
@@ -238,7 +238,7 @@ export function Clientes() {
         <div className="dashboard-grid">
           <StatCard titulo="Total de clientes" valor={String(resumo.totalClientes)} icone={Users} />
           <StatCard titulo="Ativos no mês" valor={String(resumo.clientesAtivos)} icone={TrendingUp} destaque />
-          <StatCard titulo="Ticket médio" valor={formatarMoeda(resumo.ticketMedio)} icone={DollarSign} />
+          <StatCard titulo="Ticket médio" valor={formatarMoeda(resumo.ticketMedio)} icone={CurrencyDollar} />
         </div>
       )}
 
@@ -269,7 +269,7 @@ export function Clientes() {
           {/* Filtros */}
           <div className="flex flex-col sm:flex-row gap-2 flex-wrap items-end">
             <div className="relative w-full sm:max-w-sm">
-              <Search size={14} strokeWidth={1.5} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }} />
+              <MagnifyingGlass size={14} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }} />
               <input
                 value={busca}
                 onChange={e => setBusca(e.target.value)}
@@ -353,7 +353,7 @@ export function Clientes() {
                       <td data-label="Contato">
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                           <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                            <Mail size={10} /> {c.usuario?.email || '—'}
+                            <Envelope size={10} /> {c.usuario?.email || '—'}
                           </span>
                           <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
                             <Phone size={10} /> {c.telefone || '—'}
@@ -468,7 +468,7 @@ export function Clientes() {
                       className="btn-whatsapp"
                       onClick={() => enviarWhatsApp(a.telefone, `Feliz aniversário, ${a.usuario.nome.split(' ')[0]}! 🎂🎉 A equipe da barbearia deseja tudo de bom pra você!`)}
                     >
-                      <MessageCircle size={13} /> Parabéns
+                      <ChatCircle size={13} /> Parabéns
                     </button>
                   )}
                 </div>
@@ -546,7 +546,7 @@ export function Clientes() {
                       <div className="section-divider">Dados pessoais</div>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         {[
-                          { label: 'Email', value: clienteSelecionado.usuario.email, icon: <Mail size={12} /> },
+                          { label: 'Email', value: clienteSelecionado.usuario.email, icon: <Envelope size={12} /> },
                           { label: 'Telefone', value: clienteSelecionado.telefone || '—', icon: <Phone size={12} /> },
                           { label: 'Nascimento', value: formatarData(clienteSelecionado.dataNascimento), icon: <Cake size={12} /> },
                         ].map((item, i) => (

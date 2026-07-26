@@ -1,7 +1,8 @@
 // Página de Barbeiros — listagem com cards + seção de comissões por período
 import { useEffect, useState } from 'react';
-import { Star, Plus, DollarSign, TrendingUp, Calendar, Edit2, Trash2 } from 'lucide-react';
+import { Star, Plus, CurrencyDollar, TrendUp as TrendingUp, Calendar, PencilSimple, Trash } from '@phosphor-icons/react';
 import { Modal } from '../components/Modal';
+import { Botao } from '../components/ui/Botao';
 import { ImageCropperModal } from '../components/ImageCropperModal';
 
 import { SkeletonPage, SkeletonCard } from '../components/Skeleton';
@@ -158,7 +159,7 @@ export function Barbeiros() {
           Barbeiros
         </h1>
         <button onClick={abrirModalNovo} className="btn-primary">
-          <Plus size={14} strokeWidth={1.5} /> Novo
+          <Plus size={14} /> Novo
         </button>
       </div>
 
@@ -240,7 +241,7 @@ export function Barbeiros() {
                     }}
                     title="Editar Barbeiro"
                   >
-                    <Edit2 size={14} />
+                    <PencilSimple size={14} />
                   </button>
                   <button
                     onClick={() => setConfirmandoExclusao(b)}
@@ -259,7 +260,7 @@ export function Barbeiros() {
                     onMouseLeave={(e) => { e.currentTarget.style.opacity = '0.6'; }}
                     title="Apagar Barbeiro"
                   >
-                    <Trash2 size={14} />
+                    <Trash size={14} />
                   </button>
                 </div>
               </div>
@@ -279,7 +280,7 @@ export function Barbeiros() {
               style={{ borderTop: '1px solid var(--border)' }}
             >
               <div className="flex items-center gap-1.5" style={{ color: 'var(--cor-icone)', fontFamily: 'var(--fonte-interface)', fontSize: '11px', letterSpacing: '0.04em' }}>
-                <Star size={14} strokeWidth={1.5} /> <span>Comissão: {b.comissaoPercent}%</span>
+                <Star size={14} /> <span>Comissão: {b.comissaoPercent}%</span>
               </div>
               <button
                 onClick={() => navigate(`/relatorios?barbeiroId=${b.id}`)}
@@ -298,7 +299,7 @@ export function Barbeiros() {
                 onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-muted)'; }}
                 title="Ver comissões"
               >
-                <DollarSign size={12} strokeWidth={1.5} /> Comissões
+                <CurrencyDollar size={12} /> Comissões
               </button>
             </div>
           </div>
@@ -310,7 +311,7 @@ export function Barbeiros() {
         <div style={{ paddingBottom: '1.25rem', borderBottom: '1px solid var(--border)', marginBottom: '1.25rem' }}>
           <div className="flex flex-wrap items-end gap-4">
             <div className="flex items-center gap-2">
-              <TrendingUp size={16} strokeWidth={1.5} style={{ color: 'var(--cor-icone)' }} />
+              <TrendingUp size={16} style={{ color: 'var(--cor-icone)' }} />
               <h2
                 style={{
                   fontFamily: 'var(--fonte-interface)',
@@ -332,7 +333,7 @@ export function Barbeiros() {
                 <input type="date" value={comissaoFim} onChange={e => setComissaoFim(e.target.value)} className="ds-input" style={{ width: '138px' }} />
               </div>
               <button onClick={carregarComissoes} className="btn-primary flex items-center justify-center gap-1 px-4">
-                <Calendar size={13} strokeWidth={1.5} /> Buscar
+                <Calendar size={13} /> Buscar
               </button>
             </div>
           </div>
@@ -444,37 +445,18 @@ export function Barbeiros() {
             <br />Esta ação não pode ser desfeita.
           </p>
           <div className="flex gap-3 justify-end">
-            <button
+            <Botao
+              variante="fantasma"
               onClick={() => setConfirmandoExclusao(null)}
-              style={{
-                background: 'var(--bg-surface2)',
-                border: '1px solid var(--border)',
-                color: 'var(--text-secondary)',
-                padding: '8px 20px',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                fontFamily: 'var(--fonte-interface)',
-                fontSize: '13px',
-              }}
             >
               Cancelar
-            </button>
-            <button
+            </Botao>
+            <Botao
+              variante="destrutivo"
               onClick={() => confirmandoExclusao && apagarBarbeiro(confirmandoExclusao.id)}
-              style={{
-                background: 'var(--error, #ef4444)',
-                border: 'none',
-                color: '#fff',
-                padding: '8px 20px',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                fontFamily: 'var(--fonte-interface)',
-                fontSize: '13px',
-                fontWeight: 600,
-              }}
             >
               Apagar
-            </button>
+            </Botao>
           </div>
         </div>
       </Modal>

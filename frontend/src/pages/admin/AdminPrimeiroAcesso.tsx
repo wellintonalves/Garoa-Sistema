@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { User, Mail, Lock, AlertCircle, CheckCircle, Eye, EyeOff } from 'lucide-react';
+import { User, Envelope as Mail, Lock, WarningCircle as AlertCircle, CheckCircle, Eye, EyeSlash as EyeOff } from '@phosphor-icons/react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../api/client';
 import { Input, Botao } from '../../components/ui';

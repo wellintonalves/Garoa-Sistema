@@ -1,6 +1,6 @@
 // Página de Serviços — tabela industrial com edição inline
 import { useEffect, useState } from 'react';
-import { Plus, Check, X, Pencil } from 'lucide-react';
+import { Plus, Check, X, PencilSimple } from '@phosphor-icons/react';
 import { Modal } from '../components/Modal';
 import { SkeletonPage } from '../components/Skeleton';
 import api from '../api/client';
@@ -71,7 +71,7 @@ export function Servicos() {
           Serviços
         </h1>
         <button onClick={() => setModalAberto(true)} className="btn-primary">
-          <Plus size={14} strokeWidth={1.5} /> Novo
+          <Plus size={14} /> Novo
         </button>
       </div>
 
@@ -134,14 +134,14 @@ export function Servicos() {
                         className="flex items-center justify-center transition-colors"
                         style={{ width: '28px', height: '28px', color: 'var(--success-text)', background: 'transparent', border: 'none', cursor: 'pointer' }}
                       >
-                        <Check size={14} strokeWidth={1.5} />
+                        <Check size={14} />
                       </button>
                       <button
                         onClick={() => setEditandoId(null)}
                         className="flex items-center justify-center transition-colors"
                         style={{ width: '28px', height: '28px', color: 'var(--error-text)', background: 'transparent', border: 'none', cursor: 'pointer' }}
                       >
-                        <X size={14} strokeWidth={1.5} />
+                        <X size={14} />
                       </button>
                     </div>
                   ) : (
@@ -152,7 +152,7 @@ export function Servicos() {
                       onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--amber)'; }}
                       onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-muted)'; }}
                     >
-                      <Pencil size={14} strokeWidth={1.5} />
+                      <PencilSimple size={14} />
                     </button>
                   )}
                 </td>

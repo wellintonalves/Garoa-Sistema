@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Mail, Lock, AlertCircle, Eye, EyeOff } from 'lucide-react';
+import { Envelope as Mail, Lock, WarningCircle as AlertCircle, Eye, EyeSlash as EyeOff } from '@phosphor-icons/react';
 import { useNavigate } from 'react-router-dom';
 import Lottie from 'lottie-react';
 import mustacheAnimation from '../../assets/animations/mustache-amber.json';

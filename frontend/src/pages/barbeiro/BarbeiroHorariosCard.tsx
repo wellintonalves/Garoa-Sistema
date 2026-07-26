@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Clock, Save, Copy, Info } from 'lucide-react';
+import { Clock, FloppyDisk as Save, Copy, Info } from '@phosphor-icons/react';
 import barbeiroApi from '../../api/barbeiroApi';
 
 export interface DiaConfig {

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useOutletContext, useNavigate } from 'react-router-dom';
-import { Check, Clock, Scissors, Calendar, Plus, Ban, TrendingUp, DollarSign, Users, Briefcase } from 'lucide-react';
+import { Check, Clock, Scissors, Calendar, Plus, Prohibit as Ban, TrendUp as TrendingUp, CurrencyDollar as DollarSign, Users, Briefcase } from '@phosphor-icons/react';
 import barbeiroApi from '../../api/barbeiroApi';
 import { Modal } from '../../components/Modal';
 

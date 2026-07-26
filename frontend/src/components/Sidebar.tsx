@@ -2,10 +2,10 @@
 import { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import {
-  LayoutDashboard, Calendar, Scissors, Package,
-  Users, UserCheck, Wallet, ChevronLeft, ChevronRight, LogOut,
-  BarChart3, X, Settings, MessageSquare, Gift
-} from 'lucide-react';
+  SquaresFour, Calendar, Scissors, Package,
+  Users, UserCheck, Wallet, CaretLeft, CaretRight, SignOut,
+  ChartBar, X, Gear, ChatCircle, Gift
+} from '@phosphor-icons/react';
 import { useAuth } from '../hooks/useAuth';
 import api from '../api/client';
 import { ToggleModo } from './ToggleModo';
@@ -16,17 +16,17 @@ interface SidebarProps {
 }
 
 const menuItems = [
-  { path: '/admin', label: 'Dashboard', icon: LayoutDashboard },
+  { path: '/admin', label: 'Dashboard', icon: SquaresFour },
   { path: '/admin/agenda', label: 'Agenda', icon: Calendar },
   { path: '/admin/barbeiros', label: 'Barbeiros', icon: Users },
   { path: '/admin/servicos', label: 'Serviços', icon: Scissors },
   { path: '/admin/clientes', label: 'Clientes', icon: UserCheck },
   { path: '/admin/financeiro', label: 'Financeiro', icon: Wallet },
-  { path: '/admin/relatorios', label: 'Relatórios', icon: BarChart3 },
+  { path: '/admin/relatorios', label: 'Relatórios', icon: ChartBar },
   { path: '/admin/vendas', label: 'Estoque', icon: Package },
   { path: '/admin/fidelidade', label: 'Fidelidade', icon: Gift },
-  { path: '/admin/chat', label: 'Chat', icon: MessageSquare },
-  { path: '/admin/configuracoes', label: 'Configurações', icon: Settings },
+  { path: '/admin/chat', label: 'Chat', icon: ChatCircle },
+  { path: '/admin/configuracoes', label: 'Configurações', icon: Gear },
 ];
 
 export function Sidebar({ mobileOpen, onCloseMobile }: SidebarProps) {
@@ -106,7 +106,7 @@ export function Sidebar({ mobileOpen, onCloseMobile }: SidebarProps) {
             onClick={onCloseMobile}
             style={{ color: 'var(--texto-secundario, var(--text-muted))', background: 'transparent', border: 'none', cursor: 'pointer' }}
           >
-            <X size={20} strokeWidth={1.75} />
+            <X size={20} />
           </button>
         </div>
 
@@ -131,7 +131,7 @@ export function Sidebar({ mobileOpen, onCloseMobile }: SidebarProps) {
             >
               {({ isActive }) => (
                 <>
-                  <Icon size={20} strokeWidth={isActive ? 2 : 1.75} className="flex-shrink-0" />
+                  <Icon size={20} weight={isActive ? "bold" : "regular"} className="flex-shrink-0" />
                   {!recolhido && <span className="truncate" style={{ textTransform: 'none' }}>{label}</span>}
                 </>
               )}
@@ -187,7 +187,7 @@ export function Sidebar({ mobileOpen, onCloseMobile }: SidebarProps) {
             onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--erro, var(--error-text))'; }}
             onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--texto-secundario, var(--text-muted))'; }}
           >
-            <LogOut size={20} strokeWidth={1.75} className="flex-shrink-0" />
+            <SignOut size={20} className="flex-shrink-0" />
             {!recolhido && <span style={{ textTransform: 'none' }}>Sair</span>}
           </button>
         </div>
@@ -206,7 +206,7 @@ export function Sidebar({ mobileOpen, onCloseMobile }: SidebarProps) {
           onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--texto-principal, var(--text-primary))'; e.currentTarget.style.borderColor = 'var(--cor-primaria)'; }}
           onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--texto-secundario, var(--text-muted))'; e.currentTarget.style.borderColor = 'var(--borda-sutil, var(--border))'; }}
         >
-          {recolhido ? <ChevronRight size={14} strokeWidth={1.75} /> : <ChevronLeft size={14} strokeWidth={1.75} />}
+          {recolhido ? <CaretRight size={14} /> : <CaretLeft size={14} />}
         </button>
       </aside>
     </>

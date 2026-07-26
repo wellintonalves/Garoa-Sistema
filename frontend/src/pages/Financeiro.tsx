@@ -1,7 +1,8 @@
 // Página Financeiro — industrial
 import { useEffect, useState } from 'react';
-import { Plus, TrendingUp, TrendingDown, Edit2, Trash2, Loader2 , DollarSign } from 'lucide-react';
+import { Plus, TrendUp as TrendingUp, TrendDown as TrendingDown, PencilSimple, Trash, Spinner, CurrencyDollar } from '@phosphor-icons/react';
 import { Modal } from '../components/Modal';
+import { Botao } from '../components/ui/Botao';
 import { SkeletonPage } from '../components/Skeleton';
 import { StatCard } from '../components/StatCard';
 
@@ -46,6 +47,7 @@ export function Financeiro() {
   const [salvando, setSalvando] = useState(false);
   const [erroSalvar, setErroSalvar] = useState<string | null>(null);
   const [apagando, setApagando] = useState<string | null>(null);
+  const [confirmandoExclusao, setConfirmandoExclusao] = useState<string | null>(null);
   const [editId, setEditId] = useState<string | null>(null);
   
   const formPadrao = { tipo: 'ENTRADA', categoria: '', descricao: '', valor: '', formaPagamento: 'PIX', data: hojeBrasilia(), servicoId: '', barbeiroId: '' };
@@ -129,10 +131,10 @@ export function Financeiro() {
   }
 
   async function apagarLancamento(id: string) {
-    if (!window.confirm('Tem certeza que deseja excluir este lançamento? Esta ação não pode ser desfeita.')) return;
     setApagando(id);
     try {
       await api.delete(`/financeiro/${id}`);
+      setConfirmandoExclusao(null);
       carregar();
     } catch (e) {
       console.error(e);
@@ -178,7 +180,7 @@ export function Financeiro() {
           Financeiro
         </h1>
         <button onClick={() => abrirModal()} className="btn-primary" disabled={carregando}>
-          <Plus size={14} strokeWidth={1.5} /> Lançamento
+          <Plus size={14} /> Lançamento
         </button>
       </div>
 
@@ -187,7 +189,7 @@ export function Financeiro() {
         <StatCard titulo="Serviços" valor={fmt(resumo?.entradasServicos || 0)} icone={TrendingUp} />
         <StatCard titulo="Produtos" valor={fmt(resumo?.entradasProdutos || 0)} icone={TrendingUp} />
         <StatCard titulo="Saídas" valor={fmt(resumo?.totalSaidas || 0)} icone={TrendingDown} alerta={true} />
-        <StatCard titulo="Saldo" valor={fmt(resumo?.saldo || 0)} icone={DollarSign} />
+        <StatCard titulo="Saldo" valor={fmt(resumo?.saldo || 0)} icone={CurrencyDollar} />
       </div>
 
       {/* Mini gráfico 7 dias */}
@@ -272,15 +274,15 @@ export function Financeiro() {
                     title="Editar"
                     disabled={apagando === l.id}
                   >
-                    <Edit2 size={14} />
+                    <PencilSimple size={14} />
                   </button>
                   <button 
-                    onClick={() => apagarLancamento(l.id)} 
+                    onClick={() => setConfirmandoExclusao(l.id)} 
                     style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--error-text)', padding: '4px', opacity: apagando === l.id ? 0.5 : 1 }} 
                     title="Excluir"
                     disabled={apagando === l.id}
                   >
-                    {apagando === l.id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                    {apagando === l.id ? <Spinner size={14} className="animate-spin" /> : <Trash size={14} />}
                   </button>
                 </div>
               </div>
@@ -393,9 +395,32 @@ export function Financeiro() {
               gap: '8px'
             }}
           >
-            {salvando && <Loader2 size={14} className="animate-spin" />}
+            {salvando && <Spinner size={14} className="animate-spin" />}
             {salvando ? 'Salvando...' : 'Registrar'}
           </button>
+        </div>
+      </Modal>
+
+      <Modal aberto={!!confirmandoExclusao} onFechar={() => setConfirmandoExclusao(null)} titulo="Excluir Lançamento">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '14px', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+            Tem certeza que deseja excluir este lançamento?
+            <br />Esta ação não pode ser desfeita.
+          </p>
+          <div className="flex gap-3 justify-end">
+            <Botao
+              variante="fantasma"
+              onClick={() => setConfirmandoExclusao(null)}
+            >
+              Cancelar
+            </Botao>
+            <Botao
+              variante="destrutivo"
+              onClick={() => confirmandoExclusao && apagarLancamento(confirmandoExclusao)}
+            >
+              Excluir
+            </Botao>
+          </div>
         </div>
       </Modal>
     </div>

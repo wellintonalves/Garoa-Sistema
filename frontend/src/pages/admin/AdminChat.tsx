@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback, FormEvent } from 'react';
-import { MessageCircle, Send, Search, Volume2, VolumeX, Check, CheckCheck } from 'lucide-react';
+import { ChatCircle as MessageCircle, PaperPlaneRight as Send, MagnifyingGlass as Search, SpeakerHigh as Volume2, SpeakerSlash as VolumeX, Check, Checks as CheckCheck } from '@phosphor-icons/react';
 import api from '../../api/client';
 import { useChatSounds } from '../../hooks/useChatSounds';
 

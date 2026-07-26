@@ -1,10 +1,10 @@
 // Página de Estoque — gestão completa de produtos com carrinho de vendas
 import { useEffect, useState, useCallback } from 'react';
 import {
-  Plus, Pencil, Check, X, ShoppingCart, Package,
-  TrendingUp, AlertTriangle, DollarSign, BarChart2, Calendar,
-  Minus, Trash2,
-} from 'lucide-react';
+  Plus, PencilSimple as Pencil, Check, X, ShoppingCart, Package,
+  TrendUp as TrendingUp, Warning as AlertTriangle, CurrencyDollar as DollarSign, ChartBar as BarChart2, Calendar,
+  Minus, Trash as Trash2,
+} from '@phosphor-icons/react';
 import { Modal } from '../components/Modal';
 
 import { SkeletonPage, SkeletonCard } from '../components/Skeleton';

@@ -1,6 +1,6 @@
 // Layout do app do barbeiro com navegação inferior
 import { Outlet, useNavigate, useLocation, Navigate } from 'react-router-dom';
-import { Clock, Calendar, DollarSign, User } from 'lucide-react';
+import { Clock, Calendar, CurrencyDollar, User } from '@phosphor-icons/react';
 import { useBarbeiroAuth } from '../hooks/useBarbeiroAuth';
 import { AprovacoesPopup } from '../components/AprovacoesPopup';
 
@@ -16,7 +16,7 @@ export function BarbeiroLayout() {
   const tabs = [
     { name: 'Hoje', path: '/barbeiro/hoje', icon: Clock },
     { name: 'Agenda', path: '/barbeiro/agenda', icon: Calendar },
-    { name: 'Comissões', path: '/barbeiro/comissoes', icon: DollarSign },
+    { name: 'Comissões', path: '/barbeiro/comissoes', icon: CurrencyDollar },
     { name: 'Perfil', path: '/barbeiro/perfil', icon: User },
   ];
 
@@ -42,7 +42,7 @@ export function BarbeiroLayout() {
               className={`bottom-tab-item ${isActive ? 'active' : ''}`}
               style={{ textTransform: 'none' }}
             >
-              <Icon size={24} style={{ marginBottom: '2px', opacity: isActive ? 1 : 0.7 }} />
+              <Icon size={24} weight={isActive ? "bold" : "regular"} style={{ marginBottom: '2px', opacity: isActive ? 1 : 0.7 }} />
               <span className="bottom-tab-label">
                 {tab.name}
               </span>

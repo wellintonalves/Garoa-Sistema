@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Calendar as CalendarIcon, Clock, Ban } from 'lucide-react';
+import { Calendar as CalendarIcon, Clock, Prohibit as Ban } from '@phosphor-icons/react';
 import barbeiroApi from '../../api/barbeiroApi';
 import { hojeBrasilia } from '../../utils/datas';
 import { Modal } from '../../components/Modal';

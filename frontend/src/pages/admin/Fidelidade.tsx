@@ -1,9 +1,9 @@
 // Página de gestão do programa de fidelidade
 import { useState, useEffect, useCallback } from 'react';
 import {
-  Star, Save, Plus, Edit, Trash, Gift, Users, History,
-  Settings, TrendingUp, ChevronDown, ChevronUp, X, AlertCircle, CheckCircle
-} from 'lucide-react';
+  Star, FloppyDisk as Save, Plus, PencilSimple as Edit, Trash, Gift, Users, ClockCounterClockwise as History,
+  Gear as Settings, TrendUp as TrendingUp, CaretDown as ChevronDown, CaretUp as ChevronUp, X, WarningCircle as AlertCircle, CheckCircle
+} from '@phosphor-icons/react';
 import api from '../../api/client';
 
 type Tab = 'regras' | 'recompensas' | 'clientes' | 'historico' | 'pendentes';

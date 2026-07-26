@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Mail, Lock, AlertCircle, UserPlus, Eye, EyeOff } from 'lucide-react';
+import { Envelope as Mail, Lock, WarningCircle as AlertCircle, UserPlus, Eye, EyeSlash as EyeOff } from '@phosphor-icons/react';
 import { useNavigate } from 'react-router-dom';
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 import api from '../../api/client';

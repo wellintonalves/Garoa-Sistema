@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useBarbeiroAuth } from '../../hooks/useBarbeiroAuth';
 import { useModoTema } from '../../hooks/useModoTema';
-import { User, Scissors, LogOut, Sun, Moon, Monitor, Camera, Phone, Star, Save, Clock } from 'lucide-react';
+import { User, Scissors, SignOut as LogOut, Sun, Moon, Monitor, Camera, Phone, Star, FloppyDisk as Save, Clock } from '@phosphor-icons/react';
 import barbeiroApi from '../../api/barbeiroApi';
 import { BarbeiroHorariosCard } from './BarbeiroHorariosCard';
 

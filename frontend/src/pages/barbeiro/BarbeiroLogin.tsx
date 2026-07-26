@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useBarbeiroAuth } from '../../hooks/useBarbeiroAuth';
-import { Scissors, Eye, EyeOff } from 'lucide-react';
+import { Scissors, Eye, EyeSlash as EyeOff } from '@phosphor-icons/react';
 
 export function BarbeiroLogin() {
   const navigate = useNavigate();

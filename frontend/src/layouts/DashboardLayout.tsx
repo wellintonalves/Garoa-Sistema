@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import { Sidebar } from '../components/Sidebar';
-import { Menu } from 'lucide-react';
+import { List } from '@phosphor-icons/react';
 import api from '../api/client';
 import { useTema } from '../hooks/useTema';
 
@@ -35,7 +35,7 @@ export function DashboardLayout() {
           className="mr-3 p-1 transition-colors min-h-[48px] min-w-[48px] flex items-center justify-center"
           style={{ color: 'var(--text-muted)', background: 'transparent', border: 'none' }}
         >
-          <Menu size={20} strokeWidth={1.5} />
+          <List size={20} />
         </button>
         {logoUrl ? (
           <img src={logoUrl} alt="Logo" className="h-8 object-contain" />

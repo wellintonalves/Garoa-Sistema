@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
-import { DollarSign, CalendarCheck, Clock, AlertTriangle, TrendingUp, Award, Calendar, BarChart3 } from 'lucide-react';
+import { CurrencyDollar, CalendarCheck, Warning, TrendUp as TrendingUp, Medal, Calendar, ChartBar } from '@phosphor-icons/react';
 import { StatCard } from '../components/StatCard';
+import { Badge } from '../components/ui/Badge';
 import { SkeletonPage } from '../components/Skeleton';
 import api from '../api/client';
 import { useAuth } from '../hooks/useAuth';
@@ -208,80 +209,126 @@ export function Dashboard() {
         </div>
       ) : dados ? (
         <>
-          {/* Cards Principais */}
-          <div className="dashboard-grid stagger-children">
+          {/* Destaque Principal - Top 3 (Pareto: Agendamentos do dia, Faturamento, Alertas) */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px', marginBottom: '24px' }}>
             <StatCard
-              titulo="Serviços"
-              valor={formatarMoeda(dados.faturamentoServicos)}
-              icone={DollarSign}
-              subtexto="Faturamento"
-              destaque
-              delta={dados.variacaoServicos}
-              comparacao="vs. período anterior"
-            />
-            <StatCard
-              titulo="Produtos"
-              valor={formatarMoeda(dados.faturamentoProdutos)}
-              icone={DollarSign}
-              subtexto="Faturamento"
-              delta={dados.variacaoProdutos}
-              comparacao="vs. período anterior"
-            />
-            <StatCard
-              titulo="Atendimentos"
+              titulo="Agendamentos do Dia"
               valor={String(dados.totalAtendimentos)}
               icone={CalendarCheck}
-              subtexto="Concluídos no período"
+              subtexto={`${dados.pendentes} aguardando / confirmados`}
               delta={dados.variacaoAtendimentos}
               comparacao="vs. período anterior"
             />
             <StatCard
-              titulo="Pendentes"
-              valor={String(dados.pendentes)}
-              icone={Clock}
-              subtexto="Aguardando / Confirmados"
+              titulo="Faturamento"
+              valor={formatarMoeda(dados.faturamentoTotal || (dados.faturamentoServicos + dados.faturamentoProdutos))}
+              icone={CurrencyDollar}
+              subtexto="Total de Serviços e Produtos"
+              destaque
+              delta={dados.variacaoFaturamento}
+              comparacao="vs. período anterior"
             />
-            <StatCard
-              titulo="Estoque Baixo"
-              valor={String(dados.estoqueBaixo)}
-              icone={AlertTriangle}
-              subtexto="Itens abaixo do mínimo"
-              alerta={dados.estoqueBaixo > 0}
-            />
+            <div
+              className="animate-fade-in"
+              style={{
+                background: 'var(--superficie-1)',
+                border: '1px solid var(--borda)',
+                borderRadius: '12px',
+                padding: '20px',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '8px',
+                justifyContent: 'space-between'
+              }}
+            >
+              <div className="flex items-center justify-between">
+                <span style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--texto-secundario)', fontWeight: 600 }}>
+                  Alertas
+                </span>
+                <Warning size={18} style={{ color: 'var(--texto-terciario)' }} />
+              </div>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+                <span style={{ fontFamily: 'var(--fonte-mono)', fontSize: '22px', fontWeight: 700, color: 'var(--texto-principal)', fontVariantNumeric: 'tabular-nums' }}>
+                  {dados.estoqueBaixo} item(s)
+                </span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '2px' }}>
+                {dados.estoqueBaixo > 0 ? (
+                  <Badge variante="aviso" ponto>Estoque Baixo</Badge>
+                ) : (
+                  <Badge variante="sucesso" ponto>Tudo normal</Badge>
+                )}
+                <span style={{ fontSize: '12px', color: 'var(--texto-secundario)' }}>
+                  {dados.estoqueBaixo > 0 ? 'Reposição recomendada' : 'Sem alertas de estoque'}
+                </span>
+              </div>
+            </div>
           </div>
 
-          {/* Cards Secundários (Resumo) */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '12px' }}>
+          {/* Métricas Secundárias - Máximo 4 por linha (Lei de Miller) */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px', marginBottom: '24px' }}>
+            <StatCard
+              titulo="Serviços"
+              valor={formatarMoeda(dados.faturamentoServicos)}
+              icone={CurrencyDollar}
+              subtexto="Faturamento"
+              delta={dados.variacaoServicos}
+              comparacao="vs. período"
+            />
+            <StatCard
+              titulo="Produtos"
+              valor={formatarMoeda(dados.faturamentoProdutos)}
+              icone={CurrencyDollar}
+              subtexto="Faturamento"
+              delta={dados.variacaoProdutos}
+              comparacao="vs. período"
+            />
             <StatCard
               titulo="Ticket Médio"
               valor={formatarMoeda(dados.ticketMedio)}
               icone={TrendingUp}
-              subtexto="Por atendimento no período"
+              subtexto="Por atendimento"
               delta={dados.variacaoTicket}
-              comparacao="vs. período anterior"
+              comparacao="vs. período"
             />
-            <div className="metric-card animate-fade-in" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-              <div className="flex items-center justify-between mb-3">
-                <span className="metric-label">Serviço Mais Realizado</span>
-                <div className="flex items-center justify-center" style={{ width: '36px', height: '36px', background: 'rgba(var(--cor-primaria-rgb), 0.10)', border: '1px solid var(--border)' }}>
-                  <Award size={16} strokeWidth={1.5} style={{ color: 'var(--cor-icone)' }} />
-                </div>
+            <div 
+              className="animate-fade-in" 
+              style={{ 
+                background: 'var(--superficie-1)', 
+                border: '1px solid var(--borda)', 
+                borderRadius: '12px', 
+                padding: '20px',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                gap: '6px'
+              }}
+            >
+              <div className="flex items-center justify-between">
+                <span style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--texto-secundario)', fontWeight: 600 }}>
+                  Serviço Top
+                </span>
+                <Medal size={18} style={{ color: 'var(--texto-terciario)' }} />
               </div>
               {dados.servicoMaisRealizado ? (
                 <>
-                  <p className="metric-value" style={{ fontSize: '24px' }}>{dados.servicoMaisRealizado.nome}</p>
-                  <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '10px', color: 'var(--text-muted)', marginTop: '4px', letterSpacing: '0.04em' }}>
-                    {dados.servicoMaisRealizado.count} vezes ({formatarMoeda(dados.servicoMaisRealizado.total)})
+                  <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {dados.servicoMaisRealizado.nome}
+                  </p>
+                  <p style={{ fontFamily: 'var(--fonte-mono)', fontSize: '11px', color: 'var(--text-muted)', margin: 0 }}>
+                    {dados.servicoMaisRealizado.count}x ({formatarMoeda(dados.servicoMaisRealizado.total)})
                   </p>
                 </>
               ) : (
-                <p className="metric-value" style={{ fontSize: '18px', color: 'var(--text-muted)' }}>Nenhum serviço</p>
+                <p style={{ fontSize: '14px', color: 'var(--text-muted)' }}>Nenhum serviço</p>
               )}
             </div>
           </div>
 
           {/* Gráfico de Faturamento */}
-          <div className="card" style={{ padding: '24px', background: 'var(--superficie-1)', border: '1px solid var(--borda)', borderRadius: '14px', boxShadow: '0 2px 8px rgba(0,0,0,0.2)' }}>
+          <div className="card" style={{ padding: '20px', background: 'var(--superficie-1)', border: '1px solid var(--borda)', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
             <h3 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '24px' }}>
               Faturamento Dia a Dia
             </h3>
@@ -343,7 +390,7 @@ export function Dashboard() {
               </div>
             ) : (
               <div style={{ height: '220px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
-                <BarChart3 size={32} strokeWidth={1} style={{ color: 'var(--text-muted)', opacity: 0.5 }} />
+                <ChartBar size={32} style={{ color: 'var(--text-muted)', opacity: 0.5 }} />
                 <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '12px', color: 'var(--text-muted)' }}>Nenhum faturamento registrado neste período</p>
               </div>
             )}
