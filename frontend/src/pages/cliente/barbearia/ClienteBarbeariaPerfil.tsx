@@ -2,8 +2,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useClienteAuth } from '../../../hooks/useClienteAuth';
-import { useModoTema } from '../../../hooks/useModoTema';
-import { User, SignOut, LinkBreak, Scissors, FloppyDisk, Moon, Sun, Monitor, CalendarCheck, CalendarX, CurrencyDollar, Medal } from '@phosphor-icons/react';
+import { SeletorTema } from '../../../components/SeletorTema';
+import { User, SignOut, LinkBreak, Scissors, FloppyDisk, Monitor, CalendarCheck, CalendarX, CurrencyDollar, Medal } from '@phosphor-icons/react';
 import clienteApi from '../../../api/clienteApi';
 import { SkeletonCard, SkeletonText } from '../../../components/ui/Skeleton';
 
@@ -41,7 +41,6 @@ export function ClienteBarbeariaPerfil() {
   const navigate = useNavigate();
   const { barbeariaId } = useParams<{ barbeariaId: string }>();
   const { logout } = useClienteAuth();
-  const { modo, setModo } = useModoTema();
   const [perfil, setPerfil] = useState<PerfilData | null>(null);
   const [barbearias, setBarbearias] = useState<BarbeariaConectada[]>([]);
   const [nome, setNome] = useState('');
@@ -144,13 +143,13 @@ export function ClienteBarbeariaPerfil() {
       {/* Header do Perfil (Avatar + Badge) */}
       <div className="flex flex-col items-center justify-center text-center mb-8">
         <div className="relative mb-4">
-          <div className="w-24 h-24 rounded-full flex items-center justify-center bg-[var(--fundo-sidebar)] border-2 border-[var(--amber)] shadow-md">
-            <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '32px', color: 'var(--amber)', fontWeight: 700 }}>
+          <div className="w-24 h-24 rounded-full flex items-center justify-center bg-[var(--fundo-sidebar)] border-2 border-[var(--cor-primaria)] shadow-md">
+            <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '32px', color: 'var(--cor-primaria)', fontWeight: 700 }}>
               {perfil?.usuario.nome ? perfil.usuario.nome.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) : <User size={32} />}
             </span>
           </div>
           {tier.show && (
-            <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-[var(--amber)] text-[var(--texto-sobre-primaria)] rounded-full px-3 py-1 flex items-center gap-1 shadow-md whitespace-nowrap border border-[var(--borda)]">
+            <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-[var(--cor-primaria)] text-[var(--texto-sobre-primaria)] rounded-full px-3 py-1 flex items-center gap-1 shadow-md whitespace-nowrap border border-[var(--borda)]">
               <Medal size={14} weight="fill" />
               <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 700 }}>
                 {tier.label}
@@ -172,7 +171,7 @@ export function ClienteBarbeariaPerfil() {
       {/* Stats Horizontais */}
       <div className="grid grid-cols-3 gap-3 mb-8">
         <div className="flex flex-col items-center justify-center p-4 rounded-md shadow-sm" style={{ background: 'var(--fundo-sidebar)', border: '1px solid var(--borda)' }}>
-          <CalendarCheck size={20} weight="bold" style={{ color: 'var(--amber)', marginBottom: '8px' }} />
+          <CalendarCheck size={20} weight="bold" style={{ color: 'var(--cor-primaria)', marginBottom: '8px' }} />
           <span style={{ fontFamily: 'var(--fonte-mono)', fontSize: '22px', fontWeight: 700, color: 'var(--text-primary)' }}>
             {atendimentos}
           </span>
@@ -212,12 +211,12 @@ export function ClienteBarbeariaPerfil() {
           <div>
             <label className="block mb-1.5" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--text-muted)', fontWeight: 600 }}>Nome Completo</label>
             <input value={nome} onChange={e => setNome(e.target.value)}
-                   className="w-full bg-[var(--fundo-input)] border border-[var(--borda)] rounded p-3 text-[var(--text-primary)] font-interface focus:outline-none focus:border-[var(--amber)] transition-colors" />
+                   className="w-full bg-[var(--fundo-input)] border border-[var(--borda)] rounded p-3 text-[var(--text-primary)] font-interface focus:outline-none focus:border-[var(--cor-primaria)] transition-colors" />
           </div>
           <div>
             <label className="block mb-1.5" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--text-muted)', fontWeight: 600 }}>WhatsApp</label>
             <input value={telefone} onChange={e => setTelefone(e.target.value)} placeholder="(00) 00000-0000"
-                   className="w-full bg-[var(--fundo-input)] border border-[var(--borda)] rounded p-3 text-[var(--text-primary)] font-interface focus:outline-none focus:border-[var(--amber)] transition-colors" style={{ fontFamily: 'var(--fonte-mono)' }} />
+                   className="w-full bg-[var(--fundo-input)] border border-[var(--borda)] rounded p-3 text-[var(--text-primary)] font-interface focus:outline-none focus:border-[var(--cor-primaria)] transition-colors" style={{ fontFamily: 'var(--fonte-mono)' }} />
           </div>
           <div>
             <label className="block mb-1.5" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--text-muted)', fontWeight: 600 }}>Email (Somente leitura)</label>
@@ -242,31 +241,7 @@ export function ClienteBarbeariaPerfil() {
         <h2 className="flex items-center gap-2 mb-4" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 600 }}>
           <Monitor size={16} weight="bold" /> Aparência
         </h2>
-        <div className="flex bg-[var(--fundo-input)] border border-[var(--borda)] rounded-md overflow-hidden p-1 gap-1">
-          <button
-            onClick={() => setModo('light')}
-            className={`flex-1 py-2 rounded flex flex-col items-center justify-center gap-1.5 transition-all ${modo === 'light' ? 'text-[var(--texto-sobre-primaria)] bg-[var(--amber)] shadow-sm font-bold' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'}`}
-          >
-            <Sun size={18} weight={modo === 'light' ? 'fill' : 'regular'} />
-            <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Claro</span>
-          </button>
-
-          <button
-            onClick={() => setModo('dark')}
-            className={`flex-1 py-2 rounded flex flex-col items-center justify-center gap-1.5 transition-all ${modo === 'dark' ? 'text-[var(--texto-sobre-primaria)] bg-[var(--amber)] shadow-sm font-bold' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'}`}
-          >
-            <Moon size={18} weight={modo === 'dark' ? 'fill' : 'regular'} />
-            <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Escuro</span>
-          </button>
-
-          <button
-            onClick={() => setModo('auto')}
-            className={`flex-1 py-2 rounded flex flex-col items-center justify-center gap-1.5 transition-all ${modo === 'auto' ? 'text-[var(--texto-sobre-primaria)] bg-[var(--amber)] shadow-sm font-bold' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'}`}
-          >
-            <Monitor size={18} weight={modo === 'auto' ? 'fill' : 'regular'} />
-            <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Auto</span>
-          </button>
-        </div>
+        <SeletorTema />
       </div>
 
       {/* Barbearias conectadas */}
@@ -277,10 +252,10 @@ export function ClienteBarbeariaPerfil() {
           </h2>
           <div className="flex flex-col gap-2">
             {barbearias.map(b => (
-              <div key={b.id} className="flex items-center justify-between p-3.5 rounded-md transition-colors bg-[var(--superficie-1)] border border-[var(--borda)] hover:border-[var(--amber)]">
+              <div key={b.id} className="flex items-center justify-between p-3.5 rounded-md transition-colors bg-[var(--superficie-1)] border border-[var(--borda)] hover:border-[var(--cor-primaria)]">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full bg-[var(--superficie-2)] border border-[var(--borda)] flex items-center justify-center">
-                    <Scissors size={14} className="text-[var(--amber)]" />
+                    <Scissors size={14} className="text-[var(--cor-primaria)]" />
                   </div>
                   <span style={{ fontFamily: 'var(--fonte-interface)', fontWeight: 600, color: 'var(--text-primary)', fontSize: '14px' }}>{b.nome}</span>
                 </div>

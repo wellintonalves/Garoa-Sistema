@@ -37,7 +37,8 @@ export default {
           hover: 'var(--cor-primaria-hover)',
           ativa: 'var(--cor-primaria-ativa)',
           suave: 'var(--cor-primaria-suave)',
-          texto: 'var(--texto-sobre-primaria)',
+          texto: 'var(--cor-primaria-texto)',
+          contraste: 'var(--texto-sobre-primaria)',
         },
         'primaria-texto': 'var(--cor-primaria-texto)',
         sucesso: {
@@ -56,7 +57,7 @@ export default {
           DEFAULT: 'var(--erro)',
           fundo: 'var(--erro-fundo)',
         },
-        perigo: 'var(--perigo)',
+        perigo: 'var(--erro)',
       },
       fontFamily: {
         sans: ['var(--fonte-sans)', 'var(--fonte-interface)', 'system-ui', 'sans-serif'],
@@ -65,6 +66,7 @@ export default {
       },
       borderRadius: {
         none: 'var(--raio-none)',
+        xs: 'var(--raio-xs)',
         sm: 'var(--raio-sm)',
         DEFAULT: 'var(--raio-md)',
         md: 'var(--raio-md)',
@@ -81,12 +83,14 @@ export default {
         4: 'var(--espaco-4)',
         5: 'var(--espaco-5)',
         6: 'var(--espaco-6)',
+        7: 'var(--espaco-7)',
         8: 'var(--espaco-8)',
+        9: 'var(--espaco-9)',
         10: 'var(--espaco-10)',
         12: 'var(--espaco-12)',
         16: 'var(--espaco-16)',
-        20: 'var(--espaco-20)',
-        24: 'var(--espaco-24)',
+        20: 'var(--espaco-20, 5rem)',
+        24: 'var(--espaco-24, 6rem)',
       },
       boxShadow: {
         1: 'var(--elevacao-1)',

@@ -4,9 +4,8 @@ import { useAuth } from './hooks/useAuth';
 import { DashboardLayout } from './layouts/DashboardLayout';
 import { LoadingSpinner } from './components/LoadingSpinner';
 import { SkeletonPage } from './components/Skeleton';
-import { type ReactNode, useEffect, lazy, Suspense } from 'react';
+import { type ReactNode, lazy, Suspense } from 'react';
 import { useTema } from './hooks/useTema';
-import { useModoTema } from './hooks/useModoTema';
 
 import { ClientAuthProvider } from './contexts/ClientAuthContext';
 import { ClientLayout } from './layouts/ClientLayout';
@@ -70,12 +69,7 @@ function RotaProtegida({ children }: { children: ReactNode }) {
 }
 
 export function App() {
-  useModoTema();
-  const { carregarTemaCache } = useTema();
-
-  useEffect(() => {
-    carregarTemaCache();
-  }, [carregarTemaCache]);
+  useTema();
 
   return (
     <BrowserRouter>

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useBarbeiroAuth } from '../../hooks/useBarbeiroAuth';
-import { useModoTema } from '../../hooks/useModoTema';
-import { User, Scissors, SignOut as LogOut, Sun, Moon, Monitor, Camera, Phone, Star, FloppyDisk as Save, Clock } from '@phosphor-icons/react';
+import { SeletorTema } from '../../components/SeletorTema';
+import { User, Scissors, SignOut as LogOut, Camera, Phone, Star, FloppyDisk as Save, Clock } from '@phosphor-icons/react';
 import barbeiroApi from '../../api/barbeiroApi';
 import { BarbeiroHorariosCard } from './BarbeiroHorariosCard';
 
@@ -19,7 +19,6 @@ interface PerfilBarbeiro {
 
 export function BarbeiroPerfil() {
   const { logout } = useBarbeiroAuth();
-  const { modo, setModo } = useModoTema();
   const [perfil, setPerfil] = useState<PerfilBarbeiro | null>(null);
   
   const [editando, setEditando] = useState(false);
@@ -269,37 +268,10 @@ export function BarbeiroPerfil() {
 
       {/* Aparência */}
       <div className="mb-10">
-        <h2 className="text-xs font-semibold uppercase tracking-wider mb-4" style={{ color: 'var(--text-muted)' }}>
+        <h2 className="text-xs font-semibold uppercase tracking-wider mb-4" style={{ color: 'var(--texto-secundario)' }}>
           Preferência de Tema
         </h2>
-        <div className="flex rounded-xl overflow-hidden border" style={{ background: 'var(--bg-surface)', borderColor: 'var(--border)' }}>
-          <button 
-            onClick={() => setModo('light')}
-            className={`flex-1 py-4 flex flex-col items-center gap-2 transition-colors ${modo === 'light' ? 'bg-[var(--superficie)] dark:bg-[var(--superficie)]' : 'hover:bg-[var(--superficie)] dark:hover:bg-[var(--superficie)]'}`}
-            style={{ color: modo === 'light' ? 'var(--cor-primaria)' : 'var(--text-muted)' }}
-          >
-            <Sun size={20} />
-            <span className="text-xs font-medium">Claro</span>
-          </button>
-          <div className="w-[1px]" style={{ background: 'var(--border)' }} />
-          <button 
-            onClick={() => setModo('dark')}
-            className={`flex-1 py-4 flex flex-col items-center gap-2 transition-colors ${modo === 'dark' ? 'bg-[var(--superficie)] dark:bg-[var(--superficie)]' : 'hover:bg-[var(--superficie)] dark:hover:bg-[var(--superficie)]'}`}
-            style={{ color: modo === 'dark' ? 'var(--cor-primaria)' : 'var(--text-muted)' }}
-          >
-            <Moon size={20} />
-            <span className="text-xs font-medium">Escuro</span>
-          </button>
-          <div className="w-[1px]" style={{ background: 'var(--border)' }} />
-          <button 
-            onClick={() => setModo('auto')}
-            className={`flex-1 py-4 flex flex-col items-center gap-2 transition-colors ${modo === 'auto' ? 'bg-[var(--superficie)] dark:bg-[var(--superficie)]' : 'hover:bg-[var(--superficie)] dark:hover:bg-[var(--superficie)]'}`}
-            style={{ color: modo === 'auto' ? 'var(--cor-primaria)' : 'var(--text-muted)' }}
-          >
-            <Monitor size={20} />
-            <span className="text-xs font-medium">Sistema</span>
-          </button>
-        </div>
+        <SeletorTema />
       </div>
 
       <button onClick={handleLogout}

@@ -13,6 +13,10 @@ import '@fontsource/jetbrains-mono/500.css';
 import '@fontsource-variable/jetbrains-mono';
 import './index.css';
 import './components/ui/ui.css';
+import { aplicarModo, resolverModo, observarSistema } from './theme/tema';
+
+aplicarModo(resolverModo());
+observarSistema();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

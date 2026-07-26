@@ -8,7 +8,6 @@ import {
 } from '@phosphor-icons/react';
 import { useAuth } from '../hooks/useAuth';
 import api from '../api/client';
-import { ToggleModo } from './ToggleModo';
 
 interface SidebarProps {
   mobileOpen: boolean;
@@ -138,8 +137,6 @@ export function Sidebar({ mobileOpen, onCloseMobile }: SidebarProps) {
             </NavLink>
           ))}
         </nav>
-
-        {!recolhido && <ToggleModo />}
 
         {/* Usuário + Logout (Sem uppercase na navegação) */}
         <div style={{ borderTop: '1px solid var(--borda-sutil, var(--border))', padding: '12px' }}>

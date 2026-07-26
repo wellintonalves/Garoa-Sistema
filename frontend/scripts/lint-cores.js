@@ -8,8 +8,7 @@ const srcDir = path.resolve(__dirname, '../src');
 
 const ARQUIVOS_PERMITIDOS = [
   'tokens.css',
-  'tokens.ts',
-  'presets.ts'
+  'tokens.ts'
 ];
 
 // Regex para detectar hex literais (ex: #ffffff, #F97316) ou classes fixas do Tailwind (ex: bg-black, text-white, zinc-800, red-500)
@@ -51,7 +50,7 @@ console.log('🔍 Executando lint:cores em frontend/src/ ...');
 scanDir(srcDir);
 
 if (errosEncontrados > 0) {
-  console.error(`🚫 Falha no build: Foram encontradas ${errosEncontrados} ocorrências de cores hex literais ou classes fixas do Tailwind fora de tokens.css, tokens.ts ou presets.ts.`);
+  console.error(`🚫 Falha no build: Foram encontradas ${errosEncontrados} ocorrências de cores hex literais ou classes fixas do Tailwind fora de tokens.css ou tokens.ts.`);
   console.error('👉 Por favor, utilize os tokens semânticos do Design System v2 (var(--cor-primaria), var(--sucesso), classes semânticas, etc.).');
   process.exit(1);
 } else {

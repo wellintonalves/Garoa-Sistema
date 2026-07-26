@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useModoTema } from '../../hooks/useModoTema';
+import { SeletorTema } from '../../components/SeletorTema';
 import {
   Botao,
   Card,
@@ -25,13 +25,9 @@ import { Search, Calendar } from 'lucide-react';
 import { CORES_CATEGORIA_SERVICO } from '../../styles/tokens';
 
 const ConteudoDev: React.FC = () => {
-  const { modo, setModo } = useModoTema();
   const { addToast } = useToast();
   const [loadingBtn, setLoadingBtn] = useState(false);
   const [inputVal, setInputVal] = useState('');
-
-  const ehEscuro = modo === 'dark' || (modo === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-  const alternarModo = () => setModo(ehEscuro ? 'light' : 'dark');
 
   const simularLoading = () => {
     setLoadingBtn(true);
@@ -51,9 +47,7 @@ const ConteudoDev: React.FC = () => {
           </p>
         </div>
         <div style={{ display: 'flex', gap: 'var(--espaco-3)' }}>
-          <Botao variante="secundario" onClick={alternarModo}>
-            Tema Atual: {ehEscuro ? '🌙 Escuro' : '☀️ Claro'}
-          </Botao>
+          <SeletorTema />
         </div>
       </div>
 

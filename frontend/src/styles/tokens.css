@@ -1,38 +1,47 @@
 /* ==========================================================================
-   VALEN BARBER — DESIGN SYSTEM v2 "IVORY"
-   Camada de tokens. Fonte de verdade de toda cor, fonte, espaco e raio.
+   VALEN BARBER — DESIGN SYSTEM v3
+   Modo claro "Ivory"  — referencia: anthropic.com
+   Modo escuro "Slate" — referencia: claude.com (Claude Design System)
 
-   Paleta extraida das variaveis CSS de producao de anthropic.com (26/07/2026).
-   NAO altere estes valores sem atualizar docs/DESIGN_SYSTEM.md.
+   Identidade fixa do produto. NAO existe mais customizacao de cor por barbearia.
+   Todos os pares texto/fundo foram medidos em WCAG 2.1. Nao altere um hex sem
+   recalcular o contraste e atualizar docs/DESIGN_SYSTEM.md.
    tokens.css e tokens.ts precisam ser mantidos em sincronia.
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
-   1. PRIMITIVOS — paleta Anthropic. Nunca use direto em componente.
+   1. PRIMITIVOS — nunca usar direto em componente
    -------------------------------------------------------------------------- */
 :root {
-  /* Ivory — superficies claras */
+  /* Ivory — superficies claras (anthropic.com) */
   --swatch-ivory-light: #faf9f5;
   --swatch-ivory-medium: #f0eee6;
   --swatch-ivory-dark: #e8e6dc;
   --swatch-oat: #e3dacc;
 
-  /* Slate — textos e superficies escuras */
+  /* Slate — superficies escuras (Claude, vies quente) */
+  --swatch-slate-950: #0d0d0d;
+  --swatch-slate-900: #1a1a19;
+  --swatch-slate-800: #2c2c2a;
+  --swatch-slate-700: #383835;
   --swatch-slate-dark: #141413;
   --swatch-slate-medium: #3d3d3a;
   --swatch-slate-light: #5e5d59;
-  --swatch-slate-faded-10: #1414131a;
-  --swatch-slate-faded-20: #14141333;
 
-  /* Cloud — desabilitados e placeholders */
+  /* Cloud — neutros de apoio */
   --swatch-cloud-dark: #87867f;
   --swatch-cloud-medium: #b0aea5;
   --swatch-cloud-light: #d1cfc5;
+  --swatch-cloud-warm: #c3c2b7;
+  --swatch-cloud-muted: #898781;
 
-  /* Acento e sinalizacao */
+  /* Marca — terracota, identico nos dois modos */
   --swatch-clay: #d97757;
-  --swatch-accent: #c6613f;
+  --swatch-clay-deep: #c6613f;
+  --swatch-clay-soft: #e08e70;
   --swatch-kraft: #d4a27f;
+
+  /* Sinalizacao */
   --swatch-olive: #788c5d;
   --swatch-sky: #6a9bcc;
   --swatch-manilla: #ebdbbc;
@@ -40,16 +49,15 @@
   --swatch-coral: #ebcece;
   --swatch-cactus: #bcd1ca;
   --swatch-heather: #cbcadb;
-  --swatch-ivory-faded-10: #faf9f51a;
-  --swatch-ivory-faded-20: #faf9f533;
 }
 
 /* --------------------------------------------------------------------------
-   2. TEMA CLARO — Ivory (padrao do sistema)
+   2. MODO CLARO — Ivory (padrao de fabrica)
    -------------------------------------------------------------------------- */
 :root,
 [data-tema="claro"] {
-  /* Superficies */
+  color-scheme: light;
+
   --fundo-pagina: #faf9f5;
   --fundo-superficie: #f0eee6;
   --fundo-superficie-2: #e8e6dc;
@@ -57,28 +65,25 @@
   --fundo-inverso: #141413;
   --fundo-overlay: #14141399;
 
-  /* Texto — contrastes medidos sobre --fundo-pagina */
-  --texto-principal: #141413;      /* 17.50:1  AAA */
-  --texto-secundario: #5e5d59;     /*  6.26:1  AA  */
-  --texto-terciario: #87867f;      /*  3.47:1  so >=18px */
+  --texto-principal: #141413;
+  --texto-secundario: #5e5d59;
+  --texto-terciario: #87867f;
   --texto-inverso: #faf9f5;
   --texto-placeholder: #87867f;
   --texto-desabilitado: #b0aea5;
 
-  /* Bordas */
-  --borda-sutil: #1414131a;        /* decorativo, divisor */
-  --borda-media: #14141333;        /* decorativo */
-  --borda-forte: #87867f;          /* 3.47:1 — input, checkbox, radio, toggle */
+  --borda-sutil: #1414131a;
+  --borda-media: #14141333;
+  --borda-forte: #87867f;
   --borda-foco: #d97757;
 
-  /* Marca */
   --cor-primaria: #d97757;
   --cor-primaria-hover: #c6613f;
   --cor-primaria-ativa: #b0552f;
   --cor-primaria-suave: #f7e6df;
-  --texto-sobre-primaria: #141413; /* 5.90:1 — NUNCA branco (3.12:1) */
+  --texto-sobre-primaria: #141413;
+  --cor-primaria-texto: #a8492a;
 
-  /* Sinalizacao — cada par texto/fundo >= 4.5:1 */
   --sucesso: #4c593b;
   --sucesso-fundo: #bcd1ca;
   --info: #476788;
@@ -88,115 +93,83 @@
   --erro: #87465c;
   --erro-fundo: #ebcece;
 
-  /* Elevacao */
   --sombra-1: 0 1px 2px #1414130d;
   --sombra-2: 0 2px 8px #1414130f, 0 1px 2px #1414130a;
   --sombra-3: 0 8px 24px #14141314, 0 2px 6px #1414130d;
-  --elevacao-1: var(--sombra-1);
-  --elevacao-2: var(--sombra-2);
-  --elevacao-3: var(--sombra-3);
 
-  /* Aliases de compatibilidade — nao usar em codigo novo */
-  --superficie-1: var(--fundo-superficie);
-  --superficie-2: var(--fundo-superficie-2);
-  --superficie-3: var(--fundo-superficie-3);
-  --bg-primary: var(--fundo-pagina);
-  --bg-surface: var(--fundo-superficie);
-  --bg-surface2: var(--fundo-superficie-2);
-  --bg-card: var(--fundo-superficie);
-  --bg-input: var(--fundo-superficie-2);
-  --surface: var(--fundo-superficie);
-  --card-bg: var(--fundo-superficie);
-  --fundo-card: var(--fundo-superficie);
-  --fundo-input: var(--fundo-superficie-2);
-  --fundo-sidebar: var(--fundo-superficie);
-  --text-primary: var(--texto-principal);
-  --text-secondary: var(--texto-secundario);
-  --text-muted: var(--texto-terciario);
-  --text-placeholder: var(--texto-placeholder);
-  --text-disabled: var(--texto-desabilitado);
-  --error-text: var(--erro);
-  --success-text: var(--sucesso);
-  --warning-text: var(--aviso);
-  --cor-alerta: var(--erro);
-  --cor-primaria-texto: #a8492a;   /* clay escurecido: 5.46:1 sobre ivory */
-  --cor-primaria-rgb: 217, 119, 87;
-  --cor-icone: var(--texto-secundario);
-  --borda: var(--borda-sutil);
-  --border: var(--borda-sutil);
-  --borda-input: var(--borda-forte);
-  --border-hover: var(--borda-forte);
-  --hover: var(--fundo-superficie-2);
-
-  /* Niveis de fidelidade — mapeados na paleta Anthropic */
   --cor-bronze: #774d32;
   --cor-bronze-fundo: #e3dacc;
-  --cor-bronze-borda: #d4a27f;
   --cor-prata: #5e5d59;
   --cor-prata-fundo: #e8e6dc;
-  --cor-prata-borda: #b0aea5;
   --cor-ouro: #755c1e;
   --cor-ouro-fundo: #ebdbbc;
-  --cor-ouro-borda: #d4a27f;
   --cor-diamante: #476788;
   --cor-diamante-fundo: #dbe7f2;
-  --cor-diamante-borda: #6a9bcc;
   --cor-whatsapp: #3f6138;
   --cor-whatsapp-hover: #2f4a29;
 }
 
 /* --------------------------------------------------------------------------
-   3. TEMA ESCURO — Slate (estruturado, ativado por data-tema="escuro")
+   3. MODO ESCURO — Slate (referencia Claude Design System)
    -------------------------------------------------------------------------- */
 [data-tema="escuro"] {
-  /* Superficies */
-  --fundo-pagina: #141413;
-  --fundo-superficie: #1f1f1d;
-  --fundo-superficie-2: #2a2a27;
-  --fundo-superficie-3: #3d3d3a;
-  --fundo-inverso: #faf9f5;
-  --fundo-overlay: #0a0a0acc;
+  color-scheme: dark;
 
-  /* Texto */
-  --texto-principal: #faf9f5;      /* 17.50:1  AAA */
-  --texto-secundario: #d1cfc5;     /* 11.80:1  AAA */
-  --texto-terciario: #b0aea5;      /*  8.29:1  AAA */
+  --fundo-pagina: #0d0d0d;
+  --fundo-superficie: #1a1a19;
+  --fundo-superficie-2: #2c2c2a;
+  --fundo-superficie-3: #383835;
+  --fundo-inverso: #faf9f5;
+  --fundo-overlay: #000000cc;
+
+  --texto-principal: #ffffff;
+  --texto-secundario: #c3c2b7;
+  --texto-terciario: #898781;
   --texto-inverso: #141413;
-  --texto-placeholder: #87867f;
+  --texto-placeholder: #898781;
   --texto-desabilitado: #5e5d59;
 
-  /* Bordas */
-  --borda-sutil: #faf9f51a;
-  --borda-media: #faf9f533;
-  --borda-forte: #7a7972;          /* 4.22:1 */
+  --borda-sutil: #ffffff1a;
+  --borda-media: #ffffff33;
+  --borda-forte: #ffffff66;
   --borda-foco: #d97757;
 
-  /* Marca */
-  --cor-primaria: #d97757;
-  --cor-primaria-hover: #e08e70;
-  --cor-primaria-ativa: #c6613f;
+  --cor-primaria: #c6613f;
+  --cor-primaria-hover: #d97757;
+  --cor-primaria-ativa: #e08e70;
   --cor-primaria-suave: #3a251d;
   --texto-sobre-primaria: #141413;
+  --cor-primaria-texto: #d97757;
 
-  /* Sinalizacao */
-  --sucesso: #a8c48a;
-  --sucesso-fundo: #2b3a2a;
-  --info: #8fb8dd;
-  --info-fundo: #23323f;
-  --aviso: #e0c68f;
-  --aviso-fundo: #3a3122;
-  --erro: #e08fa5;
-  --erro-fundo: #3d2229;
+  --sucesso: #7ec98a;
+  --sucesso-fundo: #122a17;
+  --info: #6da7ec;
+  --info-fundo: #032042;
+  --aviso: #e0b155;
+  --aviso-fundo: #2e2208;
+  --erro: #ec7e7e;
+  --erro-fundo: #3c0e0e;
 
-  /* Elevacao */
-  --sombra-1: 0 1px 2px #00000040;
-  --sombra-2: 0 2px 8px #00000059, 0 1px 2px #00000040;
-  --sombra-3: 0 8px 24px #00000073, 0 2px 6px #00000059;
-  --elevacao-1: var(--sombra-1);
-  --elevacao-2: var(--sombra-2);
-  --elevacao-3: var(--sombra-3);
+  --sombra-1: 0 1px 2px #00000059;
+  --sombra-2: 0 2px 8px #00000073, 0 1px 2px #00000059;
+  --sombra-3: 0 8px 24px #0000008c, 0 2px 6px #00000073;
 
-  /* Aliases de compatibilidade */
+  --cor-bronze: #d4a27f;
+  --cor-bronze-fundo: #3a2b20;
+  --cor-prata: #d1cfc5;
+  --cor-prata-fundo: #2c2c2a;
+  --cor-ouro: #e0c68f;
+  --cor-ouro-fundo: #3a3122;
+  --cor-diamante: #8fb8dd;
+  --cor-diamante-fundo: #23323f;
+  --cor-whatsapp: #7ec98a;
+  --cor-whatsapp-hover: #a8c48a;
+}
+
+/* --------------------------------------------------------------------------
+   4. ALIASES DE COMPATIBILIDADE — resolvem sozinhos nos dois modos
+   -------------------------------------------------------------------------- */
+:root {
   --superficie-1: var(--fundo-superficie);
   --superficie-2: var(--fundo-superficie-2);
   --superficie-3: var(--fundo-superficie-3);
@@ -210,6 +183,8 @@
   --fundo-card: var(--fundo-superficie);
   --fundo-input: var(--fundo-superficie-2);
   --fundo-sidebar: var(--fundo-superficie);
+  --hover: var(--fundo-superficie-2);
+
   --text-primary: var(--texto-principal);
   --text-secondary: var(--texto-secundario);
   --text-muted: var(--texto-terciario);
@@ -219,41 +194,26 @@
   --success-text: var(--sucesso);
   --warning-text: var(--aviso);
   --cor-alerta: var(--erro);
-  --cor-primaria-texto: #e08e70;
-  --cor-primaria-rgb: 217, 119, 87;
   --cor-icone: var(--texto-secundario);
+
   --borda: var(--borda-sutil);
   --border: var(--borda-sutil);
   --borda-input: var(--borda-forte);
   --border-hover: var(--borda-forte);
-  --hover: var(--fundo-superficie-2);
 
-  /* Niveis de fidelidade */
-  --cor-bronze: #d4a27f;
-  --cor-bronze-fundo: #3a2b20;
-  --cor-bronze-borda: #8a5a3c;
-  --cor-prata: #d1cfc5;
-  --cor-prata-fundo: #2a2a27;
-  --cor-prata-borda: #7a7972;
-  --cor-ouro: #e0c68f;
-  --cor-ouro-fundo: #3a3122;
-  --cor-ouro-borda: #d4a27f;
-  --cor-diamante: #8fb8dd;
-  --cor-diamante-fundo: #23323f;
-  --cor-diamante-borda: #6a9bcc;
-  --cor-whatsapp: #a8c48a;
-  --cor-whatsapp-hover: #bcd1ca;
+  --elevacao-1: var(--sombra-1);
+  --elevacao-2: var(--sombra-2);
+  --elevacao-3: var(--sombra-3);
 }
 
 /* --------------------------------------------------------------------------
-   4. TIPOGRAFIA
+   5. TIPOGRAFIA
    -------------------------------------------------------------------------- */
 :root {
   --fonte-sans: "Inter Tight", -apple-system, "Segoe UI", Arial, sans-serif;
   --fonte-serif: "Newsreader", Georgia, "Times New Roman", serif;
   --fonte-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
 
-  /* Escala fluida. Minimo absoluto do sistema: 0.8125rem (13px). */
   --texto-display: clamp(2.5rem, 1.9rem + 2.6vw, 3.9rem);
   --texto-h1: clamp(1.75rem, 1.6rem + 0.7vw, 2.25rem);
   --texto-h2: 1.5rem;
@@ -281,19 +241,19 @@
 }
 
 /* --------------------------------------------------------------------------
-   5. ESPACAMENTO E RAIO
+   6. ESPACAMENTO, RAIO E ALVOS
    -------------------------------------------------------------------------- */
 :root {
   --espaco-0: 0;
-  --espaco-1: 0.25rem;   /*  4px — gap label/campo */
-  --espaco-2: 0.5rem;    /*  8px */
-  --espaco-3: 0.75rem;   /* 12px */
-  --espaco-4: 1rem;      /* 16px — padding de card no mobile */
-  --espaco-5: 1.5rem;    /* 24px — padding de card no desktop */
-  --espaco-6: 2rem;      /* 32px — secao */
-  --espaco-7: 2.5rem;    /* 40px */
-  --espaco-8: 3rem;      /* 48px */
-  --espaco-9: 4rem;      /* 64px — respiro entre blocos */
+  --espaco-1: 0.25rem;
+  --espaco-2: 0.5rem;
+  --espaco-3: 0.75rem;
+  --espaco-4: 1rem;
+  --espaco-5: 1.5rem;
+  --espaco-6: 2rem;
+  --espaco-7: 2.5rem;
+  --espaco-8: 3rem;
+  --espaco-9: 4rem;
   --espaco-10: 5rem;
   --espaco-12: 6rem;
   --espaco-16: 8rem;
@@ -307,13 +267,12 @@
   --raio-2xl: 1.5rem;
   --raio-full: 9999px;
 
-  /* Alvos de toque — Lei de Fitts */
   --alvo-desktop: 40px;
   --alvo-mobile: 48px;
 }
 
 /* --------------------------------------------------------------------------
-   6. BREAKPOINTS (referencia; media queries usam os valores literais)
+   7. BREAKPOINTS
    -------------------------------------------------------------------------- */
 :root {
   --bp-sm: 375px;
@@ -328,4 +287,27 @@
   --breakpoint-2xl: 1920px;
   --largura-max-conteudo: 1280px;
   --container-md: 28rem;
+}
+
+/* --------------------------------------------------------------------------
+   8. MOVIMENTO
+   -------------------------------------------------------------------------- */
+:root {
+  --dur-rapida: 120ms;
+  --dur-base: 180ms;
+  --dur-lenta: 280ms;
+  --ease-saida: cubic-bezier(0.215, 0.61, 0.355, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-rapida: 0ms;
+    --dur-base: 0ms;
+    --dur-lenta: 0ms;
+  }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

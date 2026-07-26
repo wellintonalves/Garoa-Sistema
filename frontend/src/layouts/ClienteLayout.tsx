@@ -3,7 +3,6 @@ import { Outlet, useNavigate, useLocation, useParams, Navigate } from 'react-rou
 import { House, CalendarBlank, Gift, User, ChatCircle } from '@phosphor-icons/react';
 import { useEffect, useState } from 'react';
 import clienteApi from '../api/clienteApi';
-import { useTema } from '../hooks/useTema';
 import { useClienteAuth } from '../hooks/useClienteAuth';
 
 interface BarbeariaInfo {
@@ -54,8 +53,6 @@ export function ClienteLayout() {
   const { barbeariaId } = useParams<{ barbeariaId: string }>();
   const [barbearia, setBarbearia] = useState<BarbeariaInfo | null>(null);
   const { cliente, carregando: authCarregando } = useClienteAuth();
-  const { carregarTemaCliente, limparTema } = useTema();
-
   useEffect(() => {
     if (barbeariaId) {
       // Busca dados da barbearia via minhas-barbearias para obter o nome
@@ -63,16 +60,12 @@ export function ClienteLayout() {
         const found = res.data.find((b: BarbeariaInfo) => b.id === barbeariaId);
         if (found) {
           setBarbearia(found);
-          // Busca identidade visual da barbearia e aplica o tema
-          carregarTemaCliente(found.slug);
         }
       }).catch(() => {
         navigate('/cliente/home');
       });
     }
-    // Cleanup: ao sair do contexto da barbearia, restaura tema padrão
-    return () => { limparTema(); };
-  }, [barbeariaId, carregarTemaCliente, limparTema]);
+  }, [barbeariaId, navigate]);
 
   // Route guard — bloqueia acesso sem autenticação de cliente (após todos os hooks)
   if (!authCarregando && !cliente) {
@@ -98,13 +91,13 @@ export function ClienteLayout() {
             {barbearia?.nome || 'Barbearia'}
           </h1>
           {barbearia?.createdAt && (
-            <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', letterSpacing: '0.02em', color: 'var(--cor-primaria, var(--amber))', textTransform: 'none', marginTop: '4px', marginBottom: '12px' }}>
+            <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', letterSpacing: '0.02em', color: 'var(--cor-primaria)', textTransform: 'none', marginTop: '4px', marginBottom: '12px' }}>
               Desde {new Date(barbearia.createdAt).getFullYear()}
             </p>
           )}
           <div className="flex items-center w-full px-6 gap-2">
             <div className="flex-1 h-px" style={{ background: 'var(--borda-sutil, var(--borda))' }} />
-            <div style={{ width: '6px', height: '6px', background: 'var(--cor-primaria, var(--amber))', transform: 'rotate(45deg)' }} />
+            <div style={{ width: '6px', height: '6px', background: 'var(--cor-primaria)', transform: 'rotate(45deg)' }} />
             <div className="flex-1 h-px" style={{ background: 'var(--borda-sutil, var(--borda))' }} />
           </div>
         </div>
@@ -133,7 +126,7 @@ export function ClienteLayout() {
         {/* Rodapé Sidebar (Perfil) */}
         <div className="p-4 border-t" style={{ borderColor: 'var(--borda-sutil, var(--borda))' }}>
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(var(--cor-primaria-rgb), 0.12)', color: 'var(--cor-primaria, var(--amber))', fontFamily: 'var(--fonte-interface)', fontSize: '12px', fontWeight: 600 }}>
+            <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(var(--cor-primaria-rgb), 0.12)', color: 'var(--cor-primaria)', fontFamily: 'var(--fonte-interface)', fontSize: '12px', fontWeight: 600 }}>
               {cliente?.nome.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase() || 'CL'}
             </div>
             <div className="min-w-0">

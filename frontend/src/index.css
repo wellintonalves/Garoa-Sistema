@@ -22,6 +22,18 @@
   --dur-slow: 400ms;
 }
 
+/* Compatibilidade de tokens para componentes e opacidades */
+:root, [data-tema="claro"] {
+  --amber: var(--cor-primaria);
+  /* Cor primaria #d97757 em RGB */
+  --cor-primaria-rgb: 217, 119, 87;
+}
+[data-tema="escuro"] {
+  --amber: var(--cor-primaria);
+  /* Cor primaria #c6613f em RGB */
+  --cor-primaria-rgb: 198, 97, 63;
+}
+
 
 /* Aplicação global das fontes */
 body {
@@ -805,7 +817,7 @@ h1, h2, h3, h4, .titulo {
   transition: all 0.2s;
 }
 .btn-ghost-amber:hover {
-  background: rgba(245, 158, 11, 0.1);
+  background: rgba(var(--cor-primaria-rgb), 0.1);
 }
 .btn-ghost:active, .btn-ghost-amber:active {
   transform: scale(0.97);

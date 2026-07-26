@@ -2,7 +2,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useSearchParams, Navigate } from 'react-router-dom';
 import { useClienteAuth } from '../../hooks/useClienteAuth';
-import { useTema } from '../../hooks/useTema';
 import { Search, QrCode, MapPin, ChevronRight, LogOut, Scissors, CheckCircle, XCircle } from 'lucide-react';
 import clienteApi from '../../api/clienteApi';
 import { QrCodeScanner } from '../../components/QrCodeScanner';
@@ -19,7 +18,6 @@ interface BarbeariaItem {
 export function ClienteHome() {
   const navigate = useNavigate();
   const { cliente, logout, carregando: authCarregando } = useClienteAuth();
-  const { limparTema } = useTema();
   const [searchParams] = useSearchParams();
   const [busca, setBusca] = useState('');
   const [resultados, setResultados] = useState<BarbeariaItem[]>([]);
@@ -29,11 +27,6 @@ export function ClienteHome() {
   const [scannerAberto, setScannerAberto] = useState(false);
   const [mensagemSucesso, setMensagemSucesso] = useState<string | null>(null);
   const [mensagemErro, setMensagemErro] = useState<string | null>(null);
-
-  // Resetar para o tema padrão do sistema ao entrar na tela principal
-  useEffect(() => {
-    limparTema();
-  }, [limparTema]);
 
   // Conectar automaticamente se veio de um slug
   useEffect(() => {
@@ -139,7 +132,7 @@ export function ClienteHome() {
           </div>
           <button
             onClick={() => setScannerAberto(true)}
-            style={{ background: 'rgba(var(--cor-primaria-rgb), 0.10)', border: '1px solid var(--amber)', padding: '10px 14px', cursor: 'pointer' }}
+            style={{ background: 'rgba(var(--cor-primaria-rgb), 0.10)', border: '1px solid var(--cor-primaria)', padding: '10px 14px', cursor: 'pointer' }}
             title="Escanear QR Code"
           >
             <QrCode size={20} style={{ color: 'var(--cor-icone)' }} />
@@ -213,11 +206,11 @@ export function ClienteHome() {
                 style={{
                   background: 'var(--bg-surface)',
                   border: '1px solid var(--border)',
-                  borderLeft: '2px solid var(--amber)',
+                  borderLeft: '2px solid var(--cor-primaria)',
                   cursor: 'pointer',
                 }}
                 onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--border-hover)'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.borderLeftColor = 'var(--amber)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.borderLeftColor = 'var(--cor-primaria)'; }}
               >
                 <div className="w-12 h-12 flex items-center justify-center flex-shrink-0"
                   style={{ background: 'rgba(var(--cor-primaria-rgb), 0.10)' }}>

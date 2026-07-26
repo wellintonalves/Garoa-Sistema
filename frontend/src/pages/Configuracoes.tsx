@@ -2,26 +2,7 @@ import { useState, useEffect } from 'react';
 import { Gear as Settings, FloppyDisk as Save, QrCode, Star } from '@phosphor-icons/react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/client';
-import { CORES_REFERENCIA } from '../styles/tokens';
 import { QRCodeSVG } from 'qrcode.react';
-import { useTema } from '../hooks/useTema';
-// @ts-ignore
-import { getPalette } from 'colorthief';
-
-function rgbToHex(r: number, g: number, b: number) {
-  return '#' + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('');
-}
-
-function rgbToHsl(r: number, g: number, b: number) {
-  r /= 255; g /= 255; b /= 255;
-  const max = Math.max(r, g, b), min = Math.min(r, g, b);
-  let s = 0, l = (max + min) / 2;
-  if (max !== min) {
-    const d = max - min;
-    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-  }
-  return [0, s, l]; // Apenas S e L importam aqui
-}
 
 const diasSemana = [
   { key: 'domingo', label: 'Domingo' },
@@ -34,7 +15,6 @@ const diasSemana = [
 ];
 
 export function Configuracoes() {
-  const { aplicarTema } = useTema();
   const navigate = useNavigate();
   const [horarios, setHorarios] = useState<any>({});
   const [carregando, setCarregando] = useState(true);
@@ -85,12 +65,6 @@ export function Configuracoes() {
 
   const [barbearia, setBarbearia] = useState<any>({});
   const [salvandoBarbearia, setSalvandoBarbearia] = useState(false);
-  const [sugestaoCores, setSugestaoCores] = useState<{
-    primaria: string;
-    secundaria: string;
-    fundo: string;
-    logoBase64: string;
-  } | null>(null);
   const [nomeArquivo, setNomeArquivo] = useState<string | null>(null);
 
   async function carregarMinhaBarbearia() {
@@ -111,7 +85,6 @@ export function Configuracoes() {
     setSalvandoBarbearia(true);
     try {
       await api.put('/configuracoes/minha-barbearia', barbearia);
-      aplicarTema(barbearia);
       alert('Dados da barbearia atualizados!');
     } catch (error) {
       alert('Erro ao atualizar barbearia');
@@ -193,114 +166,15 @@ export function Configuracoes() {
                         setNomeArquivo(file.name);
                         if (file.size > 2 * 1024 * 1024) { alert('Arquivo muito grande (Max 2MB)'); return; }
                       
-                      const reader = new FileReader();
-                      reader.onload = (event) => {
-                        const base64 = event.target?.result as string;
-                        
-                        const img = new Image();
-                        img.crossOrigin = "Anonymous";
-                        img.onload = () => {
-                          const extractColors = async (imageObj: HTMLImageElement) => {
-                            try {
-                              const palette = await getPalette(imageObj, { colorCount: 3 });
-                              if (palette && palette.length >= 3) {
-                                const colors = palette.map((p: any) => {
-                                   const rgbArray = p.array ? p.array() : p;
-                                   const [, s, l] = rgbToHsl(rgbArray[0], rgbArray[1], rgbArray[2]);
-                                   return { rgb: rgbArray, hex: rgbToHex(rgbArray[0], rgbArray[1], rgbArray[2]), s, l };
-                                });
-                                
-                                colors.sort((a: any, b: any) => a.l - b.l);
-                                const fundo = colors[0]; 
-                                
-                                const remaining = [colors[1], colors[2]];
-                                remaining.sort((a: any, b: any) => b.s - a.s);
-                                const primaria = remaining[0];
-                                const secundaria = remaining[1];
-                                
-                                setSugestaoCores({
-                                   fundo: fundo.hex,
-                                   primaria: primaria.hex,
-                                   secundaria: secundaria.hex,
-                                   logoBase64: base64
-                                });
-                              } else {
-                                setBarbearia({ ...barbearia, logo: base64 });
-                              }
-                            } catch (error) {
-                              console.error('Erro ColorThief', error);
-                              setBarbearia({ ...barbearia, logo: base64 });
-                            }
-                          };
-
-                          if (file.type === 'image/svg+xml') {
-                             const canvas = document.createElement('canvas');
-                             canvas.width = img.width || 256;
-                             canvas.height = img.height || 256;
-                             const ctx = canvas.getContext('2d');
-                             if (ctx) {
-                               ctx.fillStyle = 'var(--texto-principal)';
-                               ctx.fillRect(0, 0, canvas.width, canvas.height);
-                               ctx.drawImage(img, 0, 0);
-                               const newImg = new Image();
-                               newImg.onload = () => extractColors(newImg);
-                               newImg.src = canvas.toDataURL('image/png');
-                               return;
-                             }
-                          }
-                          extractColors(img);
+                        const reader = new FileReader();
+                        reader.onload = (event) => {
+                          const base64 = event.target?.result as string;
+                          setBarbearia({ ...barbearia, logo: base64 });
                         };
-                        img.src = base64;
-                      };
-                      reader.readAsDataURL(file);
-                    }
-                  }} />
+                        reader.readAsDataURL(file);
+                      }
+                    }} />
                   </div>
-                </div>
-                
-                {sugestaoCores && (
-                  <div className="mt-4 p-4 border border-[var(--sucesso)]/30 bg-[var(--sucesso)]/10 rounded animate-fade-in">
-                    <p className="text-sm font-bold text-emerald-400 mb-2">Detectamos estas cores na sua logo. Deseja aplicá-las no sistema?</p>
-                    <div className="flex items-center gap-4 mb-4">
-                      <div className="flex flex-col items-center gap-1">
-                        <div className="w-8 h-8 rounded-full border bg-[var(--superficie-2)] border-[var(--borda)] shadow" style={{ backgroundColor: sugestaoCores.primaria }}></div>
-                        <span className="text-[10px] text-[var(--texto-secundario)]">{sugestaoCores.primaria}</span>
-                      </div>
-                      <div className="flex flex-col items-center gap-1">
-                        <div className="w-8 h-8 rounded-full border bg-[var(--superficie-2)] border-[var(--borda)] shadow" style={{ backgroundColor: sugestaoCores.secundaria }}></div>
-                        <span className="text-[10px] text-[var(--texto-secundario)]">{sugestaoCores.secundaria}</span>
-                      </div>
-                      <div className="flex flex-col items-center gap-1">
-                        <div className="w-8 h-8 rounded-full border bg-[var(--superficie-2)] border-[var(--borda)] shadow" style={{ backgroundColor: sugestaoCores.fundo }}></div>
-                        <span className="text-[10px] text-[var(--texto-secundario)]">{sugestaoCores.fundo}</span>
-                      </div>
-                    </div>
-                    <div className="flex gap-3">
-                      <button type="button" onClick={() => {
-                        setBarbearia({
-                          ...barbearia,
-                          logo: sugestaoCores.logoBase64,
-                          corPrimaria: sugestaoCores.primaria
-                        });
-                        setSugestaoCores(null);
-                      }} className="px-3 py-1.5 bg-[var(--sucesso)] hover:bg-[var(--sucesso)] text-[var(--texto-principal)] text-xs font-bold rounded">
-                        Aplicar cores sugeridas
-                      </button>
-                      <button type="button" onClick={() => {
-                        setBarbearia({ ...barbearia, logo: sugestaoCores.logoBase64 });
-                        setSugestaoCores(null);
-                      }} className="px-3 py-1.5 bg-transparent border border-[var(--borda)] hover:bg-[var(--superficie-2)] border-[var(--borda)] text-[var(--texto-secundario)] text-xs rounded">
-                        Ignorar
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <div className="grid grid-cols-1 gap-4">
-                <div>
-                  <label className="block text-xs text-[var(--texto-secundario)] mb-1">Cor Primária (Destaques)</label>
-                  <input type="color" className="w-full h-10 bg-transparent rounded cursor-pointer" value={barbearia.corPrimaria || CORES_REFERENCIA.primariaLaranja} onChange={e => setBarbearia({...barbearia, corPrimaria: e.target.value})} required />
                 </div>
               </div>
 
@@ -325,7 +199,7 @@ export function Configuracoes() {
                   <p className="mt-1" style={{ fontFamily: 'var(--fonte-numeros)' }}>R$ 45,00 — 10:30</p>
                 </div>
 
-                <button type="button" className="px-4 py-2 rounded font-bold text-[var(--texto-sobre-primaria)] text-sm" style={{ backgroundColor: barbearia.corPrimaria || CORES_REFERENCIA.primariaLaranja, fontFamily: 'var(--fonte-interface)' }}>
+                <button type="button" className="px-4 py-2 rounded font-bold text-[var(--texto-sobre-primaria)] text-sm" style={{ backgroundColor: 'var(--cor-primaria)', fontFamily: 'var(--fonte-interface)' }}>
                   Agendar Horário
                 </button>
               </div>
