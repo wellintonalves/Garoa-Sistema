@@ -156,20 +156,17 @@ Controlada pelo `ConfiguracaoController.getMinhaBarbearia` (`backend/src/control
 
 ## 4. Carregamento de Fontes
 
-Atualmente, o carregamento das fontes está centralizado no HTML e nas regras CSS:
+Atualmente, o carregamento das fontes está centralizado e otimizado com pacotes `@fontsource`:
 
-1. **Carregamento via `index.html` (`frontend/index.html`)**:
-   - A fonte principal **Montserrat** é carregada externamente diretamente do Google Fonts através de tags `<link>` no cabeçalho do documento (pesos 400, 500, 600 e 700):
-     ```html
-     <link rel="preconnect" href="https://fonts.googleapis.com">
-     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
-     ```
-   - **Não existe** uso de `@fontsource` nas dependências do projeto (`package.json`) nem carregamento via `@import` no CSS.
+1. **Carregamento de fontes (`package.json` e `index.ts/css`)**:
+   - A fonte principal **Inter Tight** é utilizada para toda a UI do sistema.
+   - Para serifa (leitura e destaques), é utilizada **Newsreader**, e para números/dinheiro/horários, **JetBrains Mono**.
+   - O projeto utiliza `@fontsource/inter-tight`, `@fontsource/newsreader` e `@fontsource/jetbrains-mono`.
 
-2. **Definição dos Tokens no CSS (`frontend/src/index.css`)**:
-   - As variáveis globais de tipografia apontam para `Montserrat`:
+2. **Definição dos Tokens no CSS (`frontend/src/styles/tokens.css`)**:
+   - As variáveis globais de tipografia apontam para as novas fontes do design system v2:
      ```css
-     --fonte-interface: 'Montserrat', system-ui, sans-serif;
-     --fonte-numeros:   'Montserrat', system-ui, sans-serif;
+     --fonte-sans: "Inter Tight", -apple-system, "Segoe UI", Arial, sans-serif;
+     --fonte-serif: "Newsreader", Georgia, "Times New Roman", serif;
+     --fonte-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
      ```

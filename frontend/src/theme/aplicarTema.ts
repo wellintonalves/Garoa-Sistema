@@ -1,5 +1,5 @@
 import { textoSobre } from '../utils/contraste';
-import { presets, PRESET_LEGADO, BlocoTokensTema } from './presets';
+import { presets, PRESET_LEGADO, PRESET_PADRAO, BlocoTokensTema } from './presets';
 import { CORES_REFERENCIA } from '../styles/tokens';
 
 export interface TemaBarbearia {
@@ -28,7 +28,7 @@ export function aplicarTema(tema: TemaBarbearia | null | undefined, modo: 'claro
         'cor-primaria-texto': temaResolvido.corPrimaria,
       };
     } else {
-      temaResolvido[modo] = { ...PRESET_LEGADO[modo] };
+      temaResolvido[modo] = { ...PRESET_PADRAO[modo] };
     }
   }
 

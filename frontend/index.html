@@ -8,7 +8,7 @@
     <script>
       (function() {
         try {
-          var modoSalvo = localStorage.getItem('garoa-modo-tema') || 'auto';
+          var modoSalvo = localStorage.getItem('garoa-modo-tema') || 'light';
           var ehEscuro = modoSalvo === 'dark' || (modoSalvo === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
           var modo = ehEscuro ? 'escuro' : 'claro';
           document.documentElement.setAttribute('data-tema', modo);
