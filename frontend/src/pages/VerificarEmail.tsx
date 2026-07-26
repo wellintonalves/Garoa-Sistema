@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Mail, RefreshCw, CheckCircle } from 'lucide-react';
+import { Mail, RefreshCw, CheckCircle, AlertCircle } from 'lucide-react';
 import api from '../api/client';
+import { Botao } from '../components/ui';
 
 export function VerificarEmail() {
   const navigate = useNavigate();
@@ -13,21 +14,12 @@ export function VerificarEmail() {
   const [reenviando, setReenviando] = useState(false);
   const [countdown, setCountdown] = useState(60);
   const [podeReenviar, setPodeReenviar] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
   const inputs = useRef<(HTMLInputElement | null)[]>([]);
 
   const email = location.state?.email || '';
   const token = location.state?.token || '';
-
   const usuarioId = location.state?.usuarioId || '';
   const nome = location.state?.nome || '';
-
-  useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 768);
-    check();
-    window.addEventListener('resize', check);
-    return () => window.removeEventListener('resize', check);
-  }, []);
 
   useEffect(() => {
     if (token) {
@@ -95,7 +87,7 @@ export function VerificarEmail() {
     setReenviando(true);
     setErro('');
     try {
-      await api.post('/verificacao/reenviar', { usuarioId, email, nome });
+      await api.post('/verificacao/reenviar', { usuarioId, email: email.trim(), nome: nome.trim() });
       setPodeReenviar(false);
       setCountdown(60);
     } catch (err: any) {
@@ -108,133 +100,104 @@ export function VerificarEmail() {
   if (sucesso) {
     return (
       <div style={{
-        height: '100vh', width: '100vw', background: '#0A0A0A',
+        minHeight: '100dvh', width: '100vw', background: 'var(--fundo-pagina)',
         display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-        fontFamily: "var(--fonte-interface)",
+        padding: 'var(--espaco-4)', boxSizing: 'border-box', overflowY: 'auto',
       }}>
-        <CheckCircle size={48} color="#10B981" strokeWidth={1.5} style={{ marginBottom: '16px' }} />
-        <h2 style={{ fontSize: '20px', fontWeight: 600, color: '#F5F5F5', margin: '0 0 8px' }}>
-          Email verificado!
-        </h2>
-        <p style={{ fontSize: '13px', color: '#737373', margin: 0 }}>
-          Redirecionando...
-        </p>
+        <div style={{
+          width: '100%', maxWidth: '420px', background: 'var(--fundo-superficie)',
+          borderRadius: 'var(--raio-xl)', padding: 'var(--espaco-6)',
+          border: '1px solid var(--borda-sutil)', boxShadow: 'var(--elevacao-2)',
+          boxSizing: 'border-box', display: 'flex', flexDirection: 'column', alignItems: 'center',
+        }}>
+          <CheckCircle size={48} color="var(--sucesso)" strokeWidth={1.5} style={{ marginBottom: 'var(--espaco-4)' }} />
+          <h1 style={{
+            fontFamily: 'var(--fonte-serif)', fontSize: 'var(--texto-h1, 1.75rem)',
+            fontWeight: 400, color: 'var(--texto-principal)', margin: '0 0 var(--espaco-2)', textAlign: 'center',
+          }}>
+            Email verificado!
+          </h1>
+          <p style={{ color: 'var(--texto-secundario)', fontSize: 'var(--texto-sm, 0.75rem)', margin: 0, textAlign: 'center' }}>
+            Redirecionando...
+          </p>
+        </div>
       </div>
     );
   }
 
   return (
     <div style={{
-      display: 'flex', flexDirection: isMobile ? 'column' : 'row',
-      minHeight: '100vh', width: '100vw',
-      fontFamily: "var(--fonte-interface)",
-      overflow: isMobile ? 'auto' : 'hidden',
+      minHeight: '100dvh',
+      width: '100vw',
+      background: 'var(--fundo-pagina)',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 'var(--espaco-4)',
+      boxSizing: 'border-box',
+      overflowY: 'auto'
     }}>
-
-      {/* PAINEL IDENTIDADE */}
       <div style={{
-        width: isMobile ? '100%' : '420px',
-        height: isMobile ? 'auto' : '100vh',
-        flexShrink: 0, background: '#F59E0B',
-        display: 'flex', flexDirection: 'column',
-        alignItems: 'center', justifyContent: 'center',
-        padding: isMobile ? '40px 32px' : '48px',
-        position: 'relative', overflow: 'hidden',
-        order: isMobile ? 0 : 1,
+        width: '100%',
+        maxWidth: '420px',
+        background: 'var(--fundo-superficie)',
+        borderRadius: 'var(--raio-xl)',
+        padding: 'var(--espaco-6)',
+        border: '1px solid var(--borda-sutil)',
+        boxShadow: 'var(--elevacao-2)',
+        boxSizing: 'border-box',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center'
       }}>
-        <svg style={{ position: 'absolute', inset: 0, opacity: 0.1 }} width="100%" height="100%" viewBox="0 0 420 600" preserveAspectRatio="xMidYMid slice">
-          <defs>
-            <pattern id="dots-v" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
-              <circle cx="2" cy="2" r="1.5" fill="#0A0A0A"/>
-            </pattern>
-          </defs>
-          <rect width="420" height="600" fill="url(#dots-v)"/>
-        </svg>
-
-        <div style={{ position: 'relative', zIndex: 2, marginBottom: isMobile ? '20px' : '32px' }}>
-          <svg width="120" height="120" viewBox="0 0 120 120">
-            <style>{`
-              @keyframes mail-pulse {
-                0%,100% { transform: scale(1); }
-                50% { transform: scale(1.06); }
-              }
-              @keyframes dot-blink {
-                0%,100% { opacity: 1; }
-                50% { opacity: 0.2; }
-              }
-              #mail-g { animation: mail-pulse 2s ease-in-out infinite; transform-origin: 60px 60px; }
-              #dot1 { animation: dot-blink 1.2s ease-in-out infinite; }
-              #dot2 { animation: dot-blink 1.2s ease-in-out infinite 0.4s; }
-              #dot3 { animation: dot-blink 1.2s ease-in-out infinite 0.8s; }
-            `}</style>
-            <g id="mail-g">
-              <rect x="20" y="35" width="80" height="55" rx="4" fill="none" stroke="#0A0A0A" strokeWidth="3"/>
-              <path d="M20 40 L60 65 L100 40" fill="none" stroke="#0A0A0A" strokeWidth="3" strokeLinecap="round"/>
-            </g>
-            <circle id="dot1" cx="44" cy="95" r="3" fill="#0A0A0A"/>
-            <circle id="dot2" cx="60" cy="95" r="3" fill="#0A0A0A"/>
-            <circle id="dot3" cx="76" cy="95" r="3" fill="#0A0A0A"/>
-          </svg>
+        {/* Logo */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--espaco-2)', marginBottom: 'var(--espaco-4)' }}>
+          <div style={{
+            width: '36px', height: '36px', borderRadius: 'var(--raio-md)', background: 'var(--cor-primaria)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 'var(--texto-body, 0.875rem)', fontWeight: 700, color: 'var(--texto-sobre-primaria)', flexShrink: 0,
+          }}>V</div>
+          <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.1 }}>
+            <strong style={{ fontSize: 'var(--texto-h3, 1.25rem)', fontWeight: 700, color: 'var(--texto-principal)' }}>Valen</strong>
+            <span style={{ fontSize: 'var(--texto-detalhe, 0.75rem)', fontWeight: 400, color: 'var(--texto-secundario)', letterSpacing: '0.08em' }}>BARBER</span>
+          </div>
         </div>
 
-        <h2 style={{
-          fontSize: isMobile ? '20px' : '26px', fontWeight: 700, color: '#0A0A0A',
-          textAlign: 'center', lineHeight: 1.25, margin: '0 0 10px',
-          position: 'relative', zIndex: 2, maxWidth: '260px',
-        }}>
-          Confirme seu email para continuar.
-        </h2>
-        <p style={{
-          fontSize: '13px', color: '#7C5A00', textAlign: 'center',
-          lineHeight: 1.6, margin: 0, position: 'relative', zIndex: 2, maxWidth: '220px',
-        }}>
-          Enviamos um código de 6 dígitos para o seu email.
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--espaco-2)', marginBottom: 'var(--espaco-1)' }}>
+          <Mail size={20} style={{ color: 'var(--cor-primaria)' }} />
+          <h1 style={{
+            fontFamily: 'var(--fonte-serif)',
+            fontSize: 'var(--texto-h1, 1.75rem)',
+            fontWeight: 400,
+            color: 'var(--texto-principal)',
+            margin: 0,
+            textAlign: 'center'
+          }}>
+            Verifique seu email
+          </h1>
+        </div>
+        <p style={{ color: 'var(--texto-secundario)', fontSize: 'var(--texto-sm, 0.75rem)', margin: '0 0 var(--espaco-4)', textAlign: 'center', lineHeight: 1.6 }}>
+          Enviamos um código para <strong style={{ color: 'var(--texto-principal)' }}>{email}</strong>. Digite abaixo para confirmar.
         </p>
-      </div>
 
-      {/* PAINEL FORMULÁRIO */}
-      <div style={{
-        flex: 1, background: '#0A0A0A',
-        display: 'flex', flexDirection: 'column',
-        alignItems: 'center', justifyContent: 'center',
-        padding: isMobile ? '40px 24px' : '48px',
-        order: isMobile ? 1 : 0,
-      }}>
-        <div style={{ width: '100%', maxWidth: '360px' }}>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '40px' }}>
+        {/* Reserva de altura para alerta/erro */}
+        <div style={{ width: '100%', minHeight: '44px', marginBottom: 'var(--espaco-3)', display: 'flex', alignItems: 'center' }}>
+          {erro ? (
             <div style={{
-              width: '32px', height: '32px', borderRadius: '7px', background: '#F59E0B',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: '16px', fontWeight: 700, color: '#0A0A0A', flexShrink: 0,
-            }}>V</div>
-            <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.1 }}>
-              <strong style={{ fontSize: '18px', fontWeight: 700, color: '#F5F5F5' }}>Valen</strong>
-              <span style={{ fontSize: '11px', fontWeight: 400, color: '#737373', letterSpacing: '0.08em' }}>BARBER</span>
+              width: '100%', display: 'flex', alignItems: 'center', gap: 'var(--espaco-2)',
+              background: 'var(--erro-fundo)', border: '1px solid var(--erro)',
+              borderRadius: 'var(--raio-md)', padding: 'var(--espaco-2) var(--espaco-3)',
+              color: 'var(--erro)', fontSize: 'var(--texto-sm, 0.75rem)',
+            }} role="alert">
+              <AlertCircle size={16} style={{ flexShrink: 0 }} />
+              <span>{erro}</span>
             </div>
-          </div>
+          ) : null}
+        </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
-            <Mail size={18} color="#F59E0B" strokeWidth={1.5} />
-            <h1 style={{ fontSize: '22px', fontWeight: 600, color: '#F5F5F5', margin: 0 }}>
-              Verifique seu email
-            </h1>
-          </div>
-          <p style={{ fontSize: '13px', color: '#737373', margin: '0 0 32px', lineHeight: 1.6 }}>
-            Enviamos um código para <strong style={{ color: '#F5F5F5' }}>{email}</strong>. Digite abaixo para confirmar.
-          </p>
-
-          {erro && (
-            <div style={{
-              background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.25)',
-              borderRadius: '8px', padding: '10px 14px', marginBottom: '20px',
-            }}>
-              <span style={{ fontSize: '13px', color: '#EF4444' }}>{erro}</span>
-            </div>
-          )}
-
-          {/* Inputs do código */}
-          <div style={{ display: 'flex', gap: '10px', marginBottom: '28px', justifyContent: 'center' }} onPaste={handlePaste}>
+        <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 'var(--espaco-4)' }}>
+          <div style={{ display: 'flex', gap: 'var(--espaco-2)', justifyContent: 'center' }} onPaste={handlePaste}>
             {codigos.map((c, i) => (
               <input
                 key={i}
@@ -244,38 +207,32 @@ export function VerificarEmail() {
                 onKeyDown={e => handleKeyDown(i, e)}
                 style={{
                   width: '48px', height: '56px', textAlign: 'center',
-                  background: '#1A1A1A', border: `1px solid ${c ? '#F59E0B' : '#2A2A2A'}`,
-                  borderRadius: '8px', color: '#F5F5F5',
-                  fontFamily: "'JetBrains Mono', monospace",
-                  fontSize: '24px', fontWeight: 500, outline: 'none',
-                  transition: 'border-color 0.15s',
+                  background: 'var(--fundo-superficie-2)',
+                  border: `1px solid ${c ? 'var(--cor-primaria)' : 'var(--borda-sutil)'}`,
+                  borderRadius: 'var(--raio-md)', color: 'var(--texto-principal)',
+                  fontFamily: "var(--fonte-mono, 'JetBrains Mono', monospace)",
+                  fontSize: 'var(--texto-h2, 1.5rem)', fontWeight: 500, outline: 'none',
+                  transition: 'border-color 0.15s', boxSizing: 'border-box',
                 }}
               />
             ))}
           </div>
 
-          <button
-            onClick={handleConfirmar} disabled={carregando}
-            style={{
-              width: '100%', background: '#F59E0B', color: '#0A0A0A',
-              fontFamily: 'inherit', fontSize: '13px', fontWeight: 600,
-              padding: '12px', border: 'none', borderRadius: '8px',
-              cursor: carregando ? 'not-allowed' : 'pointer',
-              opacity: carregando ? 0.7 : 1, transition: 'opacity 0.15s',
-              marginBottom: '16px',
-            }}
-          >
-            {carregando ? 'Verificando...' : 'Confirmar código'}
-          </button>
+          <Botao type="button" variante="primario" onClick={handleConfirmar} loading={carregando} style={{ width: '100%' }}>
+            Confirmar código
+          </Botao>
 
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-            <RefreshCw size={12} color="#525252" />
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 'var(--espaco-1)' }}>
+            <RefreshCw size={14} style={{ color: 'var(--texto-secundario)' }} />
             <button
-              onClick={handleReenviar} disabled={!podeReenviar || reenviando}
+              type="button"
+              onClick={handleReenviar}
+              disabled={!podeReenviar || reenviando}
               style={{
                 background: 'none', border: 'none', cursor: podeReenviar ? 'pointer' : 'default',
-                fontSize: '12px', color: podeReenviar ? '#F59E0B' : '#525252',
-                fontFamily: 'inherit', transition: 'color 0.15s',
+                fontSize: 'var(--texto-sm, 0.75rem)', color: podeReenviar ? 'var(--cor-primaria)' : 'var(--texto-terciario)',
+                textDecoration: podeReenviar ? 'underline' : 'none', minHeight: '44px',
+                display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '0 var(--espaco-2)'
               }}
             >
               {reenviando ? 'Reenviando...' : podeReenviar ? 'Reenviar código' : `Reenviar em ${countdown}s`}

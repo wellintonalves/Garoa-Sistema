@@ -151,6 +151,11 @@
   --fonte-sans: 'Inter Tight', -apple-system, 'Segoe UI', Arial, sans-serif;
   --fonte-serif: 'Newsreader', Georgia, 'Times New Roman', serif;
   --fonte-mono: 'JetBrains Mono', 'JetBrains Mono Variable', ui-monospace, 'SF Mono', Menlo, monospace;
+  --texto-h1: 1.75rem;
+  --texto-h2: 1.5rem;
+  --texto-h3: 1.25rem;
+  --texto-body: 0.875rem;
+  --texto-sm: 0.75rem;
 
   /* Espaçamento (Seção 6.1) */
   --espaco-0: 0px;

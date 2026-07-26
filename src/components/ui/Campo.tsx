@@ -48,10 +48,11 @@ export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   erro?: string;
   hint?: string;
   iconeEsquerda?: React.ReactNode;
+  iconeDireita?: React.ReactNode;
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ label, erro, hint, iconeEsquerda, className = '', id, style, ...props }, ref) => {
+  ({ label, erro, hint, iconeEsquerda, iconeDireita, className = '', id, style, ...props }, ref) => {
     const generatedId = useId();
     const inputId = id || generatedId;
 
@@ -77,11 +78,25 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           className={`campo-input ${erro ? 'campo-erro' : ''} ${className}`.trim()}
           style={{
             paddingLeft: iconeEsquerda ? 'calc(var(--espaco-3) + 24px)' : undefined,
+            paddingRight: iconeDireita ? 'calc(var(--espaco-3) + 24px)' : undefined,
             ...style,
           }}
           aria-invalid={!!erro}
           {...props}
         />
+        {iconeDireita && (
+          <span
+            style={{
+              position: 'absolute',
+              right: 'var(--espaco-3)',
+              display: 'flex',
+              alignItems: 'center',
+              color: 'var(--texto-terciario)',
+            }}
+          >
+            {iconeDireita}
+          </span>
+        )}
       </div>
     );
 

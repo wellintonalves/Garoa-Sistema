@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
-import { Mail, Lock, AlertCircle, Star, Eye, EyeOff } from 'lucide-react';
+import { useState } from 'react';
+import { Mail, Lock, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Lottie from 'lottie-react';
 import premiumAnimation from '../../assets/animations/premium.json';
 import { useClienteAuth } from '../../hooks/useClienteAuth';
+import { Input, Botao } from '../../components/ui';
 
 export function ClienteLoginPrincipal() {
   const navigate = useNavigate();
@@ -15,21 +16,13 @@ export function ClienteLoginPrincipal() {
   const [mostrarSenha, setMostrarSenha] = useState(false);
   const [erro, setErro] = useState('');
   const [carregando, setCarregando] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 768);
-    check();
-    window.addEventListener('resize', check);
-    return () => window.removeEventListener('resize', check);
-  }, []);
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
     setErro('');
     setCarregando(true);
     try {
-      await login(email, senha);
+      await login(email.trim(), senha);
       navigate('/cliente/home');
     } catch (err: any) {
       setErro(err?.response?.data?.erro || 'Email ou senha incorretos.');
@@ -40,239 +33,197 @@ export function ClienteLoginPrincipal() {
 
   return (
     <div style={{
-      display: 'flex',
-      flexDirection: isMobile ? 'column' : 'row',
-      minHeight: '100vh',
+      minHeight: '100dvh',
       width: '100vw',
-      fontFamily: "var(--fonte-interface)",
-      overflow: isMobile ? 'auto' : 'hidden',
+      background: 'var(--fundo-pagina)',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 'var(--espaco-4)',
+      boxSizing: 'border-box',
+      overflowY: 'auto'
     }}>
-
-      {/* PAINEL SUPERIOR/DIREITO — Identidade visual */}
       <div style={{
-        width: isMobile ? '100%' : '420px',
-        height: isMobile ? 'auto' : '100vh',
-        flexShrink: 0,
-        background: '#141414',
+        width: '100%',
+        maxWidth: '420px',
+        background: 'var(--fundo-superficie)',
+        borderRadius: 'var(--raio-xl)',
+        padding: 'var(--espaco-6)',
+        border: '1px solid var(--borda-sutil)',
+        boxShadow: 'var(--elevacao-2)',
+        boxSizing: 'border-box',
         display: 'flex',
         flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: isMobile ? '40px 32px' : '48px',
-        position: 'relative',
-        overflow: 'hidden',
-        order: isMobile ? 0 : 1,
+        alignItems: 'center'
       }}>
+        {/* Logo / Animação */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--espaco-2)', marginBottom: 'var(--espaco-4)' }}>
+          <div style={{
+            width: '36px', height: '36px', borderRadius: 'var(--raio-md)', background: 'var(--cor-primaria)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 'var(--texto-body, 0.875rem)', fontWeight: 700, color: 'var(--texto-sobre-primaria)', flexShrink: 0,
+          }}>V</div>
+          <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.1 }}>
+            <strong style={{ fontSize: 'var(--texto-h3, 1.25rem)', fontWeight: 700, color: 'var(--texto-principal)' }}>Valen</strong>
+            <span style={{ fontSize: 'var(--texto-detalhe, 0.75rem)', fontWeight: 400, color: 'var(--texto-secundario)', letterSpacing: '0.08em' }}>BARBER</span>
+          </div>
+        </div>
 
-        <svg style={{ position: 'absolute', inset: 0, opacity: 0.1 }} width="100%" height="100%" viewBox="0 0 420 600" preserveAspectRatio="xMidYMid slice">
-          <defs>
-            <pattern id="dots-c" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
-              <circle cx="2" cy="2" r="1.5" fill="#F59E0B"/>
-            </pattern>
-          </defs>
-          <rect width="420" height="600" fill="url(#dots-c)"/>
-        </svg>
-
-        {/* Animação Lottie — barbeiro com cliente */}
-        <div style={{ position: 'relative', zIndex: 2, marginBottom: isMobile ? '20px' : '32px' }}>
+        <div style={{ width: '120px', height: '120px', marginBottom: 'var(--espaco-2)' }}>
           <Lottie
             animationData={premiumAnimation}
             loop={true}
             autoplay={true}
-            style={{ width: '200px', height: '200px' }}
+            style={{ width: '100%', height: '100%' }}
           />
         </div>
 
-        <h2 style={{
-          fontSize: isMobile ? '22px' : '26px',
-          fontWeight: 700, color: '#F5F5F5',
-          textAlign: 'center', lineHeight: 1.25,
-          margin: '0 0 10px', position: 'relative', zIndex: 2,
-          maxWidth: '260px',
+        <h1 style={{
+          fontFamily: 'var(--fonte-serif)',
+          fontSize: 'var(--texto-h1, 1.75rem)',
+          fontWeight: 400,
+          color: 'var(--texto-principal)',
+          margin: '0 0 var(--espaco-1)',
+          textAlign: 'center'
         }}>
-          Feito para o homem de valor.
-        </h2>
-        <p style={{
-          fontSize: '13px', color: '#737373', textAlign: 'center',
-          lineHeight: 1.6, margin: 0, position: 'relative', zIndex: 2,
-          maxWidth: '220px',
-        }}>
-          Seu próximo corte está a um toque de distância.
+          Olá, cliente
+        </h1>
+        <p style={{ color: 'var(--texto-secundario)', fontSize: 'var(--texto-sm, 0.75rem)', margin: '0 0 var(--espaco-4)', textAlign: 'center' }}>
+          Acesse sua conta para agendar
         </p>
-      </div>
 
-      {/* PAINEL INFERIOR/ESQUERDO — Formulário */}
-      <div style={{
-        flex: 1,
-        background: '#0A0A0A',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: isMobile ? '40px 24px' : '48px',
-        order: isMobile ? 1 : 0,
-      }}>
-        <div style={{ width: '100%', maxWidth: '360px' }}>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '40px' }}>
+        {/* Reserva de altura para alerta/erro */}
+        <div style={{ width: '100%', minHeight: '44px', marginBottom: 'var(--espaco-3)', display: 'flex', alignItems: 'center' }}>
+          {mensagemSucesso ? (
             <div style={{
-              width: '32px', height: '32px', borderRadius: '7px', background: '#F59E0B',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: '16px', fontWeight: 700, color: '#0A0A0A', flexShrink: 0,
-            }}>V</div>
-            <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.1 }}>
-              <strong style={{ fontSize: '18px', fontWeight: 700, color: '#F5F5F5' }}>Valen</strong>
-              <span style={{ fontSize: '11px', fontWeight: 400, color: '#737373', letterSpacing: '0.08em' }}>BARBER</span>
+              width: '100%', display: 'flex', alignItems: 'center', gap: 'var(--espaco-2)',
+              background: 'var(--sucesso-fundo)', border: '1px solid var(--sucesso)',
+              borderRadius: 'var(--raio-md)', padding: 'var(--espaco-2) var(--espaco-3)',
+              color: 'var(--sucesso)', fontSize: 'var(--texto-sm, 0.75rem)',
+            }} role="alert">
+              <AlertCircle size={16} style={{ flexShrink: 0 }} />
+              <span>{mensagemSucesso}</span>
             </div>
-          </div>
-
-          <h1 style={{ fontSize: '22px', fontWeight: 600, color: '#F5F5F5', margin: '0 0 4px' }}>
-            Olá, cliente
-          </h1>
-          <p style={{ fontSize: '13px', color: '#737373', margin: '0 0 32px' }}>
-            Acesse sua conta para agendar
-          </p>
-
-          {mensagemSucesso && (
+          ) : erro ? (
             <div style={{
-              display: 'flex', alignItems: 'center', gap: '8px',
-              background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.25)',
-              borderRadius: '8px', padding: '10px 14px', marginBottom: '20px',
-            }}>
-              <AlertCircle size={14} color="#10B981" />
-              <span style={{ fontSize: '13px', color: '#10B981' }}>{mensagemSucesso}</span>
+              width: '100%', display: 'flex', alignItems: 'center', gap: 'var(--espaco-2)',
+              background: 'var(--erro-fundo)', border: '1px solid var(--erro)',
+              borderRadius: 'var(--raio-md)', padding: 'var(--espaco-2) var(--espaco-3)',
+              color: 'var(--erro)', fontSize: 'var(--texto-sm, 0.75rem)',
+            }} role="alert">
+              <AlertCircle size={16} style={{ flexShrink: 0 }} />
+              <span>{erro}</span>
             </div>
-          )}
+          ) : null}
+        </div>
 
-          {erro && (
-            <div style={{
-              display: 'flex', alignItems: 'center', gap: '8px',
-              background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.25)',
-              borderRadius: '8px', padding: '10px 14px', marginBottom: '20px',
-            }}>
-              <AlertCircle size={14} color="#EF4444" />
-              <span style={{ fontSize: '13px', color: '#EF4444' }}>{erro}</span>
-            </div>
-          )}
+        <form onSubmit={handleLogin} style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 'var(--espaco-4)' }}>
+          <Input
+            label="Email"
+            type="email"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            placeholder="seu@email.com"
+            required
+            iconeEsquerda={<Mail size={16} />}
+          />
 
-          <form onSubmit={handleLogin}>
-            <div style={{ marginBottom: '16px' }}>
-              <label style={{ fontSize: '11px', fontWeight: 500, color: '#737373', display: 'block', marginBottom: '6px', letterSpacing: '0.02em' }}>
-                Email
-              </label>
-              <div style={{ position: 'relative' }}>
-                <Mail size={14} color="#525252" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
-                <input
-                  type="email" value={email} onChange={e => setEmail(e.target.value)}
-                  placeholder="seu@email.com" required
-                  style={{
-                    width: '100%', background: '#1A1A1A', border: '1px solid #2A2A2A',
-                    borderRadius: '8px', padding: '10px 14px 10px 36px', color: '#F5F5F5',
-                    fontFamily: 'inherit', fontSize: '13px', outline: 'none', boxSizing: 'border-box',
-                  }}
-                />
-              </div>
-            </div>
-
-            <div style={{ marginBottom: '24px' }}>
-              <label style={{ fontSize: '11px', fontWeight: 500, color: '#737373', display: 'block', marginBottom: '6px', letterSpacing: '0.02em' }}>
-                Senha
-              </label>
-              <div style={{ position: 'relative' }}>
-                <Lock size={14} color="#525252" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
-                <input
-                  type={mostrarSenha ? "text" : "password"} value={senha} onChange={e => setSenha(e.target.value)}
-                  placeholder="••••••••" required
-                  style={{
-                    width: '100%', background: '#1A1A1A', border: '1px solid #2A2A2A',
-                    borderRadius: '8px', padding: '10px 14px 10px 36px', paddingRight: '36px', color: '#F5F5F5',
-                    fontFamily: 'inherit', fontSize: '13px', outline: 'none', boxSizing: 'border-box',
-                  }}
-                />
-                    <button
-                      type="button"
-                      onClick={() => setMostrarSenha(!mostrarSenha)}
-                      style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#525252', padding: 0 }}
-                    >
-                      {mostrarSenha ? <EyeOff size={14} strokeWidth={1.5} /> : <Eye size={14} strokeWidth={1.5} />}
-                    </button>
-              </div>
-            </div>
-
-            <div style={{ textAlign: 'center', marginBottom: '24px', marginTop: '-8px', width: '100%' }}>
+          <Input
+            label="Senha"
+            type={mostrarSenha ? "text" : "password"}
+            value={senha}
+            onChange={e => setSenha(e.target.value)}
+            placeholder="••••••••"
+            required
+            iconeEsquerda={<Lock size={16} />}
+            iconeDireita={
               <button
                 type="button"
-                onClick={() => navigate('/recuperar-senha')}
-                style={{
-                  background: 'none', border: 'none', cursor: 'pointer',
-                  fontSize: '12px', color: '#737373', fontFamily: 'inherit',
-                }}
+                onClick={() => setMostrarSenha(!mostrarSenha)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--texto-terciario)', display: 'flex', alignItems: 'center', padding: 0 }}
               >
-                Esqueci minha senha
+                {mostrarSenha ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
-            </div>
+            }
+          />
 
+          <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
             <button
-              type="submit" disabled={carregando}
-              style={{
-                width: '100%', background: '#F59E0B', color: '#0A0A0A',
-                fontFamily: 'inherit', fontSize: '13px', fontWeight: 600,
-                padding: '12px', border: 'none', borderRadius: '8px',
-                cursor: carregando ? 'not-allowed' : 'pointer',
-                opacity: carregando ? 0.7 : 1, transition: 'opacity 0.15s',
-              }}
-            >
-              {carregando ? 'Entrando...' : 'Entrar'}
-            </button>
-          </form>
-
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', marginTop: '16px' }}>
-            <Star size={12} color="#525252" />
-            <button
-              onClick={() => navigate('/cadastro')}
+              type="button"
+              onClick={() => navigate('/recuperar-senha')}
               style={{
                 background: 'none', border: 'none', cursor: 'pointer',
-                fontSize: '12px', color: '#525252', fontFamily: 'inherit',
+                color: 'var(--texto-secundario)', fontSize: 'var(--texto-sm, 0.75rem)',
+                textDecoration: 'underline', minHeight: '44px', display: 'inline-flex',
+                alignItems: 'center', justifyContent: 'center', padding: '0 var(--espaco-2)'
               }}
             >
-              Criar conta grátis
+              Esqueci minha senha
             </button>
           </div>
 
-          <div style={{
-            borderTop: '1px solid #1F1F1F',
-            marginTop: '32px',
-            paddingTop: '20px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '8px',
-            alignItems: 'center',
-          }}>
-            <p style={{ fontSize: '11px', color: '#404040', margin: 0, letterSpacing: '0.02em' }}>
-              Acesso para profissionais
-            </p>
-            <div style={{ display: 'flex', gap: '16px' }}>
-              <button
-                onClick={() => navigate('/barbeiro/login')}
-                style={{
-                  background: 'none', border: '1px solid #2A2A2A', borderRadius: '6px',
-                  cursor: 'pointer', fontSize: '12px', color: '#737373',
-                  fontFamily: 'inherit', padding: '6px 14px', transition: 'all 0.15s',
-                }}
-              >
-                Sou barbeiro
-              </button>
-              <button
-                onClick={() => navigate('/admin/login')}
-                style={{
-                  background: 'none', border: '1px solid #2A2A2A', borderRadius: '6px',
-                  cursor: 'pointer', fontSize: '12px', color: '#737373',
-                  fontFamily: 'inherit', padding: '6px 14px', transition: 'all 0.15s',
-                }}
-              >
-                Painel administrativo
-              </button>
-            </div>
+          <Botao
+            type="submit"
+            variante="primario"
+            loading={carregando}
+            style={{ width: '100%' }}
+          >
+            Entrar
+          </Botao>
+        </form>
+
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: 'var(--espaco-4)' }}>
+          <button
+            type="button"
+            onClick={() => navigate('/cadastro')}
+            style={{
+              background: 'none', border: 'none', cursor: 'pointer',
+              color: 'var(--texto-secundario)', fontSize: 'var(--texto-sm, 0.75rem)',
+              textDecoration: 'underline', minHeight: '44px', display: 'inline-flex',
+              alignItems: 'center', justifyContent: 'center', padding: '0 var(--espaco-2)'
+            }}
+          >
+            Criar conta grátis
+          </button>
+        </div>
+
+        <div style={{
+          width: '100%',
+          borderTop: '1px solid var(--borda-sutil)',
+          marginTop: 'var(--espaco-6)',
+          paddingTop: 'var(--espaco-4)',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 'var(--espaco-3)',
+          alignItems: 'center',
+        }}>
+          <p style={{ fontSize: 'var(--texto-detalhe, 0.75rem)', color: 'var(--texto-terciario)', margin: 0 }}>
+            Acesso para profissionais
+          </p>
+          <div style={{ display: 'flex', gap: 'var(--espaco-3)', flexWrap: 'wrap', justifyContent: 'center' }}>
+            <button
+              type="button"
+              onClick={() => navigate('/barbeiro/login')}
+              style={{
+                background: 'var(--fundo-superficie-2)', border: '1px solid var(--borda-sutil)', borderRadius: 'var(--raio-md)',
+                cursor: 'pointer', fontSize: 'var(--texto-sm, 0.75rem)', color: 'var(--texto-secundario)',
+                minHeight: '44px', padding: '0 var(--espaco-4)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s',
+              }}
+            >
+              Sou barbeiro
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate('/admin/login')}
+              style={{
+                background: 'var(--fundo-superficie-2)', border: '1px solid var(--borda-sutil)', borderRadius: 'var(--raio-md)',
+                cursor: 'pointer', fontSize: 'var(--texto-sm, 0.75rem)', color: 'var(--texto-secundario)',
+                minHeight: '44px', padding: '0 var(--espaco-4)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s',
+              }}
+            >
+              Painel administrativo
+            </button>
           </div>
         </div>
       </div>

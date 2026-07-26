@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Mail, Lock, AlertCircle, CheckCircle, ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import api from '../api/client';
+import { Input, Botao } from '../components/ui';
 
 type Etapa = 'email' | 'codigo' | 'nova-senha' | 'sucesso';
 
@@ -18,14 +19,6 @@ export function RecuperarSenha() {
   const [carregando, setCarregando] = useState(false);
   const [countdown, setCountdown] = useState(60);
   const [podeReenviar, setPodeReenviar] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 768);
-    check();
-    window.addEventListener('resize', check);
-    return () => window.removeEventListener('resize', check);
-  }, []);
 
   useEffect(() => {
     if (etapa === 'codigo' && countdown > 0) {
@@ -41,7 +34,7 @@ export function RecuperarSenha() {
     setErro('');
     setCarregando(true);
     try {
-      await api.post('/recuperacao/solicitar', { email });
+      await api.post('/recuperacao/solicitar', { email: email.trim() });
       setEtapa('codigo');
       setCountdown(60);
       setPodeReenviar(false);
@@ -56,7 +49,7 @@ export function RecuperarSenha() {
     if (!podeReenviar) return;
     setErro('');
     try {
-      await api.post('/recuperacao/solicitar', { email });
+      await api.post('/recuperacao/solicitar', { email: email.trim() });
       setCountdown(60);
       setPodeReenviar(false);
     } catch (err: any) {
@@ -104,7 +97,7 @@ export function RecuperarSenha() {
     setCarregando(true);
     try {
       await api.post('/recuperacao/redefinir', {
-        email,
+        email: email.trim(),
         codigo: codigos.join(''),
         novaSenha,
       });
@@ -135,274 +128,214 @@ export function RecuperarSenha() {
   if (etapa === 'sucesso') {
     return (
       <div style={{
-        height: '100vh', width: '100vw', background: '#0A0A0A',
+        minHeight: '100dvh', width: '100vw', background: 'var(--fundo-pagina)',
         display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-        fontFamily: "var(--fonte-interface)",
+        padding: 'var(--espaco-4)', boxSizing: 'border-box', overflowY: 'auto',
       }}>
-        <CheckCircle size={48} color="#10B981" strokeWidth={1.5} style={{ marginBottom: '16px' }} />
-        <h2 style={{ fontSize: '20px', fontWeight: 600, color: '#F5F5F5', margin: '0 0 8px' }}>
-          Senha redefinida!
-        </h2>
-        <p style={{ fontSize: '13px', color: '#737373', margin: '0 0 24px' }}>
-          Agora você já pode fazer login com a nova senha.
-        </p>
-        <button
-          onClick={() => navigate(-1)}
-          style={{
-            background: '#F59E0B', color: '#0A0A0A', border: 'none',
-            borderRadius: '8px', padding: '10px 24px', fontSize: '13px',
-            fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
-          }}
-        >
-          Ir para o login
-        </button>
+        <div style={{
+          width: '100%', maxWidth: '420px', background: 'var(--fundo-superficie)',
+          borderRadius: 'var(--raio-xl)', padding: 'var(--espaco-6)',
+          border: '1px solid var(--borda-sutil)', boxShadow: 'var(--elevacao-2)',
+          boxSizing: 'border-box', display: 'flex', flexDirection: 'column', alignItems: 'center',
+        }}>
+          <CheckCircle size={48} color="var(--sucesso)" strokeWidth={1.5} style={{ marginBottom: 'var(--espaco-4)' }} />
+          <h1 style={{
+            fontFamily: 'var(--fonte-serif)', fontSize: 'var(--texto-h1, 1.75rem)',
+            fontWeight: 400, color: 'var(--texto-principal)', margin: '0 0 var(--espaco-2)', textAlign: 'center',
+          }}>
+            {titulos[etapa]}
+          </h1>
+          <p style={{ color: 'var(--texto-secundario)', fontSize: 'var(--texto-sm, 0.75rem)', margin: '0 0 var(--espaco-6)', textAlign: 'center', lineHeight: 1.6 }}>
+            {subtitulos[etapa]}
+          </p>
+          <Botao
+            type="button"
+            variante="primario"
+            onClick={() => navigate('/login')}
+            style={{ width: '100%' }}
+          >
+            Ir para o login
+          </Botao>
+        </div>
       </div>
     );
   }
 
   return (
     <div style={{
-      display: 'flex', flexDirection: isMobile ? 'column' : 'row',
-      minHeight: '100vh', width: '100vw',
-      fontFamily: "var(--fonte-interface)",
-      overflow: isMobile ? 'auto' : 'hidden',
+      minHeight: '100dvh',
+      width: '100vw',
+      background: 'var(--fundo-pagina)',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 'var(--espaco-4)',
+      boxSizing: 'border-box',
+      overflowY: 'auto'
     }}>
-
-      {/* PAINEL IDENTIDADE */}
       <div style={{
-        width: isMobile ? '100%' : '420px',
-        height: isMobile ? 'auto' : '100vh',
-        flexShrink: 0, background: '#F59E0B',
-        display: 'flex', flexDirection: 'column',
-        alignItems: 'center', justifyContent: 'center',
-        padding: isMobile ? '40px 32px' : '48px',
-        position: 'relative', overflow: 'hidden',
-        order: isMobile ? 0 : 1,
+        width: '100%',
+        maxWidth: '420px',
+        background: 'var(--fundo-superficie)',
+        borderRadius: 'var(--raio-xl)',
+        padding: 'var(--espaco-6)',
+        border: '1px solid var(--borda-sutil)',
+        boxShadow: 'var(--elevacao-2)',
+        boxSizing: 'border-box',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center'
       }}>
-        <svg style={{ position: 'absolute', inset: 0, opacity: 0.1 }} width="100%" height="100%" viewBox="0 0 420 600" preserveAspectRatio="xMidYMid slice">
-          <defs>
-            <pattern id="dots-r" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
-              <circle cx="2" cy="2" r="1.5" fill="#0A0A0A"/>
-            </pattern>
-          </defs>
-          <rect width="420" height="600" fill="url(#dots-r)"/>
-        </svg>
-
-        <div style={{ position: 'relative', zIndex: 2, marginBottom: isMobile ? '20px' : '32px' }}>
-          <svg width="120" height="120" viewBox="0 0 120 120">
-            <style>{`
-              @keyframes lock-shake {
-                0%,100% { transform: rotate(0deg); }
-                20% { transform: rotate(-8deg); }
-                40% { transform: rotate(8deg); }
-                60% { transform: rotate(-4deg); }
-                80% { transform: rotate(4deg); }
-              }
-              @keyframes lock-open {
-                0%,60%,100% { transform: translateY(0); }
-                80% { transform: translateY(-6px); }
-              }
-              #lock-body { animation: lock-shake 3s ease-in-out infinite; transform-origin: 60px 70px; }
-              #lock-shackle { animation: lock-open 3s ease-in-out infinite; transform-origin: 60px 45px; }
-            `}</style>
-            <g id="lock-shackle">
-              <path d="M42 55 L42 42 Q42 25 60 25 Q78 25 78 42 L78 55" fill="none" stroke="#0A0A0A" strokeWidth="5" strokeLinecap="round"/>
-            </g>
-            <g id="lock-body">
-              <rect x="32" y="53" width="56" height="42" rx="6" fill="none" stroke="#0A0A0A" strokeWidth="4"/>
-              <circle cx="60" cy="72" r="6" fill="#0A0A0A"/>
-              <line x1="60" y1="78" x2="60" y2="86" stroke="#0A0A0A" strokeWidth="4" strokeLinecap="round"/>
-            </g>
-          </svg>
+        {/* Logo / Animação */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--espaco-2)', marginBottom: 'var(--espaco-4)' }}>
+          <div style={{
+            width: '36px', height: '36px', borderRadius: 'var(--raio-md)', background: 'var(--cor-primaria)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 'var(--texto-body, 0.875rem)', fontWeight: 700, color: 'var(--texto-sobre-primaria)', flexShrink: 0,
+          }}>V</div>
+          <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.1 }}>
+            <strong style={{ fontSize: 'var(--texto-h3, 1.25rem)', fontWeight: 700, color: 'var(--texto-principal)' }}>Valen</strong>
+            <span style={{ fontSize: 'var(--texto-detalhe, 0.75rem)', fontWeight: 400, color: 'var(--texto-secundario)', letterSpacing: '0.08em' }}>BARBER</span>
+          </div>
         </div>
 
-        <h2 style={{
-          fontSize: isMobile ? '20px' : '26px', fontWeight: 700, color: '#0A0A0A',
-          textAlign: 'center', lineHeight: 1.25, margin: '0 0 10px',
-          position: 'relative', zIndex: 2, maxWidth: '260px',
+        <h1 style={{
+          fontFamily: 'var(--fonte-serif)',
+          fontSize: 'var(--texto-h1, 1.75rem)',
+          fontWeight: 400,
+          color: 'var(--texto-principal)',
+          margin: '0 0 var(--espaco-1)',
+          textAlign: 'center'
         }}>
-          Recupere o acesso à sua conta.
-        </h2>
-        <p style={{
-          fontSize: '13px', color: '#7C5A00', textAlign: 'center',
-          lineHeight: 1.6, margin: 0, position: 'relative', zIndex: 2, maxWidth: '220px',
-        }}>
-          Em poucos passos você define uma nova senha.
+          {titulos[etapa]}
+        </h1>
+        <p style={{ color: 'var(--texto-secundario)', fontSize: 'var(--texto-sm, 0.75rem)', margin: '0 0 var(--espaco-4)', textAlign: 'center', lineHeight: 1.6 }}>
+          {subtitulos[etapa]}
         </p>
-      </div>
 
-      {/* PAINEL FORMULÁRIO */}
-      <div style={{
-        flex: 1, background: '#0A0A0A',
-        display: 'flex', flexDirection: 'column',
-        alignItems: 'center', justifyContent: 'center',
-        padding: isMobile ? '40px 24px' : '48px',
-        order: isMobile ? 1 : 0,
-      }}>
-        <div style={{ width: '100%', maxWidth: '360px' }}>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '40px' }}>
+        {/* Reserva de altura para alerta/erro */}
+        <div style={{ width: '100%', minHeight: '44px', marginBottom: 'var(--espaco-3)', display: 'flex', alignItems: 'center' }}>
+          {erro ? (
             <div style={{
-              width: '32px', height: '32px', borderRadius: '7px', background: '#F59E0B',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: '16px', fontWeight: 700, color: '#0A0A0A', flexShrink: 0,
-            }}>V</div>
-            <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.1 }}>
-              <strong style={{ fontSize: '18px', fontWeight: 700, color: '#F5F5F5' }}>Valen</strong>
-              <span style={{ fontSize: '11px', fontWeight: 400, color: '#737373', letterSpacing: '0.08em' }}>BARBER</span>
+              width: '100%', display: 'flex', alignItems: 'center', gap: 'var(--espaco-2)',
+              background: 'var(--erro-fundo)', border: '1px solid var(--erro)',
+              borderRadius: 'var(--raio-md)', padding: 'var(--espaco-2) var(--espaco-3)',
+              color: 'var(--erro)', fontSize: 'var(--texto-sm, 0.75rem)',
+            }} role="alert">
+              <AlertCircle size={16} style={{ flexShrink: 0 }} />
+              <span>{erro}</span>
+            </div>
+          ) : null}
+        </div>
+
+        {/* ETAPA 1 — Email */}
+        {etapa === 'email' && (
+          <form onSubmit={handleSolicitarCodigo} style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 'var(--espaco-4)' }}>
+            <Input
+              label="Email"
+              type="email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              placeholder="seu@email.com"
+              required
+              iconeEsquerda={<Mail size={16} />}
+            />
+            <Botao type="submit" variante="primario" loading={carregando} style={{ width: '100%' }}>
+              Enviar código
+            </Botao>
+          </form>
+        )}
+
+        {/* ETAPA 2 — Código */}
+        {etapa === 'codigo' && (
+          <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 'var(--espaco-4)' }}>
+            <CodigoInputs
+              codigos={codigos}
+              onChange={(i, v, refs) => handleCodigoInput(i, v, refs)}
+              onKeyDown={(i, e, refs) => handleCodigoKeyDown(i, e, refs)}
+            />
+            <Botao type="button" variante="primario" onClick={handleConfirmarCodigo} style={{ width: '100%' }}>
+              Confirmar código
+            </Botao>
+            <div style={{ display: 'flex', justifyContent: 'center' }}>
+              <button
+                type="button"
+                onClick={handleReenviar}
+                disabled={!podeReenviar}
+                style={{
+                  background: 'none', border: 'none', cursor: podeReenviar ? 'pointer' : 'default',
+                  fontSize: 'var(--texto-sm, 0.75rem)', color: podeReenviar ? 'var(--cor-primaria)' : 'var(--texto-terciario)',
+                  textDecoration: podeReenviar ? 'underline' : 'none', minHeight: '44px',
+                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '0 var(--espaco-2)'
+                }}
+              >
+                {podeReenviar ? 'Reenviar código' : `Reenviar em ${countdown}s`}
+              </button>
             </div>
           </div>
+        )}
 
-          <h1 style={{ fontSize: '22px', fontWeight: 600, color: '#F5F5F5', margin: '0 0 4px' }}>
-            {titulos[etapa]}
-          </h1>
-          <p style={{ fontSize: '13px', color: '#737373', margin: '0 0 32px', lineHeight: 1.6 }}>
-            {subtitulos[etapa]}
-          </p>
-
-          {erro && (
-            <div style={{
-              display: 'flex', alignItems: 'center', gap: '8px',
-              background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.25)',
-              borderRadius: '8px', padding: '10px 14px', marginBottom: '20px',
-            }}>
-              <AlertCircle size={14} color="#EF4444" />
-              <span style={{ fontSize: '13px', color: '#EF4444' }}>{erro}</span>
-            </div>
-          )}
-
-          {/* ETAPA 1 — Email */}
-          {etapa === 'email' && (
-            <form onSubmit={handleSolicitarCodigo}>
-              <div style={{ marginBottom: '24px' }}>
-                <label style={{ fontSize: '11px', fontWeight: 500, color: '#737373', display: 'block', marginBottom: '6px' }}>
-                  Email
-                </label>
-                <div style={{ position: 'relative' }}>
-                  <Mail size={14} color="#525252" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
-                  <input
-                    type="email" value={email} onChange={e => setEmail(e.target.value)}
-                    placeholder="seu@email.com" required
-                    style={{
-                      width: '100%', background: '#1A1A1A', border: '1px solid #2A2A2A',
-                      borderRadius: '8px', padding: '10px 14px 10px 36px', color: '#F5F5F5',
-                      fontFamily: 'inherit', fontSize: '13px', outline: 'none', boxSizing: 'border-box',
-                    }}
-                  />
-                </div>
-              </div>
-              <button type="submit" disabled={carregando} style={{
-                width: '100%', background: '#F59E0B', color: '#0A0A0A',
-                fontFamily: 'inherit', fontSize: '13px', fontWeight: 600,
-                padding: '12px', border: 'none', borderRadius: '8px',
-                cursor: carregando ? 'not-allowed' : 'pointer',
-                opacity: carregando ? 0.7 : 1,
-              }}>
-                {carregando ? 'Enviando...' : 'Enviar código'}
-              </button>
-            </form>
-          )}
-
-          {/* ETAPA 2 — Código */}
-          {etapa === 'codigo' && (
-            <div>
-              <CodigoInputs
-                codigos={codigos}
-                onChange={(i, v, refs) => handleCodigoInput(i, v, refs)}
-                onKeyDown={(i, e, refs) => handleCodigoKeyDown(i, e, refs)}
-              />
-              <button onClick={handleConfirmarCodigo} style={{
-                width: '100%', background: '#F59E0B', color: '#0A0A0A',
-                fontFamily: 'inherit', fontSize: '13px', fontWeight: 600,
-                padding: '12px', border: 'none', borderRadius: '8px',
-                cursor: 'pointer', marginBottom: '16px',
-              }}>
-                Confirmar código
-              </button>
-              <div style={{ textAlign: 'center' }}>
-                <button onClick={handleReenviar} disabled={!podeReenviar} style={{
-                  background: 'none', border: 'none', cursor: podeReenviar ? 'pointer' : 'default',
-                  fontSize: '12px', color: podeReenviar ? '#F59E0B' : '#525252',
-                  fontFamily: 'inherit',
-                }}>
-                  {podeReenviar ? 'Reenviar código' : `Reenviar em ${countdown}s`}
+        {/* ETAPA 3 — Nova senha */}
+        {etapa === 'nova-senha' && (
+          <form onSubmit={handleRedefinirSenha} style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 'var(--espaco-4)' }}>
+            <Input
+              label="Nova senha"
+              type={mostrarNovaSenha ? "text" : "password"}
+              value={novaSenha}
+              onChange={e => setNovaSenha(e.target.value)}
+              placeholder="Mínimo 6 caracteres"
+              required
+              minLength={6}
+              iconeEsquerda={<Lock size={16} />}
+              iconeDireita={
+                <button
+                  type="button"
+                  onClick={() => setMostrarNovaSenha(!mostrarNovaSenha)}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--texto-terciario)', display: 'flex', alignItems: 'center', padding: 0 }}
+                >
+                  {mostrarNovaSenha ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
-              </div>
-            </div>
-          )}
+              }
+            />
 
-          {/* ETAPA 3 — Nova senha */}
-          {etapa === 'nova-senha' && (
-            <form onSubmit={handleRedefinirSenha}>
-              <div style={{ marginBottom: '16px' }}>
-                <label style={{ fontSize: '11px', fontWeight: 500, color: '#737373', display: 'block', marginBottom: '6px' }}>
-                  Nova senha
-                </label>
-                <div style={{ position: 'relative' }}>
-                  <Lock size={14} color="#525252" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
-                  <input
-                    type={mostrarNovaSenha ? "text" : "password"} value={novaSenha} onChange={e => setNovaSenha(e.target.value)}
-                    placeholder="Mínimo 6 caracteres" required minLength={6}
-                    style={{
-                      width: '100%', background: '#1A1A1A', border: '1px solid #2A2A2A',
-                      borderRadius: '8px', padding: '10px 14px 10px 36px', paddingRight: '36px', color: '#F5F5F5',
-                      fontFamily: 'inherit', fontSize: '13px', outline: 'none', boxSizing: 'border-box',
-                    }}
-                  />
-                    <button
-                      type="button"
-                      onClick={() => setMostrarNovaSenha(!mostrarNovaSenha)}
-                      style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#525252', padding: 0 }}
-                    >
-                      {mostrarNovaSenha ? <EyeOff size={14} strokeWidth={1.5} /> : <Eye size={14} strokeWidth={1.5} />}
-                    </button>
-                </div>
-              </div>
-              <div style={{ marginBottom: '24px' }}>
-                <label style={{ fontSize: '11px', fontWeight: 500, color: '#737373', display: 'block', marginBottom: '6px' }}>
-                  Confirmar nova senha
-                </label>
-                <div style={{ position: 'relative' }}>
-                  <Lock size={14} color="#525252" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
-                  <input
-                    type={mostrarConfirmarSenha ? "text" : "password"} value={confirmarSenha} onChange={e => setConfirmarSenha(e.target.value)}
-                    placeholder="Repita a nova senha" required
-                    style={{
-                      width: '100%', background: '#1A1A1A', border: '1px solid #2A2A2A',
-                      borderRadius: '8px', padding: '10px 14px 10px 36px', paddingRight: '36px', color: '#F5F5F5',
-                      fontFamily: 'inherit', fontSize: '13px', outline: 'none', boxSizing: 'border-box',
-                    }}
-                  />
-                    <button
-                      type="button"
-                      onClick={() => setMostrarConfirmarSenha(!mostrarConfirmarSenha)}
-                      style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#525252', padding: 0 }}
-                    >
-                      {mostrarConfirmarSenha ? <EyeOff size={14} strokeWidth={1.5} /> : <Eye size={14} strokeWidth={1.5} />}
-                    </button>
-                </div>
-              </div>
-              <button type="submit" disabled={carregando} style={{
-                width: '100%', background: '#F59E0B', color: '#0A0A0A',
-                fontFamily: 'inherit', fontSize: '13px', fontWeight: 600,
-                padding: '12px', border: 'none', borderRadius: '8px',
-                cursor: carregando ? 'not-allowed' : 'pointer',
-                opacity: carregando ? 0.7 : 1,
-              }}>
-                {carregando ? 'Salvando...' : 'Redefinir senha'}
-              </button>
-            </form>
-          )}
+            <Input
+              label="Confirmar nova senha"
+              type={mostrarConfirmarSenha ? "text" : "password"}
+              value={confirmarSenha}
+              onChange={e => setConfirmarSenha(e.target.value)}
+              placeholder="Repita a nova senha"
+              required
+              iconeEsquerda={<Lock size={16} />}
+              iconeDireita={
+                <button
+                  type="button"
+                  onClick={() => setMostrarConfirmarSenha(!mostrarConfirmarSenha)}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--texto-terciario)', display: 'flex', alignItems: 'center', padding: 0 }}
+                >
+                  {mostrarConfirmarSenha ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              }
+            />
 
+            <Botao type="submit" variante="primario" loading={carregando} style={{ width: '100%' }}>
+              Redefinir senha
+            </Botao>
+          </form>
+        )}
+
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: 'var(--espaco-4)' }}>
           <button
+            type="button"
             onClick={() => navigate(-1)}
             style={{
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
-              margin: '24px auto 0', background: 'none', border: 'none', cursor: 'pointer',
-              fontSize: '12px', color: '#525252', fontFamily: 'inherit',
+              background: 'none', border: 'none', cursor: 'pointer',
+              color: 'var(--texto-secundario)', fontSize: 'var(--texto-sm, 0.75rem)',
+              textDecoration: 'underline', minHeight: '44px', display: 'inline-flex',
+              alignItems: 'center', justifyContent: 'center', gap: 'var(--espaco-1)', padding: '0 var(--espaco-2)'
             }}
           >
-            <ArrowLeft size={13} /> Voltar para o login
+            <ArrowLeft size={14} /> Voltar para o login
           </button>
         </div>
       </div>
@@ -418,7 +351,7 @@ function CodigoInputs({ codigos, onChange, onKeyDown }: {
   const refs: (HTMLInputElement | null)[] = [];
 
   return (
-    <div style={{ display: 'flex', gap: '10px', marginBottom: '28px', justifyContent: 'center' }}>
+    <div style={{ display: 'flex', gap: 'var(--espaco-2)', marginBottom: 'var(--espaco-2)', justifyContent: 'center' }}>
       {codigos.map((c, i) => (
         <input
           key={i}
@@ -428,11 +361,12 @@ function CodigoInputs({ codigos, onChange, onKeyDown }: {
           onKeyDown={e => onKeyDown(i, e, refs)}
           style={{
             width: '48px', height: '56px', textAlign: 'center',
-            background: '#1A1A1A', border: `1px solid ${c ? '#F59E0B' : '#2A2A2A'}`,
-            borderRadius: '8px', color: '#F5F5F5',
-            fontFamily: "'JetBrains Mono', monospace",
-            fontSize: '24px', fontWeight: 500, outline: 'none',
-            transition: 'border-color 0.15s',
+            background: 'var(--fundo-superficie-2)',
+            border: `1px solid ${c ? 'var(--cor-primaria)' : 'var(--borda-sutil)'}`,
+            borderRadius: 'var(--raio-md)', color: 'var(--texto-principal)',
+            fontFamily: "var(--fonte-mono, 'JetBrains Mono', monospace)",
+            fontSize: 'var(--texto-h2, 1.5rem)', fontWeight: 500, outline: 'none',
+            transition: 'border-color 0.15s', boxSizing: 'border-box',
           }}
         />
       ))}
