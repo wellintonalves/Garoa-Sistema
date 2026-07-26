@@ -13,30 +13,60 @@ interface RespostaAuthBarbeiro {
 }
 
 export class BarbeiroAppService {
-  /** Login do barbeiro */
-  static async login(email: string, senha: string): Promise<RespostaAuthBarbeiro> {
-    const usuario = await prisma.usuario.findFirst({
-      where: { email, papel: 'BARBEIRO' },
-      include: { barbeiro: true },
+  /** Login do barbeiro — resolve colisão de email entre barbearias */
+  static async login(email: string, senha: string, barbeariaId?: string): Promise<RespostaAuthBarbeiro> {
+    const emailNormalizado = String(email).trim().toLowerCase();
+
+    // Busca TODOS os usuários barbeiro com esse email (pode haver 1 por barbearia)
+    const candidatos = await prisma.usuario.findMany({
+      where: {
+        email: { equals: emailNormalizado, mode: 'insensitive' },
+        papel: 'BARBEIRO',
+        ...(barbeariaId ? { barbeariaId } : {}),
+      },
+      include: { barbeiro: { include: { barbearia: { select: { id: true, nome: true, slug: true } } } } },
     });
 
-    if (!usuario || !usuario.barbeiro) {
+    const comBarbeiro = candidatos.filter((u) => u.barbeiro !== null);
+    if (comBarbeiro.length === 0) {
       throw new Error('Email ou senha incorretos');
     }
 
-    const senhaValida = await bcrypt.compare(senha, usuario.senha);
-    if (!senhaValida) {
+    // Testa a senha contra cada candidato — não assume que o primeiro é o certo
+    const combinam: typeof comBarbeiro = [];
+    for (const u of comBarbeiro) {
+      if (await bcrypt.compare(senha, u.senha)) combinam.push(u);
+    }
+
+    if (combinam.length === 0) {
       throw new Error('Email ou senha incorretos');
     }
 
-    if (!usuario.barbeiro.ativo) {
+    const ativos = combinam.filter((u) => u.barbeiro!.ativo);
+
+    // Só reporta "desativada" se de fato a senha bateu e TODAS as contas estão inativas
+    if (ativos.length === 0) {
       throw new Error('Conta de barbeiro desativada');
     }
 
+    // Ambiguidade real: mesmo email + mesma senha em mais de uma barbearia ativa
+    if (ativos.length > 1) {
+      const erro: any = new Error('Selecione a barbearia para continuar');
+      erro.codigo = 'ESCOLHER_BARBEARIA';
+      erro.barbearias = ativos.map((u) => ({
+        id: u.barbeiro!.barbearia?.id,
+        nome: u.barbeiro!.barbearia?.nome,
+        slug: u.barbeiro!.barbearia?.slug,
+      }));
+      throw erro;
+    }
+
+    const usuario = ativos[0];
+
     const payload: BarbeiroJWT = {
-      barbeiroId: usuario.barbeiro.id,
+      barbeiroId: usuario.barbeiro!.id,
       usuarioId: usuario.id,
-      barbeariaId: usuario.barbeiro.barbeariaId as string,
+      barbeariaId: usuario.barbeiro!.barbeariaId as string,
       nome: usuario.nome,
       email: usuario.email,
     };

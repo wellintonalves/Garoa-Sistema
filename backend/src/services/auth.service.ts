@@ -72,28 +72,26 @@ export class AuthService {
 
   /** Autentica um usuário existente */
   static async login(dados: DadosLogin): Promise<RespostaAuth> {
-    // Busca o usuário (se barbeariaId for fornecido, busca exato, senão pega o primeiro)
-    const whereClause = dados.barbeariaId
-      ? { email_barbeariaId: { email: dados.email, barbeariaId: dados.barbeariaId } }
-      : { email: dados.email };
+    const emailNormalizado = String(dados.email).trim().toLowerCase();
 
-    const usuario = await prisma.usuario.findFirst({
-      where: whereClause,
+    const candidatos = await prisma.usuario.findMany({
+      where: {
+        email: { equals: emailNormalizado, mode: 'insensitive' },
+        ...(dados.barbeariaId ? { barbeariaId: dados.barbeariaId } : {}),
+        ...(dados.papel ? { papel: dados.papel } : {}),
+      },
     });
 
+    if (candidatos.length === 0) {
+      throw new Error('Email ou senha incorretos');
+    }
+
+    let usuario: any = null;
+    for (const c of candidatos) {
+      if (await bcrypt.compare(dados.senha, c.senha)) { usuario = c; break; }
+    }
+
     if (!usuario) {
-      throw new Error('Email ou senha incorretos');
-    }
-
-    // Verifica a senha
-    const senhaValida = await bcrypt.compare(dados.senha, usuario.senha);
-
-    if (!senhaValida) {
-      throw new Error('Email ou senha incorretos');
-    }
-
-    // Valida que o usuário tem o papel exigido pelo portal de login
-    if (dados.papel && usuario.papel !== dados.papel) {
       throw new Error('Email ou senha incorretos');
     }
 

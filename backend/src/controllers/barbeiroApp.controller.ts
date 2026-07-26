@@ -8,16 +8,24 @@ export class BarbeiroAppController {
   /** POST /barbeiro/login */
   static async login(req: Request, res: Response): Promise<void> {
     try {
-      const { email, senha } = req.body;
+      const { email, senha, barbeariaId } = req.body;
 
       if (!email || !senha) {
         res.status(400).json({ erro: 'Email e senha são obrigatórios' });
         return;
       }
 
-      const resultado = await BarbeiroAppService.login(email, senha);
+      const resultado = await BarbeiroAppService.login(email, senha, barbeariaId);
       res.json(resultado);
-    } catch (error) {
+    } catch (error: any) {
+      if (error?.codigo === 'ESCOLHER_BARBEARIA') {
+        res.status(409).json({
+          erro: error.message,
+          codigo: 'ESCOLHER_BARBEARIA',
+          barbearias: error.barbearias,
+        });
+        return;
+      }
       const mensagem = error instanceof Error ? error.message : 'Erro ao fazer login';
       res.status(401).json({ erro: mensagem });
     }

@@ -40,8 +40,8 @@ export class AuthController {
 
       let bId = barbeariaId;
       if (!bId) {
-        const prisma = (await import('../lib/prisma')).prisma;
         if (papel === 'ADMIN') {
+          const prisma = (await import('../lib/prisma')).prisma;
           // Garante que o novo admin terá uma barbearia criada para ele
           const slugUnico = `barbearia-${Date.now()}`;
           const novaBarbearia = await prisma.barbearia.create({
@@ -52,8 +52,8 @@ export class AuthController {
           });
           bId = novaBarbearia.id;
         } else {
-          const b = await prisma.barbearia.findFirst();
-          if (b) bId = b.id;
+          res.status(400).json({ erro: 'Barbearia não informada' });
+          return;
         }
       }
 

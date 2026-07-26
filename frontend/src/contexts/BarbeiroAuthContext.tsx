@@ -13,7 +13,7 @@ interface DadosBarbeiro {
 interface BarbeiroAuthContextData {
   barbeiro: DadosBarbeiro | null;
   carregando: boolean;
-  login: (email: string, senha: string) => Promise<void>;
+  login: (email: string, senha: string, barbeariaId?: string) => Promise<void>;
   logout: () => void;
 }
 
@@ -38,8 +38,8 @@ export function BarbeiroAuthProvider({ children }: { children: ReactNode }) {
     setCarregando(false);
   }, []);
 
-  const login = useCallback(async (email: string, senha: string) => {
-    const response = await barbeiroApi.post<{ token: string; barbeiro: DadosBarbeiro }>('/barbeiro/login', { email, senha });
+  const login = useCallback(async (email: string, senha: string, barbeariaId?: string) => {
+    const response = await barbeiroApi.post<{ token: string; barbeiro: DadosBarbeiro }>('/barbeiro/login', { email, senha, barbeariaId });
     const { token, barbeiro: dados } = response.data;
 
     localStorage.setItem('@garoa:barbeiro_token', token);
