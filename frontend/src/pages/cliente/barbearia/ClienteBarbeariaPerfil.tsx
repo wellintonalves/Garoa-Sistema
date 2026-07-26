@@ -237,7 +237,7 @@ export function ClienteBarbeariaPerfil() {
       </div>
 
       {/* Aparência */}
-      <div className="mb-8 p-5 rounded-xl bg-[var(--fundo-sidebar)] border border-[var(--borda)] shadow-sm">
+      <div className="mb-8 p-5 rounded-xl bg-[var(--fundo-superficie)] border border-[var(--borda-sutil)] shadow-sm">
         <h2 className="flex items-center gap-2 mb-4" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--texto-secundario)', fontWeight: 600 }}>
           <Monitor size={16} weight="bold" /> Aparência
         </h2>

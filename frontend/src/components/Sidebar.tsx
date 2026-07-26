@@ -8,6 +8,7 @@ import {
 } from '@phosphor-icons/react';
 import { useAuth } from '../hooks/useAuth';
 import api from '../api/client';
+import { SeletorTemaCompacto } from './ui/SeletorTemaCompacto';
 
 interface SidebarProps {
   mobileOpen: boolean;
@@ -165,6 +166,11 @@ export function Sidebar({ mobileOpen, onCloseMobile }: SidebarProps) {
               >
                 {usuario.email}
               </p>
+            </div>
+          )}
+          {!recolhido && (
+            <div className="mb-3 px-2 flex justify-center">
+              <SeletorTemaCompacto />
             </div>
           )}
           <button

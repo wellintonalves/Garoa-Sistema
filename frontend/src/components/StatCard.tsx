@@ -1,94 +1,41 @@
-import React from 'react';
+import type { ElementType } from 'react';
+import { CardMetrica } from './ui/CardMetrica';
 
 interface StatCardProps {
   titulo: string;
   valor: string;
-  icone: React.ElementType;
+  icone: ElementType;
   subtexto?: string;
   destaque?: boolean;
   alerta?: boolean;
   delta?: number;
   deltaTipo?: 'alta' | 'baixa' | 'neutro';
   comparacao?: string;
+  serie?: number[];
 }
 
-export function StatCard({ titulo, valor, icone: Icone, subtexto, alerta, delta, deltaTipo, comparacao }: StatCardProps) {
-  let tipoDeltaCalculado = deltaTipo || 'neutro';
-  if (!deltaTipo && delta !== undefined) {
-    tipoDeltaCalculado = delta > 0 ? 'alta' : delta < 0 ? 'baixa' : 'neutro';
-  }
-
-  const deltaColors = {
-    alta: 'var(--sucesso)',
-    baixa: 'var(--perigo)',
-    neutro: 'var(--texto-secundario)',
-  };
-
-  const deltaIcon = {
-    alta: '▲',
-    baixa: '▼',
-    neutro: '-',
-  };
-
+export function StatCard({
+  titulo,
+  valor,
+  icone,
+  subtexto,
+  destaque,
+  alerta,
+  delta,
+  comparacao,
+  serie,
+}: StatCardProps) {
   return (
-    <div 
-      className="animate-fade-in" 
-      style={{ 
-        background: 'var(--superficie-1)', 
-        border: '1px solid var(--borda)', 
-        borderRadius: '12px', 
-        padding: '20px',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '8px'
-      }}
-    >
-      <div className="flex items-center justify-between">
-        <span 
-          style={{ 
-            fontSize: '11px', 
-            textTransform: 'uppercase', 
-            letterSpacing: '0.06em', 
-            color: 'var(--texto-secundario)', 
-            fontWeight: 600 
-          }}
-        >
-          {titulo}
-        </span>
-        <Icone size={18} style={{ color: 'var(--texto-terciario)' }} />
-      </div>
-
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-        <span 
-          style={{ 
-            fontFamily: 'var(--fonte-mono)', 
-            fontSize: '22px', 
-            fontWeight: 700, 
-            color: alerta ? 'var(--perigo)' : 'var(--texto-principal)',
-            fontVariantNumeric: 'tabular-nums',
-            fontFeatureSettings: '"tnum" 1',
-            letterSpacing: '-0.01em'
-          }}
-        >
-          {valor}
-        </span>
-      </div>
-
-      {(delta !== undefined || comparacao || subtexto) && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
-          {delta !== undefined && (
-            <span style={{ fontSize: '12px', fontWeight: 600, color: deltaColors[tipoDeltaCalculado] }}>
-              {deltaIcon[tipoDeltaCalculado]} {Math.abs(delta)}%
-            </span>
-          )}
-          {(comparacao || subtexto) && (
-            <span style={{ fontSize: '12px', color: 'var(--texto-secundario)' }}>
-              {comparacao || subtexto}
-            </span>
-          )}
-        </div>
-      )}
-    </div>
+    <CardMetrica
+      titulo={titulo}
+      valor={valor}
+      icone={icone}
+      subtexto={subtexto}
+      destaque={destaque}
+      alerta={alerta}
+      delta={delta}
+      comparacao={comparacao}
+      serie={serie}
+    />
   );
 }

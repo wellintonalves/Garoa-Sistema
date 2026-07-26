@@ -267,9 +267,9 @@ export function BarbeiroPerfil() {
       </div>
 
       {/* Aparência */}
-      <div className="mb-10">
+      <div className="mb-10 p-5 rounded-xl bg-[var(--fundo-superficie)] border border-[var(--borda-sutil)] shadow-sm">
         <h2 className="text-xs font-semibold uppercase tracking-wider mb-4" style={{ color: 'var(--texto-secundario)' }}>
-          Preferência de Tema
+          Aparência
         </h2>
         <SeletorTema />
       </div>

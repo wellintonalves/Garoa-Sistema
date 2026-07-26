@@ -125,14 +125,14 @@ export class FinanceiroController {
   /** GET /financeiro/dashboard?inicio=YYYY-MM-DD&fim=YYYY-MM-DD */
   static async dashboardResumo(req: AuthRequest, res: Response): Promise<void> {
     try {
-      const { inicio, fim } = req.query;
+      const { inicio, fim, periodo } = req.query;
 
       if (!inicio || !fim) {
         res.status(400).json({ erro: 'Parâmetros inicio e fim são obrigatórios (YYYY-MM-DD)' });
         return;
       }
 
-      const dados = await FinanceiroService.dashboardResumo(inicio as string, fim as string);
+      const dados = await FinanceiroService.dashboardResumo(inicio as string, fim as string, periodo as string);
       res.json(dados);
     } catch (error) {
       const msg = error instanceof Error ? error.message : 'Erro ao gerar resumo do dashboard';

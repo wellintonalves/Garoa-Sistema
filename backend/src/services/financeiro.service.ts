@@ -1,7 +1,7 @@
 // Serviço financeiro — CRUD + resumos
 import { prisma } from '../lib/prisma';
 import { TipoLancamento, FormaPagamento } from '@prisma/client';
-import { inicioDiaBrasilia, fimDiaBrasilia, diaBrasiliaStr } from '../lib/timezone';
+import { inicioDiaBrasilia, fimDiaBrasilia, diaBrasiliaStr, getHoraMinutoBrasilia } from '../lib/timezone';
 import { CATEGORIA_VENDA_PRODUTO } from '../lib/constantes';
 
 interface DadosLancamento {
@@ -313,19 +313,68 @@ export class FinanceiroService {
     return { consolidado, lancamentos };
   }
 
-  /** Resumo para o Dashboard — aceita período customizável */
-  static async dashboardResumo(inicio: string, fim: string) {
+  /** Resumo para o Dashboard — aceita período customizável e comparação contextual */
+  static async dashboardResumo(inicio: string, fim: string, periodo?: string) {
     const dataInicio = inicioDiaBrasilia(inicio);
-    const dataFim = fimDiaBrasilia(fim);
+    let dataFim = fimDiaBrasilia(fim);
 
-    // Calcular período anterior equivalente
-    const diffTime = dataFim.getTime() - dataInicio.getTime();
-    const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24)); // número de dias (0 se for o mesmo dia)
-    
-    // Período anterior (mesma quantidade de dias, terminando 1 dia antes do dataInicio)
-    const dataFimAnterior = new Date(dataInicio.getTime() - 1);
-    const dataInicioAnterior = new Date(dataFimAnterior.getTime() - (diffDays * 24 * 60 * 60 * 1000));
-    dataInicioAnterior.setHours(0, 0, 0, 0);
+    const agora = new Date();
+    const hojeStr = diaBrasiliaStr(agora);
+    const isFimHoje = fim === hojeStr || dataFim > agora;
+    if (isFimHoje && inicio === hojeStr) {
+      dataFim = agora;
+    }
+
+    let periodoCalc = periodo || 'custom';
+    if (!periodo || periodo === 'custom' || periodo === 'undefined') {
+      const diffDaysCalc = Math.round((fimDiaBrasilia(fim).getTime() - dataInicio.getTime()) / (1000 * 60 * 60 * 24));
+      if (inicio === hojeStr && fim === hojeStr) periodoCalc = 'hoje';
+      else if (diffDaysCalc === 0) periodoCalc = 'ontem';
+      else if (diffDaysCalc === 6) periodoCalc = 'semana';
+      else if (inicio.endsWith('-01')) periodoCalc = 'mes';
+    }
+
+    let dataInicioAnterior: Date;
+    let dataFimAnterior: Date;
+
+    if (periodoCalc === 'hoje' || (inicio === hojeStr && fim === hojeStr)) {
+      dataInicioAnterior = new Date(dataInicio.getTime() - 24 * 60 * 60 * 1000);
+      dataFimAnterior = new Date(dataFim.getTime() - 24 * 60 * 60 * 1000);
+    } else if (periodoCalc === 'ontem') {
+      dataInicioAnterior = new Date(dataInicio.getTime() - 24 * 60 * 60 * 1000);
+      dataFimAnterior = new Date(fimDiaBrasilia(fim).getTime() - 24 * 60 * 60 * 1000);
+    } else if (periodoCalc === 'semana' || periodoCalc === 'esta_semana' || periodoCalc === '7dias') {
+      const duracao = 7 * 24 * 60 * 60 * 1000;
+      dataInicioAnterior = new Date(dataInicio.getTime() - duracao);
+      dataFimAnterior = new Date(dataFim.getTime() - duracao);
+    } else if (periodoCalc === 'mes' || periodoCalc === 'este_mes' || periodoCalc === 'mes_anterior' || periodoCalc === '30dias') {
+      const dIniAnt = new Date(dataInicio);
+      dIniAnt.setMonth(dIniAnt.getMonth() - 1);
+      dataInicioAnterior = dIniAnt;
+
+      const dFimAnt = new Date(dataFim);
+      const targetMonth = dFimAnt.getMonth() - 1;
+      dFimAnt.setDate(1);
+      dFimAnt.setMonth(targetMonth);
+      const maxDays = new Date(dFimAnt.getFullYear(), dFimAnt.getMonth() + 1, 0).getDate();
+      dFimAnt.setDate(Math.min(dataFim.getDate(), maxDays));
+      dataFimAnterior = dFimAnt;
+    } else if (periodoCalc === 'ano' || periodoCalc === 'este_ano') {
+      const dIniAnt = new Date(dataInicio);
+      dIniAnt.setFullYear(dIniAnt.getFullYear() - 1);
+      dataInicioAnterior = dIniAnt;
+
+      const dFimAnt = new Date(dataFim);
+      dFimAnt.setDate(1);
+      dFimAnt.setFullYear(dFimAnt.getFullYear() - 1);
+      const maxDays = new Date(dFimAnt.getFullYear(), dFimAnt.getMonth() + 1, 0).getDate();
+      dFimAnt.setDate(Math.min(dataFim.getDate(), maxDays));
+      dataFimAnterior = dFimAnt;
+    } else {
+      const duracaoMs = dataFim.getTime() - dataInicio.getTime();
+      dataFimAnterior = new Date(dataInicio.getTime() - 1);
+      dataInicioAnterior = new Date(dataFimAnterior.getTime() - duracaoMs);
+    }
 
     // --- Executa as queries em paralelo (Atual e Anterior) ---
     const [lancamentos, agendamentos, todosEstoque, lancamentosAnteriores, agendamentosAnteriores] = await Promise.all([
@@ -390,6 +439,7 @@ export class FinanceiroService {
     // --- Processar Período Anterior ---
     let antFaturamentoServicos = 0;
     let antFaturamentoProdutos = 0;
+    let antTotalSaidas = 0;
     
     lancamentosAnteriores.forEach((l: any) => {
       const valor = Number(l.valor);
@@ -399,6 +449,8 @@ export class FinanceiroService {
         } else {
           antFaturamentoServicos += valor;
         }
+      } else {
+        antTotalSaidas += valor;
       }
     });
 
@@ -410,7 +462,7 @@ export class FinanceiroService {
     const ticketMedio = concluidos > 0 ? faturamentoServicos / concluidos : 0;
     const antTicketMedio = antConcluidos > 0 ? antFaturamentoServicos / antConcluidos : 0;
 
-    // Função auxiliar para calcular variação %
+    // Função auxiliar para calcular variação % (legado)
     const calcVar = (atual: number, anterior: number) => {
       if (anterior === 0) return atual > 0 ? 100 : 0;
       return ((atual - anterior) / anterior) * 100;
@@ -437,6 +489,60 @@ export class FinanceiroService {
     // --- Estoque baixo (snapshot atual, não depende de período) ---
     const estoqueBaixo = todosEstoque.filter((i: any) => i.quantidade <= i.quantidadeMinima).length;
 
+    // Construir séries cronológicas para o Sparkline (por hora para 1 dia, por dia para múltiplos dias)
+    const diffDaysTotal = Math.round((fimDiaBrasilia(fim).getTime() - dataInicio.getTime()) / (1000 * 60 * 60 * 24));
+    let serieFaturamentoTotal: number[] = [];
+    let serieFaturamentoServicos: number[] = [];
+    let serieFaturamentoProdutos: number[] = [];
+    let serieAtendimentos: number[] = [];
+    let serieTicketMedio: number[] = [];
+
+    if (diffDaysTotal <= 0) {
+      // Série por hora (0h a 23h ou até a hora atual)
+      const maxHora = (inicio === hojeStr) ? getHoraMinutoBrasilia(agora).hora : 23;
+      const horasCount = Math.max(2, maxHora + 1);
+      const bucketsServicos = new Array(horasCount).fill(0);
+      const bucketsProdutos = new Array(horasCount).fill(0);
+      const bucketsAtendimentos = new Array(horasCount).fill(0);
+
+      lancamentos.forEach((l: any) => {
+        if (l.tipo === 'ENTRADA') {
+          const { hora } = getHoraMinutoBrasilia(new Date(l.data));
+          if (hora < horasCount) {
+            const valor = Number(l.valor);
+            if (l.categoria === CATEGORIA_VENDA_PRODUTO) bucketsProdutos[hora] += valor;
+            else bucketsServicos[hora] += valor;
+          }
+        }
+      });
+
+      agendamentos.forEach((a: any) => {
+        if (a.status === 'CONCLUIDO') {
+          const { hora } = getHoraMinutoBrasilia(new Date(a.dataHora));
+          if (hora < horasCount) bucketsAtendimentos[hora]++;
+        }
+      });
+
+      serieFaturamentoServicos = bucketsServicos;
+      serieFaturamentoProdutos = bucketsProdutos;
+      serieFaturamentoTotal = bucketsServicos.map((v, idx) => v + bucketsProdutos[idx]);
+      serieAtendimentos = bucketsAtendimentos;
+      serieTicketMedio = bucketsServicos.map((v, idx) => bucketsAtendimentos[idx] > 0 ? v / bucketsAtendimentos[idx] : 0);
+    } else {
+      serieFaturamentoServicos = porDiaCompleto.map(d => d.entradas);
+      serieFaturamentoProdutos = porDiaCompleto.map(d => d.produtos);
+      serieFaturamentoTotal = porDiaCompleto.map(d => d.entradas + d.produtos);
+      const atendimentosPorDia: Record<string, number> = {};
+      agendamentos.forEach((a: any) => {
+        if (a.status === 'CONCLUIDO') {
+          const key = diaBrasiliaStr(new Date(a.dataHora));
+          atendimentosPorDia[key] = (atendimentosPorDia[key] || 0) + 1;
+        }
+      });
+      serieAtendimentos = porDiaCompleto.map(d => atendimentosPorDia[d.data] || 0);
+      serieTicketMedio = serieFaturamentoServicos.map((v, idx) => serieAtendimentos[idx] > 0 ? v / serieAtendimentos[idx] : 0);
+    }
+
     return {
       totalEntradas: faturamentoTotal,
       faturamentoServicos,
@@ -456,7 +562,16 @@ export class FinanceiroService {
       variacaoProdutos: calcVar(faturamentoProdutos, antFaturamentoProdutos),
       variacaoAtendimentos: calcVar(concluidos, antConcluidos),
       variacaoTicket: calcVar(ticketMedio, antTicketMedio),
-      // Valores brutos anteriores caso o front precise
+      // Novo formato estruturado por métrica
+      metricas: {
+        faturamentoTotal: { atual: faturamentoTotal, anterior: antFaturamentoTotal, periodo: periodoCalc, serie: serieFaturamentoTotal },
+        faturamentoServicos: { atual: faturamentoServicos, anterior: antFaturamentoServicos, periodo: periodoCalc, serie: serieFaturamentoServicos },
+        faturamentoProdutos: { atual: faturamentoProdutos, anterior: antFaturamentoProdutos, periodo: periodoCalc, serie: serieFaturamentoProdutos },
+        totalAtendimentos: { atual: concluidos, anterior: antConcluidos, periodo: periodoCalc, serie: serieAtendimentos },
+        ticketMedio: { atual: ticketMedio, anterior: antTicketMedio, periodo: periodoCalc, serie: serieTicketMedio },
+        totalSaidas: { atual: totalSaidas, anterior: antTotalSaidas, periodo: periodoCalc, serie: porDiaCompleto.map(d => d.saidas) },
+        saldo: { atual: faturamentoTotal - totalSaidas, anterior: antFaturamentoTotal - antTotalSaidas, periodo: periodoCalc, serie: porDiaCompleto.map(d => d.entradas + d.produtos - d.saidas) }
+      },
       anterior: {
         faturamentoTotal: antFaturamentoTotal,
         faturamentoServicos: antFaturamentoServicos,

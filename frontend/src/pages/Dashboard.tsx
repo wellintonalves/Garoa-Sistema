@@ -1,11 +1,13 @@
 import { useEffect, useState, useCallback } from 'react';
 import { CurrencyDollar, CalendarCheck, Warning, TrendUp as TrendingUp, Medal, Calendar, ChartBar } from '@phosphor-icons/react';
-import { StatCard } from '../components/StatCard';
+import { CardMetrica } from '../components/ui/CardMetrica';
 import { Badge } from '../components/ui/Badge';
 import { SkeletonPage } from '../components/Skeleton';
 import api from '../api/client';
 import { useAuth } from '../hooks/useAuth';
 import { dataBrasilia, hojeBrasilia } from '../utils/datas';
+import { formatarMoeda, formatarNumero } from '../utils/formato';
+import { getRotuloComparativo } from '../utils/periodo';
 
 interface DadosDashboard {
   faturamentoTotal: number;
@@ -24,6 +26,7 @@ interface DadosDashboard {
   variacaoProdutos?: number;
   variacaoAtendimentos?: number;
   variacaoTicket?: number;
+  metricas?: Record<string, { atual: number; anterior: number; periodo: string; serie: number[] }>;
 }
 
 function getPeriodDates(period: 'hoje' | 'esta_semana' | 'este_mes' | 'mes_anterior') {
@@ -69,7 +72,7 @@ export function Dashboard() {
     setErro(null);
     try {
       const res = await api.get('/financeiro/dashboard', {
-        params: { inicio: filtros.inicio, fim: filtros.fim },
+        params: { inicio: filtros.inicio, fim: filtros.fim, periodo: periodoAtivo },
       });
       setDados(res.data);
     } catch (err: any) {
@@ -80,7 +83,7 @@ export function Dashboard() {
     } finally {
       setCarregando(false);
     }
-  }, [filtros]);
+  }, [filtros, periodoAtivo]);
 
   useEffect(() => {
     buscarDados();
@@ -96,9 +99,6 @@ export function Dashboard() {
     setPeriodoAtivo('custom');
     setFiltros((prev) => ({ ...prev, [field]: value }));
   };
-
-  const formatarMoeda = (valor: number) =>
-    (valor || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
   // Cálculo para o gráfico
   
@@ -211,22 +211,24 @@ export function Dashboard() {
         <>
           {/* Destaque Principal - Top 3 (Pareto: Agendamentos do dia, Faturamento, Alertas) */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px', marginBottom: '24px' }}>
-            <StatCard
-              titulo="Agendamentos do Dia"
-              valor={String(dados.totalAtendimentos)}
+            <CardMetrica
+              titulo={periodoAtivo === 'hoje' ? 'Agendamentos do Dia' : 'Atendimentos Concluídos'}
+              valor={formatarNumero(dados.totalAtendimentos)}
               icone={CalendarCheck}
               subtexto={`${dados.pendentes} aguardando / confirmados`}
               delta={dados.variacaoAtendimentos}
-              comparacao="vs. período anterior"
+              serie={dados.metricas?.totalAtendimentos?.serie}
+              rotuloComparativo={getRotuloComparativo(periodoAtivo)}
             />
-            <StatCard
+            <CardMetrica
               titulo="Faturamento"
               valor={formatarMoeda(dados.faturamentoTotal || (dados.faturamentoServicos + dados.faturamentoProdutos))}
               icone={CurrencyDollar}
               subtexto="Total de Serviços e Produtos"
               destaque
               delta={dados.variacaoFaturamento}
-              comparacao="vs. período anterior"
+              serie={dados.metricas?.faturamentoTotal?.serie}
+              rotuloComparativo={getRotuloComparativo(periodoAtivo)}
             />
             <div
               className="animate-fade-in"
@@ -268,29 +270,32 @@ export function Dashboard() {
 
           {/* Métricas Secundárias - Máximo 4 por linha (Lei de Miller) */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px', marginBottom: '24px' }}>
-            <StatCard
+            <CardMetrica
               titulo="Serviços"
               valor={formatarMoeda(dados.faturamentoServicos)}
               icone={CurrencyDollar}
               subtexto="Faturamento"
               delta={dados.variacaoServicos}
-              comparacao="vs. período"
+              serie={dados.metricas?.faturamentoServicos?.serie}
+              rotuloComparativo={getRotuloComparativo(periodoAtivo)}
             />
-            <StatCard
+            <CardMetrica
               titulo="Produtos"
               valor={formatarMoeda(dados.faturamentoProdutos)}
               icone={CurrencyDollar}
               subtexto="Faturamento"
               delta={dados.variacaoProdutos}
-              comparacao="vs. período"
+              serie={dados.metricas?.faturamentoProdutos?.serie}
+              rotuloComparativo={getRotuloComparativo(periodoAtivo)}
             />
-            <StatCard
+            <CardMetrica
               titulo="Ticket Médio"
               valor={formatarMoeda(dados.ticketMedio)}
               icone={TrendingUp}
               subtexto="Por atendimento"
               delta={dados.variacaoTicket}
-              comparacao="vs. período"
+              serie={dados.metricas?.ticketMedio?.serie}
+              rotuloComparativo={getRotuloComparativo(periodoAtivo)}
             />
             <div 
               className="animate-fade-in" 

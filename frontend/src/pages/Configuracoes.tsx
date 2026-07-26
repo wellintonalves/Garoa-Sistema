@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Gear as Settings, FloppyDisk as Save, QrCode, Star } from '@phosphor-icons/react';
+import { Gear as Settings, FloppyDisk as Save, QrCode, Star, Desktop } from '@phosphor-icons/react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/client';
 import { QRCodeSVG } from 'qrcode.react';
+import { SeletorTema } from '../components/SeletorTema';
 
 const diasSemana = [
   { key: 'domingo', label: 'Domingo' },
@@ -401,6 +402,18 @@ export function Configuracoes() {
               Gerenciar Fidelidade
             </button>
           </div>
+        </div>
+
+        {/* Aparência e Preferências */}
+        <div className="bg-[var(--fundo-superficie)] border border-[var(--borda-sutil)] rounded-xl p-6 shadow col-span-1 lg:col-span-2 mt-6">
+          <div className="flex items-center gap-2 mb-4">
+            <Desktop className="text-[var(--cor-primaria)]" size={24} />
+            <h2 className="text-xl font-bold text-[var(--texto-principal)]">Preferências de Aparência</h2>
+          </div>
+          <p className="text-sm text-[var(--texto-secundario)] mb-6">
+            Alterne entre modo claro ou escuro para a interface do painel administrativo ou prefira seguir o padrão do seu sistema operacional.
+          </p>
+          <SeletorTema />
         </div>
       </div>
     </div>

@@ -14,7 +14,7 @@ export function SeletorTema() {
   return (
     <div className="flex flex-col gap-3 w-full">
       <div 
-        className="flex bg-[var(--superficie)] border border-[var(--borda)] rounded-xl overflow-hidden p-1.5 gap-1.5 shadow-sm"
+        className="flex bg-[var(--fundo-superficie)] border border-[var(--borda-sutil)] rounded-xl overflow-hidden p-1.5 gap-1.5 shadow-sm"
         role="radiogroup" 
         aria-label="Seleção de tema"
       >
@@ -31,7 +31,7 @@ export function SeletorTema() {
               className={`flex-1 min-h-[var(--alvo-mobile)] md:min-h-[var(--alvo-desktop)] px-3 py-2.5 rounded-lg flex flex-col sm:flex-row items-center justify-center gap-2 transition-all cursor-pointer ${
                 selecionado
                   ? 'bg-[var(--cor-primaria)] text-[var(--texto-sobre-primaria)] font-semibold shadow'
-                  : 'text-[var(--texto-secundario)] hover:text-[var(--texto-principal)] hover:bg-[var(--superficie-2)]'
+                  : 'text-[var(--texto-secundario)] hover:text-[var(--texto-principal)] hover:bg-[var(--fundo-superficie-2)]'
               }`}
               style={{
                 fontFamily: 'var(--fonte-interface)',
