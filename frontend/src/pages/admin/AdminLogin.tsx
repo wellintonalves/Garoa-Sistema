@@ -134,9 +134,9 @@ export function AdminLogin() {
                 type="button"
                 onClick={() => setMostrarSenha(!mostrarSenha)}
                 aria-label={mostrarSenha ? "Ocultar senha" : "Mostrar senha"}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--texto-terciario)', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px', padding: 0 }}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--texto-terciario)', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '44px', height: '44px', padding: 0 }}
               >
-                {mostrarSenha ? <EyeOff size={16} /> : <Eye size={16} />}
+                {mostrarSenha ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             }
           />

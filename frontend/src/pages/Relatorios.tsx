@@ -322,7 +322,7 @@ export function Relatorios() {
           <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
             <h3 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)', padding: '1.25rem', borderBottom: '1px solid var(--border)' }}>
               Detalhamento dos Lançamentos
-              <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--text-muted)', marginLeft: '12px', fontWeight: 400 }}>
+              <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '0.8125rem', color: 'var(--text-muted)', marginLeft: '12px', fontWeight: 400 }}>
                 {entradas.length} {entradas.length === 1 ? 'registro' : 'registros'}
               </span>
             </h3>
@@ -347,7 +347,7 @@ export function Relatorios() {
                       </td>
                       <td>
                         <p style={{ fontWeight: 500, color: 'var(--text-primary)' }}>{l.servico ? l.servico.nome : l.categoria}</p>
-                        <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                        <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '0.8125rem', color: 'var(--text-muted)', marginTop: '2px' }}>
                           {l.barbeiro ? l.barbeiro.usuario.nome : 'Sem Barbeiro'}
                         </p>
                       </td>
@@ -359,9 +359,9 @@ export function Relatorios() {
                           {FORMA_PAGAMENTO_LABELS[l.formaPagamento] || l.formaPagamento}
                         </span>
                       </td>
-                      <td style={{ textAlign: 'right', fontFamily: 'var(--fonte-numeros)', fontSize: '12px', color: 'var(--text-primary)' }}>{fmt(l.valor)}</td>
-                      <td style={{ textAlign: 'right', fontFamily: 'var(--fonte-numeros)', fontSize: '12px', color: 'var(--error-text)' }}>{l.valorComissao ? fmt(l.valorComissao) : '—'}</td>
-                      <td style={{ textAlign: 'right', fontFamily: 'var(--fonte-numeros)', fontSize: '12px', color: 'var(--sucesso)', fontWeight: 500 }}>{l.valorLiquido ? fmt(l.valorLiquido) : fmt(l.valor)}</td>
+                      <td style={{ textAlign: 'right', fontFamily: 'var(--fonte-numeros)', fontSize: '0.8125rem', color: 'var(--text-primary)' }}>{fmt(l.valor)}</td>
+                      <td style={{ textAlign: 'right', fontFamily: 'var(--fonte-numeros)', fontSize: '0.8125rem', color: 'var(--error-text)' }}>{l.valorComissao ? fmt(l.valorComissao) : '—'}</td>
+                      <td style={{ textAlign: 'right', fontFamily: 'var(--fonte-numeros)', fontSize: '0.8125rem', color: 'var(--sucesso)', fontWeight: 500 }}>{l.valorLiquido ? fmt(l.valorLiquido) : fmt(l.valor)}</td>
                       <td style={{ textAlign: 'center', verticalAlign: 'middle' }}>
                         <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', alignItems: 'center' }}>
                           <button
@@ -469,7 +469,7 @@ export function Relatorios() {
                       const novos = [...servicosAdicionais];
                       novos.splice(index, 1);
                       setServicosAdicionais(novos);
-                    }} style={{ background: 'transparent', border: 'none', color: 'var(--error-text)', fontSize: '12px', cursor: 'pointer' }}>Remover</button>
+                    }} style={{ background: 'transparent', border: 'none', color: 'var(--error-text)', fontSize: '0.8125rem', cursor: 'pointer' }}>Remover</button>
                   </div>
                   <div style={{ display: 'flex', gap: '8px' }}>
                     <select 
@@ -505,7 +505,7 @@ export function Relatorios() {
 
               <button 
                 className="btn-secondary" 
-                style={{ fontSize: '12px', padding: '8px', borderStyle: 'dashed' }}
+                style={{ fontSize: '0.8125rem', padding: '8px', borderStyle: 'dashed' }}
                 onClick={() => setServicosAdicionais([...servicosAdicionais, { servicoId: '', valor: '' }])}
               >
                 <Plus size={14} /> Adicionar Serviço Extra

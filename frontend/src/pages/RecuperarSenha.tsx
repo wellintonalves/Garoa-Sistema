@@ -292,9 +292,10 @@ export function RecuperarSenha() {
                 <button
                   type="button"
                   onClick={() => setMostrarNovaSenha(!mostrarNovaSenha)}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--texto-terciario)', display: 'flex', alignItems: 'center', padding: 0 }}
+                  aria-label={mostrarNovaSenha ? "Ocultar senha" : "Mostrar senha"}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--texto-terciario)', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '44px', height: '44px', padding: 0 }}
                 >
-                  {mostrarNovaSenha ? <EyeOff size={16} /> : <Eye size={16} />}
+                  {mostrarNovaSenha ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               }
             />
@@ -311,9 +312,10 @@ export function RecuperarSenha() {
                 <button
                   type="button"
                   onClick={() => setMostrarConfirmarSenha(!mostrarConfirmarSenha)}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--texto-terciario)', display: 'flex', alignItems: 'center', padding: 0 }}
+                  aria-label={mostrarConfirmarSenha ? "Ocultar senha" : "Mostrar senha"}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--texto-terciario)', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '44px', height: '44px', padding: 0 }}
                 >
-                  {mostrarConfirmarSenha ? <EyeOff size={16} /> : <Eye size={16} />}
+                  {mostrarConfirmarSenha ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               }
             />

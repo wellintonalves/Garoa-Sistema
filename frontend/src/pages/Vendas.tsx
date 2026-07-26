@@ -360,7 +360,7 @@ export function Vendas() {
               borderBottom: aba === id ? '2px solid var(--amber)' : '2px solid transparent',
               color: aba === id ? 'var(--text-primary)' : 'var(--text-muted)',
               fontFamily: 'var(--fonte-interface)',
-              fontSize: '12px',
+              fontSize: '0.8125rem',
               letterSpacing: '0.08em',
               textTransform: 'uppercase',
               cursor: 'pointer',
@@ -392,7 +392,7 @@ export function Vendas() {
               <tbody>
                 {itens.length === 0 && (
                   <tr>
-                    <td colSpan={8} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '2rem', fontFamily: 'var(--fonte-interface)', fontSize: '12px' }}>
+                    <td colSpan={8} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '2rem', fontFamily: 'var(--fonte-interface)', fontSize: '0.8125rem' }}>
                       Nenhum produto cadastrado
                     </td>
                   </tr>
@@ -430,19 +430,19 @@ export function Vendas() {
                             style={{ width: '80px', minHeight: '32px', padding: '6px 8px' }}
                           />
                         ) : (
-                          <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '12px', color: baixo ? 'var(--perigo)' : 'var(--text-primary)' }}>
+                          <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '0.8125rem', color: baixo ? 'var(--perigo)' : 'var(--text-primary)' }}>
                             {item.quantidade} <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>{item.unidade}</span>
                           </span>
                         )}
                       </td>
                       <td style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--text-muted)' }}>{item.quantidadeMinima}</td>
-                      <td style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '12px', color: 'var(--text-muted)' }}>
+                      <td style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
                         {fmt(Number(item.custo))}
                       </td>
-                      <td style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '12px', color: semPreco ? 'var(--text-disabled)' : 'var(--amber)' }}>
+                      <td style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '0.8125rem', color: semPreco ? 'var(--text-disabled)' : 'var(--amber)' }}>
                         {item.precoVenda ? fmt(Number(item.precoVenda)) : '—'}
                       </td>
-                      <td style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '12px', color: 'var(--sucesso)' }}>
+                      <td style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '0.8125rem', color: 'var(--sucesso)' }}>
                         {margem(item.custo, item.precoVenda)}
                       </td>
                       <td>
@@ -537,8 +537,8 @@ export function Vendas() {
                           <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--text-muted)', marginLeft: '8px' }}>{p.unidades} un.</span>
                         </div>
                         <div className="flex gap-4" style={{ textAlign: 'right' }}>
-                          <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '12px', color: 'var(--amber)' }}>{fmt(p.receita)}</span>
-                          <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '12px', color: 'var(--sucesso)' }}>{fmt(p.lucro)}</span>
+                          <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '0.8125rem', color: 'var(--amber)' }}>{fmt(p.receita)}</span>
+                          <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '0.8125rem', color: 'var(--sucesso)' }}>{fmt(p.lucro)}</span>
                         </div>
                       </div>
                     ))}
@@ -564,7 +564,7 @@ export function Vendas() {
                     <tbody>
                       {resumoVendas.vendas.length === 0 && (
                         <tr>
-                          <td colSpan={7} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '2rem', fontFamily: 'var(--fonte-interface)', fontSize: '12px' }}>
+                          <td colSpan={7} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '2rem', fontFamily: 'var(--fonte-interface)', fontSize: '0.8125rem' }}>
                             Nenhuma venda no período
                           </td>
                         </tr>
@@ -575,12 +575,12 @@ export function Vendas() {
                             {new Date(v.data).toLocaleDateString('pt-BR')}
                           </td>
                           <td style={{ fontWeight: 500, color: 'var(--text-primary)' }}>{v.nomeProduto}</td>
-                          <td style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '12px' }}>{v.quantidade}</td>
-                          <td style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '12px', color: 'var(--text-muted)' }}>{fmt(Number(v.precoVenda))}</td>
-                          <td style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '12px', color: 'var(--amber)' }}>
+                          <td style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '0.8125rem' }}>{v.quantidade}</td>
+                          <td style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '0.8125rem', color: 'var(--text-muted)' }}>{fmt(Number(v.precoVenda))}</td>
+                          <td style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '0.8125rem', color: 'var(--amber)' }}>
                             {fmt(Number(v.precoVenda) * v.quantidade)}
                           </td>
-                          <td style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '12px', color: 'var(--sucesso)' }}>
+                          <td style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '0.8125rem', color: 'var(--sucesso)' }}>
                             {fmt(Number(v.lucro))}
                           </td>
                           <td style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', color: 'var(--text-muted)' }}>
@@ -656,7 +656,7 @@ export function Vendas() {
               <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '13px', color: 'var(--text-muted)' }}>
                 Nenhum produto no carrinho.
               </p>
-              <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>
+              <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '0.8125rem', color: 'var(--text-muted)', marginTop: '4px' }}>
                 Clique no ícone 🛒 ao lado de cada produto para adicionar.
               </p>
             </div>
@@ -773,7 +773,7 @@ export function Vendas() {
                         background: formaPagCart === f ? 'rgba(255,140,0,0.08)' : 'var(--bg-surface2)',
                         color: formaPagCart === f ? 'var(--text-primary)' : 'var(--text-muted)',
                         fontFamily: 'var(--fonte-interface)',
-                        fontSize: '12px',
+                        fontSize: '0.8125rem',
                         cursor: 'pointer',
                       }}
                     >

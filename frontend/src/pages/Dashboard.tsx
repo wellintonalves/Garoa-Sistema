@@ -259,7 +259,7 @@ export function Dashboard() {
                 ) : (
                   <Badge variante="sucesso" ponto>Tudo normal</Badge>
                 )}
-                <span style={{ fontSize: '12px', color: 'var(--texto-secundario)' }}>
+                <span style={{ fontSize: '0.8125rem', color: 'var(--texto-secundario)' }}>
                   {dados.estoqueBaixo > 0 ? 'Reposição recomendada' : 'Sem alertas de estoque'}
                 </span>
               </div>
@@ -364,7 +364,7 @@ export function Dashboard() {
                       {points.map((p, i) => {
                         if (i % step === 0 || i === points.length - 1) {
                           return (
-                            <text key={`label-${i}`} x={p.x} y={viewBoxHeight + 20} textAnchor="middle" fill="var(--texto-secundario)" fontSize="12px" fontFamily="var(--fonte-numeros)">
+                            <text key={`label-${i}`} x={p.x} y={viewBoxHeight + 20} textAnchor="middle" fill="var(--texto-secundario)" fontSize="0.8125rem" fontFamily="var(--fonte-numeros)">
                               {new Date(p.original.data + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
                             </text>
                           );
@@ -391,7 +391,7 @@ export function Dashboard() {
             ) : (
               <div style={{ height: '220px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
                 <ChartBar size={32} style={{ color: 'var(--text-muted)', opacity: 0.5 }} />
-                <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '12px', color: 'var(--text-muted)' }}>Nenhum faturamento registrado neste período</p>
+                <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '0.8125rem', color: 'var(--text-muted)' }}>Nenhum faturamento registrado neste período</p>
               </div>
             )}
           </div>

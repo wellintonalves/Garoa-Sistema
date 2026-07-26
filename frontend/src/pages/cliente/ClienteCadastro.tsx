@@ -325,9 +325,10 @@ export function ClienteCadastro() {
                     <button
                       type="button"
                       onClick={() => setMostrarSenha(!mostrarSenha)}
-                      style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--texto-terciario)', padding: 0 }}
+                      aria-label={mostrarSenha ? "Ocultar senha" : "Mostrar senha"}
+                      style={{ position: 'absolute', right: '0', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--texto-terciario)', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '44px', height: '44px', padding: 0 }}
                     >
-                      {mostrarSenha ? <EyeOff size={14} strokeWidth={1.5} /> : <Eye size={14} strokeWidth={1.5} />}
+                      {mostrarSenha ? <EyeOff size={18} /> : <Eye size={18} />}
                     </button>
             </div>
           </div>
@@ -381,7 +382,7 @@ export function ClienteCadastro() {
               border: 'none',
               cursor: 'pointer',
               fontFamily: 'var(--fonte-interface)',
-              fontSize: '12px',
+              fontSize: '0.8125rem',
               letterSpacing: '0.08em',
               color: 'var(--cor-primaria)',
               padding: '8px',

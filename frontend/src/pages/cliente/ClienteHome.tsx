@@ -177,7 +177,7 @@ export function ClienteHome() {
         )}
 
         {buscando && (
-          <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', color: 'var(--text-muted)', textAlign: 'center', padding: '12px 0' }}>
+          <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '0.8125rem', color: 'var(--text-muted)', textAlign: 'center', padding: '12px 0' }}>
             Buscando...
           </p>
         )}
@@ -190,7 +190,7 @@ export function ClienteHome() {
         </h2>
 
         {carregando ? (
-          <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', color: 'var(--text-muted)', textAlign: 'center', padding: '2rem 0' }}>
+          <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '0.8125rem', color: 'var(--text-muted)', textAlign: 'center', padding: '2rem 0' }}>
             Carregando...
           </p>
         ) : minhasBarbearias.length === 0 ? (
@@ -199,7 +199,7 @@ export function ClienteHome() {
             <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '14px', color: 'var(--text-muted)', textAlign: 'center' }}>
               Nenhuma barbearia conectada
             </p>
-            <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', color: 'var(--text-disabled)', textAlign: 'center', marginTop: '4px' }}>
+            <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '0.8125rem', color: 'var(--text-disabled)', textAlign: 'center', marginTop: '4px' }}>
               Busque acima ou escaneie um QR Code
             </p>
           </div>

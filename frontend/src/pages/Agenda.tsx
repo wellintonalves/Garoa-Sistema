@@ -299,11 +299,11 @@ export function Agenda() {
         <div key={bl.id} className="truncate cursor-pointer" onClick={() => removerBloqueio(bl.id)} title="Clique para remover bloqueio"
           style={{
             padding: '4px 8px', background: 'repeating-linear-gradient(45deg, var(--bg-surface2), var(--bg-surface2) 10px, transparent 10px, transparent 20px)',
-            borderLeft: `3px solid var(--text-muted)`, color: 'var(--text-muted)', fontFamily: 'var(--fonte-interface)', fontSize: isMobile ? '11px' : '12px',
+            borderLeft: `3px solid var(--text-muted)`, color: 'var(--text-muted)', fontFamily: 'var(--fonte-interface)', fontSize: isMobile ? '0.8125rem' : '0.8125rem',
             borderRadius: '0 4px 4px 0', lineHeight: 1.2, position: 'absolute', top: '2px', left: '2px', right: '2px', height: '44px', zIndex: 5 + idx
           }}>
           <p className="truncate pr-1" style={{ fontWeight: 600, marginBottom: '2px' }}>{bl.barbeiro.usuario.nome}</p>
-          <p className="truncate" style={{ fontSize: isMobile ? '11px' : '12px' }}>Bloqueado</p>
+          <p className="truncate" style={{ fontSize: isMobile ? '0.8125rem' : '0.8125rem' }}>Bloqueado</p>
         </div>
       ))}
       {ags.map((ag, idx) => {
@@ -319,7 +319,7 @@ export function Agenda() {
           <div key={ag.id} className="cursor-pointer flex flex-col overflow-hidden" onClick={() => setAgendamentoSelecionado(ag)}
             style={{
               padding: '6px 8px', background: bg, borderLeft: `3px solid ${cor}`, color: 'var(--text-primary)', opacity: isConcluido ? 0.7 : 1,
-              fontFamily: 'var(--fonte-interface)', fontSize: isMobile ? '11px' : '12px', position: 'absolute', top: '2px', left: `${2 + (getOffset(idx) * 10)}px`, right: '2px',
+              fontFamily: 'var(--fonte-interface)', fontSize: isMobile ? '0.8125rem' : '0.8125rem', position: 'absolute', top: '2px', left: `${2 + (getOffset(idx) * 10)}px`, right: '2px',
               height: `${heightPx}px`, zIndex: 10 + idx, borderRadius: '0 4px 4px 0', lineHeight: 1.2
             }}>
             <div className="flex justify-between items-start mb-1.5">
@@ -327,7 +327,7 @@ export function Agenda() {
               {ag.origem === 'ONLINE' && <span className="bg-[var(--cor-primaria)] text-[var(--texto-sobre-primaria)] px-1 rounded text-[8px] font-bold shrink-0">WEB</span>}
             </div>
             <div>
-              <p className="truncate" style={{ fontFamily: 'var(--fonte-interface)', fontSize: isMobile ? '11px' : '12px', background: 'transparent', color: 'var(--text-primary)', padding: 0, borderRadius: 0, display: 'inline-block', maxWidth: '100%', lineHeight: 1.2 }}>
+              <p className="truncate" style={{ fontFamily: 'var(--fonte-interface)', fontSize: isMobile ? '0.8125rem' : '0.8125rem', background: 'transparent', color: 'var(--text-primary)', padding: 0, borderRadius: 0, display: 'inline-block', maxWidth: '100%', lineHeight: 1.2 }}>
                 {ag.servico.nome}
               </p>
             </div>

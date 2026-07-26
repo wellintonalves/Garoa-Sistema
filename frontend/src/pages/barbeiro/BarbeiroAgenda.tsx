@@ -152,7 +152,7 @@ export function BarbeiroAgenda() {
           <div style={{ display: 'grid', gridTemplateColumns: `60px 1fr`, borderBottom: '1px solid var(--border)' }}>
             <div style={{ padding: '8px' }} />
             <div className="text-center" style={{ padding: '12px', borderLeft: '1px solid var(--border)', background: isHoje ? 'rgba(var(--cor-primaria-rgb), 0.10)' : 'transparent' }}>
-              <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)' }}>Seus Agendamentos</p>
+              <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-primary)' }}>Seus Agendamentos</p>
             </div>
           </div>
           <div style={{ position: 'relative' }}>

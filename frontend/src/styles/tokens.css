@@ -67,12 +67,12 @@
   --texto-inverso: #F4F4F4;
   --texto-desabilitado: #C5BDB0;
   --texto-label: #6E675C;
-  --texto-detalhe: 0.75rem;
+  --texto-detalhe: 0.8125rem;
 
   /* Bordas */
   --borda-sutil: #EFE9DB;
-  --borda-media: #E5DFD1;
-  --borda-forte: #E3DBCB;
+  --borda-media: #D3CABC;
+  --borda-forte: #A09690;
   --borda-foco: var(--swatch-primaria-500);
 
   /* Marca */
@@ -167,12 +167,12 @@
   --texto-inverso: #1A1712;
   --texto-desabilitado: #4A4A4A;
   --texto-label: #8F8F8F;
-  --texto-detalhe: 0.75rem;
+  --texto-detalhe: 0.8125rem;
 
   /* Bordas */
-  --borda-sutil: #262626;
-  --borda-media: #2D2D2D;
-  --borda-forte: #333333;
+  --borda-sutil: #2E2E2E;
+  --borda-media: #3D3D3D;
+  --borda-forte: #5A5A5A;
   --borda-foco: var(--swatch-primaria-500);
 
   /* Marca */

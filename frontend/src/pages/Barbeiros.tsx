@@ -366,15 +366,15 @@ export function Barbeiros() {
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '13px' }}>
                     <div className="flex justify-between items-center">
                       <span style={{ color: 'var(--text-muted)', fontFamily: 'var(--fonte-interface)', fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Produzido</span>
-                      <span style={{ color: 'var(--text-primary)', fontFamily: 'var(--fonte-numeros)', fontSize: '12px' }}>{fmt(b.bruto)}</span>
+                      <span style={{ color: 'var(--text-primary)', fontFamily: 'var(--fonte-numeros)', fontSize: '0.8125rem' }}>{fmt(b.bruto)}</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span style={{ color: 'var(--text-muted)', fontFamily: 'var(--fonte-interface)', fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Comissão</span>
-                      <span style={{ color: 'var(--cor-icone)', fontFamily: 'var(--fonte-numeros)', fontSize: '12px', fontWeight: 500 }}>{fmt(b.comissao)}</span>
+                      <span style={{ color: 'var(--cor-icone)', fontFamily: 'var(--fonte-numeros)', fontSize: '0.8125rem', fontWeight: 500 }}>{fmt(b.comissao)}</span>
                     </div>
                     <div className="flex justify-between items-center" style={{ borderTop: '1px solid var(--border)', paddingTop: '8px', marginTop: '4px' }}>
                       <span style={{ color: 'var(--text-muted)', fontFamily: 'var(--fonte-interface)', fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Líquido</span>
-                      <span style={{ color: 'var(--sucesso)', fontFamily: 'var(--fonte-numeros)', fontSize: '12px', fontWeight: 500 }}>{fmt(b.liquido)}</span>
+                      <span style={{ color: 'var(--sucesso)', fontFamily: 'var(--fonte-numeros)', fontSize: '0.8125rem', fontWeight: 500 }}>{fmt(b.liquido)}</span>
                     </div>
                   </div>
                 </div>
