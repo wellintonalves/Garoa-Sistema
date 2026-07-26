@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../api/client';
 import { dataBrasilia } from '../../utils/datas';
-import { ChevronRight, ChevronLeft, Check, Scissors, User, Calendar, Clock, CheckCircle } from 'lucide-react';
+import { CaretRight, CaretLeft, Check, Scissors, User, CalendarBlank, Clock, CheckCircle } from '@phosphor-icons/react';
 
 interface Servico { id: string; nome: string; descricao: string; preco: string; duracaoMinutos: number; }
 interface Barbeiro { id: string; usuario: { nome: string }; especialidades: string[]; foto: string | null; }
@@ -132,7 +132,7 @@ export function Agendar() {
         {etapa === 1 && (
           <div className="animate-fade-in flex flex-col gap-4 flex-1">
             <div className="flex items-center gap-2 mb-2">
-              <Scissors className="text-[var(--cor-primaria)]" size={20} />
+              <Scissors className="text-[var(--cor-primaria)]" size={20} weight="regular" aria-hidden="true" />
               <h2 className="text-xl font-bold font-display tracking-wide">Escolha o Serviço</h2>
             </div>
             
@@ -155,7 +155,7 @@ export function Agendar() {
                   </div>
                   <p className="text-sm text-[var(--text-muted)] mb-2">{s.descricao || 'Sem descrição'}</p>
                   <div className="text-xs font-mono text-[var(--text-muted)] flex items-center gap-1">
-                    <Clock size={12} /> {s.duracaoMinutos} min
+                    <Clock size={12} weight="regular" aria-hidden="true" /> {s.duracaoMinutos} min
                   </div>
                 </div>
               ))}
@@ -166,7 +166,7 @@ export function Agendar() {
               disabled={!servicoId}
               className="mt-4 flex items-center justify-center gap-2 w-full py-3 bg-[var(--cor-primaria)] hover:bg-[var(--cor-primaria)] disabled:opacity-50 disabled:cursor-not-allowed text-[var(--texto-sobre-primaria)] font-bold uppercase tracking-widest text-sm rounded transition-colors"
             >
-              Avançar <ChevronRight size={18} />
+              Avançar <CaretRight size={18} weight="regular" aria-hidden="true" />
             </button>
           </div>
         )}
@@ -175,10 +175,10 @@ export function Agendar() {
         {etapa === 2 && (
           <div className="animate-fade-in flex flex-col gap-4 flex-1">
             <button onClick={() => setEtapa(1)} className="text-[var(--text-muted)] flex items-center gap-1 text-sm mb-2 w-fit">
-              <ChevronLeft size={16} /> Voltar
+              <CaretLeft size={16} weight="regular" aria-hidden="true" /> Voltar
             </button>
             <div className="flex items-center gap-2 mb-2">
-              <User className="text-[var(--cor-primaria)]" size={20} />
+              <User className="text-[var(--cor-primaria)]" size={20} weight="regular" aria-hidden="true" />
               <h2 className="text-xl font-bold font-display tracking-wide">Escolha o Barbeiro</h2>
             </div>
             
@@ -192,7 +192,7 @@ export function Agendar() {
                 }`}
               >
                 <div className="w-12 h-12 rounded-full bg-[var(--bg-surface2)] flex items-center justify-center">
-                  <Scissors size={20} className="text-[var(--text-muted)]" />
+                  <Scissors size={20} weight="regular" className="text-[var(--text-muted)]" aria-hidden="true" />
                 </div>
                 <div>
                   <h3 className="font-bold">Sem preferência</h3>
@@ -214,7 +214,7 @@ export function Agendar() {
                     {b.foto ? (
                       <img src={b.foto} alt={b.usuario.nome} className="w-full h-full object-cover" />
                     ) : (
-                      <User size={20} className="text-[var(--text-muted)]" />
+                      <User size={20} weight="regular" className="text-[var(--text-muted)]" aria-hidden="true" />
                     )}
                   </div>
                   <div>
@@ -231,7 +231,7 @@ export function Agendar() {
               onClick={() => { setEtapa(3); buscarHorarios(data); }}
               className="mt-4 flex items-center justify-center gap-2 w-full py-3 bg-[var(--cor-primaria)] hover:bg-[var(--cor-primaria)] text-[var(--texto-sobre-primaria)] font-bold uppercase tracking-widest text-sm rounded transition-colors"
             >
-              Avançar <ChevronRight size={18} />
+              Avançar <CaretRight size={18} weight="regular" aria-hidden="true" />
             </button>
           </div>
         )}
@@ -240,10 +240,10 @@ export function Agendar() {
         {etapa === 3 && (
           <div className="animate-fade-in flex flex-col gap-4 flex-1">
             <button onClick={() => setEtapa(2)} className="text-[var(--text-muted)] flex items-center gap-1 text-sm mb-2 w-fit">
-              <ChevronLeft size={16} /> Voltar
+              <CaretLeft size={16} weight="regular" aria-hidden="true" /> Voltar
             </button>
             <div className="flex items-center gap-2 mb-2">
-              <Calendar className="text-[var(--cor-primaria)]" size={20} />
+              <CalendarBlank className="text-[var(--cor-primaria)]" size={20} weight="regular" aria-hidden="true" />
               <h2 className="text-xl font-bold font-display tracking-wide">Data e Horário</h2>
             </div>
             
@@ -311,7 +311,7 @@ export function Agendar() {
               disabled={!data || !horario}
               className="mt-4 flex items-center justify-center gap-2 w-full py-3 bg-[var(--cor-primaria)] hover:bg-[var(--cor-primaria)] disabled:opacity-50 disabled:cursor-not-allowed text-[var(--texto-sobre-primaria)] font-bold uppercase tracking-widest text-sm rounded transition-colors"
             >
-              Avançar <ChevronRight size={18} />
+              Avançar <CaretRight size={18} weight="regular" aria-hidden="true" />
             </button>
           </div>
         )}
@@ -320,10 +320,10 @@ export function Agendar() {
         {etapa === 4 && (
           <div className="animate-fade-in flex flex-col gap-4 flex-1">
             <button onClick={() => setEtapa(3)} className="text-[var(--text-muted)] flex items-center gap-1 text-sm mb-2 w-fit">
-              <ChevronLeft size={16} /> Voltar
+              <CaretLeft size={16} weight="regular" aria-hidden="true" /> Voltar
             </button>
             <div className="flex items-center gap-2 mb-4">
-              <User className="text-[var(--cor-primaria)]" size={20} />
+              <User className="text-[var(--cor-primaria)]" size={20} weight="regular" aria-hidden="true" />
               <h2 className="text-xl font-bold font-display tracking-wide">Seus Dados</h2>
             </div>
             
@@ -364,7 +364,7 @@ export function Agendar() {
               disabled={!cliente.nome || !cliente.telefone}
               className="mt-auto flex items-center justify-center gap-2 w-full py-3 bg-[var(--cor-primaria)] hover:bg-[var(--cor-primaria)] disabled:opacity-50 disabled:cursor-not-allowed text-[var(--texto-sobre-primaria)] font-bold uppercase tracking-widest text-sm rounded transition-colors"
             >
-              Avançar <ChevronRight size={18} />
+              Avançar <CaretRight size={18} weight="regular" aria-hidden="true" />
             </button>
           </div>
         )}
@@ -373,10 +373,10 @@ export function Agendar() {
         {etapa === 5 && (
           <div className="animate-fade-in flex flex-col gap-4 flex-1">
             <button onClick={() => setEtapa(4)} className="text-[var(--text-muted)] flex items-center gap-1 text-sm mb-2 w-fit">
-              <ChevronLeft size={16} /> Voltar
+              <CaretLeft size={16} weight="regular" aria-hidden="true" /> Voltar
             </button>
             <div className="flex items-center gap-2 mb-4">
-              <Check className="text-[var(--cor-primaria)]" size={20} />
+              <Check className="text-[var(--cor-primaria)]" size={20} weight="regular" aria-hidden="true" />
               <h2 className="text-xl font-bold font-display tracking-wide">Confirmar Agendamento</h2>
             </div>
             
@@ -423,7 +423,7 @@ export function Agendar() {
         {/* ETAPA 6: SUCESSO */}
         {etapa === 6 && (
           <div className="animate-fade-in flex flex-col items-center justify-center gap-4 flex-1 text-center py-10">
-            <CheckCircle size={64} className="text-[var(--sucesso)] mb-4" />
+            <CheckCircle size={64} weight="regular" className="text-[var(--sucesso)] mb-4" aria-hidden="true" />
             <h2 className="text-2xl font-bold font-display tracking-wide text-[var(--texto-principal)]">Agendamento Confirmado!</h2>
             <p className="text-[var(--text-muted)] mb-8">
               Tudo certo, {cliente.nome.split(' ')[0]}! Seu horário foi reservado com sucesso.<br/><br/>

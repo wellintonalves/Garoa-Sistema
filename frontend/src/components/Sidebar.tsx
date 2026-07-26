@@ -109,7 +109,7 @@ export function Sidebar({ mobileOpen, onCloseMobile }: SidebarProps) {
           </button>
         </div>
 
-        {/* Menu — Sem borda nos itens, ícones Lucide outline 20px, peso 500 ativo + 3px barra */}
+        {/* Menu — Sem borda nos itens, ícones Phosphor outline 20px, peso 500 ativo + 3px barra */}
         <nav className="flex-1 py-4 overflow-y-auto">
           {menuItems.map(({ path, label, icon: Icon }) => (
             <NavLink

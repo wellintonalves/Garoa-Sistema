@@ -166,7 +166,7 @@ export function ClienteLayout() {
                 className={`bottom-tab-item ${isActive ? 'active' : ''}`}
                 style={{ textTransform: 'none' }}
               >
-                <Icon size={24} weight={isActive ? "fill" : "regular"} style={{ marginBottom: '2px', opacity: isActive ? 1 : 0.7 }} />
+                <Icon size={24} weight={isActive ? "fill" : "regular"} style={{ marginBottom: '2px', opacity: isActive ? 1 : 0.7 }} aria-hidden="true" />
                 <span className="bottom-tab-label">
                   {tab.name}
                 </span>

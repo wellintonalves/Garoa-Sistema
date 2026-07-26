@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../api/client';
-import { Search, Award, Star, History, Scissors, ChevronLeft } from 'lucide-react';
+import { MagnifyingGlass, Medal, Star, ClockCounterClockwise, Scissors, CaretLeft } from '@phosphor-icons/react';
 
 interface FidelidadeData {
   cliente: string;
@@ -42,7 +42,7 @@ export function Fidelidade() {
       {/* Header Público */}
       <header className="h-16 flex items-center px-4 bg-[var(--bg-surface)] border-b border-[var(--border)] sticky top-0 z-10">
         <button onClick={() => navigate('/agendar')} className="text-[var(--cor-primaria)]">
-          <ChevronLeft size={24} />
+          <CaretLeft size={24} weight="regular" aria-hidden="true" />
         </button>
         <h1 className="font-display text-xl tracking-wider text-[var(--cor-primaria)] uppercase mx-auto pr-6">
           Clube {nomeBarbearia}
@@ -54,7 +54,7 @@ export function Fidelidade() {
         {!dados ? (
           <div className="animate-fade-in flex flex-col items-center">
             <div className="w-20 h-20 bg-[var(--bg-surface2)] rounded-full flex items-center justify-center mb-6 border border-[var(--cor-primaria)]">
-              <Star className="text-[var(--cor-primaria)]" size={40} />
+              <Star className="text-[var(--cor-primaria)]" size={40} weight="regular" aria-hidden="true" />
             </div>
             <h2 className="text-2xl font-bold font-display text-center mb-2">Seus Pontos</h2>
             <p className="text-center text-[var(--text-muted)] mb-8 text-sm">
@@ -73,7 +73,7 @@ export function Fidelidade() {
                     placeholder="(00) 00000-0000"
                     required
                   />
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" size={20} />
+                  <MagnifyingGlass className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" size={20} weight="regular" aria-hidden="true" />
                 </div>
               </div>
 
@@ -97,7 +97,7 @@ export function Fidelidade() {
             {/* Cartão de Pontos */}
             <div className="bg-[var(--bg-surface)] border border-[var(--cor-primaria)] rounded p-6 text-center relative overflow-hidden">
               <div className="absolute -top-10 -right-10 text-[var(--cor-primaria)] opacity-10">
-                <Award size={120} />
+                <Medal size={120} weight="regular" aria-hidden="true" />
               </div>
               <p className="text-xs text-[var(--cor-primaria)] font-mono uppercase tracking-widest mb-2">Saldo Atual</p>
               <div className="flex items-baseline justify-center gap-2 mb-4">
@@ -119,7 +119,7 @@ export function Fidelidade() {
             {/* Histórico */}
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <History className="text-[var(--text-muted)]" size={18} />
+                <ClockCounterClockwise className="text-[var(--text-muted)]" size={18} weight="regular" aria-hidden="true" />
                 <h3 className="font-bold text-lg">Últimas Visitas</h3>
               </div>
 
@@ -132,7 +132,7 @@ export function Fidelidade() {
                   {dados.historico.map((h, i) => (
                     <div key={i} className="flex items-center gap-4 p-3 bg-[var(--bg-surface)] rounded border border-[var(--border)]">
                       <div className="w-10 h-10 rounded-full bg-[rgba(var(--cor-primaria-rgb), 0.10)] flex items-center justify-center flex-shrink-0">
-                        <Scissors size={16} className="text-[var(--cor-primaria)]" />
+                        <Scissors size={16} weight="regular" className="text-[var(--cor-primaria)]" aria-hidden="true" />
                       </div>
                       <div className="flex-1 overflow-hidden">
                         <h4 className="font-bold text-sm truncate">{h.servico}</h4>

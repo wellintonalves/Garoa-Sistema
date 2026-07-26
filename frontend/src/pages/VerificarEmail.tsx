@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Mail, RefreshCw, CheckCircle, AlertCircle } from 'lucide-react';
+import { Envelope, ArrowsClockwise, CheckCircle, WarningCircle } from '@phosphor-icons/react';
 import api from '../api/client';
 import { Botao } from '../components/ui';
 
@@ -110,7 +110,7 @@ export function VerificarEmail() {
           border: '1px solid var(--borda-sutil)', boxShadow: 'var(--elevacao-2)',
           boxSizing: 'border-box', display: 'flex', flexDirection: 'column', alignItems: 'center',
         }}>
-          <CheckCircle size={48} color="var(--sucesso)" strokeWidth={1.5} style={{ marginBottom: 'var(--espaco-4)' }} />
+          <CheckCircle size={48} weight="regular" color="var(--sucesso)" style={{ marginBottom: 'var(--espaco-4)' }} aria-hidden="true" />
           <h1 style={{
             fontFamily: 'var(--fonte-serif)', fontSize: 'var(--texto-h1, 1.75rem)',
             fontWeight: 400, color: 'var(--texto-principal)', margin: '0 0 var(--espaco-2)', textAlign: 'center',
@@ -165,7 +165,7 @@ export function VerificarEmail() {
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--espaco-2)', marginBottom: 'var(--espaco-1)' }}>
-          <Mail size={20} style={{ color: 'var(--cor-primaria)' }} />
+          <Envelope size={20} weight="regular" style={{ color: 'var(--cor-primaria)' }} aria-hidden="true" />
           <h1 style={{
             fontFamily: 'var(--fonte-serif)',
             fontSize: 'var(--texto-h1, 1.75rem)',
@@ -190,7 +190,7 @@ export function VerificarEmail() {
               borderRadius: 'var(--raio-md)', padding: 'var(--espaco-2) var(--espaco-3)',
               color: 'var(--erro)', fontSize: 'var(--texto-sm, 0.75rem)',
             }} role="alert">
-              <AlertCircle size={16} style={{ flexShrink: 0 }} />
+              <WarningCircle size={18} weight="regular" style={{ flexShrink: 0 }} aria-hidden="true" />
               <span>{erro}</span>
             </div>
           ) : null}
@@ -223,7 +223,7 @@ export function VerificarEmail() {
           </Botao>
 
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 'var(--espaco-1)' }}>
-            <RefreshCw size={14} style={{ color: 'var(--texto-secundario)' }} />
+            <ArrowsClockwise size={18} weight="regular" style={{ color: 'var(--texto-secundario)' }} aria-hidden="true" />
             <button
               type="button"
               onClick={handleReenviar}

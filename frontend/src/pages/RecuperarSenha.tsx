@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Mail, Lock, AlertCircle, CheckCircle, ArrowLeft, Eye, EyeOff } from 'lucide-react';
+import { Envelope, Lock, WarningCircle, CheckCircle, ArrowLeft, Eye, EyeSlash } from '@phosphor-icons/react';
 import api from '../api/client';
 import { Input, Botao } from '../components/ui';
 
@@ -138,7 +138,7 @@ export function RecuperarSenha() {
           border: '1px solid var(--borda-sutil)', boxShadow: 'var(--elevacao-2)',
           boxSizing: 'border-box', display: 'flex', flexDirection: 'column', alignItems: 'center',
         }}>
-          <CheckCircle size={48} color="var(--sucesso)" strokeWidth={1.5} style={{ marginBottom: 'var(--espaco-4)' }} />
+          <CheckCircle size={48} weight="regular" color="var(--sucesso)" style={{ marginBottom: 'var(--espaco-4)' }} aria-hidden="true" />
           <h1 style={{
             fontFamily: 'var(--fonte-serif)', fontSize: 'var(--texto-h1, 1.75rem)',
             fontWeight: 400, color: 'var(--texto-principal)', margin: '0 0 var(--espaco-2)', textAlign: 'center',
@@ -223,7 +223,7 @@ export function RecuperarSenha() {
               borderRadius: 'var(--raio-md)', padding: 'var(--espaco-2) var(--espaco-3)',
               color: 'var(--erro)', fontSize: 'var(--texto-sm, 0.75rem)',
             }} role="alert">
-              <AlertCircle size={16} style={{ flexShrink: 0 }} />
+              <WarningCircle size={18} weight="regular" style={{ flexShrink: 0 }} aria-hidden="true" />
               <span>{erro}</span>
             </div>
           ) : null}
@@ -239,7 +239,7 @@ export function RecuperarSenha() {
               onChange={e => setEmail(e.target.value)}
               placeholder="seu@email.com"
               required
-              iconeEsquerda={<Mail size={16} />}
+              iconeEsquerda={<Envelope size={18} weight="regular" aria-hidden="true" />}
             />
             <Botao type="submit" variante="primario" loading={carregando} style={{ width: '100%' }}>
               Enviar código
@@ -287,7 +287,7 @@ export function RecuperarSenha() {
               placeholder="Mínimo 6 caracteres"
               required
               minLength={6}
-              iconeEsquerda={<Lock size={16} />}
+              iconeEsquerda={<Lock size={18} weight="regular" aria-hidden="true" />}
               iconeDireita={
                 <button
                   type="button"
@@ -295,7 +295,7 @@ export function RecuperarSenha() {
                   aria-label={mostrarNovaSenha ? "Ocultar senha" : "Mostrar senha"}
                   style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--texto-terciario)', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '44px', height: '44px', padding: 0 }}
                 >
-                  {mostrarNovaSenha ? <EyeOff size={18} /> : <Eye size={18} />}
+                  {mostrarNovaSenha ? <EyeSlash size={18} weight="regular" aria-hidden="true" /> : <Eye size={18} weight="regular" aria-hidden="true" />}
                 </button>
               }
             />
@@ -307,7 +307,7 @@ export function RecuperarSenha() {
               onChange={e => setConfirmarSenha(e.target.value)}
               placeholder="Repita a nova senha"
               required
-              iconeEsquerda={<Lock size={16} />}
+              iconeEsquerda={<Lock size={18} weight="regular" aria-hidden="true" />}
               iconeDireita={
                 <button
                   type="button"
@@ -315,7 +315,7 @@ export function RecuperarSenha() {
                   aria-label={mostrarConfirmarSenha ? "Ocultar senha" : "Mostrar senha"}
                   style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--texto-terciario)', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '44px', height: '44px', padding: 0 }}
                 >
-                  {mostrarConfirmarSenha ? <EyeOff size={18} /> : <Eye size={18} />}
+                  {mostrarConfirmarSenha ? <EyeSlash size={18} weight="regular" aria-hidden="true" /> : <Eye size={18} weight="regular" aria-hidden="true" />}
                 </button>
               }
             />
@@ -337,7 +337,7 @@ export function RecuperarSenha() {
               alignItems: 'center', justifyContent: 'center', gap: 'var(--espaco-1)', padding: '0 var(--espaco-2)'
             }}
           >
-            <ArrowLeft size={14} /> Voltar para o login
+            <ArrowLeft size={18} weight="regular" aria-hidden="true" /> Voltar para o login
           </button>
         </div>
       </div>

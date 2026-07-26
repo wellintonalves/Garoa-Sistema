@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
-import { CheckCircle2, AlertCircle, AlertTriangle, Info, X } from 'lucide-react';
+import { CheckCircle, WarningCircle, Warning, Info, X } from '@phosphor-icons/react';
 
 export type TipoToast = 'sucesso' | 'erro' | 'aviso' | 'info';
 
@@ -29,14 +29,14 @@ export const Toast: React.FC<ToastProps> = ({ toast, onClose }) => {
   const renderIcon = () => {
     switch (tipo) {
       case 'sucesso':
-        return <CheckCircle2 size={20} strokeWidth={1.75} style={{ color: 'var(--sucesso)', flexShrink: 0 }} aria-hidden="true" />;
+        return <CheckCircle size={20} weight="regular" style={{ color: 'var(--sucesso)', flexShrink: 0 }} aria-hidden="true" />;
       case 'erro':
-        return <AlertCircle size={20} strokeWidth={1.75} style={{ color: 'var(--erro)', flexShrink: 0 }} aria-hidden="true" />;
+        return <WarningCircle size={20} weight="regular" style={{ color: 'var(--erro)', flexShrink: 0 }} aria-hidden="true" />;
       case 'aviso':
-        return <AlertTriangle size={20} strokeWidth={1.75} style={{ color: 'var(--aviso)', flexShrink: 0 }} aria-hidden="true" />;
+        return <Warning size={20} weight="regular" style={{ color: 'var(--aviso)', flexShrink: 0 }} aria-hidden="true" />;
       case 'info':
       default:
-        return <Info size={20} strokeWidth={1.75} style={{ color: 'var(--info)', flexShrink: 0 }} aria-hidden="true" />;
+        return <Info size={20} weight="regular" style={{ color: 'var(--info)', flexShrink: 0 }} aria-hidden="true" />;
     }
   };
 
@@ -61,7 +61,7 @@ export const Toast: React.FC<ToastProps> = ({ toast, onClose }) => {
         }}
         aria-label="Fechar toast"
       >
-        <X size={16} strokeWidth={1.75} />
+        <X size={18} weight="regular" aria-hidden="true" />
       </button>
     </div>
   );

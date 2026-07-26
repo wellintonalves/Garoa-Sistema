@@ -1,5 +1,5 @@
 import { Outlet, useNavigate, useLocation, useParams } from 'react-router-dom';
-import { Home, Calendar, Clock, Star, User } from 'lucide-react';
+import { House, CalendarBlank, Clock, Star, User } from '@phosphor-icons/react';
 import { useClientAuth } from '../hooks/useClientAuth';
 import { useEffect, useState } from 'react';
 import { api } from '../api';
@@ -27,8 +27,8 @@ export function ClientLayout() {
   }
 
   const tabs = [
-    { name: 'Início', path: `/b/${slug}/app`, icon: Home },
-    { name: 'Agendar', path: `/b/${slug}/app/agendar`, icon: Calendar },
+    { name: 'Início', path: `/b/${slug}/app`, icon: House },
+    { name: 'Agendar', path: `/b/${slug}/app/agendar`, icon: CalendarBlank },
     { name: 'Histórico', path: `/b/${slug}/app/historico`, icon: Clock },
     { name: 'Fidelidade', path: `/b/${slug}/app/fidelidade`, icon: Star },
     { name: 'Perfil', path: `/b/${slug}/app/perfil`, icon: User },
@@ -55,7 +55,7 @@ export function ClientLayout() {
               className={`bottom-tab-item ${isActive ? 'active' : ''}`}
               style={{ textTransform: 'none' }}
             >
-              <Icon size={24} style={{ marginBottom: '2px', opacity: isActive ? 1 : 0.7 }} />
+              <Icon size={24} weight={isActive ? 'fill' : 'regular'} style={{ marginBottom: '2px', opacity: isActive ? 1 : 0.7 }} aria-hidden="true" />
               <span className="bottom-tab-label">{tab.name}</span>
             </button>
           );

@@ -3,7 +3,7 @@
 import { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useClienteAuth } from '../../hooks/useClienteAuth';
-import { User, Phone, Mail, Lock, AlertCircle, Scissors, ArrowLeft, Eye, EyeOff } from 'lucide-react';
+import { User, Phone, Envelope, Lock, WarningCircle, Scissors, ArrowLeft, Eye, EyeSlash } from '@phosphor-icons/react';
 
 export function ClienteCadastro() {
   const navigate = useNavigate();
@@ -155,7 +155,7 @@ export function ClienteCadastro() {
             (e.currentTarget as HTMLElement).style.color = 'var(--texto-secundario)';
           }}
         >
-          <ArrowLeft size={14} strokeWidth={1.5} />
+          <ArrowLeft size={18} weight="regular" aria-hidden="true" />
           Voltar
         </button>
       </div>
@@ -191,7 +191,7 @@ export function ClienteCadastro() {
             boxShadow: '0 0 40px rgba(212, 130, 10, 0.25)',
             marginBottom: '1rem',
           }}>
-            <Scissors size={28} style={{ color: 'var(--cor-primaria)' }} />
+            <Scissors size={28} weight="regular" style={{ color: 'var(--cor-primaria)' }} aria-hidden="true" />
           </div>
 
           <h1 style={{
@@ -245,7 +245,7 @@ export function ClienteCadastro() {
                 fontSize: '11px',
               }}
             >
-              <AlertCircle size={14} strokeWidth={1.5} className="flex-shrink-0" />
+              <WarningCircle size={18} weight="regular" className="flex-shrink-0" aria-hidden="true" />
               <span>{erro}</span>
             </div>
           )}
@@ -254,7 +254,7 @@ export function ClienteCadastro() {
           <div>
             <label style={labelStyle}>Nome Completo</label>
             <div style={{ position: 'relative' }}>
-              <User size={15} strokeWidth={1.5} style={iconStyle} />
+              <User size={18} weight="regular" style={iconStyle} aria-hidden="true" />
               <input
                 id="cadastro-nome"
                 type="text"
@@ -273,7 +273,7 @@ export function ClienteCadastro() {
           <div>
             <label style={labelStyle}>WhatsApp</label>
             <div style={{ position: 'relative' }}>
-              <Phone size={15} strokeWidth={1.5} style={iconStyle} />
+              <Phone size={18} weight="regular" style={iconStyle} aria-hidden="true" />
               <input
                 id="cadastro-telefone"
                 type="tel"
@@ -291,7 +291,7 @@ export function ClienteCadastro() {
           <div>
             <label style={labelStyle}>Email</label>
             <div style={{ position: 'relative' }}>
-              <Mail size={15} strokeWidth={1.5} style={iconStyle} />
+              <Envelope size={18} weight="regular" style={iconStyle} aria-hidden="true" />
               <input
                 id="cadastro-email"
                 type="email"
@@ -310,7 +310,7 @@ export function ClienteCadastro() {
           <div>
             <label style={labelStyle}>Senha</label>
             <div style={{ position: 'relative' }}>
-              <Lock size={15} strokeWidth={1.5} style={iconStyle} />
+              <Lock size={18} weight="regular" style={iconStyle} aria-hidden="true" />
               <input
                 id="cadastro-senha"
                 type={mostrarSenha ? "text" : "password"}
@@ -328,7 +328,7 @@ export function ClienteCadastro() {
                       aria-label={mostrarSenha ? "Ocultar senha" : "Mostrar senha"}
                       style={{ position: 'absolute', right: '0', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--texto-terciario)', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '44px', height: '44px', padding: 0 }}
                     >
-                      {mostrarSenha ? <EyeOff size={18} /> : <Eye size={18} />}
+                      {mostrarSenha ? <EyeSlash size={18} weight="regular" aria-hidden="true" /> : <Eye size={18} weight="regular" aria-hidden="true" />}
                     </button>
             </div>
           </div>

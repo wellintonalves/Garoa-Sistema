@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import barbeiroApi from '../api/barbeiroApi';
-import { AlertCircle, Check, X } from 'lucide-react';
+import { WarningCircle, Check, X } from '@phosphor-icons/react';
 import { useBarbeiroAuth } from '../hooks/useBarbeiroAuth';
 
 interface Aprovacao {
@@ -89,7 +89,7 @@ export function AprovacoesPopup() {
             width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(234, 179, 8, 0.1)',
             display: 'flex', alignItems: 'center', justifyContent: 'center'
           }}>
-            <AlertCircle size={24} style={{ color: 'var(--amber)' }} />
+            <WarningCircle size={24} weight="regular" style={{ color: 'var(--amber)' }} aria-hidden="true" />
           </div>
           <div>
             <h3 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)' }}>
@@ -141,7 +141,7 @@ export function AprovacoesPopup() {
             onClick={() => handleRejeitar(atual.id)}
             disabled={carregando}
           >
-            <X size={16} /> Rejeitar
+            <X size={18} weight="regular" aria-hidden="true" /> Rejeitar
           </button>
           <button 
             className="btn-primary" 
@@ -149,7 +149,7 @@ export function AprovacoesPopup() {
             onClick={() => handleAprovar(atual.id)}
             disabled={carregando}
           >
-            <Check size={16} /> Aprovar
+            <Check size={18} weight="regular" aria-hidden="true" /> Aprovar
           </button>
         </div>
       </div>

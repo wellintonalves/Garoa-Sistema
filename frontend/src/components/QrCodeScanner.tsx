@@ -1,7 +1,7 @@
 // QR Code Scanner — usa html5-qrcode para ler QR Code via câmera do navegador
 import { useEffect, useRef, useState } from 'react';
 import { Html5Qrcode } from 'html5-qrcode';
-import { X, Camera, AlertCircle } from 'lucide-react';
+import { X, Camera, WarningCircle } from '@phosphor-icons/react';
 
 interface QrCodeScannerProps {
   onResult: (slug: string) => void;
@@ -132,7 +132,7 @@ export function QrCodeScanner({ onResult, onClose }: QrCodeScannerProps) {
         zIndex: 10,
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Camera size={18} style={{ color: 'var(--cor-icone)' }} />
+          <Camera size={18} weight="regular" style={{ color: 'var(--cor-icone)' }} aria-hidden="true" />
           <span style={{
             fontFamily: 'var(--fonte-interface)',
             fontSize: '11px',
@@ -145,9 +145,10 @@ export function QrCodeScanner({ onResult, onClose }: QrCodeScannerProps) {
         </div>
         <button
           onClick={onClose}
+          aria-label="Fechar leitor de QR Code"
           style={{ border: 'none', background: 'none', color: 'var(--texto-principal)', cursor: 'pointer', padding: 4, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
         >
-          <X size={20} style={{ color: 'var(--texto-principal)' }} />
+          <X size={20} weight="regular" style={{ color: 'var(--texto-principal)' }} aria-hidden="true" />
         </button>
       </div>
 
@@ -194,7 +195,7 @@ export function QrCodeScanner({ onResult, onClose }: QrCodeScannerProps) {
             textAlign: 'center',
             padding: '40px 20px',
           }}>
-            <AlertCircle size={40} style={{ color: 'var(--perigo)', margin: '0 auto 16px' }} />
+            <WarningCircle size={40} weight="regular" style={{ color: 'var(--perigo)', margin: '0 auto 16px' }} aria-hidden="true" />
             <p style={{
               fontFamily: 'var(--fonte-interface)',
               fontSize: '14px',

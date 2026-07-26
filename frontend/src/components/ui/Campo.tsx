@@ -1,5 +1,5 @@
 import React, { InputHTMLAttributes, SelectHTMLAttributes, TextareaHTMLAttributes, forwardRef, useId } from 'react';
-import { AlertCircle } from 'lucide-react';
+import { WarningCircle } from '@phosphor-icons/react';
 
 export interface CampoWrapperProps {
   label?: string;
@@ -32,7 +32,7 @@ export const Campo: React.FC<CampoWrapperProps> = ({
       <div className="campo-msg-reserva" role="alert" aria-live="polite">
         {erro ? (
           <>
-            <AlertCircle size={16} strokeWidth={1.75} aria-hidden="true" />
+            <WarningCircle size={18} weight="regular" aria-hidden="true" />
             <span>{erro}</span>
           </>
         ) : hint ? (

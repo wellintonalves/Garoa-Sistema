@@ -1,6 +1,6 @@
 // Modal reutilizável — design system industrial
 import { useEffect, useState, type ReactNode } from 'react';
-import { X } from 'lucide-react';
+import { X } from '@phosphor-icons/react';
 
 interface ModalProps {
   aberto: boolean;
@@ -54,6 +54,7 @@ export function Modal({ aberto, onFechar, titulo, children, largura = 'max-w-lg'
           <h2>{titulo}</h2>
           <button
             onClick={() => !fechando && onFechar()}
+            aria-label="Fechar modal"
             className="flex items-center justify-center transition-colors"
             style={{
               width: '32px',
@@ -67,7 +68,7 @@ export function Modal({ aberto, onFechar, titulo, children, largura = 'max-w-lg'
             onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--text-primary)'; e.currentTarget.style.borderColor = 'var(--border-hover)'; }}
             onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.borderColor = 'var(--border)'; }}
           >
-            <X size={14} strokeWidth={1.5} />
+            <X size={18} weight="regular" aria-hidden="true" />
           </button>
         </div>
 

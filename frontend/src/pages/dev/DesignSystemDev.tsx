@@ -21,7 +21,7 @@ import {
   useToast,
   EstadoVazio,
 } from '../../components/ui';
-import { Search, Calendar } from 'lucide-react';
+import { MagnifyingGlass, CalendarBlank } from '@phosphor-icons/react';
 import { CORES_CATEGORIA_SERVICO } from '../../styles/tokens';
 
 const ConteudoDev: React.FC = () => {
@@ -125,7 +125,7 @@ const ConteudoDev: React.FC = () => {
             <Input
               label="Buscar Serviço"
               placeholder="Ex: Corte Degrade..."
-              iconeEsquerda={<Search size={18} strokeWidth={1.75} />}
+              iconeEsquerda={<MagnifyingGlass size={18} weight="regular" aria-hidden="true" />}
             />
           </div>
           <div>
@@ -299,7 +299,7 @@ const ConteudoDev: React.FC = () => {
         </h2>
         <Card>
           <EstadoVazio
-            icone={Calendar}
+            icone={CalendarBlank}
             titulo="Nenhum agendamento para hoje"
             descricao="Você ainda não possui horários agendados nesta data. Que tal agendar um novo cliente agora mesmo?"
             textoBotao="Novo Agendamento"

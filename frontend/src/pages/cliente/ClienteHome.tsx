@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useSearchParams, Navigate } from 'react-router-dom';
 import { useClienteAuth } from '../../hooks/useClienteAuth';
-import { Search, QrCode, MapPin, ChevronRight, LogOut, Scissors, CheckCircle, XCircle } from 'lucide-react';
+import { MagnifyingGlass, QrCode, MapPin, CaretRight, SignOut, Scissors, CheckCircle, XCircle } from '@phosphor-icons/react';
 import clienteApi from '../../api/clienteApi';
 import { QrCodeScanner } from '../../components/QrCodeScanner';
 
@@ -113,14 +113,14 @@ export function ClienteHome() {
           </div>
           <button onClick={logout} title="Sair"
             style={{ background: 'var(--bg-surface2)', border: '1px solid var(--border)', padding: '10px', cursor: 'pointer' }}>
-            <LogOut size={18} style={{ color: 'var(--text-muted)' }} />
+            <SignOut size={18} weight="regular" style={{ color: 'var(--text-muted)' }} aria-hidden="true" />
           </button>
         </div>
 
         {/* Busca */}
         <div className="flex gap-2">
           <div className="relative flex-1">
-            <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+            <MagnifyingGlass size={18} weight="regular" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} aria-hidden="true" />
             <input
               type="text"
               value={busca}
@@ -135,7 +135,7 @@ export function ClienteHome() {
             style={{ background: 'rgba(var(--cor-primaria-rgb), 0.10)', border: '1px solid var(--cor-primaria)', padding: '10px 14px', cursor: 'pointer' }}
             title="Escanear QR Code"
           >
-            <QrCode size={20} style={{ color: 'var(--cor-icone)' }} />
+            <QrCode size={20} weight="regular" style={{ color: 'var(--cor-icone)' }} aria-hidden="true" />
           </button>
         </div>
 
@@ -151,13 +151,13 @@ export function ClienteHome() {
               >
                 <div className="w-10 h-10 flex items-center justify-center flex-shrink-0"
                   style={{ background: 'rgba(var(--cor-primaria-rgb), 0.10)' }}>
-                  <Scissors size={18} style={{ color: 'var(--cor-icone)' }} />
+                  <Scissors size={18} weight="regular" style={{ color: 'var(--cor-icone)' }} aria-hidden="true" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <p style={{ fontFamily: 'var(--fonte-interface)', fontWeight: 700, color: 'var(--text-primary)', fontSize: '13px' }}>{b.nome}</p>
                   {b.endereco && (
                     <p className="flex items-center gap-1 truncate" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--text-muted)' }}>
-                      <MapPin size={10} /> {b.endereco}
+                      <MapPin size={12} weight="regular" aria-hidden="true" /> {b.endereco}
                     </p>
                   )}
                 </div>
@@ -188,7 +188,7 @@ export function ClienteHome() {
           </p>
         ) : minhasBarbearias.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12">
-            <Scissors size={40} style={{ color: 'var(--text-disabled)', marginBottom: '16px' }} />
+            <Scissors size={40} weight="regular" style={{ color: 'var(--text-disabled)', marginBottom: '16px' }} aria-hidden="true" />
             <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '14px', color: 'var(--text-muted)', textAlign: 'center' }}>
               Nenhuma barbearia conectada
             </p>
@@ -214,7 +214,7 @@ export function ClienteHome() {
               >
                 <div className="w-12 h-12 flex items-center justify-center flex-shrink-0"
                   style={{ background: 'rgba(var(--cor-primaria-rgb), 0.10)' }}>
-                  <Scissors size={22} style={{ color: 'rgba(var(--cor-primaria-rgb), 0.15)' }} />
+                  <Scissors size={22} weight="regular" style={{ color: 'rgba(var(--cor-primaria-rgb), 0.15)' }} aria-hidden="true" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p style={{ fontFamily: 'var(--fonte-interface)', fontWeight: 700, color: 'var(--text-primary)', fontSize: '14px' }}>
@@ -222,11 +222,11 @@ export function ClienteHome() {
                   </p>
                   {b.endereco && (
                     <p className="flex items-center gap-1 truncate" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px' }}>
-                      <MapPin size={10} /> {b.endereco}
+                      <MapPin size={12} weight="regular" aria-hidden="true" /> {b.endereco}
                     </p>
                   )}
                 </div>
-                <ChevronRight size={20} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
+                <CaretRight size={20} weight="regular" style={{ color: 'var(--text-muted)', flexShrink: 0 }} aria-hidden="true" />
               </button>
             ))}
           </div>
@@ -259,7 +259,7 @@ export function ClienteHome() {
           animation: 'slideUp 0.3s ease-out',
           maxWidth: '90vw',
         }}>
-          <CheckCircle size={20} style={{ color: 'var(--sucesso)', flexShrink: 0 }} />
+          <CheckCircle size={20} weight="regular" style={{ color: 'var(--sucesso)', flexShrink: 0 }} aria-hidden="true" />
           <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '13px', color: 'var(--texto-principal)', fontWeight: 600 }}>
             {mensagemSucesso}
           </span>
@@ -284,7 +284,7 @@ export function ClienteHome() {
           animation: 'slideUp 0.3s ease-out',
           maxWidth: '90vw',
         }}>
-          <XCircle size={20} style={{ color: 'var(--perigo)', flexShrink: 0 }} />
+          <XCircle size={20} weight="regular" style={{ color: 'var(--perigo)', flexShrink: 0 }} aria-hidden="true" />
           <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '13px', color: 'var(--texto-principal)', fontWeight: 600 }}>
             {mensagemErro}
           </span>

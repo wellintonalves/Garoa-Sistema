@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Mail, Lock, AlertCircle, Eye, EyeOff } from 'lucide-react';
+import { Envelope, Lock, WarningCircle, Eye, EyeSlash } from '@phosphor-icons/react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Lottie from 'lottie-react';
 import premiumAnimation from '../../assets/animations/premium.json';
@@ -102,7 +102,7 @@ export function ClienteLoginPrincipal() {
               borderRadius: 'var(--raio-md)', padding: 'var(--espaco-2) var(--espaco-3)',
               color: 'var(--sucesso)', fontSize: 'var(--texto-sm, 0.75rem)',
             }} role="alert">
-              <AlertCircle size={16} style={{ flexShrink: 0 }} />
+              <WarningCircle size={18} weight="regular" style={{ flexShrink: 0 }} aria-hidden="true" />
               <span>{mensagemSucesso}</span>
             </div>
           ) : erro ? (
@@ -112,7 +112,7 @@ export function ClienteLoginPrincipal() {
               borderRadius: 'var(--raio-md)', padding: 'var(--espaco-2) var(--espaco-3)',
               color: 'var(--erro)', fontSize: 'var(--texto-sm, 0.75rem)',
             }} role="alert">
-              <AlertCircle size={16} style={{ flexShrink: 0 }} />
+              <WarningCircle size={18} weight="regular" style={{ flexShrink: 0 }} aria-hidden="true" />
               <span>{erro}</span>
             </div>
           ) : null}
@@ -126,7 +126,7 @@ export function ClienteLoginPrincipal() {
             onChange={e => setEmail(e.target.value)}
             placeholder="seu@email.com"
             required
-            iconeEsquerda={<Mail size={16} />}
+            iconeEsquerda={<Envelope size={18} weight="regular" aria-hidden="true" />}
           />
 
           <Input
@@ -136,7 +136,7 @@ export function ClienteLoginPrincipal() {
             onChange={e => setSenha(e.target.value)}
             placeholder="••••••••"
             required
-            iconeEsquerda={<Lock size={16} />}
+            iconeEsquerda={<Lock size={18} weight="regular" aria-hidden="true" />}
             iconeDireita={
               <button
                 type="button"
@@ -144,7 +144,7 @@ export function ClienteLoginPrincipal() {
                 aria-label={mostrarSenha ? "Ocultar senha" : "Mostrar senha"}
                 style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--texto-terciario)', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '44px', height: '44px', padding: 0 }}
               >
-                {mostrarSenha ? <EyeOff size={18} /> : <Eye size={18} />}
+                {mostrarSenha ? <EyeSlash size={18} weight="regular" aria-hidden="true" /> : <Eye size={18} weight="regular" aria-hidden="true" />}
               </button>
             }
           />
