@@ -58,11 +58,11 @@ export function DashboardLayout() {
       
       {/* Conteúdo principal */}
       <main 
-        className="min-h-screen transition-all duration-300 md:ml-[220px]" 
+        className="min-h-screen transition-all duration-300 md:ml-[240px]" 
       >
         <div 
           className="p-4 md:p-6" 
-          style={{ maxWidth: '1280px', margin: '0 auto' }}
+          style={{ maxWidth: '1280px', margin: '0 auto', paddingLeft: 'var(--espaco-5, 1.25rem)', paddingRight: 'var(--espaco-5, 1.25rem)' }}
         >
           <Outlet />
         </div>

@@ -383,3 +383,198 @@
   max-width: 420px;
   margin-bottom: var(--espaco-6);
 }
+
+/* ==========================================================================
+   9. NAVEGAÇÃO E LAYOUT (Seção 7.5 e 9 do Design System v2)
+   Mobile-first (base 375px) escalando com min-width (768, 1024, 1440, 1920)
+   ========================================================================== */
+
+/* Regra global de navegação: Nunca uppercase */
+.nav-item,
+.nav-item-v2,
+.bottom-nav-btn,
+.sidebar button,
+.sidebar a,
+.sidebar span,
+.sidebar p,
+nav a,
+nav button,
+nav span {
+  text-transform: none !important;
+}
+
+/* 9.1 Sidebar Desktop (>= 768px) */
+.sidebar,
+.sidebar-v2 {
+  background: var(--fundo-superficie);
+  border-right: 1px solid var(--borda-sutil);
+  width: 240px;
+  min-height: 100vh;
+  transition: width var(--dur-base) var(--ease-in-out), transform var(--dur-base) var(--ease-in-out);
+}
+
+.sidebar.recolhido {
+  width: 64px;
+}
+
+/* Itens da Sidebar (SEM borda ao redor, peso 400 inativo, peso 500 ativo + 3px barra na borda esquerda) */
+.nav-item,
+.nav-item-v2 {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-3);
+  padding: 10px 16px;
+  font-family: var(--fonte-sans);
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--texto-secundario);
+  cursor: pointer;
+  border: none;
+  border-radius: 0;
+  border-left: 3px solid transparent;
+  background: transparent;
+  transition: background 150ms ease, color 150ms ease, border-color 150ms ease;
+  text-decoration: none;
+  min-height: 44px;
+}
+
+.nav-item:hover,
+.nav-item-v2:hover {
+  background: var(--fundo-superficie-2);
+  color: var(--texto-principal);
+}
+
+.nav-item.active,
+.nav-item-v2.active {
+  background: var(--fundo-superficie-2);
+  color: var(--texto-principal);
+  font-weight: 500;
+  border-left: 3px solid var(--cor-primaria);
+}
+
+/* 9.2 Bottom Tab Bar Mobile (< 768px) */
+.bottom-tab-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--fundo-superficie);
+  border-top: 1px solid var(--borda-sutil);
+  height: calc(64px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  z-index: 50;
+}
+
+.bottom-tab-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  max-width: 20%; /* No máximo 5 itens (100% / 5 = 20%) */
+  min-height: 48px; /* Alvo de toque mínimo 48px */
+  min-width: 48px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--texto-secundario);
+  padding: 4px 2px;
+  text-decoration: none;
+  transition: color 150ms ease;
+}
+
+.bottom-tab-item:hover {
+  color: var(--texto-principal);
+}
+
+.bottom-tab-item.active {
+  color: var(--texto-principal);
+}
+
+.bottom-tab-item.active > svg {
+  color: var(--cor-primaria);
+}
+
+.bottom-tab-label {
+  font-family: var(--fonte-sans);
+  font-size: 11px;
+  font-weight: 400;
+  margin-top: 4px;
+  text-transform: none !important;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.bottom-tab-item.active .bottom-tab-label {
+  font-weight: 500;
+  color: var(--texto-principal);
+}
+
+/* 9.3 Layout e Grid de Conteúdo (Mobile-first base 375px -> 768 -> 1024 -> 1440 -> 1920) */
+.layout-container {
+  min-height: 100vh;
+  background: var(--fundo-pagina);
+  color: var(--texto-principal);
+  display: flex;
+  flex-direction: column;
+}
+
+.content-wrapper {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding-left: var(--espaco-5);
+  padding-right: var(--espaco-5);
+  padding-top: var(--espaco-6);
+  padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+}
+
+/* Respiro vertical entre blocos de página (seção 7.5/9) */
+.content-wrapper > section,
+.content-wrapper > div,
+.bloco-pagina {
+  margin-bottom: var(--espaco-9);
+}
+
+.content-wrapper > section:last-child,
+.content-wrapper > div:last-child {
+  margin-bottom: 0;
+}
+
+/* Breakpoints responsivos com min-width */
+@media (min-width: 768px) {
+  .layout-container {
+    flex-direction: row;
+  }
+  .content-wrapper {
+    padding-top: var(--espaco-8);
+    padding-bottom: var(--espaco-8);
+  }
+}
+
+@media (min-width: 1024px) {
+  .content-wrapper {
+    padding-left: var(--espaco-6);
+    padding-right: var(--espaco-6);
+  }
+}
+
+@media (min-width: 1440px) {
+  .content-wrapper {
+    padding-left: var(--espaco-8);
+    padding-right: var(--espaco-8);
+  }
+}
+
+@media (min-width: 1920px) {
+  .content-wrapper {
+    max-width: 1440px; /* Expansão opcional em ultra-wide, mantendo max 1280 no base */
+  }
+}
+

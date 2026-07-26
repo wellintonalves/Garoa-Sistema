@@ -35,13 +35,15 @@ export function ClientLayout() {
   ];
 
   return (
-    <div className="flex flex-col h-[100dvh] overflow-hidden bg-zinc-950 text-zinc-100 font-sans">
+    <div className="flex flex-col h-[100dvh] overflow-hidden font-sans" style={{ background: 'var(--fundo-pagina)', color: 'var(--texto-principal)' }}>
       <div className="flex-1 overflow-y-auto pb-24">
-        <Outlet context={{ barbearia }} />
+        <div style={{ maxWidth: '1280px', margin: '0 auto', paddingLeft: 'var(--espaco-5, 1.25rem)', paddingRight: 'var(--espaco-5, 1.25rem)' }}>
+          <Outlet context={{ barbearia }} />
+        </div>
       </div>
 
-      {/* Bottom Navigation */}
-      <nav style={{ position: 'fixed', bottom: 0, left: 0, right: 0 }} className="bg-zinc-900 border-t border-zinc-800 px-2 py-2 flex justify-between items-center z-50">
+      {/* Bottom Navigation — Seção 7.5/9 */}
+      <nav className="bottom-tab-bar">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = location.pathname === tab.path || (tab.path !== `/b/${slug}/app` && location.pathname.startsWith(tab.path));
@@ -50,12 +52,11 @@ export function ClientLayout() {
             <button
               key={tab.name}
               onClick={() => navigate(tab.path)}
-              className={`flex flex-col items-center justify-center w-full p-2 rounded-xl transition-all ${
-                isActive ? 'text-orange-500' : 'text-zinc-500 hover:text-zinc-300'
-              }`}
+              className={`bottom-tab-item ${isActive ? 'active' : ''}`}
+              style={{ textTransform: 'none' }}
             >
-              <Icon size={24} className={isActive ? 'mb-1' : 'mb-1 opacity-80'} />
-              <span className="text-[10px] font-medium">{tab.name}</span>
+              <Icon size={24} style={{ marginBottom: '2px', opacity: isActive ? 1 : 0.7 }} />
+              <span className="bottom-tab-label">{tab.name}</span>
             </button>
           );
         })}

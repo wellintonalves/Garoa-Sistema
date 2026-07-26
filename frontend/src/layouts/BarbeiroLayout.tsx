@@ -23,13 +23,14 @@ export function BarbeiroLayout() {
   return (
     <div className="flex flex-col min-h-screen" style={{ background: 'var(--fundo-pagina)', color: 'var(--text-primary)' }}>
       <AprovacoesPopup />
-      <div className="flex-1 overflow-y-auto pb-20">
-        <Outlet context={{ barbeiro }} />
+      <div className="flex-1 overflow-y-auto pb-24">
+        <div style={{ maxWidth: '1280px', margin: '0 auto', paddingLeft: 'var(--espaco-5, 1.25rem)', paddingRight: 'var(--espaco-5, 1.25rem)' }}>
+          <Outlet context={{ barbeiro }} />
+        </div>
       </div>
 
-      {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 w-full px-2 py-2 flex justify-between items-center z-50"
-        style={{ background: 'var(--bg-surface)', borderTop: '1px solid var(--border)' }}>
+      {/* Bottom Navigation — Seção 7.5/9 (64px + safe area, alvo 48px, ícone 24px, label 11px, sem uppercase) */}
+      <nav className="bottom-tab-bar">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = location.pathname.startsWith(tab.path);
@@ -38,21 +39,11 @@ export function BarbeiroLayout() {
             <button
               key={tab.name}
               onClick={() => navigate(tab.path)}
-              className="flex flex-col items-center justify-center w-full p-2 transition-all"
-              style={{
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                color: isActive ? 'var(--amber)' : 'var(--text-disabled)',
-              }}
+              className={`bottom-tab-item ${isActive ? 'active' : ''}`}
+              style={{ textTransform: 'none' }}
             >
-              <Icon size={22} style={{ marginBottom: '4px', opacity: isActive ? 1 : 0.7 }} />
-              <span style={{
-                fontFamily: 'var(--fonte-interface)',
-                fontSize: '9px',
-                letterSpacing: '0.08em',
-                fontWeight: isActive ? 600 : 400,
-              }}>
+              <Icon size={24} style={{ marginBottom: '2px', opacity: isActive ? 1 : 0.7 }} />
+              <span className="bottom-tab-label">
                 {tab.name}
               </span>
             </button>
