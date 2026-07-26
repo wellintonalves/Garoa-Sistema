@@ -144,9 +144,9 @@
 /* 4. Tipografia, Espaçamento, Raio e Breakpoints — Seções 5, 6 e 9 */
 :root {
   /* Tipografia (Seção 5.1 e 5.3) */
-  --fonte-sans: 'Montserrat', system-ui, -apple-system, sans-serif;
-  --fonte-serif: 'Georgia', Cambria, 'Times New Roman', Times, serif;
-  --fonte-mono: 'DM Mono', 'Courier New', Courier, monospace;
+  --fonte-sans: 'Inter Tight', -apple-system, 'Segoe UI', Arial, sans-serif;
+  --fonte-serif: 'Newsreader', Georgia, 'Times New Roman', serif;
+  --fonte-mono: 'JetBrains Mono', 'JetBrains Mono Variable', ui-monospace, 'SF Mono', Menlo, monospace;
 
   /* Espaçamento (Seção 6.1) */
   --espaco-0: 0px;

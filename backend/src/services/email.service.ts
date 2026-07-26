@@ -21,7 +21,7 @@ export class EmailService {
       to: email,
       subject: 'Seu código de verificação — Garoa Sistema',
       html: `
-        <div style="font-family: 'Inter', Arial, sans-serif; max-width: 480px; margin: 0 auto; background: #0A0A0A; color: #F5F5F5; border-radius: 12px; overflow: hidden;">
+        <div style="font-family: 'Inter Tight', Arial, sans-serif; max-width: 480px; margin: 0 auto; background: #0A0A0A; color: #F5F5F5; border-radius: 12px; overflow: hidden;">
           <div style="background: #F59E0B; padding: 32px; text-align: center;">
             <h1 style="margin: 0; font-size: 24px; font-weight: 700; color: #0A0A0A; letter-spacing: 0.02em;">
               GAROA SISTEMA
@@ -63,7 +63,7 @@ export class EmailService {
       to: email,
       subject: 'Recuperação de senha — Garoa Sistema',
       html: `
-        <div style="font-family: 'Inter', Arial, sans-serif; max-width: 480px; margin: 0 auto; background: #0A0A0A; color: #F5F5F5; border-radius: 12px; overflow: hidden;">
+        <div style="font-family: 'Inter Tight', Arial, sans-serif; max-width: 480px; margin: 0 auto; background: #0A0A0A; color: #F5F5F5; border-radius: 12px; overflow: hidden;">
           <div style="background: #F59E0B; padding: 32px; text-align: center;">
             <h1 style="margin: 0; font-size: 24px; font-weight: 700; color: #0A0A0A; letter-spacing: 0.02em;">
               GAROA SISTEMA

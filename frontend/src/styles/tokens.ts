@@ -149,9 +149,9 @@ export const tokens = {
     },
   },
   tipografia: {
-    sans: "'Montserrat', system-ui, -apple-system, sans-serif",
-    serif: "'Georgia', Cambria, 'Times New Roman', Times, serif",
-    mono: "'DM Mono', 'Courier New', Courier, monospace",
+    sans: "'Inter Tight', -apple-system, 'Segoe UI', Arial, sans-serif",
+    serif: "'Newsreader', Georgia, 'Times New Roman', serif",
+    mono: "'JetBrains Mono', 'JetBrains Mono Variable', ui-monospace, 'SF Mono', Menlo, monospace",
   },
   espacamento: {
     0: '0px',

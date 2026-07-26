@@ -9,8 +9,8 @@
 /* === TOKENS DE COR (CSS Custom Properties) === */
 :root {
   /* Fontes */
-  --fonte-interface: 'Montserrat', system-ui, sans-serif;
-  --fonte-numeros:   'Montserrat', system-ui, sans-serif;
+  --fonte-interface: var(--fonte-sans);
+  --fonte-numeros:   var(--fonte-mono);
 
   /* Modo escuro — padrão */
   --fundo-pagina:      #0A0A0A;
@@ -112,23 +112,33 @@
 
 /* Aplicação global das fontes */
 body {
-  font-family: var(--fonte-interface);
+  font-family: var(--fonte-sans);
   background-color: var(--fundo-pagina);
   color: var(--texto-principal);
 }
 
-/* Valores numéricos e dados financeiros */
+/* Utilitários tipográficos e valores numéricos (com tabular-nums) */
+.fonte-serif {
+  font-family: var(--fonte-serif);
+}
+
+.fonte-mono,
 .font-mono,
 .valor-monetario,
-.valor-numerico {
-  font-family: var(--fonte-numeros);
+.valor-numerico,
+[style*="tabular-nums"],
+[style*="fonte-numeros"],
+[style*="font-mono"] {
+  font-family: var(--fonte-mono) !important;
+  font-variant-numeric: tabular-nums !important;
 }
 
 /* === TAILWIND THEME OVERRIDE === */
 @theme {
-  --font-sans: var(--fonte-interface), sans-serif;
-  --font-display: var(--fonte-interface), sans-serif;
-  --font-mono: var(--fonte-numeros), monospace;
+  --font-sans: var(--fonte-sans), sans-serif;
+  --font-display: var(--fonte-sans), sans-serif;
+  --font-serif: var(--fonte-serif), serif;
+  --font-mono: var(--fonte-mono), monospace;
   
   --color-primaria: var(--cor-primaria);
   --color-secundaria: var(--cor-secundaria);

@@ -64,7 +64,7 @@ export function StatCard({ titulo, valor, icone: Icone, subtexto, alerta, delta,
       <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
         <span 
           style={{ 
-            fontFamily: 'var(--fonte-interface)', 
+            fontFamily: 'var(--fonte-mono)', 
             fontSize: '22px', 
             fontWeight: 700, 
             color: alerta ? 'var(--perigo)' : 'var(--texto-principal)',
