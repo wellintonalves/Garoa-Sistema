@@ -154,7 +154,7 @@ h1, h2, h3, h4, .titulo {
 
 .text-body {
   font-family: var(--fonte-interface);
-  color: var(--text-muted);
+  color: var(--texto-secundario);
 }
 
 .text-data {
@@ -226,7 +226,7 @@ h1, h2, h3, h4, .titulo {
 .ds-input {
   width: 100%;
   background: transparent;
-  border: 1px solid var(--borda);
+  border: 1px solid var(--borda-forte);
   border-radius: 10px;
   padding: 0 14px;
   color: var(--texto-principal);
@@ -243,13 +243,13 @@ h1, h2, h3, h4, .titulo {
 }
 .input::placeholder,
 .ds-input::placeholder {
-  color: var(--texto-terciario);
+  color: var(--texto-secundario);
 }
 
 .ds-select {
   width: 100%;
   background: transparent;
-  border: 1px solid var(--borda);
+  border: 1px solid var(--borda-forte);
   border-radius: 10px;
   padding: 0 14px;
   color: var(--texto-principal);
@@ -268,7 +268,7 @@ h1, h2, h3, h4, .titulo {
 .ds-textarea {
   width: 100%;
   background: transparent;
-  border: 1px solid var(--borda);
+  border: 1px solid var(--borda-forte);
   border-radius: 10px;
   padding: 10px 14px;
   color: var(--texto-principal);
@@ -344,7 +344,7 @@ h1, h2, h3, h4, .titulo {
 }
 .badge-info {
   background: var(--bg-surface2);
-  color: var(--text-muted);
+  color: var(--texto-secundario);
 }
 
 /* === TABELAS RESPONSIVAS === */
@@ -595,7 +595,7 @@ h1, h2, h3, h4, .titulo {
 .text-success { color: var(--success-text); }
 .text-error { color: var(--error-text); }
 .text-warning { color: var(--warning-text); }
-.text-muted { color: var(--text-muted) !important; }
+.text-muted { color: var(--texto-secundario) !important; }
 .text-primary { color: var(--text-primary) !important; }
 .bg-primary { background-color: var(--fundo-pagina) !important; }
 .bg-surface { background-color: var(--bg-surface) !important; }

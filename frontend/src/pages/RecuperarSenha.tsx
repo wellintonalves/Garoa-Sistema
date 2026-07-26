@@ -265,7 +265,7 @@ export function RecuperarSenha() {
                 disabled={!podeReenviar}
                 style={{
                   background: 'none', border: 'none', cursor: podeReenviar ? 'pointer' : 'default',
-                  fontSize: 'var(--texto-sm, 0.75rem)', color: podeReenviar ? 'var(--cor-primaria)' : 'var(--texto-terciario)',
+                  fontSize: 'var(--texto-sm, 0.75rem)', color: podeReenviar ? 'var(--cor-primaria)' : 'var(--texto-secundario)',
                   textDecoration: podeReenviar ? 'underline' : 'none', minHeight: '44px',
                   display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '0 var(--espaco-2)'
                 }}
@@ -293,7 +293,7 @@ export function RecuperarSenha() {
                   type="button"
                   onClick={() => setMostrarNovaSenha(!mostrarNovaSenha)}
                   aria-label={mostrarNovaSenha ? "Ocultar senha" : "Mostrar senha"}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--texto-terciario)', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '44px', height: '44px', padding: 0 }}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--texto-secundario)', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '44px', height: '44px', padding: 0 }}
                 >
                   {mostrarNovaSenha ? <EyeSlash size={18} weight="regular" aria-hidden="true" /> : <Eye size={18} weight="regular" aria-hidden="true" />}
                 </button>
@@ -313,7 +313,7 @@ export function RecuperarSenha() {
                   type="button"
                   onClick={() => setMostrarConfirmarSenha(!mostrarConfirmarSenha)}
                   aria-label={mostrarConfirmarSenha ? "Ocultar senha" : "Mostrar senha"}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--texto-terciario)', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '44px', height: '44px', padding: 0 }}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--texto-secundario)', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '44px', height: '44px', padding: 0 }}
                 >
                   {mostrarConfirmarSenha ? <EyeSlash size={18} weight="regular" aria-hidden="true" /> : <Eye size={18} weight="regular" aria-hidden="true" />}
                 </button>

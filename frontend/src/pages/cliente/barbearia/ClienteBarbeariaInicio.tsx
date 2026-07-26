@@ -153,7 +153,7 @@ export function ClienteBarbeariaInicio() {
               {getSaudacao()}, <span style={{ color: 'var(--amber)' }}>{cliente?.nome.split(' ')[0] || 'Cliente'}</span>.
             </h2>
             {prox && (
-              <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '12px', color: 'var(--text-muted)' }}>
+              <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '12px', color: 'var(--texto-secundario)' }}>
                 Esta será sua <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{atendimentosConcluidos + 1}ª sessão</span> conosco.
               </p>
             )}
@@ -190,7 +190,7 @@ export function ClienteBarbeariaInicio() {
                 <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '9px', letterSpacing: '0.32em', textTransform: 'uppercase', color: 'var(--amber)', marginBottom: '8px', fontWeight: 600 }}>
                   Próximo Atendimento
                 </p>
-                <p style={{ fontFamily: 'var(--fonte-mono)', fontSize: '12px', color: 'var(--text-muted)' }}>
+                <p style={{ fontFamily: 'var(--fonte-mono)', fontSize: '12px', color: 'var(--texto-secundario)' }}>
                   {calcCountdown(prox.dataHora) || 'Agendamento para hoje'}
                 </p>
               </div>
@@ -201,7 +201,7 @@ export function ClienteBarbeariaInicio() {
                 <h2 className="text-[24px] md:text-[26px]" style={{ fontFamily: 'var(--fonte-interface)', fontWeight: 600, color: 'var(--text-primary)' }}>
                   {prox.servico.nome}
                 </h2>
-                <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '13px', color: 'var(--text-muted)', marginTop: '4px' }}>
+                <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '13px', color: 'var(--texto-secundario)', marginTop: '4px' }}>
                   com <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{prox.barbeiro.usuario.nome}</span>
                 </p>
               </div>
@@ -218,7 +218,7 @@ export function ClienteBarbeariaInicio() {
               <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-6">
                 <p className="flex items-center gap-2" style={{ fontFamily: 'var(--fonte-mono)', fontSize: '13px', color: 'var(--text-primary)' }}>
                   <CalendarBlank size={16} style={{ color: 'var(--amber)' }} />
-                  <span className="capitalize">{fmtDataExt(prox.dataHora)}</span> <span className="text-muted mx-1">·</span> {fmtHora(prox.dataHora)}
+                  <span className="capitalize">{fmtDataExt(prox.dataHora)}</span> <span className="text-[var(--texto-secundario)] mx-1">·</span> {fmtHora(prox.dataHora)}
                 </p>
                 {barbearia?.endereco && (
                   <p className="flex items-center gap-2" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '12px', color: 'var(--text-primary)' }}>
@@ -248,7 +248,7 @@ export function ClienteBarbeariaInicio() {
         {/* Stats Grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
           <div className="stat-card relative overflow-hidden">
-            <p style={{ fontSize: '9px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 600 }}>Fidelidade</p>
+            <p style={{ fontSize: '9px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--texto-secundario)', fontWeight: 600 }}>Fidelidade</p>
             <p className="mt-2" style={{ fontFamily: 'var(--fonte-mono)', fontSize: '22px', fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1 }}>{fidelidade.saldo} <span className="text-sm font-normal opacity-60">pts</span></p>
             <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--amber)', marginTop: '6px', fontWeight: 500 }}>
               {fidelidade.proxima
@@ -261,21 +261,21 @@ export function ClienteBarbeariaInicio() {
           </div>
 
           <div className="stat-card">
-            <p style={{ fontSize: '9px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 600 }}>Visitas</p>
+            <p style={{ fontSize: '9px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--texto-secundario)', fontWeight: 600 }}>Visitas</p>
             <p className="mt-2" style={{ fontFamily: 'var(--fonte-mono)', fontSize: '22px', fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1 }}>{sessoes}</p>
             {desdeStr && (
-              <p style={{ fontFamily: 'var(--fonte-mono)', fontSize: '11px', color: 'var(--text-muted)', marginTop: '6px' }}>Desde {desdeStr}</p>
+              <p style={{ fontFamily: 'var(--fonte-mono)', fontSize: '11px', color: 'var(--texto-secundario)', marginTop: '6px' }}>Desde {desdeStr}</p>
             )}
           </div>
 
           <div className="stat-card">
-            <p style={{ fontSize: '9px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 600 }}>Barbeiro Favorito</p>
+            <p style={{ fontSize: '9px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--texto-secundario)', fontWeight: 600 }}>Barbeiro Favorito</p>
             <p className="mt-2 truncate" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '16px', fontWeight: 600, color: 'var(--text-primary)' }}>{favBarbeiro}</p>
-            <p style={{ fontFamily: 'var(--fonte-mono)', fontSize: '11px', color: 'var(--text-muted)', marginTop: '6px' }}>{favCount > 0 ? `${favCount} atendimentos` : 'Sem histórico'}</p>
+            <p style={{ fontFamily: 'var(--fonte-mono)', fontSize: '11px', color: 'var(--texto-secundario)', marginTop: '6px' }}>{favCount > 0 ? `${favCount} atendimentos` : 'Sem histórico'}</p>
           </div>
 
           <div className="stat-card">
-            <p style={{ fontSize: '9px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 600 }}>Último Corte</p>
+            <p style={{ fontSize: '9px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--texto-secundario)', fontWeight: 600 }}>Último Corte</p>
             <p className="mt-2" style={{ fontFamily: 'var(--fonte-mono)', fontSize: '16px', fontWeight: 600, color: 'var(--text-primary)' }}>{diasDesdeUltimo !== null ? `há ${diasDesdeUltimo} dia${diasDesdeUltimo > 1 ? 's' : ''}` : 'Nenhum'}</p>
             <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', color: 'var(--amber)', marginTop: '6px', fontWeight: 500 }}>Hora de marcar?</p>
           </div>
@@ -293,9 +293,9 @@ export function ClienteBarbeariaInicio() {
                   {agendamentosPassados.map(a => (
                     <tr key={a.id} className="border-b border-[var(--borda)] last:border-0 hover:bg-[var(--superficie-2)] transition-colors">
                       <td className="p-4" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '14px', fontWeight: 500, color: 'var(--text-primary)' }}>{a.servico.nome}</td>
-                      <td className="p-4" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '13px', color: 'var(--text-muted)' }}>com {a.barbeiro.usuario.nome}</td>
+                      <td className="p-4" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '13px', color: 'var(--texto-secundario)' }}>com {a.barbeiro.usuario.nome}</td>
                       <td className="p-4 text-right" style={{ fontFamily: 'var(--fonte-mono)', fontSize: '14px', fontWeight: 500, color: 'var(--text-primary)' }}>R$ {a.valorCobrado || '--'}</td>
-                      <td className="p-4 text-right" style={{ fontFamily: 'var(--fonte-mono)', fontSize: '13px', color: 'var(--text-muted)' }}>{fmtData(a.dataHora)}</td>
+                      <td className="p-4 text-right" style={{ fontFamily: 'var(--fonte-mono)', fontSize: '13px', color: 'var(--texto-secundario)' }}>{fmtData(a.dataHora)}</td>
                       <td className="p-4 text-right"><span style={{ fontSize: '11px', fontWeight: 600, padding: '4px 10px', borderRadius: '999px', background: 'rgba(52,211,153,0.14)', color: 'var(--sucesso)' }}>Concluído</span></td>
                     </tr>
                   ))}
@@ -309,16 +309,16 @@ export function ClienteBarbeariaInicio() {
                 <div key={a.id} className="flex items-center justify-between p-3.5 rounded-md border border-[var(--borda)] bg-[var(--superficie-1)]">
                   <div>
                     <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '14px', fontWeight: 500, color: 'var(--text-primary)' }}>{a.servico.nome}</p>
-                    <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>com {a.barbeiro.usuario.nome}</p>
+                    <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '12px', color: 'var(--texto-secundario)', marginTop: '2px' }}>com {a.barbeiro.usuario.nome}</p>
                   </div>
                   <div className="text-right">
                     <span style={{ fontFamily: 'var(--fonte-mono)', fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>R$ {a.valorCobrado || '--'}</span>
-                    <p style={{ fontFamily: 'var(--fonte-mono)', fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>{fmtData(a.dataHora)}</p>
+                    <p style={{ fontFamily: 'var(--fonte-mono)', fontSize: '11px', color: 'var(--texto-secundario)', marginTop: '2px' }}>{fmtData(a.dataHora)}</p>
                   </div>
                 </div>
               ))}
               {agendamentosPassados.length > 3 && (
-                <button className="py-3 text-center w-full mt-1" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '12px', textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '0.04em', fontWeight: 600 }}>
+                <button className="py-3 text-center w-full mt-1" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '12px', textTransform: 'uppercase', color: 'var(--texto-secundario)', letterSpacing: '0.04em', fontWeight: 600 }}>
                   Ver todo histórico →
                 </button>
               )}
@@ -334,10 +334,10 @@ export function ClienteBarbeariaInicio() {
           <div className="flex flex-col gap-3">
             {ultimoConcluido && (
               <button onClick={() => navigate(`/cliente/barbearia/${barbeariaId}/agendar`)} className="flex items-center gap-3 w-full text-left p-3 md:p-2.5 rounded-md border border-[var(--borda)] bg-[var(--superficie-1)] hover:bg-[var(--superficie-2)] transition-colors">
-                <div className="w-8 h-8 rounded-md flex items-center justify-center bg-[var(--superficie-2)] border border-[var(--borda)] text-[var(--text-muted)]"><ArrowsClockwise size={16} /></div>
+                <div className="w-8 h-8 rounded-md flex items-center justify-center bg-[var(--superficie-2)] border border-[var(--borda)] text-[var(--texto-secundario)]"><ArrowsClockwise size={16} /></div>
                 <div>
                   <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '13px', fontWeight: 500, color: 'var(--text-primary)' }}>Repetir último corte</p>
-                  <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', color: 'var(--text-muted)' }}>{ultimoConcluido.servico.nome} · {ultimoConcluido.barbeiro.usuario.nome}</p>
+                  <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', color: 'var(--texto-secundario)' }}>{ultimoConcluido.servico.nome} · {ultimoConcluido.barbeiro.usuario.nome}</p>
                 </div>
               </button>
             )}
@@ -353,10 +353,10 @@ export function ClienteBarbeariaInicio() {
             </button>
 
             <button onClick={() => navigate(`/cliente/barbearia/${barbeariaId}/fidelidade`)} className="hidden md:flex items-center gap-3 w-full text-left p-3 md:p-2.5 rounded-md border border-[var(--borda)] bg-[var(--superficie-1)] hover:bg-[var(--superficie-2)] transition-colors">
-              <div className="w-8 h-8 rounded-md flex items-center justify-center bg-[var(--superficie-2)] border border-[var(--borda)] text-[var(--text-muted)]"><Star size={16} /></div>
+              <div className="w-8 h-8 rounded-md flex items-center justify-center bg-[var(--superficie-2)] border border-[var(--borda)] text-[var(--texto-secundario)]"><Star size={16} /></div>
               <div>
                 <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '13px', fontWeight: 500, color: 'var(--text-primary)' }}>Fidelidade</p>
-                <p style={{ fontFamily: 'var(--fonte-mono)', fontSize: '11px', color: 'var(--text-muted)' }}>{fidelidade.saldo} pts · {fidPercent}%</p>
+                <p style={{ fontFamily: 'var(--fonte-mono)', fontSize: '11px', color: 'var(--texto-secundario)' }}>{fidelidade.saldo} pts · {fidPercent}%</p>
               </div>
             </button>
           </div>

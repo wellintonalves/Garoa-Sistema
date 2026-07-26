@@ -134,7 +134,7 @@ export function BarbeiroHoje() {
           <h1 className="text-2xl md:text-3xl font-semibold" style={{ color: 'var(--text-primary)' }}>
             Olá, {barbeiro?.nome.split(' ')[0]}
           </h1>
-          <p className="text-sm mt-1 capitalize" style={{ color: 'var(--text-muted)' }}>
+          <p className="text-sm mt-1 capitalize" style={{ color: 'var(--texto-secundario)' }}>
             {dataHojeExtenso}
           </p>
         </div>
@@ -144,14 +144,14 @@ export function BarbeiroHoje() {
             <input type="checkbox" className="sr-only peer" checked={trabalhandoAgora} onChange={toggleTrabalhando} disabled={atualizandoStatus} />
             <div className="w-11 h-6 bg-[var(--superficie-2)] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-[var(--borda)] after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-[var(--superficie)] after:border-[var(--borda)] after:border after:rounded-full after:h-5 after:w-5 after:transition-all" style={{ backgroundColor: trabalhandoAgora ? 'var(--cor-primaria)' : '' }}></div>
           </label>
-          <span className="text-xs font-medium mt-1" style={{ color: trabalhandoAgora ? 'var(--cor-primaria)' : 'var(--text-muted)' }}>
+          <span className="text-xs font-medium mt-1" style={{ color: trabalhandoAgora ? 'var(--cor-primaria)' : 'var(--texto-secundario)' }}>
             {trabalhandoAgora ? 'Disponível' : 'Ausente'}
           </span>
         </div>
       </div>
 
       {carregando ? (
-        <div className="flex justify-center py-20" style={{ color: 'var(--text-muted)' }}>
+        <div className="flex justify-center py-20" style={{ color: 'var(--texto-secundario)' }}>
           <Clock className="animate-spin mr-2" /> Carregando seu dia...
         </div>
       ) : (
@@ -168,7 +168,7 @@ export function BarbeiroHoje() {
                   </div>
                 </div>
                 <p className="text-2xl font-semibold" style={{ color: 'var(--text-primary)' }}>{concluidos.length}</p>
-                <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Atendimentos</p>
+                <p className="text-xs mt-1" style={{ color: 'var(--texto-secundario)' }}>Atendimentos</p>
               </div>
 
               <div className="p-4 rounded-2xl border" style={{ background: 'var(--bg-surface)', borderColor: 'var(--border)' }}>
@@ -178,7 +178,7 @@ export function BarbeiroHoje() {
                   </div>
                 </div>
                 <p className="text-2xl font-semibold" style={{ color: 'var(--text-primary)' }}>R$ {faturamentoHoje.toFixed(0)}</p>
-                <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Faturamento</p>
+                <p className="text-xs mt-1" style={{ color: 'var(--texto-secundario)' }}>Faturamento</p>
               </div>
 
               <div className="p-4 rounded-2xl border" style={{ background: 'var(--bg-surface)', borderColor: 'var(--border)' }}>
@@ -188,7 +188,7 @@ export function BarbeiroHoje() {
                   </div>
                 </div>
                 <p className="text-2xl font-semibold" style={{ color: 'var(--text-primary)' }}>R$ {comissaoHoje.toFixed(0)}</p>
-                <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Sua Comissão</p>
+                <p className="text-xs mt-1" style={{ color: 'var(--texto-secundario)' }}>Sua Comissão</p>
               </div>
 
               <div className="p-4 rounded-2xl border" style={{ background: 'var(--bg-surface)', borderColor: 'var(--border)' }}>
@@ -198,7 +198,7 @@ export function BarbeiroHoje() {
                   </div>
                 </div>
                 <p className="text-2xl font-semibold" style={{ color: 'var(--text-primary)' }}>{ocupacaoPercent}%</p>
-                <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Ocupação (Est.)</p>
+                <p className="text-xs mt-1" style={{ color: 'var(--texto-secundario)' }}>Ocupação (Est.)</p>
               </div>
             </div>
 
@@ -212,11 +212,11 @@ export function BarbeiroHoje() {
                   <Calendar size={18} style={{ color: 'var(--cor-primaria)' }} />
                   Ver agenda completa
                 </button>
-                <button disabled className="flex items-center gap-3 p-4 text-left transition-colors text-sm border-t opacity-60 hover:bg-[var(--superficie)]" style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}>
+                <button disabled className="flex items-center gap-3 p-4 text-left transition-colors text-sm border-t opacity-60 hover:bg-[var(--superficie)]" style={{ borderColor: 'var(--border)', color: 'var(--texto-secundario)' }}>
                   <Plus size={18} />
                   Atendimento avulso (em breve)
                 </button>
-                <button disabled className="flex items-center gap-3 p-4 text-left transition-colors text-sm border-t opacity-60 hover:bg-[var(--superficie)]" style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}>
+                <button disabled className="flex items-center gap-3 p-4 text-left transition-colors text-sm border-t opacity-60 hover:bg-[var(--superficie)]" style={{ borderColor: 'var(--border)', color: 'var(--texto-secundario)' }}>
                   <Ban size={18} />
                   Bloquear horário (em breve)
                 </button>
@@ -239,7 +239,7 @@ export function BarbeiroHoje() {
                           style={{ height: `${altura}%`, background: 'var(--cor-primaria)' }}
                         />
                       </div>
-                      <span className="text-[10px] capitalize" style={{ color: 'var(--text-muted)' }}>{diaSemana.substring(0,3)}</span>
+                      <span className="text-[10px] capitalize" style={{ color: 'var(--texto-secundario)' }}>{diaSemana.substring(0,3)}</span>
                     </div>
                   );
                 })}
@@ -260,10 +260,10 @@ export function BarbeiroHoje() {
               {pendentes.length === 0 ? (
                 <div className="p-10 rounded-2xl border text-center flex flex-col items-center justify-center" style={{ background: 'var(--bg-surface)', borderColor: 'var(--border)' }}>
                   <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4" style={{ background: 'var(--bg-surface2)' }}>
-                    <Scissors size={28} style={{ color: 'var(--text-muted)' }} />
+                    <Scissors size={28} style={{ color: 'var(--texto-secundario)' }} />
                   </div>
                   <p className="font-medium" style={{ color: 'var(--text-primary)' }}>Sua agenda está livre</p>
-                  <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>Aproveite para organizar suas ferramentas ou tomar um café.</p>
+                  <p className="text-sm mt-1" style={{ color: 'var(--texto-secundario)' }}>Aproveite para organizar suas ferramentas ou tomar um café.</p>
                 </div>
               ) : (
                 <div className="flex flex-col gap-3">
@@ -277,7 +277,7 @@ export function BarbeiroHoje() {
                               {fmtHora(a.dataHora)}
                             </span>
                           </div>
-                          <span className="text-xs px-2 py-1 rounded" style={{ background: 'var(--bg-surface2)', color: 'var(--text-muted)' }}>{a.servico.duracaoMinutos} min</span>
+                          <span className="text-xs px-2 py-1 rounded" style={{ background: 'var(--bg-surface2)', color: 'var(--texto-secundario)' }}>{a.servico.duracaoMinutos} min</span>
                         </div>
                       </div>
                       
@@ -285,7 +285,7 @@ export function BarbeiroHoje() {
                         <p className="font-semibold text-lg mb-1" style={{ color: 'var(--text-primary)' }}>
                           {a.cliente.usuario.nome}
                         </p>
-                        <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+                        <p className="text-sm" style={{ color: 'var(--texto-secundario)' }}>
                           {a.servico.nome} • R$ {Number(a.valorCobrado).toFixed(2)}
                         </p>
                       </div>
@@ -310,22 +310,22 @@ export function BarbeiroHoje() {
             {/* Concluídos */}
             {concluidos.length > 0 && (
               <div className="pt-4">
-                <h2 className="text-sm font-medium mb-3 flex items-center gap-2" style={{ color: 'var(--text-muted)' }}>
+                <h2 className="text-sm font-medium mb-3 flex items-center gap-2" style={{ color: 'var(--texto-secundario)' }}>
                   Concluídos Hoje
-                  <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'var(--bg-surface2)', color: 'var(--text-muted)' }}>{concluidos.length}</span>
+                  <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'var(--bg-surface2)', color: 'var(--texto-secundario)' }}>{concluidos.length}</span>
                 </h2>
                 <div className="flex flex-col gap-2 opacity-75">
                   {concluidos.map(a => (
                     <div key={a.id} className="flex justify-between items-center p-4 rounded-xl border" style={{ background: 'var(--bg-surface)', borderColor: 'var(--border)' }}>
                       <div className="flex items-center gap-4">
-                        <span className="text-sm font-medium w-12" style={{ color: 'var(--text-muted)' }}>
+                        <span className="text-sm font-medium w-12" style={{ color: 'var(--texto-secundario)' }}>
                           {fmtHora(a.dataHora)}
                         </span>
                         <div>
                           <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
                             {a.cliente.usuario.nome}
                           </p>
-                          <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
+                          <p className="text-xs mt-0.5" style={{ color: 'var(--texto-secundario)' }}>
                             {a.servico.nome}
                           </p>
                         </div>
@@ -355,7 +355,7 @@ export function BarbeiroHoje() {
               <p className="font-medium text-lg mb-1" style={{ color: 'var(--text-primary)' }}>
                 {concluindoAg.cliente.usuario.nome}
               </p>
-              <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+              <p className="text-sm" style={{ color: 'var(--texto-secundario)' }}>
                 {concluindoAg.servico.nome} • <span className="font-semibold" style={{ color: 'var(--text-primary)' }}>R$ {Number(concluindoAg.valorCobrado).toFixed(2)}</span>
               </p>
             </div>

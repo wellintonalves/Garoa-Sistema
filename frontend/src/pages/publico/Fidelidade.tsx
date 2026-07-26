@@ -57,13 +57,13 @@ export function Fidelidade() {
               <Star className="text-[var(--cor-primaria)]" size={40} weight="regular" aria-hidden="true" />
             </div>
             <h2 className="text-2xl font-bold font-display text-center mb-2">Seus Pontos</h2>
-            <p className="text-center text-[var(--text-muted)] mb-8 text-sm">
+            <p className="text-center text-[var(--texto-secundario)] mb-8 text-sm">
               Digite seu WhatsApp para consultar seu saldo de pontos e histórico de visitas.
             </p>
 
             <form onSubmit={buscarFidelidade} className="w-full space-y-4">
               <div>
-                <label className="text-xs text-[var(--text-muted)] font-mono uppercase tracking-widest mb-1 block">Telefone (WhatsApp)</label>
+                <label className="text-xs text-[var(--texto-secundario)] font-mono uppercase tracking-widest mb-1 block">Telefone (WhatsApp)</label>
                 <div className="relative">
                   <input 
                     type="tel" 
@@ -91,7 +91,7 @@ export function Fidelidade() {
         ) : (
           <div className="animate-fade-in space-y-6">
             <div className="text-center">
-              <h2 className="text-xl font-display text-[var(--text-muted)]">Olá, <span className="text-[var(--texto-principal)]">{dados.cliente}</span></h2>
+              <h2 className="text-xl font-display text-[var(--texto-secundario)]">Olá, <span className="text-[var(--texto-principal)]">{dados.cliente}</span></h2>
             </div>
 
             {/* Cartão de Pontos */}
@@ -102,7 +102,7 @@ export function Fidelidade() {
               <p className="text-xs text-[var(--cor-primaria)] font-mono uppercase tracking-widest mb-2">Saldo Atual</p>
               <div className="flex items-baseline justify-center gap-2 mb-4">
                 <span className="text-5xl font-display font-bold text-[var(--texto-principal)]">{dados.pontosAcumulados}</span>
-                <span className="text-lg text-[var(--text-muted)]">pts</span>
+                <span className="text-lg text-[var(--texto-secundario)]">pts</span>
               </div>
               
               <div className="w-full bg-[var(--superficie)] rounded-full h-3 mb-2 border border-[var(--border)]">
@@ -111,7 +111,7 @@ export function Fidelidade() {
                   style={{ width: `${Math.min(100, (dados.pontosAcumulados / dados.meta) * 100)}%` }}
                 />
               </div>
-              <p className="text-sm text-[var(--text-muted)]">
+              <p className="text-sm text-[var(--texto-secundario)]">
                 Faltam <strong className="text-[var(--texto-principal)]">{dados.pontosFaltantes} pontos</strong> para sua próxima recompensa!
               </p>
             </div>
@@ -124,7 +124,7 @@ export function Fidelidade() {
               </div>
 
               {dados.historico.length === 0 ? (
-                <p className="text-[var(--text-muted)] text-center py-4 text-sm bg-[var(--bg-surface)] rounded border border-[var(--border)]">
+                <p className="text-[var(--texto-secundario)] text-center py-4 text-sm bg-[var(--bg-surface)] rounded border border-[var(--border)]">
                   Nenhuma visita registrada ainda.
                 </p>
               ) : (
@@ -136,9 +136,9 @@ export function Fidelidade() {
                       </div>
                       <div className="flex-1 overflow-hidden">
                         <h4 className="font-bold text-sm truncate">{h.servico}</h4>
-                        <p className="text-xs text-[var(--text-muted)] truncate">com {h.barbeiro}</p>
+                        <p className="text-xs text-[var(--texto-secundario)] truncate">com {h.barbeiro}</p>
                       </div>
-                      <div className="text-xs font-mono text-[var(--text-muted)]">
+                      <div className="text-xs font-mono text-[var(--texto-secundario)]">
                         {new Date(h.data).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' })}
                       </div>
                     </div>

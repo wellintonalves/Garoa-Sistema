@@ -101,9 +101,9 @@ export function Sidebar({ mobileOpen, onCloseMobile }: SidebarProps) {
           
           {/* Close Mobile */}
           <button 
-            className="md:hidden p-1 text-muted min-h-[48px] min-w-[48px] flex items-center justify-center"
+            className="md:hidden p-1 text-[var(--texto-secundario)] min-h-[48px] min-w-[48px] flex items-center justify-center"
             onClick={onCloseMobile}
-            style={{ color: 'var(--texto-secundario, var(--text-muted))', background: 'transparent', border: 'none', cursor: 'pointer' }}
+            style={{ color: 'var(--texto-secundario, var(--texto-secundario))', background: 'transparent', border: 'none', cursor: 'pointer' }}
           >
             <X size={20} />
           </button>
@@ -159,7 +159,7 @@ export function Sidebar({ mobileOpen, onCloseMobile }: SidebarProps) {
                 style={{
                   fontFamily: 'var(--fonte-interface, var(--fonte-sans))',
                   fontSize: '11px',
-                  color: 'var(--texto-secundario, var(--text-muted))',
+                  color: 'var(--texto-secundario, var(--texto-secundario))',
                   textTransform: 'none',
                 }}
               >
@@ -175,14 +175,14 @@ export function Sidebar({ mobileOpen, onCloseMobile }: SidebarProps) {
               fontSize: '13px',
               fontWeight: 400,
               textTransform: 'none',
-              color: 'var(--texto-secundario, var(--text-muted))',
+              color: 'var(--texto-secundario, var(--texto-secundario))',
               background: 'transparent',
               border: 'none',
               cursor: 'pointer',
               borderRadius: 0,
             }}
             onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--erro, var(--error-text))'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--texto-secundario, var(--text-muted))'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--texto-secundario, var(--texto-secundario))'; }}
           >
             <SignOut size={20} className="flex-shrink-0" />
             {!recolhido && <span style={{ textTransform: 'none' }}>Sair</span>}
@@ -196,12 +196,12 @@ export function Sidebar({ mobileOpen, onCloseMobile }: SidebarProps) {
           style={{
             background: 'var(--fundo-superficie, var(--bg-surface))',
             border: '1px solid var(--borda-sutil, var(--border))',
-            color: 'var(--texto-secundario, var(--text-muted))',
+            color: 'var(--texto-secundario, var(--texto-secundario))',
             borderRadius: '0px',
             cursor: 'pointer',
           }}
           onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--texto-principal, var(--text-primary))'; e.currentTarget.style.borderColor = 'var(--cor-primaria)'; }}
-          onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--texto-secundario, var(--text-muted))'; e.currentTarget.style.borderColor = 'var(--borda-sutil, var(--border))'; }}
+          onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--texto-secundario, var(--texto-secundario))'; e.currentTarget.style.borderColor = 'var(--borda-sutil, var(--border))'; }}
         >
           {recolhido ? <CaretRight size={14} /> : <CaretLeft size={14} />}
         </button>

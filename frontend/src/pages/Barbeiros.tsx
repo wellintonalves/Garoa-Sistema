@@ -209,7 +209,7 @@ export function Barbeiros() {
                   style={{
                     fontFamily: 'var(--fonte-interface)',
                     fontSize: '10px',
-                    color: 'var(--text-muted)',
+                    color: 'var(--texto-secundario)',
                     letterSpacing: '0.04em',
                   }}
                 >
@@ -291,13 +291,13 @@ export function Barbeiros() {
                   fontSize: '9px',
                   letterSpacing: '0.12em',
                   textTransform: 'uppercase',
-                  color: 'var(--text-muted)',
+                  color: 'var(--texto-secundario)',
                   background: 'transparent',
                   border: 'none',
                   cursor: 'pointer',
                 }}
                 onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--amber)'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-muted)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--texto-secundario)'; }}
                 title="Ver comissões"
               >
                 <CurrencyDollar size={12} /> Comissões
@@ -365,15 +365,15 @@ export function Barbeiros() {
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '13px' }}>
                     <div className="flex justify-between items-center">
-                      <span style={{ color: 'var(--text-muted)', fontFamily: 'var(--fonte-interface)', fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Produzido</span>
+                      <span style={{ color: 'var(--texto-secundario)', fontFamily: 'var(--fonte-interface)', fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Produzido</span>
                       <span style={{ color: 'var(--text-primary)', fontFamily: 'var(--fonte-numeros)', fontSize: '0.8125rem' }}>{fmt(b.bruto)}</span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span style={{ color: 'var(--text-muted)', fontFamily: 'var(--fonte-interface)', fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Comissão</span>
+                      <span style={{ color: 'var(--texto-secundario)', fontFamily: 'var(--fonte-interface)', fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Comissão</span>
                       <span style={{ color: 'var(--cor-icone)', fontFamily: 'var(--fonte-numeros)', fontSize: '0.8125rem', fontWeight: 500 }}>{fmt(b.comissao)}</span>
                     </div>
                     <div className="flex justify-between items-center" style={{ borderTop: '1px solid var(--border)', paddingTop: '8px', marginTop: '4px' }}>
-                      <span style={{ color: 'var(--text-muted)', fontFamily: 'var(--fonte-interface)', fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Líquido</span>
+                      <span style={{ color: 'var(--texto-secundario)', fontFamily: 'var(--fonte-interface)', fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Líquido</span>
                       <span style={{ color: 'var(--sucesso)', fontFamily: 'var(--fonte-numeros)', fontSize: '0.8125rem', fontWeight: 500 }}>{fmt(b.liquido)}</span>
                     </div>
                   </div>
@@ -381,7 +381,7 @@ export function Barbeiros() {
               ))}
             </div>
           ) : (
-            <p style={{ textAlign: 'center', color: 'var(--text-muted)', fontFamily: 'var(--fonte-interface)', fontSize: '11px', padding: '2rem 0' }}>
+            <p style={{ textAlign: 'center', color: 'var(--texto-secundario)', fontFamily: 'var(--fonte-interface)', fontSize: '11px', padding: '2rem 0' }}>
               Nenhuma comissão encontrada para o período selecionado.
             </p>
           )}
@@ -430,7 +430,7 @@ export function Barbeiros() {
             <input type="number" value={form.comissaoPercent} onChange={e => setForm({...form, comissaoPercent: e.target.value})} className="ds-input" /></div>
             <div><label className="input-label">Cor</label>
             <div className="flex items-center gap-2">
-              <input type="color" value={form.cor} onChange={e => setForm({...form, cor: e.target.value})} style={{ width: '38px', height: '38px', padding: '0', border: '1px solid var(--border)', borderRadius: '4px', cursor: 'pointer', background: 'transparent' }} />
+              <input type="color" value={form.cor} onChange={e => setForm({...form, cor: e.target.value})} style={{ width: '38px', height: '38px', padding: '0', border: '1px solid var(--borda-forte)', borderRadius: '4px', cursor: 'pointer', background: 'transparent' }} />
               <input type="text" value={form.cor} onChange={e => setForm({...form, cor: e.target.value})} className="ds-input flex-1" style={{ textTransform: 'uppercase' }} />
             </div></div>
           </div>

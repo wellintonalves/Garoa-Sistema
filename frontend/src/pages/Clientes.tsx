@@ -269,7 +269,7 @@ export function Clientes() {
           {/* Filtros */}
           <div className="flex flex-col sm:flex-row gap-2 flex-wrap items-end">
             <div className="relative w-full sm:max-w-sm">
-              <MagnifyingGlass size={14} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }} />
+              <MagnifyingGlass size={14} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--texto-secundario)' }} />
               <input
                 value={busca}
                 onChange={e => setBusca(e.target.value)}
@@ -352,16 +352,16 @@ export function Clientes() {
                       {/* Contato */}
                       <td data-label="Contato">
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                          <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '0.8125rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '0.8125rem', color: 'var(--texto-secundario)', display: 'flex', alignItems: 'center', gap: '4px' }}>
                             <Envelope size={10} /> {c.usuario?.email || '—'}
                           </span>
-                          <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '0.8125rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '0.8125rem', color: 'var(--texto-secundario)', display: 'flex', alignItems: 'center', gap: '4px' }}>
                             <Phone size={10} /> {c.telefone || '—'}
                           </span>
                         </div>
                       </td>
                       {/* Última visita */}
-                      <td data-label="Última Visita" style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
+                      <td data-label="Última Visita" style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '0.8125rem', color: 'var(--texto-secundario)' }}>
                         {formatarData(c.ultimoAtendimento)}
                       </td>
                       {/* Visitas */}
@@ -390,13 +390,13 @@ export function Clientes() {
                             fontSize: '9px',
                             letterSpacing: '0.12em',
                             textTransform: 'uppercase',
-                            color: 'var(--text-muted)',
+                            color: 'var(--texto-secundario)',
                             background: 'transparent',
                             border: 'none',
                             cursor: 'pointer',
                           }}
                           onMouseEnter={e => { e.currentTarget.style.color = 'var(--amber)'; }}
-                          onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)'; }}
+                          onMouseLeave={e => { e.currentTarget.style.color = 'var(--texto-secundario)'; }}
                         >
                           Ver perfil
                         </button>
@@ -405,7 +405,7 @@ export function Clientes() {
                   ))}
                   {clientes.length === 0 && (
                     <tr>
-                      <td colSpan={8} style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)', fontFamily: 'var(--fonte-interface)', fontSize: '0.8125rem' }}>
+                      <td colSpan={8} style={{ padding: '2rem', textAlign: 'center', color: 'var(--texto-secundario)', fontFamily: 'var(--fonte-interface)', fontSize: '0.8125rem' }}>
                         {carregando ? 'Buscando clientes...' : 'Nenhum cliente encontrado'}
                       </td>
                     </tr>
@@ -424,7 +424,7 @@ export function Clientes() {
             <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '14px', color: 'var(--text-primary)', fontWeight: 600 }}>
               🎂 Aniversariantes de {mesAtual}
             </p>
-            <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '0.8125rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+            <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '0.8125rem', color: 'var(--texto-secundario)', marginTop: '4px' }}>
               {aniversariantes.length} cliente{aniversariantes.length !== 1 ? 's' : ''} fazendo aniversário este mês
             </p>
           </div>
@@ -457,7 +457,7 @@ export function Clientes() {
                   </div>
                   <div>
                     <p style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: '14px' }}>{a.usuario.nome}</p>
-                    <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
+                    <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '0.8125rem', color: 'var(--texto-secundario)' }}>
                       {formatarData(a.dataNascimento)} — Dia {a.diaAniversario}
                     </p>
                   </div>
@@ -475,7 +475,7 @@ export function Clientes() {
               </div>
             ))}
             {aniversariantes.length === 0 && (
-              <p style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)', fontFamily: 'var(--fonte-interface)', fontSize: '0.8125rem' }}>
+              <p style={{ padding: '2rem', textAlign: 'center', color: 'var(--texto-secundario)', fontFamily: 'var(--fonte-interface)', fontSize: '0.8125rem' }}>
                 Nenhum aniversariante encontrado este mês
               </p>
             )}
@@ -525,7 +525,7 @@ export function Clientes() {
                   </div>
                   <button
                     onClick={fecharPerfil}
-                    style={{ width: '32px', height: '32px', background: 'transparent', border: '1px solid var(--border)', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                    style={{ width: '32px', height: '32px', background: 'transparent', border: '1px solid var(--border)', color: 'var(--texto-secundario)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                   >
                     <X size={14} />
                   </button>
@@ -559,7 +559,7 @@ export function Clientes() {
                       {clienteSelecionado.observacoes && (
                         <div style={{ padding: '10px', background: 'var(--bg-surface2)', border: '1px solid var(--border)' }}>
                           <span className="input-label">Observações</span>
-                          <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '0.8125rem', color: 'var(--text-muted)', marginTop: '4px' }}>{clienteSelecionado.observacoes}</p>
+                          <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '0.8125rem', color: 'var(--texto-secundario)', marginTop: '4px' }}>{clienteSelecionado.observacoes}</p>
                         </div>
                       )}
 
@@ -585,11 +585,11 @@ export function Clientes() {
                       <div className="section-divider">Fidelidade</div>
                       <div style={{ padding: '14px', background: 'var(--bg-surface2)', border: '1px solid var(--border)' }}>
                         <div className="flex items-center justify-between" style={{ marginBottom: '8px' }}>
-                          <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
+                          <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '0.8125rem', color: 'var(--texto-secundario)' }}>
                             {clienteSelecionado.pontosAtuais} pts
                           </span>
                           {clienteSelecionado.nivel !== 'Diamante' && (
-                            <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
+                            <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '0.8125rem', color: 'var(--texto-secundario)' }}>
                               {clienteSelecionado.proximoNivel} pts (próximo nível)
                             </span>
                           )}
@@ -611,7 +611,7 @@ export function Clientes() {
                             {clienteSelecionado.nivel}
                           </span>
                           {clienteSelecionado.pontosParaProximo > 0 && (
-                            <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
+                            <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '0.8125rem', color: 'var(--texto-secundario)' }}>
                               Faltam {clienteSelecionado.pontosParaProximo} pts
                             </span>
                           )}
@@ -665,7 +665,7 @@ export function Clientes() {
                       {mostrarFormResgate && (
                         <div style={{ padding: '14px', background: 'var(--fundo-pagina)', border: '1px solid rgba(var(--cor-primaria-rgb), 0.10)' }}>
                           <p className="section-divider" style={{ marginTop: 0 }}>Resgatar recompensa</p>
-                          <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '0.8125rem', color: 'var(--text-muted)', margin: '8px 0' }}>
+                          <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '0.8125rem', color: 'var(--texto-secundario)', margin: '8px 0' }}>
                             Saldo atual: <strong style={{ color: clienteSelecionado.cor }}>{clienteSelecionado.pontosAtuais} pts</strong>
                           </p>
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
@@ -677,7 +677,7 @@ export function Clientes() {
                               >
                                 <div>
                                   <p style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: '13px' }}>{r.nome}</p>
-                                  <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '0.8125rem', color: 'var(--text-muted)' }}>{r.pontosNecessarios} pts necessários</p>
+                                  <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '0.8125rem', color: 'var(--texto-secundario)' }}>{r.pontosNecessarios} pts necessários</p>
                                 </div>
                                 <button
                                   className="btn-primary"
@@ -690,7 +690,7 @@ export function Clientes() {
                               </div>
                             ))}
                             {recompensas.length === 0 && (
-                              <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '0.8125rem', color: 'var(--text-muted)', textAlign: 'center', padding: '12px' }}>
+                              <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '0.8125rem', color: 'var(--texto-secundario)', textAlign: 'center', padding: '12px' }}>
                                 Nenhuma recompensa cadastrada
                               </p>
                             )}
@@ -716,24 +716,24 @@ export function Clientes() {
                           }}
                         >
                           <div className="flex items-center gap-3">
-                            <Calendar size={14} strokeWidth={1.5} style={{ color: 'var(--text-muted)' }} />
+                            <Calendar size={14} strokeWidth={1.5} style={{ color: 'var(--texto-secundario)' }} />
                             <div>
                               <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '13px', fontWeight: 700, color: 'var(--text-primary)' }}>{ag.servico}</p>
-                              <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '0.8125rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+                              <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '0.8125rem', color: 'var(--texto-secundario)', marginTop: '2px' }}>
                                 {formatarData(ag.dataHora)} — {ag.barbeiro}
                               </p>
                             </div>
                           </div>
                           <div style={{ textAlign: 'right' }}>
                             <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '16px', color: 'var(--cor-icone)' }}>R$ {Number(ag.valorCobrado).toFixed(2)}</p>
-                            <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '9px', letterSpacing: '0.1em', textTransform: 'uppercase', color: statusStyles[ag.status] || 'var(--text-muted)', marginTop: '2px' }}>
+                            <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '9px', letterSpacing: '0.1em', textTransform: 'uppercase', color: statusStyles[ag.status] || 'var(--texto-secundario)', marginTop: '2px' }}>
                               {ag.status}
                             </p>
                           </div>
                         </div>
                       ))}
                       {clienteSelecionado.agendamentos.length === 0 && (
-                        <p style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)', fontFamily: 'var(--fonte-interface)', fontSize: '0.8125rem' }}>
+                        <p style={{ textAlign: 'center', padding: '2rem', color: 'var(--texto-secundario)', fontFamily: 'var(--fonte-interface)', fontSize: '0.8125rem' }}>
                           Nenhum agendamento encontrado
                         </p>
                       )}
@@ -755,7 +755,7 @@ export function Clientes() {
                             >
                               <div>
                                 <p style={{ fontSize: '0.8125rem', color: 'var(--text-primary)' }}>{p.descricao}</p>
-                                <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '0.8125rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+                                <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '0.8125rem', color: 'var(--texto-secundario)', marginTop: '2px' }}>
                                   {formatarData(p.data)}
                                 </p>
                               </div>
@@ -765,7 +765,7 @@ export function Clientes() {
                             </div>
                           ))}
                           {clienteSelecionado.historicoPontos.length === 0 && (
-                            <p style={{ textAlign: 'center', padding: '1rem', color: 'var(--text-muted)', fontFamily: 'var(--fonte-interface)', fontSize: '0.8125rem' }}>
+                            <p style={{ textAlign: 'center', padding: '1rem', color: 'var(--texto-secundario)', fontFamily: 'var(--fonte-interface)', fontSize: '0.8125rem' }}>
                               Nenhum ponto registrado
                             </p>
                           )}
@@ -784,7 +784,7 @@ export function Clientes() {
                             >
                               <div>
                                 <p style={{ fontSize: '0.8125rem', color: 'var(--text-primary)' }}>{r.recompensa}</p>
-                                <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '0.8125rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+                                <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '0.8125rem', color: 'var(--texto-secundario)', marginTop: '2px' }}>
                                   {formatarData(r.data)}
                                 </p>
                               </div>
@@ -794,7 +794,7 @@ export function Clientes() {
                             </div>
                           ))}
                           {clienteSelecionado.historicoResgates.length === 0 && (
-                            <p style={{ textAlign: 'center', padding: '1rem', color: 'var(--text-muted)', fontFamily: 'var(--fonte-interface)', fontSize: '0.8125rem' }}>
+                            <p style={{ textAlign: 'center', padding: '1rem', color: 'var(--texto-secundario)', fontFamily: 'var(--fonte-interface)', fontSize: '0.8125rem' }}>
                               Nenhum resgate realizado
                             </p>
                           )}

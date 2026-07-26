@@ -29,7 +29,7 @@ export function BarbeiroLayout() {
         </div>
       </div>
 
-      {/* Bottom Navigation — Seção 7.5/9 (64px + safe area, alvo 48px, ícone 24px, label 11px, sem uppercase) */}
+      {/* Bottom Navigation — Seção 7.5/9 (64px + safe area, alvo 48px, ícone 24px, label var(--texto-detalhe, 13px), sem uppercase) */}
       <nav className="bottom-tab-bar">
         {tabs.map((tab) => {
           const Icon = tab.icon;

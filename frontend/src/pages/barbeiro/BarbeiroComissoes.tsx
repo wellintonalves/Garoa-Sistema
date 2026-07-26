@@ -56,7 +56,7 @@ export function BarbeiroComissoes() {
       </div>
 
       {carregando ? (
-        <div className="flex justify-center py-20" style={{ color: 'var(--text-muted)' }}>
+        <div className="flex justify-center py-20" style={{ color: 'var(--texto-secundario)' }}>
           <TrendingUp className="animate-spin mr-2" /> Calculando...
         </div>
       ) : dados ? (
@@ -73,7 +73,7 @@ export function BarbeiroComissoes() {
               <div className="p-2 rounded-lg" style={{ background: 'var(--bg-surface2)' }}>
                 <DollarSign size={20} style={{ color: 'var(--cor-primaria)' }} />
               </div>
-              <span className="text-sm font-medium uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
+              <span className="text-sm font-medium uppercase tracking-wider" style={{ color: 'var(--texto-secundario)' }}>
                 Sua Comissão ({dados.percentualComissao}%)
               </span>
             </div>
@@ -84,11 +84,11 @@ export function BarbeiroComissoes() {
             
             <div className="grid grid-cols-2 gap-4 pt-6 border-t" style={{ borderColor: 'var(--border)' }}>
               <div>
-                <p className="text-xs uppercase tracking-wide mb-1" style={{ color: 'var(--text-muted)' }}>Valor Bruto</p>
+                <p className="text-xs uppercase tracking-wide mb-1" style={{ color: 'var(--texto-secundario)' }}>Valor Bruto</p>
                 <p className="text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>{fmt(dados.valorBruto)}</p>
               </div>
               <div>
-                <p className="text-xs uppercase tracking-wide mb-1" style={{ color: 'var(--text-muted)' }}>Atendimentos</p>
+                <p className="text-xs uppercase tracking-wide mb-1" style={{ color: 'var(--texto-secundario)' }}>Atendimentos</p>
                 <p className="text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>{dados.totalAtendimentos}</p>
               </div>
             </div>
@@ -96,14 +96,14 @@ export function BarbeiroComissoes() {
 
           {/* Histórico */}
           <div className="pt-4">
-            <h2 className="text-sm font-medium mb-4 flex items-center gap-2 uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
+            <h2 className="text-sm font-medium mb-4 flex items-center gap-2 uppercase tracking-wider" style={{ color: 'var(--texto-secundario)' }}>
               <TrendingUp size={16} /> Histórico de Lançamentos
             </h2>
             
             {dados.lancamentos.length === 0 ? (
               <div className="p-10 rounded-2xl border text-center flex flex-col items-center justify-center" style={{ background: 'var(--bg-surface)', borderColor: 'var(--border)' }}>
                 <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4" style={{ background: 'var(--bg-surface2)' }}>
-                  <Scissors size={28} style={{ color: 'var(--text-muted)' }} />
+                  <Scissors size={28} style={{ color: 'var(--texto-secundario)' }} />
                 </div>
                 <p className="font-medium" style={{ color: 'var(--text-primary)' }}>Nenhum lançamento no período.</p>
               </div>
@@ -115,7 +115,7 @@ export function BarbeiroComissoes() {
                       <p className="font-semibold text-base" style={{ color: 'var(--text-primary)' }}>
                         {l.cliente}
                       </p>
-                      <p className="text-sm mt-0.5" style={{ color: 'var(--text-muted)' }}>
+                      <p className="text-sm mt-0.5" style={{ color: 'var(--texto-secundario)' }}>
                         {l.servico}
                       </p>
                     </div>
@@ -123,7 +123,7 @@ export function BarbeiroComissoes() {
                       <span className="font-semibold text-lg" style={{ color: 'var(--cor-primaria)' }}>
                         +{fmt(l.valorComissao)}
                       </span>
-                      <p className="text-xs font-mono" style={{ color: 'var(--text-muted)' }}>
+                      <p className="text-xs font-mono" style={{ color: 'var(--texto-secundario)' }}>
                         {new Date(l.data).toLocaleDateString('pt-BR')}
                       </p>
                     </div>

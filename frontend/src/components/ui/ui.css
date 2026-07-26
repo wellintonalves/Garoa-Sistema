@@ -170,7 +170,7 @@
 }
 
 .campo-input::placeholder {
-  color: var(--texto-terciario);
+  color: var(--texto-secundario);
 }
 
 @media (max-width: 768px) {
@@ -364,7 +364,7 @@
 }
 
 .estado-vazio-icone {
-  color: var(--texto-terciario);
+  color: var(--texto-secundario);
   margin-bottom: var(--espaco-4);
 }
 
@@ -500,7 +500,7 @@ nav span {
 
 .bottom-tab-label {
   font-family: var(--fonte-sans);
-  font-size: 11px;
+  font-size: var(--texto-detalhe, 13px);
   font-weight: 400;
   margin-top: 4px;
   text-transform: none !important;

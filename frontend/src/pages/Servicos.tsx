@@ -95,7 +95,7 @@ export function Servicos() {
                   ) : (
                     <>
                       <p style={{ fontWeight: 500, color: 'var(--text-primary)' }}>{s.nome}</p>
-                      {s.descricao && <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px', letterSpacing: '0.04em' }}>{s.descricao}</p>}
+                      {s.descricao && <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--texto-secundario)', marginTop: '2px', letterSpacing: '0.04em' }}>{s.descricao}</p>}
                     </>
                   )}
                 </td>
@@ -112,12 +112,12 @@ export function Servicos() {
                   {editandoId === s.id ? (
                     <input type="number" value={editForm.duracaoMinutos} onChange={e => setEditForm({...editForm, duracaoMinutos: e.target.value})} className="ds-input" style={{ width: '80px', minHeight: '32px', padding: '6px 8px' }} />
                   ) : (
-                    <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--text-muted)', letterSpacing: '0.04em' }}>
+                    <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--texto-secundario)', letterSpacing: '0.04em' }}>
                       {s.duracaoMinutos} min
                     </span>
                   )}
                 </td>
-                <td style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--text-muted)' }}>
+                <td style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--texto-secundario)' }}>
                   {editandoId === s.id ? (
                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                       <input type="number" value={editForm.comissaoPercent} onChange={e => setEditForm({...editForm, comissaoPercent: e.target.value})} className="ds-input" style={{ width: '60px', minHeight: '32px', padding: '6px 8px' }} />
@@ -149,9 +149,9 @@ export function Servicos() {
                     <button
                       onClick={() => iniciarEdicao(s)}
                       className="flex items-center justify-center transition-colors"
-                      style={{ width: '28px', height: '28px', color: 'var(--text-muted)', background: 'transparent', border: 'none', cursor: 'pointer' }}
+                      style={{ width: '28px', height: '28px', color: 'var(--texto-secundario)', background: 'transparent', border: 'none', cursor: 'pointer' }}
                       onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--amber)'; }}
-                      onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-muted)'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--texto-secundario)'; }}
                     >
                       <PencilSimple size={14} />
                     </button>
@@ -180,7 +180,7 @@ export function Servicos() {
             <label className="input-label">Cor do Serviço</label>
             <div className="flex flex-col gap-2">
               <div className="flex items-center gap-2">
-                <input type="color" value={form.cor} onChange={e => setForm({...form, cor: e.target.value})} style={{ width: '38px', height: '38px', padding: '0', border: '1px solid var(--border)', borderRadius: '4px', cursor: 'pointer', background: 'transparent' }} />
+                <input type="color" value={form.cor} onChange={e => setForm({...form, cor: e.target.value})} style={{ width: '38px', height: '38px', padding: '0', border: '1px solid var(--borda-forte)', borderRadius: '4px', cursor: 'pointer', background: 'transparent' }} />
                 <input type="text" value={form.cor} onChange={e => setForm({...form, cor: e.target.value})} className="ds-input flex-1" style={{ textTransform: 'uppercase' }} />
               </div>
               <div className="flex flex-wrap gap-2 mt-1">

@@ -29,7 +29,7 @@ export function DashboardLayout() {
         <button
           onClick={() => setMobileOpen(true)}
           className="mr-3 p-1 transition-colors min-h-[48px] min-w-[48px] flex items-center justify-center"
-          style={{ color: 'var(--text-muted)', background: 'transparent', border: 'none' }}
+          style={{ color: 'var(--texto-secundario)', background: 'transparent', border: 'none' }}
         >
           <List size={20} />
         </button>

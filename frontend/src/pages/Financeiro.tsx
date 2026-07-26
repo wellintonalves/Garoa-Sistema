@@ -210,7 +210,7 @@ export function Financeiro() {
                   title={`Saídas: ${fmt(d.saidas)}`}
                 />
               </div>
-              <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '9px', color: 'var(--text-muted)' }}>
+              <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '9px', color: 'var(--texto-secundario)' }}>
                 {new Date(d.data + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
               </span>
             </div>
@@ -252,7 +252,7 @@ export function Financeiro() {
                 <div style={{ width: '8px', height: '8px', background: l.tipo === 'ENTRADA' ? 'var(--sucesso)' : 'var(--error-text)' }} />
                 <div>
                   <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '13px', fontWeight: 500, color: 'var(--text-primary)' }}>{l.categoria}</p>
-                  <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                  <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--texto-secundario)', marginTop: '2px' }}>
                     {l.servico ? `${l.servico.nome}` : l.descricao} 
                     {l.barbeiro && ` • ${l.barbeiro.usuario.nome}`}
                   </p>
@@ -263,14 +263,14 @@ export function Financeiro() {
                   <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '14px', fontWeight: 500, color: l.tipo === 'ENTRADA' ? 'var(--sucesso)' : 'var(--error-text)' }}>
                     {l.tipo === 'ENTRADA' ? '+' : '-'} {fmt(Number(l.valor))}
                   </p>
-                  <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '9px', letterSpacing: '0.04em', color: 'var(--text-muted)', marginTop: '2px' }}>
+                  <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '9px', letterSpacing: '0.04em', color: 'var(--texto-secundario)', marginTop: '2px' }}>
                     {labelsForma[l.formaPagamento] || l.formaPagamento}
                   </p>
                 </div>
                 <div style={{ display: 'flex', gap: '8px' }}>
                   <button 
                     onClick={() => abrirModal(l)} 
-                    style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: '4px' }} 
+                    style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--texto-secundario)', padding: '4px' }} 
                     title="Editar"
                     disabled={apagando === l.id}
                   >
@@ -289,7 +289,7 @@ export function Financeiro() {
             </div>
           ))}
           {lancamentosFiltrados.length === 0 && (
-            <p style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)', fontFamily: 'var(--fonte-interface)', fontSize: '11px' }}>
+            <p style={{ padding: '2rem', textAlign: 'center', color: 'var(--texto-secundario)', fontFamily: 'var(--fonte-interface)', fontSize: '11px' }}>
               Nenhum lançamento encontrado
             </p>
           )}
@@ -320,7 +320,7 @@ export function Financeiro() {
                     cursor: 'pointer',
                     background: isSelected ? 'var(--bg-surface2)' : 'transparent',
                     border: `1px solid ${isSelected ? activeColor : 'var(--border)'}`,
-                    color: isSelected ? activeColor : 'var(--text-muted)',
+                    color: isSelected ? activeColor : 'var(--texto-secundario)',
                     transition: 'all 0.2s',
                   }}
                 >

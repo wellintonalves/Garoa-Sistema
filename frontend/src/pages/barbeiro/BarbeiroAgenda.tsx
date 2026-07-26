@@ -144,7 +144,7 @@ export function BarbeiroAgenda() {
 
       {/* Lista de Agendamentos e Bloqueios (Formato Calendário) */}
       {carregando ? (
-        <div className="flex justify-center py-20" style={{ color: 'var(--text-muted)' }}>
+        <div className="flex justify-center py-20" style={{ color: 'var(--texto-secundario)' }}>
           <Clock className="animate-spin mr-2" /> Carregando agenda...
         </div>
       ) : (
@@ -189,7 +189,7 @@ export function BarbeiroAgenda() {
                       <div key={bl.id} className="cursor-pointer truncate" onClick={() => removerBloqueio(bl.id)}
                         style={{
                           padding: '4px 8px', background: 'repeating-linear-gradient(45deg, var(--bg-surface2), var(--bg-surface2) 10px, transparent 10px, transparent 20px)',
-                          borderLeft: `3px solid var(--text-muted)`, color: 'var(--text-muted)', fontFamily: 'var(--fonte-interface)', fontSize: '11px',
+                          borderLeft: `3px solid var(--texto-secundario)`, color: 'var(--texto-secundario)', fontFamily: 'var(--fonte-interface)', fontSize: '11px',
                           borderRadius: '0 4px 4px 0', position: 'absolute', top: '2px', left: '2px', right: '2px', height: '44px', zIndex: 5 + idx
                         }}>
                         <p className="truncate" style={{ fontWeight: 600 }}>Bloqueado: {bl.motivo || 'Indisponível'}</p>

@@ -62,11 +62,11 @@ export function Modal({ aberto, onFechar, titulo, children, largura = 'max-w-lg'
               background: 'transparent',
               border: '1px solid var(--border)',
               borderRadius: 0,
-              color: 'var(--text-muted)',
+              color: 'var(--texto-secundario)',
               cursor: 'pointer',
             }}
             onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--text-primary)'; e.currentTarget.style.borderColor = 'var(--border-hover)'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.borderColor = 'var(--border)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--texto-secundario)'; e.currentTarget.style.borderColor = 'var(--border)'; }}
           >
             <X size={18} weight="regular" aria-hidden="true" />
           </button>

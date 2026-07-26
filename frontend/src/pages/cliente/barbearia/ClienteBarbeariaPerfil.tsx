@@ -161,7 +161,7 @@ export function ClienteBarbeariaPerfil() {
         <h1 style={{ fontFamily: 'var(--fonte-serif)', fontSize: '24px', fontWeight: 600, color: 'var(--text-primary)', marginTop: tier.show ? '10px' : '0' }}>
           {perfil?.usuario.nome || 'Carregando...'}
         </h1>
-        <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>
+        <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '12px', color: 'var(--texto-secundario)', marginTop: '4px' }}>
           {dataRegistro
             ? `Membro desde ${new Date(dataRegistro).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}`
             : ''}
@@ -175,7 +175,7 @@ export function ClienteBarbeariaPerfil() {
           <span style={{ fontFamily: 'var(--fonte-mono)', fontSize: '22px', fontWeight: 700, color: 'var(--text-primary)' }}>
             {atendimentos}
           </span>
-          <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', textTransform: 'uppercase', color: 'var(--text-muted)', marginTop: '2px', letterSpacing: '0.06em', fontWeight: 600 }}>
+          <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', textTransform: 'uppercase', color: 'var(--texto-secundario)', marginTop: '2px', letterSpacing: '0.06em', fontWeight: 600 }}>
             Visitas
           </span>
         </div>
@@ -185,7 +185,7 @@ export function ClienteBarbeariaPerfil() {
           <span style={{ fontFamily: 'var(--fonte-mono)', fontSize: '22px', fontWeight: 700, color: 'var(--text-primary)' }}>
             {faltas}
           </span>
-          <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', textTransform: 'uppercase', color: 'var(--text-muted)', marginTop: '2px', letterSpacing: '0.06em', fontWeight: 600 }}>
+          <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', textTransform: 'uppercase', color: 'var(--texto-secundario)', marginTop: '2px', letterSpacing: '0.06em', fontWeight: 600 }}>
             Faltas
           </span>
         </div>
@@ -195,7 +195,7 @@ export function ClienteBarbeariaPerfil() {
           <span style={{ fontFamily: 'var(--fonte-mono)', fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)' }}>
             {fmtMonetario(gastoTotal)}
           </span>
-          <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', textTransform: 'uppercase', color: 'var(--text-muted)', marginTop: '2px', letterSpacing: '0.06em', fontWeight: 600 }}>
+          <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', textTransform: 'uppercase', color: 'var(--texto-secundario)', marginTop: '2px', letterSpacing: '0.06em', fontWeight: 600 }}>
             Investido
           </span>
         </div>
@@ -203,23 +203,23 @@ export function ClienteBarbeariaPerfil() {
 
       {/* Formulário de Dados Pessoais */}
       <div className="mb-8 p-5 rounded-xl bg-[var(--fundo-sidebar)] border border-[var(--borda)] shadow-sm">
-        <h2 className="flex items-center gap-2 mb-4" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 600 }}>
+        <h2 className="flex items-center gap-2 mb-4" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--texto-secundario)', fontWeight: 600 }}>
           <User size={16} weight="bold" /> Dados Pessoais
         </h2>
 
         <div className="flex flex-col gap-4">
           <div>
-            <label className="block mb-1.5" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--text-muted)', fontWeight: 600 }}>Nome Completo</label>
+            <label className="block mb-1.5" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--texto-secundario)', fontWeight: 600 }}>Nome Completo</label>
             <input value={nome} onChange={e => setNome(e.target.value)}
-                   className="w-full bg-[var(--fundo-input)] border border-[var(--borda)] rounded p-3 text-[var(--text-primary)] font-interface focus:outline-none focus:border-[var(--cor-primaria)] transition-colors" />
+                   className="w-full bg-[var(--fundo-input)] border border-[var(--borda-forte)] rounded p-3 text-[var(--text-primary)] font-interface focus:outline-none focus:border-[var(--cor-primaria)] transition-colors" />
           </div>
           <div>
-            <label className="block mb-1.5" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--text-muted)', fontWeight: 600 }}>WhatsApp</label>
+            <label className="block mb-1.5" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--texto-secundario)', fontWeight: 600 }}>WhatsApp</label>
             <input value={telefone} onChange={e => setTelefone(e.target.value)} placeholder="(00) 00000-0000"
-                   className="w-full bg-[var(--fundo-input)] border border-[var(--borda)] rounded p-3 text-[var(--text-primary)] font-interface focus:outline-none focus:border-[var(--cor-primaria)] transition-colors" style={{ fontFamily: 'var(--fonte-mono)' }} />
+                   className="w-full bg-[var(--fundo-input)] border border-[var(--borda-forte)] rounded p-3 text-[var(--text-primary)] font-interface focus:outline-none focus:border-[var(--cor-primaria)] transition-colors" style={{ fontFamily: 'var(--fonte-mono)' }} />
           </div>
           <div>
-            <label className="block mb-1.5" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--text-muted)', fontWeight: 600 }}>Email (Somente leitura)</label>
+            <label className="block mb-1.5" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--texto-secundario)', fontWeight: 600 }}>Email (Somente leitura)</label>
             <input value={perfil?.usuario.email || ''} disabled
                    className="w-full bg-[var(--superficie-1)] border border-[var(--borda)] rounded p-3 text-[var(--text-disabled)] font-interface cursor-not-allowed" style={{ fontFamily: 'var(--fonte-mono)' }} />
           </div>
@@ -238,7 +238,7 @@ export function ClienteBarbeariaPerfil() {
 
       {/* Aparência */}
       <div className="mb-8 p-5 rounded-xl bg-[var(--fundo-sidebar)] border border-[var(--borda)] shadow-sm">
-        <h2 className="flex items-center gap-2 mb-4" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 600 }}>
+        <h2 className="flex items-center gap-2 mb-4" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--texto-secundario)', fontWeight: 600 }}>
           <Monitor size={16} weight="bold" /> Aparência
         </h2>
         <SeletorTema />
@@ -247,7 +247,7 @@ export function ClienteBarbeariaPerfil() {
       {/* Barbearias conectadas */}
       {barbearias.length > 0 && (
         <div className="mb-8 p-5 rounded-xl bg-[var(--fundo-sidebar)] border border-[var(--borda)] shadow-sm">
-          <h2 className="flex items-center gap-2 mb-4" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 600 }}>
+          <h2 className="flex items-center gap-2 mb-4" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--texto-secundario)', fontWeight: 600 }}>
             <Scissors size={16} weight="bold" /> Minhas Barbearias Conectadas
           </h2>
           <div className="flex flex-col gap-2">
@@ -260,7 +260,7 @@ export function ClienteBarbeariaPerfil() {
                   <span style={{ fontFamily: 'var(--fonte-interface)', fontWeight: 600, color: 'var(--text-primary)', fontSize: '14px' }}>{b.nome}</span>
                 </div>
                 <button onClick={() => desconectar(b.id)}
-                  className="p-2 text-[var(--text-muted)] hover:text-[var(--erro)] transition-colors"
+                  className="p-2 text-[var(--texto-secundario)] hover:text-[var(--erro)] transition-colors"
                   title="Desconectar barbearia">
                   <LinkBreak size={18} />
                 </button>

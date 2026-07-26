@@ -132,7 +132,7 @@ export function ClienteBarbeariaFidelidade() {
         <h1 style={{ fontFamily: 'var(--fonte-serif)', fontSize: '24px', fontWeight: 600, color: 'var(--text-primary)' }}>
           Seus Pontos
         </h1>
-        <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '13px', color: 'var(--text-muted)', marginTop: '4px' }}>
+        <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '13px', color: 'var(--texto-secundario)', marginTop: '4px' }}>
           Acompanhe seu progresso e resgate prêmios exclusivos.
         </p>
       </div>
@@ -173,7 +173,7 @@ export function ClienteBarbeariaFidelidade() {
         </div>
         
         {proxima ? (
-          <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '13px', color: 'var(--text-muted)', textAlign: 'center' }}>
+          <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '13px', color: 'var(--texto-secundario)', textAlign: 'center' }}>
             Faltam <span style={{ color: 'var(--text-primary)', fontWeight: 700, fontFamily: 'var(--fonte-mono)' }}>{proxima.pontosNecessarios - dados.saldo} pts</span> para o prêmio: 
             <span style={{ color: 'var(--amber)', fontWeight: 600 }}> {proxima.nome}</span>
           </p>
@@ -186,7 +186,7 @@ export function ClienteBarbeariaFidelidade() {
 
       {/* Recompensas */}
       <div className="mb-10">
-        <h2 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '16px', fontWeight: 600 }}>
+        <h2 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--texto-secundario)', marginBottom: '16px', fontWeight: 600 }}>
           Prêmios Disponíveis
         </h2>
         {dados.recompensas.length === 0 ? (
@@ -206,8 +206,8 @@ export function ClienteBarbeariaFidelidade() {
                 }}>
                   <div>
                     <h3 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)' }}>{rec.nome}</h3>
-                    <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>
-                      <span style={{ fontFamily: 'var(--fonte-mono)', fontWeight: 700, color: podeResgatar ? 'var(--amber)' : 'var(--text-muted)' }}>{rec.pontosNecessarios} pts</span> • {rec.tipo === 'SERVICO_GRATIS' ? `Serviço: ${rec.servico?.nome}` : (rec.tipo === 'DESCONTO_PERCENTUAL' ? `Desc. ${rec.valorDesconto}%` : `Desc. R$${rec.valorDesconto}`)}
+                    <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '12px', color: 'var(--texto-secundario)', marginTop: '2px' }}>
+                      <span style={{ fontFamily: 'var(--fonte-mono)', fontWeight: 700, color: podeResgatar ? 'var(--amber)' : 'var(--texto-secundario)' }}>{rec.pontosNecessarios} pts</span> • {rec.tipo === 'SERVICO_GRATIS' ? `Serviço: ${rec.servico?.nome}` : (rec.tipo === 'DESCONTO_PERCENTUAL' ? `Desc. ${rec.valorDesconto}%` : `Desc. R$${rec.valorDesconto}`)}
                     </p>
                   </div>
                   
@@ -241,7 +241,7 @@ export function ClienteBarbeariaFidelidade() {
               Indique amigos e ganhe pontos
             </h2>
           </div>
-          <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '12px', color: 'var(--text-muted)', marginBottom: '14px', lineHeight: 1.5 }}>
+          <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '12px', color: 'var(--texto-secundario)', marginBottom: '14px', lineHeight: 1.5 }}>
             Compartilhe seu código exclusivo. Quando um amigo concluir o primeiro agendamento, você é recompensado automaticamente!
           </p>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -269,7 +269,7 @@ export function ClienteBarbeariaFidelidade() {
 
       {/* Histórico Timeline */}
       <div>
-        <h2 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '20px', fontWeight: 600 }}>
+        <h2 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--texto-secundario)', marginBottom: '20px', fontWeight: 600 }}>
           Histórico
         </h2>
         {dados.historico.length === 0 ? (
@@ -284,7 +284,7 @@ export function ClienteBarbeariaFidelidade() {
               <div key={h.id} className="relative">
                 {/* Dot Timeline */}
                 <div className="absolute -left-[30px] top-[2px] w-3 h-3 rounded-full" 
-                     style={{ background: h.tipo === 'GANHO' ? 'var(--amber)' : 'var(--superficie-2)', border: h.tipo === 'GANHO' ? 'none' : '2px solid var(--text-muted)' }} />
+                     style={{ background: h.tipo === 'GANHO' ? 'var(--amber)' : 'var(--superficie-2)', border: h.tipo === 'GANHO' ? 'none' : '2px solid var(--texto-secundario)' }} />
                 
                 <div className="flex justify-between items-start gap-4">
                   <div>
@@ -300,7 +300,7 @@ export function ClienteBarbeariaFidelidade() {
                         </span>
                       )}
                     </p>
-                    <div className="flex items-center gap-1.5 mt-1" style={{ color: 'var(--text-muted)' }}>
+                    <div className="flex items-center gap-1.5 mt-1" style={{ color: 'var(--texto-secundario)' }}>
                       <Clock size={12} />
                       <p style={{ fontFamily: 'var(--fonte-mono)', fontSize: '11px' }}>
                         {new Date(h.data).toLocaleDateString('pt-BR')}

@@ -321,7 +321,7 @@ export function Vendas() {
             label="Valor em Estoque"
             valor={fmt(kpis.valorCusto)}
             sub="custo total dos produtos"
-            cor="var(--text-muted)"
+            cor="var(--texto-secundario)"
           />
           <KpiCard
             icon={<DollarSign size={16} strokeWidth={1.5} />}
@@ -342,7 +342,7 @@ export function Vendas() {
             label="Alertas"
             valor={String(kpis.alertas)}
             sub={kpis.alertas === 1 ? 'produto abaixo do mínimo' : 'produtos abaixo do mínimo'}
-            cor={kpis.alertas > 0 ? 'var(--perigo)' : 'var(--text-muted)'}
+            cor={kpis.alertas > 0 ? 'var(--perigo)' : 'var(--texto-secundario)'}
           />
         </div>
       )}
@@ -358,7 +358,7 @@ export function Vendas() {
               background: 'none',
               border: 'none',
               borderBottom: aba === id ? '2px solid var(--amber)' : '2px solid transparent',
-              color: aba === id ? 'var(--text-primary)' : 'var(--text-muted)',
+              color: aba === id ? 'var(--text-primary)' : 'var(--texto-secundario)',
               fontFamily: 'var(--fonte-interface)',
               fontSize: '0.8125rem',
               letterSpacing: '0.08em',
@@ -392,7 +392,7 @@ export function Vendas() {
               <tbody>
                 {itens.length === 0 && (
                   <tr>
-                    <td colSpan={8} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '2rem', fontFamily: 'var(--fonte-interface)', fontSize: '0.8125rem' }}>
+                    <td colSpan={8} style={{ textAlign: 'center', color: 'var(--texto-secundario)', padding: '2rem', fontFamily: 'var(--fonte-interface)', fontSize: '0.8125rem' }}>
                       Nenhum produto cadastrado
                     </td>
                   </tr>
@@ -431,12 +431,12 @@ export function Vendas() {
                           />
                         ) : (
                           <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '0.8125rem', color: baixo ? 'var(--perigo)' : 'var(--text-primary)' }}>
-                            {item.quantidade} <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>{item.unidade}</span>
+                            {item.quantidade} <span style={{ fontSize: '10px', color: 'var(--texto-secundario)' }}>{item.unidade}</span>
                           </span>
                         )}
                       </td>
-                      <td style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--text-muted)' }}>{item.quantidadeMinima}</td>
-                      <td style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
+                      <td style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--texto-secundario)' }}>{item.quantidadeMinima}</td>
+                      <td style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '0.8125rem', color: 'var(--texto-secundario)' }}>
                         {fmt(Number(item.custo))}
                       </td>
                       <td style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '0.8125rem', color: semPreco ? 'var(--text-disabled)' : 'var(--amber)' }}>
@@ -465,17 +465,17 @@ export function Vendas() {
                             <>
                               <IconBtn
                                 onClick={() => { setEditandoQtdId(item.id); setEditQtd(String(item.quantidade)); }}
-                                color="var(--text-muted)"
+                                color="var(--texto-secundario)"
                                 title="Ajustar quantidade"
                               >
                                 <Pencil size={13} strokeWidth={1.5} />
                               </IconBtn>
-                              <IconBtn onClick={() => abrirModalEditar(item)} color="var(--text-muted)" title="Editar produto">
+                              <IconBtn onClick={() => abrirModalEditar(item)} color="var(--texto-secundario)" title="Editar produto">
                                 <BarChart2 size={13} strokeWidth={1.5} />
                               </IconBtn>
                               <IconBtn
                                 onClick={() => adicionarAoCarrinho(item)}
-                                color={semPreco ? 'var(--text-muted)' : item.quantidade === 0 ? 'var(--text-muted)' : 'var(--amber)'}
+                                color={semPreco ? 'var(--texto-secundario)' : item.quantidade === 0 ? 'var(--texto-secundario)' : 'var(--amber)'}
                                 title={semPreco ? 'Definir preço de venda' : item.quantidade === 0 ? 'Sem estoque' : 'Adicionar ao carrinho'}
                                 disabled={item.quantidade === 0 && !semPreco}
                               >
@@ -519,14 +519,14 @@ export function Vendas() {
               {/* KPIs de vendas */}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '12px' }}>
                 <KpiCard icon={<DollarSign size={16} strokeWidth={1.5} />} label="Receita no Período" valor={fmt(resumoVendas.totalReceita)} sub={`${resumoVendas.totalUnidades} unidades vendidas`} cor="var(--amber)" />
-                <KpiCard icon={<Package size={16} strokeWidth={1.5} />} label="Custo Total" valor={fmt(resumoVendas.totalCusto)} sub="custo dos produtos vendidos" cor="var(--text-muted)" />
+                <KpiCard icon={<Package size={16} strokeWidth={1.5} />} label="Custo Total" valor={fmt(resumoVendas.totalCusto)} sub="custo dos produtos vendidos" cor="var(--texto-secundario)" />
                 <KpiCard icon={<TrendingUp size={16} strokeWidth={1.5} />} label="Lucro Líquido" valor={fmt(resumoVendas.totalLucro)} sub="receita − custo" cor="var(--sucesso)" />
               </div>
 
               {/* Ranking */}
               {resumoVendas.rankingProdutos.length > 0 && (
                 <div className="card">
-                  <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '12px' }}>
+                  <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--texto-secundario)', marginBottom: '12px' }}>
                     Mais Vendidos
                   </p>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -534,7 +534,7 @@ export function Vendas() {
                       <div key={i} className="flex items-center justify-between" style={{ padding: '8px 0', borderBottom: '1px solid var(--border)' }}>
                         <div>
                           <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '13px', color: 'var(--text-primary)', fontWeight: 600 }}>{p.nome}</span>
-                          <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--text-muted)', marginLeft: '8px' }}>{p.unidades} un.</span>
+                          <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--texto-secundario)', marginLeft: '8px' }}>{p.unidades} un.</span>
                         </div>
                         <div className="flex gap-4" style={{ textAlign: 'right' }}>
                           <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '0.8125rem', color: 'var(--amber)' }}>{fmt(p.receita)}</span>
@@ -564,26 +564,26 @@ export function Vendas() {
                     <tbody>
                       {resumoVendas.vendas.length === 0 && (
                         <tr>
-                          <td colSpan={7} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '2rem', fontFamily: 'var(--fonte-interface)', fontSize: '0.8125rem' }}>
+                          <td colSpan={7} style={{ textAlign: 'center', color: 'var(--texto-secundario)', padding: '2rem', fontFamily: 'var(--fonte-interface)', fontSize: '0.8125rem' }}>
                             Nenhuma venda no período
                           </td>
                         </tr>
                       )}
                       {resumoVendas.vendas.map(v => (
                         <tr key={v.id}>
-                          <td style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
+                          <td style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--texto-secundario)', whiteSpace: 'nowrap' }}>
                             {new Date(v.data).toLocaleDateString('pt-BR')}
                           </td>
                           <td style={{ fontWeight: 500, color: 'var(--text-primary)' }}>{v.nomeProduto}</td>
                           <td style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '0.8125rem' }}>{v.quantidade}</td>
-                          <td style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '0.8125rem', color: 'var(--text-muted)' }}>{fmt(Number(v.precoVenda))}</td>
+                          <td style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '0.8125rem', color: 'var(--texto-secundario)' }}>{fmt(Number(v.precoVenda))}</td>
                           <td style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '0.8125rem', color: 'var(--amber)' }}>
                             {fmt(Number(v.precoVenda) * v.quantidade)}
                           </td>
                           <td style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '0.8125rem', color: 'var(--sucesso)' }}>
                             {fmt(Number(v.lucro))}
                           </td>
-                          <td style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', color: 'var(--text-muted)' }}>
+                          <td style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', color: 'var(--texto-secundario)' }}>
                             {LABEL_FORMA[v.formaPagamento] ?? v.formaPagamento}
                           </td>
                         </tr>
@@ -630,7 +630,7 @@ export function Vendas() {
           </div>
           {form.custo && form.precoVenda && (
             <div style={{ background: 'var(--bg-surface2)', borderRadius: '6px', padding: '10px 14px', display: 'flex', justifyContent: 'space-between' }}>
-              <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', color: 'var(--text-muted)' }}>Margem estimada</span>
+              <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', color: 'var(--texto-secundario)' }}>Margem estimada</span>
               <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '13px', color: 'var(--sucesso)', fontWeight: 600 }}>
                 {margem(form.custo, form.precoVenda)}
               </span>
@@ -653,10 +653,10 @@ export function Vendas() {
           {carrinho.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '2rem 0' }}>
               <ShoppingCart size={32} strokeWidth={1} style={{ color: 'var(--text-muted)', margin: '0 auto 12px' }} />
-              <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '13px', color: 'var(--text-muted)' }}>
+              <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '13px', color: 'var(--texto-secundario)' }}>
                 Nenhum produto no carrinho.
               </p>
-              <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '0.8125rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+              <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '0.8125rem', color: 'var(--texto-secundario)', marginTop: '4px' }}>
                 Clique no ícone 🛒 ao lado de cada produto para adicionar.
               </p>
             </div>
@@ -681,7 +681,7 @@ export function Vendas() {
                       <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {c.item.nome}
                       </p>
-                      <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--text-muted)' }}>
+                      <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--texto-secundario)' }}>
                         {fmt(Number(c.item.precoVenda))} / {c.item.unidade}
                       </p>
                     </div>
@@ -696,7 +696,7 @@ export function Vendas() {
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
                           background: 'var(--bg-surface)', border: '1px solid var(--border)',
                           borderRadius: '4px', cursor: c.quantidade <= 1 ? 'default' : 'pointer',
-                          color: c.quantidade <= 1 ? 'var(--text-muted)' : 'var(--text-primary)',
+                          color: c.quantidade <= 1 ? 'var(--texto-secundario)' : 'var(--text-primary)',
                           opacity: c.quantidade <= 1 ? 0.4 : 1,
                         }}
                       >
@@ -716,7 +716,7 @@ export function Vendas() {
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
                           background: 'var(--bg-surface)', border: '1px solid var(--border)',
                           borderRadius: '4px', cursor: c.quantidade >= c.item.quantidade ? 'default' : 'pointer',
-                          color: c.quantidade >= c.item.quantidade ? 'var(--text-muted)' : 'var(--text-primary)',
+                          color: c.quantidade >= c.item.quantidade ? 'var(--texto-secundario)' : 'var(--text-primary)',
                           opacity: c.quantidade >= c.item.quantidade ? 0.4 : 1,
                         }}
                       >
@@ -752,7 +752,7 @@ export function Vendas() {
               {/* Resumo financeiro */}
               <div style={{ background: 'var(--bg-surface2)', borderRadius: '8px', padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <SumRow label={`${carrinho.length} produto${carrinho.length > 1 ? 's' : ''} · ${totalItensCarrinho} unidade${totalItensCarrinho > 1 ? 's' : ''}`} valor={fmt(totalCarrinho)} cor="var(--amber)" />
-                <SumRow label="Custo estimado" valor={fmt(custoCarrinho)} cor="var(--text-muted)" />
+                <SumRow label="Custo estimado" valor={fmt(custoCarrinho)} cor="var(--texto-secundario)" />
                 <div style={{ borderTop: '1px solid var(--border)', paddingTop: '8px', marginTop: '4px' }}>
                   <SumRow label="Lucro estimado" valor={fmt(lucroCarrinho)} cor="var(--sucesso)" bold />
                 </div>
@@ -771,7 +771,7 @@ export function Vendas() {
                         borderRadius: '6px',
                         border: formaPagCart === f ? '1.5px solid var(--amber)' : '1px solid var(--border)',
                         background: formaPagCart === f ? 'rgba(255,140,0,0.08)' : 'var(--bg-surface2)',
-                        color: formaPagCart === f ? 'var(--text-primary)' : 'var(--text-muted)',
+                        color: formaPagCart === f ? 'var(--text-primary)' : 'var(--texto-secundario)',
                         fontFamily: 'var(--fonte-interface)',
                         fontSize: '0.8125rem',
                         cursor: 'pointer',
@@ -809,14 +809,14 @@ function KpiCard({ icon, label, valor, sub, cor }: {
     <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
       <div className="flex items-center gap-2">
         <span style={{ color: cor }}>{icon}</span>
-        <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text-muted)' }}>
+        <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--texto-secundario)' }}>
           {label}
         </span>
       </div>
       <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '22px', fontWeight: 700, color: cor, lineHeight: 1 }}>
         {valor}
       </p>
-      <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--text-muted)' }}>{sub}</p>
+      <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--texto-secundario)' }}>{sub}</p>
     </div>
   );
 }
@@ -833,7 +833,7 @@ function IconBtn({ onClick, color, title, children, disabled }: {
         width: '28px', height: '28px',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         background: 'transparent', border: 'none', cursor: disabled ? 'default' : 'pointer',
-        color: disabled ? 'var(--text-muted)' : color, opacity: disabled ? 0.35 : 1,
+        color: disabled ? 'var(--texto-secundario)' : color, opacity: disabled ? 0.35 : 1,
         borderRadius: '4px',
       }}
     >
@@ -845,7 +845,7 @@ function IconBtn({ onClick, color, title, children, disabled }: {
 function SumRow({ label, valor, cor, bold }: { label: string; valor: string; cor: string; bold?: boolean }) {
   return (
     <div className="flex items-center justify-between">
-      <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', color: 'var(--text-muted)' }}>{label}</span>
+      <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', color: 'var(--texto-secundario)' }}>{label}</span>
       <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '13px', color: cor, fontWeight: bold ? 700 : 500 }}>{valor}</span>
     </div>
   );

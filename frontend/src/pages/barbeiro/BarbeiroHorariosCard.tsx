@@ -105,7 +105,7 @@ export function BarbeiroHorariosCard({ horariosIniciais, onSuccess, mostrarErro,
             <h3 className="text-sm font-semibold uppercase tracking-wider" style={{ color: 'var(--text-primary)' }}>
               Seus Horários de Trabalho
             </h3>
-            <p className="text-xs mt-1 flex items-center gap-1" style={{ color: 'var(--text-muted)' }}>
+            <p className="text-xs mt-1 flex items-center gap-1" style={{ color: 'var(--texto-secundario)' }}>
               <Info size={12} /> Define a sua disponibilidade na agenda
             </p>
           </div>
@@ -145,9 +145,9 @@ export function BarbeiroHorariosCard({ horariosIniciais, onSuccess, mostrarErro,
               {!conf.fechado && (
                 <div className="flex flex-col sm:flex-row sm:items-center gap-4 flex-1">
                   <div className="flex items-center gap-2">
-                    <span className="text-xs" style={{ color: 'var(--text-muted)' }}>Das</span>
+                    <span className="text-xs" style={{ color: 'var(--texto-secundario)' }}>Das</span>
                     <input type="time" value={conf.abertura} onChange={e => handleChange(dia, 'abertura', e.target.value)} className="ds-input py-1 px-2 text-sm w-24" />
-                    <span className="text-xs" style={{ color: 'var(--text-muted)' }}>às</span>
+                    <span className="text-xs" style={{ color: 'var(--texto-secundario)' }}>às</span>
                     <input type="time" value={conf.fechamento} onChange={e => handleChange(dia, 'fechamento', e.target.value)} className="ds-input py-1 px-2 text-sm w-24" />
                   </div>
 
@@ -155,14 +155,14 @@ export function BarbeiroHorariosCard({ horariosIniciais, onSuccess, mostrarErro,
 
                   <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                     <label className="flex items-center gap-2 cursor-pointer text-xs">
-                      <input type="checkbox" checked={conf.temAlmoco} onChange={e => handleChange(dia, 'temAlmoco', e.target.checked)} className="rounded text-orange-500 focus:ring-orange-500 border-[var(--borda)]" />
+                      <input type="checkbox" checked={conf.temAlmoco} onChange={e => handleChange(dia, 'temAlmoco', e.target.checked)} className="rounded text-orange-500 focus:ring-orange-500 border-[var(--borda-forte)]" />
                       <span style={{ color: 'var(--text-primary)' }}>Tem Intervalo?</span>
                     </label>
 
                     {conf.temAlmoco && (
                       <div className="flex items-center gap-2">
                         <input type="time" value={conf.almocoInicio} onChange={e => handleChange(dia, 'almocoInicio', e.target.value)} className="ds-input py-1 px-2 text-sm w-24" />
-                        <span className="text-xs" style={{ color: 'var(--text-muted)' }}>-</span>
+                        <span className="text-xs" style={{ color: 'var(--texto-secundario)' }}>-</span>
                         <input type="time" value={conf.almocoFim} onChange={e => handleChange(dia, 'almocoFim', e.target.value)} className="ds-input py-1 px-2 text-sm w-24" />
                       </div>
                     )}

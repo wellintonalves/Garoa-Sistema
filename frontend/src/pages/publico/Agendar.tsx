@@ -116,7 +116,7 @@ export function Agendar() {
       <main className="flex-1 max-w-md w-full mx-auto p-4 flex flex-col">
         {etapa < 6 && (
           <div className="mb-6">
-            <div className="flex justify-between text-xs font-mono text-[var(--text-muted)] mb-2 uppercase tracking-widest">
+            <div className="flex justify-between text-xs font-mono text-[var(--texto-secundario)] mb-2 uppercase tracking-widest">
               <span>Etapa {etapa} de 5</span>
             </div>
             <div className="h-1 w-full bg-[var(--bg-surface2)] rounded overflow-hidden">
@@ -153,8 +153,8 @@ export function Agendar() {
                       R$ {Number(s.preco).toFixed(2)}
                     </span>
                   </div>
-                  <p className="text-sm text-[var(--text-muted)] mb-2">{s.descricao || 'Sem descrição'}</p>
-                  <div className="text-xs font-mono text-[var(--text-muted)] flex items-center gap-1">
+                  <p className="text-sm text-[var(--texto-secundario)] mb-2">{s.descricao || 'Sem descrição'}</p>
+                  <div className="text-xs font-mono text-[var(--texto-secundario)] flex items-center gap-1">
                     <Clock size={12} weight="regular" aria-hidden="true" /> {s.duracaoMinutos} min
                   </div>
                 </div>
@@ -174,7 +174,7 @@ export function Agendar() {
         {/* ETAPA 2: BARBEIRO */}
         {etapa === 2 && (
           <div className="animate-fade-in flex flex-col gap-4 flex-1">
-            <button onClick={() => setEtapa(1)} className="text-[var(--text-muted)] flex items-center gap-1 text-sm mb-2 w-fit">
+            <button onClick={() => setEtapa(1)} className="text-[var(--texto-secundario)] flex items-center gap-1 text-sm mb-2 w-fit">
               <CaretLeft size={16} weight="regular" aria-hidden="true" /> Voltar
             </button>
             <div className="flex items-center gap-2 mb-2">
@@ -196,7 +196,7 @@ export function Agendar() {
                 </div>
                 <div>
                   <h3 className="font-bold">Sem preferência</h3>
-                  <p className="text-sm text-[var(--text-muted)]">O primeiro horário livre</p>
+                  <p className="text-sm text-[var(--texto-secundario)]">O primeiro horário livre</p>
                 </div>
               </div>
 
@@ -219,7 +219,7 @@ export function Agendar() {
                   </div>
                   <div>
                     <h3 className="font-bold">{b.usuario.nome}</h3>
-                    <p className="text-xs text-[var(--text-muted)] mt-1 truncate max-w-[200px]">
+                    <p className="text-xs text-[var(--texto-secundario)] mt-1 truncate max-w-[200px]">
                       {b.especialidades.join(', ')}
                     </p>
                   </div>
@@ -239,7 +239,7 @@ export function Agendar() {
         {/* ETAPA 3: DATA E HORA */}
         {etapa === 3 && (
           <div className="animate-fade-in flex flex-col gap-4 flex-1">
-            <button onClick={() => setEtapa(2)} className="text-[var(--text-muted)] flex items-center gap-1 text-sm mb-2 w-fit">
+            <button onClick={() => setEtapa(2)} className="text-[var(--texto-secundario)] flex items-center gap-1 text-sm mb-2 w-fit">
               <CaretLeft size={16} weight="regular" aria-hidden="true" /> Voltar
             </button>
             <div className="flex items-center gap-2 mb-2">
@@ -248,7 +248,7 @@ export function Agendar() {
             </div>
             
             <div className="mb-4">
-              <label className="text-sm text-[var(--text-muted)] font-mono uppercase tracking-widest mb-2 block">Selecione o Dia</label>
+              <label className="text-sm text-[var(--texto-secundario)] font-mono uppercase tracking-widest mb-2 block">Selecione o Dia</label>
               <div className="flex gap-2 overflow-x-auto pb-2 snap-x">
                 {proximosDias.map((d, i) => {
                   const dataIso = dataBrasilia(d);
@@ -263,9 +263,9 @@ export function Agendar() {
                           : 'border-[var(--border)] bg-[var(--bg-surface)]'
                       }`}
                     >
-                      <span className="text-[10px] uppercase font-mono text-[var(--text-muted)]">{diasDaSemanaAbrev[d.getDay()]}</span>
+                      <span className="text-[10px] uppercase font-mono text-[var(--texto-secundario)]">{diasDaSemanaAbrev[d.getDay()]}</span>
                       <span className="text-xl font-bold font-display">{d.getDate()}</span>
-                      <span className="text-[10px] uppercase font-mono text-[var(--text-muted)]">{d.toLocaleDateString('pt-BR', { month: 'short' })}</span>
+                      <span className="text-[10px] uppercase font-mono text-[var(--texto-secundario)]">{d.toLocaleDateString('pt-BR', { month: 'short' })}</span>
                     </div>
                   );
                 })}
@@ -273,18 +273,18 @@ export function Agendar() {
             </div>
 
             <div className="flex-1">
-              <label className="text-sm text-[var(--text-muted)] font-mono uppercase tracking-widest mb-2 block">
+              <label className="text-sm text-[var(--texto-secundario)] font-mono uppercase tracking-widest mb-2 block">
                 {carregando ? 'Buscando...' : 'Horários Disponíveis'}
               </label>
               
               {!data ? (
-                <div className="text-center p-6 text-[var(--text-muted)] border border-dashed border-[var(--border)] rounded">
+                <div className="text-center p-6 text-[var(--texto-secundario)] border border-dashed border-[var(--border)] rounded">
                   Selecione um dia acima
                 </div>
               ) : carregando ? (
                 <div className="flex justify-center p-6"><div className="animate-spin w-6 h-6 border-2 border-[var(--cor-primaria)] border-t-transparent rounded-full"></div></div>
               ) : horarios.length === 0 ? (
-                <div className="text-center p-6 text-[var(--text-muted)] border border-dashed border-[var(--border)] rounded">
+                <div className="text-center p-6 text-[var(--texto-secundario)] border border-dashed border-[var(--border)] rounded">
                   Nenhum horário disponível para este dia.
                 </div>
               ) : (
@@ -319,7 +319,7 @@ export function Agendar() {
         {/* ETAPA 4: DADOS DO CLIENTE */}
         {etapa === 4 && (
           <div className="animate-fade-in flex flex-col gap-4 flex-1">
-            <button onClick={() => setEtapa(3)} className="text-[var(--text-muted)] flex items-center gap-1 text-sm mb-2 w-fit">
+            <button onClick={() => setEtapa(3)} className="text-[var(--texto-secundario)] flex items-center gap-1 text-sm mb-2 w-fit">
               <CaretLeft size={16} weight="regular" aria-hidden="true" /> Voltar
             </button>
             <div className="flex items-center gap-2 mb-4">
@@ -329,7 +329,7 @@ export function Agendar() {
             
             <div className="space-y-4">
               <div>
-                <label className="text-xs text-[var(--text-muted)] font-mono uppercase tracking-widest mb-1 block">Nome Completo</label>
+                <label className="text-xs text-[var(--texto-secundario)] font-mono uppercase tracking-widest mb-1 block">Nome Completo</label>
                 <input 
                   type="text" 
                   value={cliente.nome}
@@ -339,7 +339,7 @@ export function Agendar() {
                 />
               </div>
               <div>
-                <label className="text-xs text-[var(--text-muted)] font-mono uppercase tracking-widest mb-1 block">Telefone (WhatsApp)</label>
+                <label className="text-xs text-[var(--texto-secundario)] font-mono uppercase tracking-widest mb-1 block">Telefone (WhatsApp)</label>
                 <input 
                   type="tel" 
                   value={cliente.telefone}
@@ -349,7 +349,7 @@ export function Agendar() {
                 />
               </div>
               <div>
-                <label className="text-xs text-[var(--text-muted)] font-mono uppercase tracking-widest mb-1 block">Observação (Opcional)</label>
+                <label className="text-xs text-[var(--texto-secundario)] font-mono uppercase tracking-widest mb-1 block">Observação (Opcional)</label>
                 <textarea 
                   value={cliente.observacoes}
                   onChange={(e) => setCliente({...cliente, observacoes: e.target.value})}
@@ -372,7 +372,7 @@ export function Agendar() {
         {/* ETAPA 5: CONFIRMAÇÃO */}
         {etapa === 5 && (
           <div className="animate-fade-in flex flex-col gap-4 flex-1">
-            <button onClick={() => setEtapa(4)} className="text-[var(--text-muted)] flex items-center gap-1 text-sm mb-2 w-fit">
+            <button onClick={() => setEtapa(4)} className="text-[var(--texto-secundario)] flex items-center gap-1 text-sm mb-2 w-fit">
               <CaretLeft size={16} weight="regular" aria-hidden="true" /> Voltar
             </button>
             <div className="flex items-center gap-2 mb-4">
@@ -382,31 +382,31 @@ export function Agendar() {
             
             <div className="bg-[var(--bg-surface)] border border-[var(--border)] rounded p-5 space-y-4">
               <div>
-                <p className="text-[10px] text-[var(--text-muted)] font-mono uppercase tracking-widest mb-1">Serviço</p>
+                <p className="text-[10px] text-[var(--texto-secundario)] font-mono uppercase tracking-widest mb-1">Serviço</p>
                 <p className="font-bold">{servicoSelecionado?.nome}</p>
                 <p className="text-sm text-[var(--cor-primaria)] font-mono">R$ {Number(servicoSelecionado?.preco || 0).toFixed(2)}</p>
               </div>
               <div className="h-px bg-[var(--border)] w-full"></div>
               <div>
-                <p className="text-[10px] text-[var(--text-muted)] font-mono uppercase tracking-widest mb-1">Profissional</p>
+                <p className="text-[10px] text-[var(--texto-secundario)] font-mono uppercase tracking-widest mb-1">Profissional</p>
                 <p className="font-bold">{barbeiroId ? barbeiroSelecionado?.usuario.nome : 'Sem preferência (Primeiro disponível)'}</p>
               </div>
               <div className="h-px bg-[var(--border)] w-full"></div>
               <div className="flex gap-8">
                 <div>
-                  <p className="text-[10px] text-[var(--text-muted)] font-mono uppercase tracking-widest mb-1">Data</p>
+                  <p className="text-[10px] text-[var(--texto-secundario)] font-mono uppercase tracking-widest mb-1">Data</p>
                   <p className="font-bold">{new Date(data).toLocaleDateString('pt-BR')}</p>
                 </div>
                 <div>
-                  <p className="text-[10px] text-[var(--text-muted)] font-mono uppercase tracking-widest mb-1">Horário</p>
+                  <p className="text-[10px] text-[var(--texto-secundario)] font-mono uppercase tracking-widest mb-1">Horário</p>
                   <p className="font-bold">{horario}</p>
                 </div>
               </div>
               <div className="h-px bg-[var(--border)] w-full"></div>
               <div>
-                <p className="text-[10px] text-[var(--text-muted)] font-mono uppercase tracking-widest mb-1">Seus Dados</p>
+                <p className="text-[10px] text-[var(--texto-secundario)] font-mono uppercase tracking-widest mb-1">Seus Dados</p>
                 <p className="font-bold">{cliente.nome}</p>
-                <p className="text-sm text-[var(--text-muted)]">{cliente.telefone}</p>
+                <p className="text-sm text-[var(--texto-secundario)]">{cliente.telefone}</p>
               </div>
             </div>
 
@@ -425,7 +425,7 @@ export function Agendar() {
           <div className="animate-fade-in flex flex-col items-center justify-center gap-4 flex-1 text-center py-10">
             <CheckCircle size={64} weight="regular" className="text-[var(--sucesso)] mb-4" aria-hidden="true" />
             <h2 className="text-2xl font-bold font-display tracking-wide text-[var(--texto-principal)]">Agendamento Confirmado!</h2>
-            <p className="text-[var(--text-muted)] mb-8">
+            <p className="text-[var(--texto-secundario)] mb-8">
               Tudo certo, {cliente.nome.split(' ')[0]}! Seu horário foi reservado com sucesso.<br/><br/>
               Te esperamos na <strong>{nomeBarbearia}</strong> dia {new Date(data).toLocaleDateString('pt-BR')} às {horario}.
             </p>

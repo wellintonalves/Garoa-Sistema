@@ -299,7 +299,7 @@ export function Agenda() {
         <div key={bl.id} className="truncate cursor-pointer" onClick={() => removerBloqueio(bl.id)} title="Clique para remover bloqueio"
           style={{
             padding: '4px 8px', background: 'repeating-linear-gradient(45deg, var(--bg-surface2), var(--bg-surface2) 10px, transparent 10px, transparent 20px)',
-            borderLeft: `3px solid var(--text-muted)`, color: 'var(--text-muted)', fontFamily: 'var(--fonte-interface)', fontSize: isMobile ? '0.8125rem' : '0.8125rem',
+            borderLeft: `3px solid var(--texto-secundario)`, color: 'var(--texto-secundario)', fontFamily: 'var(--fonte-interface)', fontSize: isMobile ? '0.8125rem' : '0.8125rem',
             borderRadius: '0 4px 4px 0', lineHeight: 1.2, position: 'absolute', top: '2px', left: '2px', right: '2px', height: '44px', zIndex: 5 + idx
           }}>
           <p className="truncate pr-1" style={{ fontWeight: 600, marginBottom: '2px' }}>{bl.barbeiro.usuario.nome}</p>
@@ -364,7 +364,7 @@ export function Agenda() {
             <button
               onClick={() => navegar(-1)}
               className="p-2 transition-colors flex items-center justify-center"
-              style={{ color: 'var(--text-muted)', background: 'transparent', border: 'none', cursor: 'pointer', minHeight: isMobile ? '44px' : '32px', minWidth: isMobile ? '44px' : '32px' }}
+              style={{ color: 'var(--texto-secundario)', background: 'transparent', border: 'none', cursor: 'pointer', minHeight: isMobile ? '44px' : '32px', minWidth: isMobile ? '44px' : '32px' }}
             >
               <CaretLeft size={16} />
             </button>
@@ -373,7 +373,7 @@ export function Agenda() {
               style={{
                 fontFamily: 'var(--fonte-interface)',
                 fontSize: '11px',
-                color: 'var(--text-muted)',
+                color: 'var(--texto-secundario)',
                 letterSpacing: '0.04em',
               }}
             >
@@ -386,7 +386,7 @@ export function Agenda() {
             <button
               onClick={() => navegar(1)}
               className="p-2 transition-colors flex items-center justify-center"
-              style={{ color: 'var(--text-muted)', background: 'transparent', border: 'none', cursor: 'pointer', minHeight: isMobile ? '44px' : '32px', minWidth: isMobile ? '44px' : '32px' }}
+              style={{ color: 'var(--texto-secundario)', background: 'transparent', border: 'none', cursor: 'pointer', minHeight: isMobile ? '44px' : '32px', minWidth: isMobile ? '44px' : '32px' }}
             >
               <CaretRight size={16} />
             </button>
@@ -439,7 +439,7 @@ export function Agenda() {
               </>
             )}
           </div>
-          <CaretDown size={16} style={{ color: 'var(--text-muted)' }} />
+          <CaretDown size={16} style={{ color: 'var(--texto-secundario)' }} />
         </button>
 
         {dropdownAberto && (
@@ -538,7 +538,7 @@ export function Agenda() {
                     const isHoje = dia.toDateString() === agora.toDateString();
                     return (
                       <div key={i} className="text-center" style={{ padding: '12px', borderLeft: '1px solid var(--border)', background: isHoje ? 'rgba(var(--cor-primaria-rgb), 0.10)' : 'transparent' }}>
-                        <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '9px', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--text-muted)' }}>{diasSemana[dia.getDay()]}</p>
+                        <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '9px', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--texto-secundario)' }}>{diasSemana[dia.getDay()]}</p>
                         <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '24px', color: isHoje ? 'var(--amber)' : 'var(--text-primary)', lineHeight: 1.2 }}>{dia.getDate()}</p>
                       </div>
                     );
@@ -632,7 +632,7 @@ export function Agenda() {
                 fontSize: '9px',
                 letterSpacing: '0.1em',
                 textTransform: 'uppercase',
-                color: 'var(--text-muted)',
+                color: 'var(--texto-secundario)',
               }}
             >
               {statusLabels[status]}
@@ -741,11 +741,11 @@ export function Agenda() {
             )}
             
             <div className="flex flex-col gap-2 mb-2" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '14px', color: 'var(--text-primary)' }}>
-              <p><strong style={{ color: 'var(--text-muted)' }}>Cliente:</strong> {agendamentoSelecionado.cliente.usuario.nome}</p>
-              <p><strong style={{ color: 'var(--text-muted)' }}>Serviço:</strong> {agendamentoSelecionado.servico.nome} ({agendamentoSelecionado.servico.duracaoMinutos} min)</p>
-              <p><strong style={{ color: 'var(--text-muted)' }}>Barbeiro:</strong> {agendamentoSelecionado.barbeiro.usuario.nome}</p>
-              <p><strong style={{ color: 'var(--text-muted)' }}>Data/Hora:</strong> {new Date(agendamentoSelecionado.dataHora).toLocaleString('pt-BR')}</p>
-              <p><strong style={{ color: 'var(--text-muted)' }}>Status Atual:</strong> {statusLabels[agendamentoSelecionado.status] || agendamentoSelecionado.status}</p>
+              <p><strong style={{ color: 'var(--texto-secundario)' }}>Cliente:</strong> {agendamentoSelecionado.cliente.usuario.nome}</p>
+              <p><strong style={{ color: 'var(--texto-secundario)' }}>Serviço:</strong> {agendamentoSelecionado.servico.nome} ({agendamentoSelecionado.servico.duracaoMinutos} min)</p>
+              <p><strong style={{ color: 'var(--texto-secundario)' }}>Barbeiro:</strong> {agendamentoSelecionado.barbeiro.usuario.nome}</p>
+              <p><strong style={{ color: 'var(--texto-secundario)' }}>Data/Hora:</strong> {new Date(agendamentoSelecionado.dataHora).toLocaleString('pt-BR')}</p>
+              <p><strong style={{ color: 'var(--texto-secundario)' }}>Status Atual:</strong> {statusLabels[agendamentoSelecionado.status] || agendamentoSelecionado.status}</p>
             </div>
 
             <div className="flex flex-col gap-2">

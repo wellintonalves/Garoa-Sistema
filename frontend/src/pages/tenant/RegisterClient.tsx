@@ -28,10 +28,10 @@ export function RegisterClient() {
     <div className='flex flex-col items-center justify-center min-h-screen bg-[var(--superficie-2)] border-[var(--borda)] text-[var(--texto-principal)] p-4'>
       <h2 className='text-2xl text-orange-500 mb-6'>Criar Conta</h2>
       <form onSubmit={handleRegister} className='flex flex-col w-full max-w-xs'>
-        <input className='mb-4 p-2 rounded bg-[var(--superficie-2)] border-[var(--borda)] border bg-[var(--superficie-2)] border-[var(--borda)] text-[var(--texto-principal)]' type='text' placeholder='Nome' value={nome} onChange={e => setNome(e.target.value)} required />
-        <input className='mb-4 p-2 rounded bg-[var(--superficie-2)] border-[var(--borda)] border bg-[var(--superficie-2)] border-[var(--borda)] text-[var(--texto-principal)]' type='email' placeholder='Email' value={email} onChange={e => setEmail(e.target.value)} required />
-        <input className='mb-4 p-2 rounded bg-[var(--superficie-2)] border-[var(--borda)] border bg-[var(--superficie-2)] border-[var(--borda)] text-[var(--texto-principal)]' type='text' placeholder='WhatsApp' value={telefone} onChange={e => setTelefone(e.target.value)} />
-        <input className='mb-6 p-2 rounded bg-[var(--superficie-2)] border-[var(--borda)] border bg-[var(--superficie-2)] border-[var(--borda)] text-[var(--texto-principal)]' type='password' placeholder='Senha' value={senha} onChange={e => setSenha(e.target.value)} required />
+        <input className='mb-4 p-2 rounded bg-[var(--superficie-2)] border-[var(--borda-forte)] border bg-[var(--superficie-2)] border-[var(--borda-forte)] text-[var(--texto-principal)]' type='text' placeholder='Nome' value={nome} onChange={e => setNome(e.target.value)} required />
+        <input className='mb-4 p-2 rounded bg-[var(--superficie-2)] border-[var(--borda-forte)] border bg-[var(--superficie-2)] border-[var(--borda-forte)] text-[var(--texto-principal)]' type='email' placeholder='Email' value={email} onChange={e => setEmail(e.target.value)} required />
+        <input className='mb-4 p-2 rounded bg-[var(--superficie-2)] border-[var(--borda-forte)] border bg-[var(--superficie-2)] border-[var(--borda-forte)] text-[var(--texto-principal)]' type='text' placeholder='WhatsApp' value={telefone} onChange={e => setTelefone(e.target.value)} />
+        <input className='mb-6 p-2 rounded bg-[var(--superficie-2)] border-[var(--borda-forte)] border bg-[var(--superficie-2)] border-[var(--borda-forte)] text-[var(--texto-principal)]' type='password' placeholder='Senha' value={senha} onChange={e => setSenha(e.target.value)} required />
         <button type='submit' className='bg-orange-500 text-[var(--texto-principal)] p-2 rounded font-semibold'>Cadastrar</button>
       </form>
     </div>

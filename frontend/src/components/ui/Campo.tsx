@@ -36,7 +36,7 @@ export const Campo: React.FC<CampoWrapperProps> = ({
             <span>{erro}</span>
           </>
         ) : hint ? (
-          <span style={{ color: 'var(--texto-terciario)' }}>{hint}</span>
+          <span style={{ color: 'var(--texto-secundario)' }}>{hint}</span>
         ) : null}
       </div>
     </div>
@@ -65,7 +65,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
               left: 'var(--espaco-3)',
               display: 'flex',
               alignItems: 'center',
-              color: 'var(--texto-terciario)',
+              color: 'var(--texto-secundario)',
               pointerEvents: 'none',
             }}
           >
@@ -91,7 +91,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
               right: 'var(--espaco-3)',
               display: 'flex',
               alignItems: 'center',
-              color: 'var(--texto-terciario)',
+              color: 'var(--texto-secundario)',
             }}
           >
             {iconeDireita}

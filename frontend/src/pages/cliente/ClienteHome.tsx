@@ -156,7 +156,7 @@ export function ClienteHome() {
                 <div className="min-w-0 flex-1">
                   <p style={{ fontFamily: 'var(--fonte-interface)', fontWeight: 700, color: 'var(--text-primary)', fontSize: '13px' }}>{b.nome}</p>
                   {b.endereco && (
-                    <p className="flex items-center gap-1 truncate" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--text-muted)' }}>
+                    <p className="flex items-center gap-1 truncate" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--texto-secundario)' }}>
                       <MapPin size={12} weight="regular" aria-hidden="true" /> {b.endereco}
                     </p>
                   )}
@@ -170,7 +170,7 @@ export function ClienteHome() {
         )}
 
         {buscando && (
-          <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '0.8125rem', color: 'var(--text-muted)', textAlign: 'center', padding: '12px 0' }}>
+          <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '0.8125rem', color: 'var(--texto-secundario)', textAlign: 'center', padding: '12px 0' }}>
             Buscando...
           </p>
         )}
@@ -183,13 +183,13 @@ export function ClienteHome() {
         </h2>
 
         {carregando ? (
-          <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '0.8125rem', color: 'var(--text-muted)', textAlign: 'center', padding: '2rem 0' }}>
+          <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '0.8125rem', color: 'var(--texto-secundario)', textAlign: 'center', padding: '2rem 0' }}>
             Carregando...
           </p>
         ) : minhasBarbearias.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12">
             <Scissors size={40} weight="regular" style={{ color: 'var(--text-disabled)', marginBottom: '16px' }} aria-hidden="true" />
-            <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '14px', color: 'var(--text-muted)', textAlign: 'center' }}>
+            <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '14px', color: 'var(--texto-secundario)', textAlign: 'center' }}>
               Nenhuma barbearia conectada
             </p>
             <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '0.8125rem', color: 'var(--text-disabled)', textAlign: 'center', marginTop: '4px' }}>
@@ -221,7 +221,7 @@ export function ClienteHome() {
                     {b.nome}
                   </p>
                   {b.endereco && (
-                    <p className="flex items-center gap-1 truncate" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                    <p className="flex items-center gap-1 truncate" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--texto-secundario)', marginTop: '2px' }}>
                       <MapPin size={12} weight="regular" aria-hidden="true" /> {b.endereco}
                     </p>
                   )}

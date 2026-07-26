@@ -44,7 +44,7 @@ function Toast({ msg, tipo, onClose }: { msg: string; tipo: 'ok' | 'erro'; onClo
     }}>
       {tipo === 'ok' ? <CheckCircle size={16} color="var(--sucesso)" /> : <AlertCircle size={16} color="var(--perigo)" />}
       <span style={{ fontSize: '13px', color: tipo === 'ok' ? 'var(--sucesso)' : 'var(--perigo)' }}>{msg}</span>
-      <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--texto-terciario)', marginLeft: '4px' }}>
+      <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--texto-secundario)', marginLeft: '4px' }}>
         <X size={14} />
       </button>
     </div>
@@ -86,7 +86,7 @@ export function Fidelidade() {
           <h1 style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
             Programa de Fidelidade
           </h1>
-          <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: 0 }}>
+          <p style={{ fontSize: '12px', color: 'var(--texto-secundario)', margin: 0 }}>
             Configure as regras, recompensas e acompanhe os pontos dos clientes
           </p>
         </div>
@@ -106,7 +106,7 @@ export function Fidelidade() {
               flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
               gap: '6px', padding: '8px 12px', border: 'none', borderRadius: '7px', cursor: 'pointer',
               background: active ? 'var(--cor-primaria)' : 'transparent',
-              color: active ? 'var(--texto-sobre-primaria)' : 'var(--text-muted)',
+              color: active ? 'var(--texto-sobre-primaria)' : 'var(--texto-secundario)',
               fontSize: '12px', fontWeight: active ? 600 : 400, transition: 'all 0.15s',
               whiteSpace: 'nowrap'
             }}>
@@ -220,7 +220,7 @@ function TabRegras({ showToast }: { showToast: (m: string, t?: 'ok' | 'erro') =>
             <span style={{ fontSize: '14px', fontWeight: 500, color: 'var(--text-primary)' }}>
               {config.ativo ? 'Programa ativo' : 'Programa inativo'}
             </span>
-            <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '2px 0 0' }}>
+            <p style={{ fontSize: '12px', color: 'var(--texto-secundario)', margin: '2px 0 0' }}>
               {config.ativo
                 ? 'Clientes estão acumulando e resgatando pontos'
                 : 'Ative para começar a distribuir pontos automaticamente'}
@@ -234,7 +234,7 @@ function TabRegras({ showToast }: { showToast: (m: string, t?: 'ok' | 'erro') =>
           {/* Regras de acúmulo */}
           <Card style={{ marginTop: '16px' }}>
             <SectionTitle>Acúmulo por agendamento</SectionTitle>
-            <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '16px' }}>
+            <p style={{ fontSize: '12px', color: 'var(--texto-secundario)', marginBottom: '16px' }}>
               Defina como os pontos são calculados. A <strong>Regra por Serviço</strong> tem prioridade máxima —
               caso não configurada para o serviço, o sistema usa a regra por valor gasto ou por visita.
             </p>
@@ -261,7 +261,7 @@ function TabRegras({ showToast }: { showToast: (m: string, t?: 'ok' | 'erro') =>
           {/* Regras por serviço */}
           <Card style={{ marginTop: '16px' }}>
             <SectionTitle>Regras por serviço (opcional)</SectionTitle>
-            <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '16px' }}>
+            <p style={{ fontSize: '12px', color: 'var(--texto-secundario)', marginBottom: '16px' }}>
               Defina pontos específicos para cada serviço. Deixe 0 para usar a regra geral.
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -275,7 +275,7 @@ function TabRegras({ showToast }: { showToast: (m: string, t?: 'ok' | 'erro') =>
                   }}>
                     <span style={{ flex: 1, fontSize: '13px', color: 'var(--text-primary)' }}>
                       {s.nome}
-                      <span style={{ fontSize: '11px', color: 'var(--text-muted)', marginLeft: '8px' }}>
+                      <span style={{ fontSize: '11px', color: 'var(--texto-secundario)', marginLeft: '8px' }}>
                         R$ {Number(s.preco).toFixed(2).replace('.', ',')}
                       </span>
                     </span>
@@ -286,7 +286,7 @@ function TabRegras({ showToast }: { showToast: (m: string, t?: 'ok' | 'erro') =>
                         value={regra?.pontos ?? 0}
                         onChange={e => setRegraPorServico(s.id, Number(e.target.value))}
                       />
-                      <span style={{ fontSize: '12px', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>pts</span>
+                      <span style={{ fontSize: '12px', color: 'var(--texto-secundario)', whiteSpace: 'nowrap' }}>pts</span>
                     </div>
                     {regra && regra.pontos > 0 && (
                       <span style={{
@@ -300,7 +300,7 @@ function TabRegras({ showToast }: { showToast: (m: string, t?: 'ok' | 'erro') =>
                 );
               })}
               {servicos.length === 0 && (
-                <p style={{ fontSize: '13px', color: 'var(--text-muted)', textAlign: 'center', padding: '20px' }}>
+                <p style={{ fontSize: '13px', color: 'var(--texto-secundario)', textAlign: 'center', padding: '20px' }}>
                   Nenhum serviço cadastrado ainda.
                 </p>
               )}
@@ -326,7 +326,7 @@ function TabRegras({ showToast }: { showToast: (m: string, t?: 'ok' | 'erro') =>
               marginTop: '12px', padding: '12px', background: 'rgba(var(--cor-primaria-rgb), 0.15)',
               border: '1px solid rgba(var(--cor-primaria-rgb), 0.15)', borderRadius: '8px',
             }}>
-              <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: 0, lineHeight: 1.6 }}>
+              <p style={{ fontSize: '12px', color: 'var(--texto-secundario)', margin: 0, lineHeight: 1.6 }}>
                 <strong style={{ color: 'var(--cor-primaria)' }}>Como funciona a indicação:</strong> cada cliente tem um
                 código de indicação único visível na área de fidelidade do app. Quando um amigo entra com esse código ao
                 conectar-se à barbearia, os pontos de boas-vindas são creditados para o novo cliente imediatamente.
@@ -436,7 +436,7 @@ function TabRecompensas({ showToast }: { showToast: (m: string, t?: 'ok' | 'erro
             <thead>
               <tr style={{ borderBottom: '1px solid var(--border)' }}>
                 {['Nome', 'Tipo / Valor', 'Pontos', 'Status', 'Ações'].map(h => (
-                  <th key={h} style={{ padding: '10px 12px', fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)', textAlign: 'left', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{h}</th>
+                  <th key={h} style={{ padding: '10px 12px', fontSize: '11px', fontWeight: 600, color: 'var(--texto-secundario)', textAlign: 'left', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{h}</th>
                 ))}
               </tr>
             </thead>
@@ -444,7 +444,7 @@ function TabRecompensas({ showToast }: { showToast: (m: string, t?: 'ok' | 'erro
               {recompensas.map(rec => (
                 <tr key={rec.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                   <td style={{ padding: '12px', fontSize: '13px', color: 'var(--text-primary)' }}>{rec.nome}</td>
-                  <td style={{ padding: '12px', fontSize: '12px', color: 'var(--text-muted)' }}>
+                  <td style={{ padding: '12px', fontSize: '12px', color: 'var(--texto-secundario)' }}>
                     {rec.tipo === 'SERVICO_GRATIS' ? `Serviço: ${rec.servico?.nome ?? '—'}` :
                       rec.tipo === 'DESCONTO_PERCENTUAL' ? `Desconto ${rec.valorDesconto}%` :
                         `Desconto R$${Number(rec.valorDesconto).toFixed(2)}`}
@@ -519,7 +519,7 @@ function TabRecompensas({ showToast }: { showToast: (m: string, t?: 'ok' | 'erro
               <button type="button" onClick={() => setModal(false)} style={{
                 flex: 1, padding: '10px', background: 'transparent',
                 border: '1px solid var(--border)', borderRadius: '8px', cursor: 'pointer',
-                fontSize: '13px', color: 'var(--text-muted)',
+                fontSize: '13px', color: 'var(--texto-secundario)',
               }}>Cancelar</button>
               <button type="submit" style={{
                 flex: 1, padding: '10px', background: 'var(--cor-primaria)',
@@ -639,36 +639,36 @@ function TabClientes({ showToast }: { showToast: (m: string, t?: 'ok' | 'erro') 
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <p style={{ margin: 0, fontSize: '13px', fontWeight: 500, color: 'var(--text-primary)' }}>{c.nome}</p>
-                  <p style={{ margin: '2px 0 0', fontSize: '11px', color: 'var(--text-muted)' }}>{c.email}</p>
+                  <p style={{ margin: '2px 0 0', fontSize: '11px', color: 'var(--texto-secundario)' }}>{c.email}</p>
                 </div>
                 <div style={{ textAlign: 'right', marginRight: '8px' }}>
                   <p style={{ margin: 0, fontSize: '16px', fontWeight: 700, color: 'var(--cor-primaria)' }}>
                     {c.saldo} pts
                   </p>
-                  <p style={{ margin: 0, fontSize: '10px', color: 'var(--text-muted)' }}>
+                  <p style={{ margin: 0, fontSize: '10px', color: 'var(--texto-secundario)' }}>
                     +{c.totalGanho} / -{c.totalGasto}
                   </p>
                 </div>
                 <button onClick={e => { e.stopPropagation(); setAjusteModal(c); setAjusteForm({ pontos: '', descricao: '' }); }} style={{
                   padding: '6px 12px', background: 'transparent',
                   border: '1px solid var(--border)', borderRadius: '6px',
-                  cursor: 'pointer', fontSize: '11px', color: 'var(--text-muted)',
+                  cursor: 'pointer', fontSize: '11px', color: 'var(--texto-secundario)',
                   whiteSpace: 'nowrap',
                 }}>
                   <TrendingUp size={13} style={{ verticalAlign: 'middle', marginRight: '4px' }} />
                   Ajustar
                 </button>
-                {expandido === c.id ? <ChevronUp size={16} color="var(--text-muted)" /> : <ChevronDown size={16} color="var(--text-muted)" />}
+                {expandido === c.id ? <ChevronUp size={16} color="var(--texto-secundario)" /> : <ChevronDown size={16} color="var(--texto-secundario)" />}
               </div>
 
               {expandido === c.id && (
                 <div style={{ padding: '0 16px 14px', borderTop: '1px solid var(--border)' }}>
-                  <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: '10px 0 8px' }}>
+                  <p style={{ fontSize: '11px', color: 'var(--texto-secundario)', margin: '10px 0 8px' }}>
                     Últimas movimentações
                   </p>
                   {historico[c.id] ? (
                     historico[c.id].length === 0 ? (
-                      <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Sem histórico ainda.</p>
+                      <p style={{ fontSize: '12px', color: 'var(--texto-secundario)' }}>Sem histórico ainda.</p>
                     ) : (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                         {historico[c.id].map(h => (
@@ -679,8 +679,8 @@ function TabClientes({ showToast }: { showToast: (m: string, t?: 'ok' | 'erro') 
                             }}>
                               {h.pontos > 0 ? '+' : ''}{h.pontos}
                             </span>
-                            <span style={{ fontSize: '12px', color: 'var(--text-muted)', flex: 1 }}>{h.descricao}</span>
-                            <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>
+                            <span style={{ fontSize: '12px', color: 'var(--texto-secundario)', flex: 1 }}>{h.descricao}</span>
+                            <span style={{ fontSize: '10px', color: 'var(--texto-secundario)' }}>
                               {new Date(h.data).toLocaleDateString('pt-BR')}
                             </span>
                           </div>
@@ -688,7 +688,7 @@ function TabClientes({ showToast }: { showToast: (m: string, t?: 'ok' | 'erro') 
                       </div>
                     )
                   ) : (
-                    <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Carregando...</p>
+                    <p style={{ fontSize: '12px', color: 'var(--texto-secundario)' }}>Carregando...</p>
                   )}
                 </div>
               )}
@@ -699,7 +699,7 @@ function TabClientes({ showToast }: { showToast: (m: string, t?: 'ok' | 'erro') 
 
       {ajusteModal && (
         <Modal title={`Ajustar pontos — ${ajusteModal.nome}`} onClose={() => setAjusteModal(null)}>
-          <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '16px' }}>
+          <p style={{ fontSize: '13px', color: 'var(--texto-secundario)', marginBottom: '16px' }}>
             Saldo atual: <strong style={{ color: 'var(--cor-primaria)' }}>{ajusteModal.saldo} pts</strong>
           </p>
           <form onSubmit={salvarAjuste} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
@@ -725,7 +725,7 @@ function TabClientes({ showToast }: { showToast: (m: string, t?: 'ok' | 'erro') 
               <button type="button" onClick={() => setAjusteModal(null)} style={{
                 flex: 1, padding: '10px', background: 'transparent',
                 border: '1px solid var(--border)', borderRadius: '8px',
-                cursor: 'pointer', fontSize: '13px', color: 'var(--text-muted)',
+                cursor: 'pointer', fontSize: '13px', color: 'var(--texto-secundario)',
               }}>Cancelar</button>
               <button type="submit" disabled={salvando} style={{
                 flex: 1, padding: '10px', background: 'var(--cor-primaria)',
@@ -768,14 +768,14 @@ function TabHistorico({ showToast }: { showToast: (m: string, t?: 'ok' | 'erro')
             <thead>
               <tr style={{ borderBottom: '1px solid var(--border)' }}>
                 {['Data', 'Cliente', 'Recompensa', 'Pontos', 'Status'].map(h => (
-                  <th key={h} style={{ padding: '10px 12px', fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)', textAlign: 'left', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{h}</th>
+                  <th key={h} style={{ padding: '10px 12px', fontSize: '11px', fontWeight: 600, color: 'var(--texto-secundario)', textAlign: 'left', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {resgates.map(r => (
                 <tr key={r.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                  <td style={{ padding: '12px', fontSize: '12px', color: 'var(--text-muted)' }}>
+                  <td style={{ padding: '12px', fontSize: '12px', color: 'var(--texto-secundario)' }}>
                     {new Date(r.createdAt).toLocaleDateString('pt-BR')}
                   </td>
                   <td style={{ padding: '12px', fontSize: '13px', color: 'var(--text-primary)' }}>
@@ -867,14 +867,14 @@ function TabPendentes({ showToast, onUpdateCount }: { showToast: (m: string, t?:
             <thead>
               <tr style={{ borderBottom: '1px solid var(--border)' }}>
                 {['Data', 'Cliente', 'Recompensa', 'Pontos', 'Ações'].map(h => (
-                  <th key={h} style={{ padding: '10px 12px', fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)', textAlign: 'left', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{h}</th>
+                  <th key={h} style={{ padding: '10px 12px', fontSize: '11px', fontWeight: 600, color: 'var(--texto-secundario)', textAlign: 'left', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {resgates.map(r => (
                 <tr key={r.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                  <td style={{ padding: '12px', fontSize: '12px', color: 'var(--text-muted)' }}>
+                  <td style={{ padding: '12px', fontSize: '12px', color: 'var(--texto-secundario)' }}>
                     {new Date(r.createdAt).toLocaleDateString('pt-BR')}
                   </td>
                   <td style={{ padding: '12px', fontSize: '13px', color: 'var(--text-primary)' }}>
@@ -939,11 +939,11 @@ function SectionTitle({ children, style }: { children: React.ReactNode; style?: 
 function FieldGroup({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
   return (
     <div>
-      <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', display: 'block', marginBottom: '6px' }}>
+      <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--texto-secundario)', textTransform: 'uppercase', letterSpacing: '0.06em', display: 'block', marginBottom: '6px' }}>
         {label}
       </label>
       {children}
-      {hint && <p style={{ fontSize: '10px', color: 'var(--text-muted)', margin: '4px 0 0' }}>{hint}</p>}
+      {hint && <p style={{ fontSize: '10px', color: 'var(--texto-secundario)', margin: '4px 0 0' }}>{hint}</p>}
     </div>
   );
 }
@@ -970,7 +970,7 @@ function IconBtn({ children, onClick, title, danger }: { children: React.ReactNo
       padding: '6px', background: danger ? 'var(--perigo-fundo)' : 'rgba(255,255,255,0.05)',
       border: `1px solid ${danger ? 'var(--perigo-fundo)' : 'var(--border)'}`,
       borderRadius: '6px', cursor: 'pointer',
-      color: danger ? 'var(--perigo)' : 'var(--text-muted)', display: 'flex', alignItems: 'center',
+      color: danger ? 'var(--perigo)' : 'var(--texto-secundario)', display: 'flex', alignItems: 'center',
     }}>
       {children}
     </button>
@@ -991,7 +991,7 @@ function Modal({ title, children, onClose }: { title: string; children: React.Re
       }} onClick={e => e.stopPropagation()}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
           <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 600, color: 'var(--text-primary)' }}>{title}</h3>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--texto-secundario)' }}>
             <X size={18} />
           </button>
         </div>
@@ -1005,7 +1005,7 @@ function EmptyState({ icon: Icon, text }: { icon: React.ComponentType<any>; text
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '40px', gap: '10px' }}>
       <Icon size={36} style={{ opacity: 0.3 }} />
-      <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: 0 }}>{text}</p>
+      <p style={{ fontSize: '13px', color: 'var(--texto-secundario)', margin: 0 }}>{text}</p>
     </div>
   );
 }

@@ -101,7 +101,7 @@ export function BarbeiroPerfil() {
   }
 
   if (!perfil) return (
-    <div className="flex justify-center py-20" style={{ color: 'var(--text-muted)', fontFamily: 'var(--fonte-interface)' }}>
+    <div className="flex justify-center py-20" style={{ color: 'var(--texto-secundario)', fontFamily: 'var(--fonte-interface)' }}>
       Carregando...
     </div>
   );
@@ -183,8 +183,8 @@ export function BarbeiroPerfil() {
               <span className="flex items-center gap-1 text-sm font-medium" style={{ color: 'var(--cor-primaria)' }}>
                 <Star size={14} fill="currentColor" /> {Number(perfil.avaliacaoMedia).toFixed(1)}
               </span>
-              <span className="w-1 h-1 rounded-full bg-current opacity-50" style={{ color: 'var(--text-muted)' }}></span>
-              <span className="text-sm" style={{ color: 'var(--text-muted)' }}>
+              <span className="w-1 h-1 rounded-full bg-current opacity-50" style={{ color: 'var(--texto-secundario)' }}></span>
+              <span className="text-sm" style={{ color: 'var(--texto-secundario)' }}>
                 {perfil.usuario.email}
               </span>
             </div>
@@ -209,7 +209,7 @@ export function BarbeiroPerfil() {
         <div className="p-6 rounded-2xl border flex flex-col gap-4" style={{ background: 'var(--bg-surface)', borderColor: 'var(--border)' }}>
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-lg" style={{ background: 'var(--bg-surface2)' }}><Phone size={16} style={{ color: 'var(--cor-primaria)' }} /></div>
-            <span className="text-xs uppercase tracking-wider font-semibold" style={{ color: 'var(--text-muted)' }}>Contato</span>
+            <span className="text-xs uppercase tracking-wider font-semibold" style={{ color: 'var(--texto-secundario)' }}>Contato</span>
           </div>
           
           {!editando ? (
@@ -225,7 +225,7 @@ export function BarbeiroPerfil() {
         <div className="p-6 rounded-2xl border flex flex-col gap-4" style={{ background: 'var(--bg-surface)', borderColor: 'var(--border)' }}>
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-lg" style={{ background: 'var(--bg-surface2)' }}><Scissors size={16} style={{ color: 'var(--cor-primaria)' }} /></div>
-            <span className="text-xs uppercase tracking-wider font-semibold" style={{ color: 'var(--text-muted)' }}>Especialidades</span>
+            <span className="text-xs uppercase tracking-wider font-semibold" style={{ color: 'var(--texto-secundario)' }}>Especialidades</span>
           </div>
           
           {!editando ? (
@@ -233,13 +233,13 @@ export function BarbeiroPerfil() {
               {perfil.especialidades.length > 0 ? perfil.especialidades.map((e, i) => (
                 <span key={i} className="px-3 py-1 text-xs font-medium rounded-full" style={{ background: 'var(--bg-surface2)', color: 'var(--text-primary)', border: '1px solid var(--border)' }}>{e}</span>
               )) : (
-                <span className="text-sm opacity-50 italic" style={{ color: 'var(--text-muted)' }}>Nenhuma informada</span>
+                <span className="text-sm opacity-50 italic" style={{ color: 'var(--texto-secundario)' }}>Nenhuma informada</span>
               )}
             </div>
           ) : (
             <div className="mt-2">
               <input type="text" placeholder="Corte, Barba, Pigmentação..." value={form.especialidades} onChange={e => setForm({...form, especialidades: e.target.value})} className="ds-input" />
-              <p className="text-[10px] mt-2" style={{ color: 'var(--text-muted)' }}>Separe por vírgulas.</p>
+              <p className="text-[10px] mt-2" style={{ color: 'var(--texto-secundario)' }}>Separe por vírgulas.</p>
             </div>
           )}
         </div>
@@ -248,12 +248,12 @@ export function BarbeiroPerfil() {
         <div className="p-6 rounded-2xl border flex flex-col gap-4" style={{ background: 'var(--bg-surface)', borderColor: 'var(--border)' }}>
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-lg" style={{ background: 'var(--bg-surface2)' }}><User size={16} style={{ color: 'var(--cor-primaria)' }} /></div>
-            <span className="text-xs uppercase tracking-wider font-semibold" style={{ color: 'var(--text-muted)' }}>Comissão Padrão</span>
+            <span className="text-xs uppercase tracking-wider font-semibold" style={{ color: 'var(--texto-secundario)' }}>Comissão Padrão</span>
           </div>
           <p className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>
             {perfil.comissaoPercent}%
           </p>
-          <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Definida pelo administrador da barbearia.</p>
+          <p className="text-[10px]" style={{ color: 'var(--texto-secundario)' }}>Definida pelo administrador da barbearia.</p>
         </div>
 
         {/* Horários */}
@@ -284,7 +284,7 @@ export function BarbeiroPerfil() {
       <div className="mt-8 text-center">
         <p className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--text-disabled)' }}>
           Vinculado a <br />
-          <strong className="text-sm mt-1 inline-block" style={{ color: 'var(--text-muted)' }}>{perfil.barbearia.nome}</strong>
+          <strong className="text-sm mt-1 inline-block" style={{ color: 'var(--texto-secundario)' }}>{perfil.barbearia.nome}</strong>
         </p>
       </div>
     </div>

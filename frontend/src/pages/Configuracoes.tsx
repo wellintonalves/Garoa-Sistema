@@ -139,7 +139,7 @@ export function Configuracoes() {
           <form onSubmit={salvarBarbearia} className="space-y-4">
             <div>
               <label className="block text-sm font-medium mb-1">Nome da Barbearia</label>
-              <input type="text" className="form-input w-full p-2 bg-[var(--superficie)] border border-[var(--border)] rounded" value={barbearia.nome || ''} onChange={e => setBarbearia({...barbearia, nome: e.target.value})} required />
+              <input type="text" className="form-input w-full p-2 bg-[var(--superficie)] border border-[var(--borda-forte)] rounded" value={barbearia.nome || ''} onChange={e => setBarbearia({...barbearia, nome: e.target.value})} required />
             </div>
             
             <div className="p-4 bg-fundo border bg-[var(--superficie-2)] border-[var(--borda)] rounded space-y-4">
@@ -206,16 +206,16 @@ export function Configuracoes() {
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Slug (URL)</label>
-              <input type="text" className="form-input w-full p-2 bg-[var(--superficie)] border border-[var(--border)] rounded" value={barbearia.slug || ''} onChange={e => setBarbearia({...barbearia, slug: e.target.value})} required />
+              <input type="text" className="form-input w-full p-2 bg-[var(--superficie)] border border-[var(--borda-forte)] rounded" value={barbearia.slug || ''} onChange={e => setBarbearia({...barbearia, slug: e.target.value})} required />
               <p className="text-xs text-[var(--texto-secundario)] mt-1 break-all">Sua url será: {window.location.origin}/cliente/home?slug={barbearia.slug || '...'}</p>
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Endereço</label>
-              <input type="text" className="form-input w-full p-2 bg-[var(--superficie)] border border-[var(--border)] rounded" value={barbearia.endereco || ''} onChange={e => setBarbearia({...barbearia, endereco: e.target.value})} />
+              <input type="text" className="form-input w-full p-2 bg-[var(--superficie)] border border-[var(--borda-forte)] rounded" value={barbearia.endereco || ''} onChange={e => setBarbearia({...barbearia, endereco: e.target.value})} />
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Telefone</label>
-              <input type="text" className="form-input w-full p-2 bg-[var(--superficie)] border border-[var(--border)] rounded" value={barbearia.telefone || ''} onChange={e => setBarbearia({...barbearia, telefone: e.target.value})} />
+              <input type="text" className="form-input w-full p-2 bg-[var(--superficie)] border border-[var(--borda-forte)] rounded" value={barbearia.telefone || ''} onChange={e => setBarbearia({...barbearia, telefone: e.target.value})} />
             </div>
 
             {/* Campos de Horário de Funcionamento removidos (agora centralizados por dia) */}
@@ -265,7 +265,7 @@ export function Configuracoes() {
                           type="time"
                           value={configDia.abertura || ''}
                           onChange={(e) => handleChange(dia.key, 'abertura', e.target.value)}
-                          className="form-input flex-1 p-2 bg-[var(--superficie)] rounded border border-[var(--border)]"
+                          className="form-input flex-1 p-2 bg-[var(--superficie)] rounded border border-[var(--borda-forte)]"
                           required
                         />
                         <span>às</span>
@@ -273,7 +273,7 @@ export function Configuracoes() {
                           type="time"
                           value={configDia.fechamento || ''}
                           onChange={(e) => handleChange(dia.key, 'fechamento', e.target.value)}
-                          className="form-input flex-1 p-2 bg-[var(--superficie)] rounded border border-[var(--border)]"
+                          className="form-input flex-1 p-2 bg-[var(--superficie)] rounded border border-[var(--borda-forte)]"
                           required
                         />
                       </div>
@@ -308,7 +308,7 @@ export function Configuracoes() {
                             type="time"
                             value={configDia.almocoInicio || ''}
                             onChange={(e) => handleChange(dia.key, 'almocoInicio', e.target.value)}
-                            className="form-input flex-1 p-2 bg-[var(--superficie)] rounded border border-[var(--border)] text-sm"
+                            className="form-input flex-1 p-2 bg-[var(--superficie)] rounded border border-[var(--borda-forte)] text-sm"
                             required
                           />
                           <span className="text-sm text-[var(--texto-secundario)]">às</span>
@@ -316,14 +316,14 @@ export function Configuracoes() {
                             type="time"
                             value={configDia.almocoFim || ''}
                             onChange={(e) => handleChange(dia.key, 'almocoFim', e.target.value)}
-                            className="form-input flex-1 p-2 bg-[var(--superficie)] rounded border border-[var(--border)] text-sm"
+                            className="form-input flex-1 p-2 bg-[var(--superficie)] rounded border border-[var(--borda-forte)] text-sm"
                             required
                           />
                         </div>
                       )}
                     </div>
                   ) : (
-                    <div className="flex-1 text-sm text-[var(--text-muted)] italic">
+                    <div className="flex-1 text-sm text-[var(--texto-secundario)] italic">
                       Fechado
                     </div>
                   )}
@@ -348,7 +348,7 @@ export function Configuracoes() {
             <QrCode className="text-[var(--cor-primaria)]" size={24} />
             <h2 className="text-xl font-bold text-[var(--texto-principal)]">QR Code de Agendamento</h2>
           </div>
-          <p className="text-sm text-[var(--text-muted)] mb-6">
+          <p className="text-sm text-[var(--texto-secundario)] mb-6">
             Imprima este QR Code e coloque na sua barbearia para que os clientes possam acessar o seu App.
           </p>
           

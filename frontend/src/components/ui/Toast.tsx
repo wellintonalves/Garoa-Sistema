@@ -52,7 +52,7 @@ export const Toast: React.FC<ToastProps> = ({ toast, onClose }) => {
         style={{
           background: 'transparent',
           border: 'none',
-          color: 'var(--texto-terciario)',
+          color: 'var(--texto-secundario)',
           cursor: 'pointer',
           padding: 0,
           display: 'flex',

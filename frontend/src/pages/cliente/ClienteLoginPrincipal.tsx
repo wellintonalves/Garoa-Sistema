@@ -142,7 +142,7 @@ export function ClienteLoginPrincipal() {
                 type="button"
                 onClick={() => setMostrarSenha(!mostrarSenha)}
                 aria-label={mostrarSenha ? "Ocultar senha" : "Mostrar senha"}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--texto-terciario)', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '44px', height: '44px', padding: 0 }}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--texto-secundario)', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '44px', height: '44px', padding: 0 }}
               >
                 {mostrarSenha ? <EyeSlash size={18} weight="regular" aria-hidden="true" /> : <Eye size={18} weight="regular" aria-hidden="true" />}
               </button>
@@ -199,7 +199,7 @@ export function ClienteLoginPrincipal() {
           gap: 'var(--espaco-3)',
           alignItems: 'center',
         }}>
-          <p style={{ fontSize: 'var(--texto-detalhe, 0.75rem)', color: 'var(--texto-terciario)', margin: 0 }}>
+          <p style={{ fontSize: 'var(--texto-detalhe, 0.75rem)', color: 'var(--texto-secundario)', margin: 0 }}>
             Acesso para profissionais
           </p>
           <div style={{ display: 'flex', gap: 'var(--espaco-3)', flexWrap: 'wrap', justifyContent: 'center' }}>

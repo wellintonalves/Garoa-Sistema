@@ -258,7 +258,7 @@ export function Relatorios() {
             <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)' }}>
               Erro ao carregar relatório
             </p>
-            <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>
+            <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', color: 'var(--texto-secundario)', marginTop: '4px' }}>
               {erro}
             </p>
           </div>
@@ -308,9 +308,9 @@ export function Relatorios() {
                   <div key={i} style={{ padding: '16px', background: 'var(--bg-surface2)', border: '1px solid var(--border)' }}>
                     <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '12px' }}>{b.nome}</p>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                      <div className="flex justify-between" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px' }}><span style={{ color: 'var(--text-muted)' }}>Produzido:</span><span style={{ color: 'var(--text-primary)' }}>{fmt(b.bruto)}</span></div>
-                      <div className="flex justify-between" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px' }}><span style={{ color: 'var(--text-muted)' }}>Comissão:</span><span style={{ color: 'var(--error-text)' }}>{fmt(b.comissao)}</span></div>
-                      <div className="flex justify-between" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', borderTop: '1px solid var(--border)', paddingTop: '8px', marginTop: '4px' }}><span style={{ color: 'var(--text-muted)' }}>Líquido:</span><span style={{ color: 'var(--sucesso)', fontWeight: 500 }}>{fmt(b.liquido)}</span></div>
+                      <div className="flex justify-between" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px' }}><span style={{ color: 'var(--texto-secundario)' }}>Produzido:</span><span style={{ color: 'var(--text-primary)' }}>{fmt(b.bruto)}</span></div>
+                      <div className="flex justify-between" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px' }}><span style={{ color: 'var(--texto-secundario)' }}>Comissão:</span><span style={{ color: 'var(--error-text)' }}>{fmt(b.comissao)}</span></div>
+                      <div className="flex justify-between" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', borderTop: '1px solid var(--border)', paddingTop: '8px', marginTop: '4px' }}><span style={{ color: 'var(--texto-secundario)' }}>Líquido:</span><span style={{ color: 'var(--sucesso)', fontWeight: 500 }}>{fmt(b.liquido)}</span></div>
                     </div>
                   </div>
                 ))}
@@ -322,7 +322,7 @@ export function Relatorios() {
           <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
             <h3 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)', padding: '1.25rem', borderBottom: '1px solid var(--border)' }}>
               Detalhamento dos Lançamentos
-              <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '0.8125rem', color: 'var(--text-muted)', marginLeft: '12px', fontWeight: 400 }}>
+              <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '0.8125rem', color: 'var(--texto-secundario)', marginLeft: '12px', fontWeight: 400 }}>
                 {entradas.length} {entradas.length === 1 ? 'registro' : 'registros'}
               </span>
             </h3>
@@ -342,12 +342,12 @@ export function Relatorios() {
                 <tbody>
                   {entradas.map((l) => (
                     <tr key={l.id}>
-                      <td style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--text-muted)' }}>
+                      <td style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--texto-secundario)' }}>
                         {new Date(l.data).toLocaleDateString('pt-BR')}
                       </td>
                       <td>
                         <p style={{ fontWeight: 500, color: 'var(--text-primary)' }}>{l.servico ? l.servico.nome : l.categoria}</p>
-                        <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '0.8125rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+                        <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '0.8125rem', color: 'var(--texto-secundario)', marginTop: '2px' }}>
                           {l.barbeiro ? l.barbeiro.usuario.nome : 'Sem Barbeiro'}
                         </p>
                       </td>
@@ -366,7 +366,7 @@ export function Relatorios() {
                         <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', alignItems: 'center' }}>
                           <button
                             onClick={() => handleEditar(l)}
-                            style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}
+                            style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--texto-secundario)' }}
                             title="Editar lançamento"
                           >
                             <PencilSimple size={14} />
@@ -384,7 +384,7 @@ export function Relatorios() {
                   ))}
                   {entradas.length === 0 && (
                     <tr>
-                      <td colSpan={6} style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)', fontFamily: 'var(--fonte-interface)', fontSize: '11px' }}>
+                      <td colSpan={6} style={{ padding: '2rem', textAlign: 'center', color: 'var(--texto-secundario)', fontFamily: 'var(--fonte-interface)', fontSize: '11px' }}>
                         Nenhum lançamento de entrada encontrado para o período selecionado.
                       </td>
                     </tr>
@@ -406,7 +406,7 @@ export function Relatorios() {
           <div className="card" style={{ width: '100%', maxWidth: '400px', padding: '24px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
               <h3 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)' }}>Editar Lançamento</h3>
-              <button onClick={() => setLancamentoEditando(null)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}>
+              <button onClick={() => setLancamentoEditando(null)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--texto-secundario)' }}>
                 <X size={20} />
               </button>
             </div>

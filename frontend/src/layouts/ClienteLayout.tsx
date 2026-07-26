@@ -133,7 +133,7 @@ export function ClienteLayout() {
               <p className="truncate" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '13px', fontWeight: 500, color: 'var(--text-primary)', textTransform: 'none' }}>
                 {cliente?.nome.split(' ')[0]}
               </p>
-              <p className="truncate" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--texto-secundario, var(--text-muted))', textTransform: 'none' }}>
+              <p className="truncate" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--texto-secundario, var(--texto-secundario))', textTransform: 'none' }}>
                 {cliente?.email || 'cliente@barbearia.com'}
               </p>
             </div>
@@ -154,7 +154,7 @@ export function ClienteLayout() {
           <ChatFab onClick={() => navigate(`${basePath}/chat`)} />
         )}
 
-        {/* Bottom Nav Mobile (< 768px) — Altura 64px + safe area, ícone 24px + label 11px, alvo 48px */}
+        {/* Bottom Nav Mobile (< 768px) — Altura 64px + safe area, ícone 24px + label var(--texto-detalhe, 13px), alvo 48px */}
         <nav className="md:hidden bottom-tab-bar">
           {tabs.map((tab) => {
             const Icon = tab.icon;

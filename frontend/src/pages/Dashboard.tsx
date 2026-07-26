@@ -121,7 +121,7 @@ export function Dashboard() {
           style={{
             fontFamily: 'var(--fonte-interface)',
             fontSize: '11px',
-            color: 'var(--text-muted)',
+            color: 'var(--texto-secundario)',
             marginTop: '8px',
             letterSpacing: '0.06em',
           }}
@@ -203,7 +203,7 @@ export function Dashboard() {
           <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)' }}>
             Erro ao carregar dados do dashboard
           </p>
-          <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>
+          <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', color: 'var(--texto-secundario)', marginTop: '4px' }}>
             {erro}
           </p>
         </div>
@@ -317,12 +317,12 @@ export function Dashboard() {
                   <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {dados.servicoMaisRealizado.nome}
                   </p>
-                  <p style={{ fontFamily: 'var(--fonte-mono)', fontSize: '11px', color: 'var(--text-muted)', margin: 0 }}>
+                  <p style={{ fontFamily: 'var(--fonte-mono)', fontSize: '11px', color: 'var(--texto-secundario)', margin: 0 }}>
                     {dados.servicoMaisRealizado.count}x ({formatarMoeda(dados.servicoMaisRealizado.total)})
                   </p>
                 </>
               ) : (
-                <p style={{ fontSize: '14px', color: 'var(--text-muted)' }}>Nenhum serviço</p>
+                <p style={{ fontSize: '14px', color: 'var(--texto-secundario)' }}>Nenhum serviço</p>
               )}
             </div>
           </div>
@@ -391,7 +391,7 @@ export function Dashboard() {
             ) : (
               <div style={{ height: '220px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
                 <ChartBar size={32} style={{ color: 'var(--text-muted)', opacity: 0.5 }} />
-                <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '0.8125rem', color: 'var(--text-muted)' }}>Nenhum faturamento registrado neste período</p>
+                <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '0.8125rem', color: 'var(--texto-secundario)' }}>Nenhum faturamento registrado neste período</p>
               </div>
             )}
           </div>

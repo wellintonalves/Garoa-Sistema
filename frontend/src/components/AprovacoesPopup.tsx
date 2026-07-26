@@ -95,7 +95,7 @@ export function AprovacoesPopup() {
             <h3 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)' }}>
               Ação Requerida
             </h3>
-            <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', color: 'var(--text-muted)' }}>
+            <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', color: 'var(--texto-secundario)' }}>
               {pendentes.length} {pendentes.length === 1 ? 'solicitação pendente' : 'solicitações pendentes'}
             </p>
           </div>
@@ -106,7 +106,7 @@ export function AprovacoesPopup() {
             {titulo}
           </p>
           <div style={{
-            fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--text-muted)',
+            fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--texto-secundario)',
             whiteSpace: 'pre-wrap', wordBreak: 'break-word', margin: 0
           }}>
             {atual.acao === 'EXCLUIR' && (

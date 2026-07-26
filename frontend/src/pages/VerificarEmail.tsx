@@ -230,7 +230,7 @@ export function VerificarEmail() {
               disabled={!podeReenviar || reenviando}
               style={{
                 background: 'none', border: 'none', cursor: podeReenviar ? 'pointer' : 'default',
-                fontSize: 'var(--texto-sm, 0.75rem)', color: podeReenviar ? 'var(--cor-primaria)' : 'var(--texto-terciario)',
+                fontSize: 'var(--texto-sm, 0.75rem)', color: podeReenviar ? 'var(--cor-primaria)' : 'var(--texto-secundario)',
                 textDecoration: podeReenviar ? 'underline' : 'none', minHeight: '44px',
                 display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '0 var(--espaco-2)'
               }}
