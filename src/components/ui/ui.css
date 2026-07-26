@@ -1,0 +1,385 @@
+/* ==========================================================================
+   DESIGN SYSTEM v2 — COMPONENTES BASE (ui.css)
+   Apenas tokens visuais, sem hex literais ou cores fixas do Tailwind.
+   ========================================================================== */
+
+/* 1. Botão */
+.btn-base {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--espaco-2);
+  font-family: var(--fonte-sans);
+  font-weight: 500;
+  text-transform: none;
+  border-radius: var(--raio-md);
+  transition: all 150ms ease;
+  cursor: pointer;
+  position: relative;
+  min-height: 40px;
+  padding: 0 var(--espaco-4);
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  user-select: none;
+}
+
+@media (max-width: 768px) {
+  .btn-base {
+    min-height: 48px;
+  }
+}
+
+.btn-base:focus-visible {
+  outline: 2px solid var(--borda-foco);
+  outline-offset: 2px;
+}
+
+.btn-base:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-primario {
+  background: var(--cor-primaria);
+  color: var(--texto-sobre-primaria);
+  border: 1px solid transparent;
+}
+.btn-primario:hover:not(:disabled) {
+  background: var(--cor-primaria-hover);
+}
+.btn-primario:active:not(:disabled) {
+  background: var(--cor-primaria-ativa);
+  transform: translateY(1px);
+}
+
+.btn-secundario {
+  background: transparent;
+  color: var(--texto-principal);
+  border: 1px solid var(--borda-forte);
+}
+.btn-secundario:hover:not(:disabled) {
+  background: var(--fundo-superficie-2);
+}
+.btn-secundario:active:not(:disabled) {
+  background: var(--fundo-superficie-3);
+  transform: translateY(1px);
+}
+
+.btn-fantasma {
+  background: transparent;
+  color: var(--texto-secundario);
+  border: 1px solid transparent;
+}
+.btn-fantasma:hover:not(:disabled) {
+  background: var(--fundo-superficie-2);
+  color: var(--texto-principal);
+}
+.btn-fantasma:active:not(:disabled) {
+  background: var(--fundo-superficie-3);
+  transform: translateY(1px);
+}
+
+.btn-inverso {
+  background: var(--fundo-inverso);
+  color: var(--texto-inverso);
+  border: 1px solid transparent;
+}
+.btn-inverso:hover:not(:disabled) {
+  opacity: 0.9;
+}
+.btn-inverso:active:not(:disabled) {
+  opacity: 0.8;
+  transform: translateY(1px);
+}
+
+.btn-destrutivo {
+  background: transparent;
+  color: var(--erro);
+  border: 1px solid var(--erro);
+}
+.btn-destrutivo:hover:not(:disabled) {
+  background: var(--erro-fundo);
+}
+.btn-destrutivo:active:not(:disabled) {
+  background: var(--erro-fundo);
+  transform: translateY(1px);
+}
+
+/* Spinner interno para estado de loading */
+@keyframes spin-ds {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.spinner-ds {
+  animation: spin-ds 0.8s linear infinite;
+  display: inline-block;
+}
+
+/* 2. Card */
+.card-base {
+  background: var(--fundo-superficie);
+  border: 1px solid var(--borda-sutil);
+  border-radius: var(--raio-lg);
+  padding: var(--espaco-5);
+  box-shadow: none;
+  transition: background-color 150ms ease, border-color 150ms ease;
+}
+
+@media (max-width: 768px) {
+  .card-base {
+    padding: var(--espaco-4);
+  }
+}
+
+.card-clicavel {
+  cursor: pointer;
+}
+.card-clicavel:hover {
+  background: var(--fundo-superficie-2);
+}
+
+/* 3. Campo (Input / Select / Textarea) */
+.campo-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-1); /* Exatamente 4px */
+  width: 100%;
+}
+
+.campo-label {
+  font-family: var(--fonte-sans);
+  font-weight: 500;
+  font-size: 0.875rem;
+  color: var(--texto-label);
+  user-select: none;
+}
+
+.campo-input {
+  background: var(--fundo-superficie-2);
+  border: 1px solid var(--borda-forte);
+  border-radius: var(--raio-sm);
+  min-height: 40px;
+  padding: 0 var(--espaco-3);
+  font-family: var(--fonte-sans);
+  font-size: 0.875rem;
+  color: var(--texto-principal);
+  outline: none;
+  width: 100%;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.campo-input::placeholder {
+  color: var(--texto-terciario);
+}
+
+@media (max-width: 768px) {
+  .campo-input {
+    min-height: 48px;
+    font-size: 1rem; /* Mínimo 16px no mobile para evitar zoom do iOS */
+  }
+}
+
+.campo-input:focus {
+  border-color: var(--cor-primaria);
+  box-shadow: 0 0 0 3px var(--cor-primaria-suave);
+}
+
+.campo-input:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.campo-input.campo-erro {
+  border-color: var(--erro);
+}
+.campo-input.campo-erro:focus {
+  box-shadow: 0 0 0 3px var(--erro-fundo);
+}
+
+.campo-textarea {
+  min-height: 80px;
+  padding-top: var(--espaco-2);
+  padding-bottom: var(--espaco-2);
+  resize: vertical;
+}
+
+/* Reserva de altura para mensagem de erro — nunca pula layout */
+.campo-msg-reserva {
+  min-height: 20px;
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-1);
+  font-family: var(--fonte-sans);
+  font-size: var(--texto-detalhe);
+  color: var(--erro);
+}
+
+/* 4. Badge */
+.badge-base {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  border-radius: var(--raio-full);
+  font-family: var(--fonte-sans);
+  font-weight: 500;
+  font-size: var(--texto-detalhe);
+  padding: 2px 10px;
+  line-height: 1.25rem;
+  white-space: nowrap;
+}
+
+.badge-sucesso {
+  background: var(--sucesso-fundo);
+  color: var(--sucesso);
+}
+
+.badge-info {
+  background: var(--info-fundo);
+  color: var(--info);
+}
+
+.badge-aviso {
+  background: var(--aviso-fundo);
+  color: var(--aviso);
+}
+
+.badge-erro {
+  background: var(--erro-fundo);
+  color: var(--erro);
+}
+
+.badge-neutro {
+  background: var(--fundo-superficie-3);
+  color: var(--texto-secundario);
+}
+
+/* 5. Tabela */
+.tabela-cabecalho {
+  font-family: var(--fonte-sans);
+  font-weight: 500;
+  font-size: var(--texto-label);
+  color: var(--texto-secundario);
+  background: var(--fundo-superficie-2);
+  text-align: left;
+}
+
+.tabela-linha {
+  background: transparent; /* SEM zebra */
+  border-bottom: 1px solid var(--borda-sutil);
+  transition: background-color 150ms ease;
+  min-height: 52px;
+}
+
+.tabela-linha:hover {
+  background: var(--fundo-superficie-2);
+}
+
+.tabela-celula {
+  padding: 0.75rem 1rem;
+  font-family: var(--fonte-sans);
+  font-size: 0.875rem;
+  color: var(--texto-principal);
+  vertical-align: middle;
+  height: 52px;
+}
+
+.tabela-celula-mono {
+  font-family: var(--fonte-mono);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+/* 6. Skeleton */
+@keyframes pulse-ds {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.skeleton-base {
+  background: var(--fundo-superficie-2);
+  animation: pulse-ds 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  border-radius: var(--raio-sm);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-base {
+    animation: none;
+  }
+}
+
+/* 7. Toast */
+.toast-base {
+  background: var(--fundo-superficie);
+  color: var(--texto-principal);
+  border: 1px solid var(--borda-sutil);
+  border-left-width: 3px;
+  border-radius: var(--raio-md);
+  padding: var(--espaco-4);
+  box-shadow: var(--elevacao-2);
+  display: flex;
+  align-items: flex-start;
+  gap: var(--espaco-3);
+  width: 100%;
+  max-width: 380px;
+  pointer-events: auto;
+  transition: all 200ms ease;
+}
+
+.toast-container-desktop {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-2);
+}
+
+@media (max-width: 768px) {
+  .toast-container-desktop {
+    bottom: auto;
+    top: 16px;
+    right: 16px;
+    left: 16px;
+  }
+  .toast-base {
+    max-width: 100%;
+  }
+}
+
+.toast-sucesso { border-left-color: var(--sucesso); }
+.toast-info { border-left-color: var(--info); }
+.toast-aviso { border-left-color: var(--aviso); }
+.toast-erro { border-left-color: var(--erro); }
+
+/* 8. EstadoVazio */
+.estado-vazio-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: var(--espaco-10) var(--espaco-4);
+}
+
+.estado-vazio-icone {
+  color: var(--texto-terciario);
+  margin-bottom: var(--espaco-4);
+}
+
+.estado-vazio-titulo {
+  font-family: var(--fonte-serif);
+  font-size: 1.25rem;
+  font-weight: 500;
+  color: var(--texto-principal);
+  margin-bottom: var(--espaco-2);
+}
+
+.estado-vazio-desc {
+  font-family: var(--fonte-sans);
+  font-size: 0.875rem;
+  color: var(--texto-secundario);
+  max-width: 420px;
+  margin-bottom: var(--espaco-6);
+}

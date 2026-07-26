@@ -66,6 +66,8 @@
   --texto-terciario: #9A9186;
   --texto-inverso: #F4F4F4;
   --texto-desabilitado: #C5BDB0;
+  --texto-label: #6E675C;
+  --texto-detalhe: 0.75rem;
 
   /* Bordas */
   --borda-sutil: #EFE9DB;
@@ -111,6 +113,8 @@
   --texto-terciario: #666666;
   --texto-inverso: #1A1712;
   --texto-desabilitado: #4A4A4A;
+  --texto-label: #8F8F8F;
+  --texto-detalhe: 0.75rem;
 
   /* Bordas */
   --borda-sutil: #262626;

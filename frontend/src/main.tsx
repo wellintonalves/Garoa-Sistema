@@ -12,6 +12,7 @@ import '@fontsource/jetbrains-mono/400.css';
 import '@fontsource/jetbrains-mono/500.css';
 import '@fontsource-variable/jetbrains-mono';
 import './index.css';
+import './components/ui/ui.css';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

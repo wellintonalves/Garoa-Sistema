@@ -27,6 +27,7 @@ const Vendas = lazy(() => import('./pages/Vendas').then(m => ({ default: m.Venda
 const Configuracoes = lazy(() => import('./pages/Configuracoes').then(m => ({ default: m.Configuracoes })));
 const Agendar = lazy(() => import('./pages/publico/Agendar').then(m => ({ default: m.Agendar })));
 const Fidelidade = lazy(() => import('./pages/publico/Fidelidade').then(m => ({ default: m.Fidelidade })));
+const DesignSystemDev = lazy(() => import('./pages/dev/DesignSystemDev').then(m => ({ default: m.DesignSystemDev })));
 
 const Welcome = lazy(() => import('./pages/tenant/Welcome').then(m => ({ default: m.Welcome })));
 const LoginClient = lazy(() => import('./pages/tenant/LoginClient').then(m => ({ default: m.LoginClient })));
@@ -154,6 +155,9 @@ export function App() {
                   <Route path="/cliente/login" element={<Navigate to="/" replace />} />
                   <Route path="/cliente/register" element={<Navigate to="/cadastro" replace />} />
                   <Route path="/admin/estoque" element={<Navigate to="/admin/vendas" replace />} />
+
+                  {/* Rota interna de desenvolvimento / design system showcase */}
+                  <Route path="/dev/design-system" element={<DesignSystemDev />} />
 
                   {/* Fallback */}
                   <Route path="*" element={<Navigate to="/" replace />} />

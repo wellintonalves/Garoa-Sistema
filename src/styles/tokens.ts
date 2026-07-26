@@ -73,6 +73,8 @@ export const tokens = {
         terciario: '#9A9186',
         inverso: '#F4F4F4',
         desabilitado: '#C5BDB0',
+        label: '#6E675C',
+        detalhe: '0.75rem',
       },
       bordas: {
         sutil: '#EFE9DB',
@@ -117,6 +119,8 @@ export const tokens = {
         terciario: '#666666',
         inverso: '#1A1712',
         desabilitado: '#4A4A4A',
+        label: '#8F8F8F',
+        detalhe: '0.75rem',
       },
       bordas: {
         sutil: '#262626',
