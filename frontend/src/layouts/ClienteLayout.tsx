@@ -1,6 +1,6 @@
 // Layout do app do cliente dentro de uma barbearia — menu inferior com 4 abas
 import { Outlet, useNavigate, useLocation, useParams, Navigate } from 'react-router-dom';
-import { Home, Calendar, Star, User, MessageCircle } from 'lucide-react';
+import { House, CalendarBlank, Gift, User, ChatCircle } from '@phosphor-icons/react';
 import { useEffect, useState } from 'react';
 import clienteApi from '../api/clienteApi';
 import { useTema } from '../hooks/useTema';
@@ -43,7 +43,7 @@ function ChatFab({ onClick }: { onClick: () => void }) {
       onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.1)'; }}
       onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)'; }}
     >
-      <MessageCircle size={22} />
+      <ChatCircle size={22} weight="regular" />
     </button>
   );
 }
@@ -82,9 +82,9 @@ export function ClienteLayout() {
   const basePath = `/cliente/barbearia/${barbeariaId}`;
 
   const tabs = [
-    { name: 'Início', path: basePath, icon: Home },
-    { name: 'Agendar', path: `${basePath}/agendar`, icon: Calendar },
-    { name: 'Fidelidade', path: `${basePath}/fidelidade`, icon: Star },
+    { name: 'Início', path: basePath, icon: House },
+    { name: 'Agendar', path: `${basePath}/agendar`, icon: CalendarBlank },
+    { name: 'Fidelidade', path: `${basePath}/fidelidade`, icon: Gift },
     { name: 'Perfil', path: `${basePath}/perfil`, icon: User },
   ];
 
@@ -121,7 +121,7 @@ export function ClienteLayout() {
                 className={`nav-item ${isActive ? 'active' : ''}`}
                 style={{ padding: '10px 14px', textTransform: 'none' }}
               >
-                <Icon size={20} strokeWidth={isActive ? 2 : 1.75} />
+                <Icon size={20} weight={isActive ? "fill" : "regular"} />
                 <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '14px', fontWeight: isActive ? 500 : 400, textTransform: 'none' }}>
                   {tab.name}
                 </span>
@@ -173,7 +173,7 @@ export function ClienteLayout() {
                 className={`bottom-tab-item ${isActive ? 'active' : ''}`}
                 style={{ textTransform: 'none' }}
               >
-                <Icon size={24} style={{ marginBottom: '2px', opacity: isActive ? 1 : 0.7 }} />
+                <Icon size={24} weight={isActive ? "fill" : "regular"} style={{ marginBottom: '2px', opacity: isActive ? 1 : 0.7 }} />
                 <span className="bottom-tab-label">
                   {tab.name}
                 </span>

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback, FormEvent } from 'react';
 import { useOutletContext, useParams, useNavigate } from 'react-router-dom';
-import { Send, Volume2, VolumeX, Check, CheckCheck, ChevronLeft } from 'lucide-react';
+import { PaperPlaneRight, SpeakerHigh, SpeakerX, Check, Checks, CaretLeft } from '@phosphor-icons/react';
 import clienteApi from '../../../api/clienteApi';
 import { useChatSounds } from '../../../hooks/useChatSounds';
 
@@ -188,7 +188,7 @@ export function ClienteBarbeariaChat() {
             style={{ color: 'var(--texto-secundario)' }}
             aria-label="Voltar"
           >
-            <ChevronLeft size={24} />
+            <CaretLeft size={24} />
           </button>
           
           <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 font-sans text-[13px] font-semibold"
@@ -215,7 +215,7 @@ export function ClienteBarbeariaChat() {
           style={{ color: 'var(--texto-secundario)' }}
           title={isMuted ? "Ativar som" : "Desativar som"}
         >
-          {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+          {isMuted ? <SpeakerX size={18} /> : <SpeakerHigh size={18} />}
         </button>
       </div>
 
@@ -276,9 +276,9 @@ export function ClienteBarbeariaChat() {
                       {isCliente && (
                         <span className="flex items-center">
                           {m.lida ? (
-                            <CheckCheck size={14} className="text-blue-600" />
+                            <Checks size={16} weight="bold" className="text-blue-500" />
                           ) : (
-                            <Check size={14} style={{ color: 'rgba(0,0,0,0.5)' }} />
+                            <Check size={16} weight="bold" style={{ color: 'rgba(0,0,0,0.5)' }} />
                           )}
                         </span>
                       )}
@@ -341,7 +341,7 @@ export function ClienteBarbeariaChat() {
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
           ) : (
-            <Send size={20} strokeWidth={2} style={{ marginLeft: '2px' }} />
+            <PaperPlaneRight size={20} weight="fill" style={{ marginLeft: '2px' }} />
           )}
         </button>
       </form>
