@@ -188,13 +188,14 @@ export class PublicoController {
               status: { notIn: ['CANCELADO', 'CONCLUIDO'] },
               dataHora: { gte: dataInicioDia, lte: dataFimDia },
             },
-            include: { servico: true }
+            include: { servico: true, itens: { include: { servico: true } } }
           });
 
           const conflito = agendamentosDia.some(ag => {
             const agHM = getHoraMinutoBrasilia(new Date(ag.dataHora));
             const agInicioM = agHM.hora * 60 + agHM.minuto;
-            const agFimM = agInicioM + ag.servico.duracaoMinutos;
+            const duracao = (ag as any).itens?.length ? (ag as any).itens.reduce((acc: number, i: any) => acc + i.duracaoMinutos, 0) : (ag.servico?.duracaoMinutos || 30);
+            const agFimM = agInicioM + duracao;
             return slotInicioM < agFimM && slotFimM > agInicioM;
           });
 
@@ -261,7 +262,7 @@ export class PublicoController {
           clienteId: cliente.id,
           status: 'CONCLUIDO'
         },
-        include: { servico: true, barbeiro: { include: { usuario: true } } },
+        include: { servico: true, itens: { include: { servico: true } }, barbeiro: { include: { usuario: true } } },
         orderBy: { dataHora: 'desc' }
       });
 
@@ -277,9 +278,9 @@ export class PublicoController {
         pontosAcumulados,
         meta,
         pontosFaltantes,
-        historico: historico.slice(0, 10).map(h => ({
+        historico: historico.slice(0, 10).map((h: any) => ({
           data: h.dataHora,
-          servico: h.servico.nome,
+          servico: h.itens?.length ? h.itens.map((i: any) => i.servico?.nome).filter(Boolean).join(' + ') : (h.servico?.nome || 'Serviços'),
           barbeiro: h.barbeiro.usuario.nome
         }))
       });

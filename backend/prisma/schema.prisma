@@ -232,8 +232,9 @@ model Servico {
   ativo           Boolean @default(true)
 
   barbearia    Barbearia?             @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
-  agendamentos Agendamento[]
-  lancamentos  LancamentoFinanceiro[]
+  agendamentos      Agendamento[]
+  agendamentosItens AgendamentoItem[]
+  lancamentos       LancamentoFinanceiro[]
   recompensas  Recompensa[]
 
   @@map("servicos")
@@ -244,7 +245,7 @@ model Agendamento {
   barbeariaId  String?
   clienteId    String
   barbeiroId   String
-  servicoId    String
+  servicoId    String?
   servicosIds  String[]           @default([])
   dataHora     DateTime
   status       StatusAgendamento  @default(AGUARDANDO)
@@ -256,15 +257,30 @@ model Agendamento {
   barbearia Barbearia? @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
   cliente  Cliente  @relation(fields: [clienteId], references: [id], onDelete: Cascade)
   barbeiro Barbeiro @relation(fields: [barbeiroId], references: [id], onDelete: Cascade)
-  servico  Servico  @relation(fields: [servicoId], references: [id], onDelete: Cascade)
+  servico  Servico? @relation(fields: [servicoId], references: [id], onDelete: SetNull)
 
   lancamentos LancamentoFinanceiro[]
+  itens       AgendamentoItem[]
   avaliacao   Avaliacao?
 
   @@index([barbeariaId, dataHora])
   @@index([clienteId])
   @@index([barbeiroId])
   @@map("agendamentos")
+}
+
+model AgendamentoItem {
+  id              String      @id @default(uuid())
+  agendamentoId   String
+  servicoId       String
+  precoCobrado    Decimal     @db.Decimal(10, 2)
+  duracaoMinutos  Int
+  comissaoPercent Float       @default(0)
+
+  agendamento     Agendamento @relation(fields: [agendamentoId], references: [id], onDelete: Cascade)
+  servico         Servico     @relation(fields: [servicoId], references: [id], onDelete: Restrict)
+
+  @@map("agendamentos_itens")
 }
 
 model LancamentoFinanceiro {

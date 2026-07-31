@@ -7,7 +7,8 @@ export class BarbeiroController {
   /** GET /barbeiros */
   static async listar(req: AuthRequest, res: Response): Promise<void> {
     try {
-      const barbeiros = await BarbeiroService.listarTodos(req.usuario?.barbeariaId || undefined);
+      const todos = req.query.todos === 'true';
+      const barbeiros = await BarbeiroService.listarTodos(req.usuario?.barbeariaId || undefined, !todos);
       res.json(barbeiros);
     } catch (error) {
       const msg = error instanceof Error ? error.message : 'Erro ao listar barbeiros';
@@ -72,6 +73,17 @@ export class BarbeiroController {
       res.json({ mensagem: 'Barbeiro desativado com sucesso' });
     } catch (error) {
       const msg = error instanceof Error ? error.message : 'Erro ao desativar barbeiro';
+      res.status(400).json({ erro: msg });
+    }
+  }
+
+  /** DELETE /barbeiros/:id/permanente */
+  static async excluirPermanentemente(req: AuthRequest, res: Response): Promise<void> {
+    try {
+      await BarbeiroService.excluirPermanentemente(req.params.id);
+      res.json({ mensagem: 'Barbeiro excluído permanentemente com sucesso' });
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : 'Erro ao excluir barbeiro';
       res.status(400).json({ erro: msg });
     }
   }

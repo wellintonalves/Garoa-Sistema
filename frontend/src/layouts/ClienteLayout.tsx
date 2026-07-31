@@ -4,6 +4,7 @@ import { House, CalendarBlank, Gift, User, ChatCircle } from '@phosphor-icons/re
 import { useEffect, useState } from 'react';
 import clienteApi from '../api/clienteApi';
 import { useClienteAuth } from '../hooks/useClienteAuth';
+import { useNaoLidasCliente } from '../hooks/useNaoLidasCliente';
 
 interface BarbeariaInfo {
   id: string;
@@ -15,7 +16,7 @@ interface BarbeariaInfo {
 }
 
 /** Botão flutuante de chat — aparece em todas as abas exceto na própria aba de chat */
-function ChatFab({ onClick }: { onClick: () => void }) {
+function ChatFab({ onClick, isAgendar, naoLidas }: { onClick: () => void; isAgendar?: boolean; naoLidas?: number }) {
   const isMobile = window.innerWidth < 768;
   return (
     <button
@@ -23,7 +24,7 @@ function ChatFab({ onClick }: { onClick: () => void }) {
       title="Falar com a barbearia"
       style={{
         position: 'fixed',
-        bottom: isMobile ? '76px' : '24px',
+        bottom: isMobile ? (isAgendar ? '160px' : '76px') : '24px',
         right: '20px',
         zIndex: 60,
         width: '52px',
@@ -43,6 +44,26 @@ function ChatFab({ onClick }: { onClick: () => void }) {
       onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)'; }}
     >
       <ChatCircle size={22} weight="regular" />
+      {naoLidas !== undefined && naoLidas > 0 && (
+        <span style={{
+          position: 'absolute',
+          top: '-4px',
+          right: '-4px',
+          background: 'var(--error)',
+          color: 'var(--error-text)',
+          fontSize: '10px',
+          fontWeight: 'bold',
+          width: '20px',
+          height: '20px',
+          borderRadius: '50%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+        }}>
+          {naoLidas > 9 ? '9+' : naoLidas}
+        </span>
+      )}
     </button>
   );
 }
@@ -53,6 +74,8 @@ export function ClienteLayout() {
   const { barbeariaId } = useParams<{ barbeariaId: string }>();
   const [barbearia, setBarbearia] = useState<BarbeariaInfo | null>(null);
   const { cliente, carregando: authCarregando } = useClienteAuth();
+  const { total: naoLidas } = useNaoLidasCliente(barbeariaId);
+
   useEffect(() => {
     if (barbeariaId) {
       // Busca dados da barbearia via minhas-barbearias para obter o nome
@@ -66,6 +89,14 @@ export function ClienteLayout() {
       });
     }
   }, [barbeariaId, navigate]);
+
+  useEffect(() => {
+    if (naoLidas > 0) {
+      document.title = `(${naoLidas}) ${barbearia?.nome || 'Valen Barber'}`;
+    } else {
+      document.title = barbearia?.nome || 'Valen Barber';
+    }
+  }, [naoLidas, barbearia]);
 
   // Route guard — bloqueia acesso sem autenticação de cliente (após todos os hooks)
   if (!authCarregando && !cliente) {
@@ -151,7 +182,7 @@ export function ClienteLayout() {
 
         {/* Botão flutuante de chat — visível em todas as abas */}
         {location.pathname !== `${basePath}/chat` && (
-          <ChatFab onClick={() => navigate(`${basePath}/chat`)} />
+          <ChatFab onClick={() => navigate(`${basePath}/chat`)} isAgendar={location.pathname.includes('/agendar')} naoLidas={naoLidas} />
         )}
 
         {/* Bottom Nav Mobile (< 768px) — Altura 64px + safe area, ícone 24px + label var(--texto-detalhe, 13px), alvo 48px */}

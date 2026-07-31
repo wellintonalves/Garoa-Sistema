@@ -40,6 +40,13 @@ export class ChatService {
     return { mensagens, outroDigitando };
   }
 
+  /** Contagem de mensagens não lidas (do admin) para o cliente */
+  static async clienteTotalNaoLidas(clienteId: string, barbeariaId: string) {
+    return prisma.chatMensagem.count({
+      where: { clienteId, barbeariaId, remetente: 'ADMIN', lida: false },
+    });
+  }
+
   /** Cliente envia mensagem */
   static async clienteEnviar(clienteId: string, barbeariaId: string, texto: string) {
     return prisma.chatMensagem.create({

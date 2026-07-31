@@ -3,6 +3,7 @@ import { Calendar as CalendarIcon, Clock, Prohibit as Ban } from '@phosphor-icon
 import barbeiroApi from '../../api/barbeiroApi';
 import { hojeBrasilia } from '../../utils/datas';
 import { Modal } from '../../components/Modal';
+import { formatarNomeServico } from '../../utils/formato';
 
 interface AgendamentoAgenda {
   id: string;
@@ -212,7 +213,7 @@ export function BarbeiroAgenda() {
                           </div>
                           <div>
                             <p className="truncate" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px' }}>
-                              {ag.servico.nome} ({ag.servico.duracaoMinutos} min)
+                              {formatarNomeServico(ag)} ({ag.servico.duracaoMinutos} min)
                             </p>
                           </div>
                         </div>

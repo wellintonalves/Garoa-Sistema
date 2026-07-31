@@ -9,6 +9,7 @@ import {
 import { useAuth } from '../hooks/useAuth';
 import api from '../api/client';
 import { SeletorTemaCompacto } from './ui/SeletorTemaCompacto';
+import { useNaoLidasAdmin } from '../hooks/useNaoLidasAdmin';
 
 interface SidebarProps {
   mobileOpen: boolean;
@@ -43,6 +44,16 @@ export function Sidebar({ mobileOpen, onCloseMobile }: SidebarProps) {
       }).catch(() => {});
     }
   }, [usuario]);
+
+  const { total: naoLidasAdmin } = useNaoLidasAdmin();
+
+  useEffect(() => {
+    if (naoLidasAdmin > 0) {
+      document.title = `(${naoLidasAdmin}) Valen Barber - Admin`;
+    } else {
+      document.title = 'Valen Barber - Admin';
+    }
+  }, [naoLidasAdmin]);
 
   return (
     <>
@@ -132,7 +143,31 @@ export function Sidebar({ mobileOpen, onCloseMobile }: SidebarProps) {
               {({ isActive }) => (
                 <>
                   <Icon size={20} weight={isActive ? "bold" : "regular"} className="flex-shrink-0" />
-                  {!recolhido && <span className="truncate" style={{ textTransform: 'none' }}>{label}</span>}
+                  {!recolhido && <span className="truncate flex-1" style={{ textTransform: 'none' }}>{label}</span>}
+                  {!recolhido && path === '/admin/chat' && naoLidasAdmin > 0 && (
+                    <span style={{
+                      background: 'var(--error)',
+                      color: 'var(--error-text)',
+                      fontSize: '10px',
+                      fontWeight: 'bold',
+                      padding: '2px 6px',
+                      borderRadius: '10px',
+                      marginLeft: 'auto'
+                    }}>
+                      {naoLidasAdmin > 9 ? '9+' : naoLidasAdmin}
+                    </span>
+                  )}
+                  {recolhido && path === '/admin/chat' && naoLidasAdmin > 0 && (
+                    <span style={{
+                      position: 'absolute',
+                      top: '4px',
+                      right: '4px',
+                      background: 'var(--error)',
+                      width: '10px',
+                      height: '10px',
+                      borderRadius: '50%'
+                    }} />
+                  )}
                 </>
               )}
             </NavLink>

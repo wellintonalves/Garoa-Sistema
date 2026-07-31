@@ -61,7 +61,7 @@ export function Financeiro() {
         api.get<Lancamento[]>('/financeiro', { params: { inicio: hoje, fim: hoje } }),
         api.get<ResumoDia>('/financeiro/resumo-dia', { params: { data: hoje } }),
         api.get<DadoGrafico[]>('/financeiro/ultimos-7-dias'),
-        api.get<Barbeiro[]>('/barbeiros'),
+        api.get<Barbeiro[]>('/barbeiros?todos=true'),
         api.get<Servico[]>('/servicos')
       ]);
       setLancamentos(l.data); setResumo(r.data); setGrafico(g.data);

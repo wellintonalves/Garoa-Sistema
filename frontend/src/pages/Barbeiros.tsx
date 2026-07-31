@@ -1,6 +1,6 @@
 // Página de Barbeiros — listagem com cards + seção de comissões por período
 import { useEffect, useState } from 'react';
-import { Star, Plus, CurrencyDollar, TrendUp as TrendingUp, Calendar, PencilSimple, Trash } from '@phosphor-icons/react';
+import { Star, Plus, CurrencyDollar, TrendUp as TrendingUp, Calendar, PencilSimple, Trash, Power } from '@phosphor-icons/react';
 import { Modal } from '../components/Modal';
 import { Botao } from '../components/ui/Botao';
 import { ImageCropperModal } from '../components/ImageCropperModal';
@@ -19,6 +19,11 @@ interface Barbeiro {
   cor: string;
   ativo: boolean;
   usuario: { id: string; nome: string; email: string };
+  _count?: {
+    agendamentos: number;
+    comissoes: number;
+    movimentacoes: number;
+  };
 }
 
 interface ComissaoBarbeiro {
@@ -35,7 +40,9 @@ export function Barbeiros() {
   const [cropModalAberto, setCropModalAberto] = useState(false);
   const [imagemParaCortar, setImagemParaCortar] = useState<string>('');
   const [editandoId, setEditandoId] = useState<string | null>(null);
+  const [confirmandoDesativacao, setConfirmandoDesativacao] = useState<Barbeiro | null>(null);
   const [confirmandoExclusao, setConfirmandoExclusao] = useState<Barbeiro | null>(null);
+  const [nomeConfirmacao, setNomeConfirmacao] = useState('');
   const [form, setForm] = useState({ nome: '', email: '', senha: '', foto: '', especialidades: '', comissaoPercent: '50', cor: CORES_REFERENCIA.corPadraoBarbeiro });
   const navigate = useNavigate();
 
@@ -50,7 +57,7 @@ export function Barbeiros() {
 
   async function carregar() {
     try {
-      const res = await api.get<Barbeiro[]>('/barbeiros');
+      const res = await api.get<Barbeiro[]>('/barbeiros?todos=true');
       setBarbeiros(res.data);
     } catch (err) { console.error(err); }
     finally { setCarregando(false); }
@@ -127,13 +134,28 @@ export function Barbeiros() {
     }
   }
 
-  async function apagarBarbeiro(id: string) {
+  async function desativarBarbeiro(id: string) {
     try {
       await api.delete(`/barbeiros/${id}`);
-      setConfirmandoExclusao(null);
+      setConfirmandoDesativacao(null);
       carregar();
     } catch (err: any) {
-      alert(err?.response?.data?.erro || 'Erro ao apagar barbeiro.');
+      alert(err?.response?.data?.erro || 'Erro ao desativar barbeiro.');
+    }
+  }
+
+  async function apagarBarbeiroPermanente(id: string) {
+    if (confirmandoExclusao && nomeConfirmacao !== confirmandoExclusao.usuario.nome) {
+      alert('O nome digitado não confere.');
+      return;
+    }
+    try {
+      await api.delete(`/barbeiros/${id}/permanente`);
+      setConfirmandoExclusao(null);
+      setNomeConfirmacao('');
+      carregar();
+    } catch (err: any) {
+      alert(err?.response?.data?.erro || 'Erro ao excluir barbeiro.');
     }
   }
 
@@ -165,7 +187,9 @@ export function Barbeiros() {
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '12px' }}>
-        {barbeiros.filter(b => b.ativo).map(b => (
+        {barbeiros.map(b => {
+          const totalHistorico = b._count ? b._count.agendamentos + b._count.comissoes + b._count.movimentacoes : 0;
+          return (
           <div
             key={b.id}
             className="card"
@@ -215,6 +239,19 @@ export function Barbeiros() {
                 >
                   {b.usuario.email}
                 </p>
+                <p
+                  className="truncate"
+                  style={{
+                    fontFamily: 'var(--fonte-interface)',
+                    fontSize: '10px',
+                    color: totalHistorico > 0 ? 'var(--texto-secundario)' : 'var(--amber)',
+                    letterSpacing: '0.04em',
+                    marginTop: '2px',
+                    fontWeight: 500
+                  }}
+                >
+                  {totalHistorico > 0 ? `${totalHistorico} registro${totalHistorico !== 1 ? 's' : ''} no histórico` : 'Sem histórico'}
+                </p>
               </div>
               {/* Indicadores */}
               <div className="ml-auto flex flex-col gap-1 items-end">
@@ -244,22 +281,53 @@ export function Barbeiros() {
                   >
                     <PencilSimple size={14} />
                   </button>
+                  {/* Botão Desativar/Ativar */}
                   <button
-                    onClick={() => setConfirmandoExclusao(b)}
+                    onClick={() => {
+                      if (b.ativo) {
+                        setConfirmandoDesativacao(b);
+                      } else {
+                        // Ativar não tem modal
+                        api.put(`/barbeiros/${b.id}`, { ativo: true }).then(() => carregar());
+                      }
+                    }}
                     style={{
                       background: 'none',
                       border: 'none',
                       cursor: 'pointer',
+                      color: b.ativo ? 'var(--cor-icone)' : 'var(--sucesso)',
+                      padding: '4px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}
+                    title={b.ativo ? "Desativar Barbeiro" : "Reativar Barbeiro"}
+                  >
+                    <Power size={14} />
+                  </button>
+                  {/* Botão Excluir Permanente */}
+                  <button
+                    disabled={totalHistorico > 0}
+                    onClick={() => {
+                      if (totalHistorico === 0) {
+                        setConfirmandoExclusao(b);
+                        setNomeConfirmacao('');
+                      }
+                    }}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      cursor: totalHistorico > 0 ? 'not-allowed' : 'pointer',
                       color: 'var(--perigo)',
                       padding: '4px',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      opacity: 0.6,
+                      opacity: totalHistorico > 0 ? 0.3 : 0.6,
                     }}
-                    onMouseEnter={(e) => { e.currentTarget.style.opacity = '1'; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.opacity = '0.6'; }}
-                    title="Apagar Barbeiro"
+                    onMouseEnter={(e) => { if (totalHistorico === 0) e.currentTarget.style.opacity = '1'; }}
+                    onMouseLeave={(e) => { if (totalHistorico === 0) e.currentTarget.style.opacity = '0.6'; }}
+                    title={totalHistorico > 0 ? "Não é possível excluir: barbeiro possui histórico. Use Desativar." : "Excluir permanentemente"}
                   >
                     <Trash size={14} />
                   </button>
@@ -438,25 +506,64 @@ export function Barbeiros() {
         </div>
       </Modal>
 
-      {/* Modal de confirmação de exclusão */}
-      <Modal aberto={!!confirmandoExclusao} onFechar={() => setConfirmandoExclusao(null)} titulo="Apagar Barbeiro">
+      {/* Modal de confirmação de desativação */}
+      <Modal aberto={!!confirmandoDesativacao} onFechar={() => setConfirmandoDesativacao(null)} titulo="Desativar Barbeiro">
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '14px', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
-            Tem certeza que deseja apagar <strong style={{ color: 'var(--text-primary)' }}>{confirmandoExclusao?.usuario.nome}</strong>?
-            <br />Esta ação não pode ser desfeita.
+            Tem certeza que deseja desativar <strong style={{ color: 'var(--text-primary)' }}>{confirmandoDesativacao?.usuario.nome}</strong>?
+            <br />Ele não aparecerá mais na agenda para novos agendamentos, mas continuará nos relatórios históricos.
           </p>
           <div className="flex gap-3 justify-end">
             <Botao
               variante="fantasma"
-              onClick={() => setConfirmandoExclusao(null)}
+              onClick={() => setConfirmandoDesativacao(null)}
             >
               Cancelar
             </Botao>
             <Botao
               variante="destrutivo"
-              onClick={() => confirmandoExclusao && apagarBarbeiro(confirmandoExclusao.id)}
+              onClick={() => confirmandoDesativacao && desativarBarbeiro(confirmandoDesativacao.id)}
             >
-              Apagar
+              Desativar
+            </Botao>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Modal de confirmação de exclusão PERMANENTE */}
+      <Modal aberto={!!confirmandoExclusao} onFechar={() => { setConfirmandoExclusao(null); setNomeConfirmacao(''); }} titulo="Excluir Permanentemente">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '14px', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+            Você está prestes a excluir <strong style={{ color: 'var(--perigo)' }}>{confirmandoExclusao?.usuario.nome}</strong>.
+            <br />Esta ação é <strong>irreversível</strong> e removerá todos os dados do barbeiro.
+          </p>
+          
+          <div>
+            <label className="input-label mb-2 block">
+              Para confirmar, digite <strong>{confirmandoExclusao?.usuario.nome}</strong> abaixo:
+            </label>
+            <input 
+              type="text" 
+              value={nomeConfirmacao} 
+              onChange={e => setNomeConfirmacao(e.target.value)} 
+              className="ds-input w-full" 
+              placeholder={confirmandoExclusao?.usuario.nome}
+            />
+          </div>
+
+          <div className="flex gap-3 justify-end mt-2">
+            <Botao
+              variante="fantasma"
+              onClick={() => { setConfirmandoExclusao(null); setNomeConfirmacao(''); }}
+            >
+              Cancelar
+            </Botao>
+            <Botao
+              variante="destrutivo"
+              disabled={nomeConfirmacao !== confirmandoExclusao?.usuario.nome}
+              onClick={() => confirmandoExclusao && apagarBarbeiroPermanente(confirmandoExclusao.id)}
+            >
+              Excluir
             </Botao>
           </div>
         </div>

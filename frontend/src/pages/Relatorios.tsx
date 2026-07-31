@@ -70,10 +70,10 @@ export function Relatorios() {
   useEffect(() => {
     async function carregar() {
       try {
-        const res = await api.get('/barbeiros');
+        const res = await api.get('/barbeiros?todos=true');
         const resS = await api.get('/servicos');
         setServicos(resS.data.filter((s: any) => s.ativo));
-        setBarbeiros(res.data.filter((b: any) => b.ativo));
+        setBarbeiros(res.data);
       } catch (e) {
         console.error('Erro ao carregar barbeiros:', e);
       }

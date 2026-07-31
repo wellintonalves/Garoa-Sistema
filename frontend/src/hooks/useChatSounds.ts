@@ -13,14 +13,6 @@ export function useChatSounds() {
     }
   }, []);
 
-  const toggleMute = useCallback(() => {
-    setIsMuted(prev => {
-      const novo = !prev;
-      localStorage.setItem('chat_som_ativo', (!novo).toString());
-      return novo;
-    });
-  }, []);
-
   const initAudio = useCallback(() => {
     if (!audioCtxRef.current) {
       const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
@@ -32,6 +24,30 @@ export function useChatSounds() {
       audioCtxRef.current.resume();
     }
   }, []);
+
+  useEffect(() => {
+    const unlock = () => {
+      initAudio();
+      window.removeEventListener('click', unlock);
+      window.removeEventListener('touchstart', unlock);
+    };
+    window.addEventListener('click', unlock);
+    window.addEventListener('touchstart', unlock);
+    return () => {
+      window.removeEventListener('click', unlock);
+      window.removeEventListener('touchstart', unlock);
+    };
+  }, [initAudio]);
+
+  const toggleMute = useCallback(() => {
+    setIsMuted(prev => {
+      const novo = !prev;
+      localStorage.setItem('chat_som_ativo', (!novo).toString());
+      return novo;
+    });
+  }, []);
+
+
 
   const playSent = useCallback(() => {
     if (isMuted) return;

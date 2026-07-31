@@ -26,12 +26,15 @@ router.get('/meu-codigo-indicacao', ClienteAppController.meuCodigoIndicacao);
 // Rotas de barbearia específica
 router.get('/barbearia/:barbeariaId/agendamentos', ClienteAppController.agendamentos);
 router.get('/barbearia/:barbeariaId/servicos', ClienteAppController.servicos);
+router.get('/barbearia/:barbeariaId/servico-mais-popular', ClienteAppController.servicoMaisPopular);
 router.get('/barbearia/:barbeariaId/barbeiros', ClienteAppController.barbeiros);
 router.get('/barbearia/:barbeariaId/horarios-disponiveis', ClienteAppController.horariosDisponiveis);
+router.get('/barbearia/:barbeariaId/disponibilidade-semana', ClienteAppController.disponibilidadeSemana);
 router.post('/barbearia/:barbeariaId/agendar', ClienteAppController.agendar);
 router.get('/barbearia/:barbeariaId/fidelidade', ClienteAppController.fidelidade);
 router.post('/barbearia/:barbeariaId/fidelidade/resgatar', ClienteAppController.resgatarRecompensa);
 router.get('/barbearia/:barbeariaId/chat', ChatController.clienteGetMensagens as never);
+router.get('/barbearia/:barbeariaId/chat/nao-lidas', ChatController.clienteTotalNaoLidas as never);
 router.post('/barbearia/:barbeariaId/chat', ChatController.clienteEnviar as never);
 router.post('/barbearia/:barbeariaId/chat/digitando', ChatController.clienteDigitando as never);
 

@@ -13,6 +13,7 @@ import { ClienteAuthProvider } from './contexts/ClienteAuthContext';
 import { ClienteLayout } from './layouts/ClienteLayout';
 import { BarbeiroAuthProvider } from './contexts/BarbeiroAuthContext';
 import { BarbeiroLayout } from './layouts/BarbeiroLayout';
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 // Páginas usando React.lazy
 const Dashboard = lazy(() => import('./pages/Dashboard').then(m => ({ default: m.Dashboard })));
@@ -45,6 +46,7 @@ const ClienteBarbeariaAgendar = lazy(() => import('./pages/cliente/barbearia/Cli
 const ClienteBarbeariaFidelidade = lazy(() => import('./pages/cliente/barbearia/ClienteBarbeariaFidelidade').then(m => ({ default: m.ClienteBarbeariaFidelidade })));
 const ClienteBarbeariaPerfil = lazy(() => import('./pages/cliente/barbearia/ClienteBarbeariaPerfil').then(m => ({ default: m.ClienteBarbeariaPerfil })));
 const ClienteBarbeariaChat = lazy(() => import('./pages/cliente/barbearia/ClienteBarbeariaChat').then(m => ({ default: m.ClienteBarbeariaChat })));
+const ClienteBarbeariaDisponibilidade = lazy(() => import('./pages/cliente/barbearia/ClienteBarbeariaDisponibilidade').then(m => ({ default: m.ClienteBarbeariaDisponibilidade })));
 
 const AdminLogin = lazy(() => import('./pages/admin/AdminLogin').then(m => ({ default: m.AdminLogin })));
 const AdminPrimeiroAcesso = lazy(() => import('./pages/admin/AdminPrimeiroAcesso').then(m => ({ default: m.AdminPrimeiroAcesso })));
@@ -88,12 +90,13 @@ export function App() {
                   {/* === App do Cliente (após login) === */}
                   <Route path="/cliente/home" element={<ClienteHome />} />
 
-                  <Route path="/cliente/barbearia/:barbeariaId" element={<ClienteLayout />}>
+                  <Route path="/cliente/barbearia/:barbeariaId" element={<ErrorBoundary><ClienteLayout /></ErrorBoundary>}>
                     <Route index element={<ClienteBarbeariaInicio />} />
                     <Route path="agendar" element={<ClienteBarbeariaAgendar />} />
                     <Route path="fidelidade" element={<ClienteBarbeariaFidelidade />} />
                     <Route path="perfil" element={<ClienteBarbeariaPerfil />} />
                     <Route path="chat" element={<ClienteBarbeariaChat />} />
+                    <Route path="horarios" element={<ClienteBarbeariaDisponibilidade />} />
                   </Route>
 
                   {/* === Login do Administrador === */}

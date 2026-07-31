@@ -197,6 +197,17 @@ export class ClienteAppController {
     }
   }
 
+  /** GET /cliente/barbearia/:barbeariaId/servico-mais-popular */
+  static async servicoMaisPopular(req: ClienteAuthRequest, res: Response): Promise<void> {
+    try {
+      const resultado = await ClienteAppService.servicoMaisPopular(req.params.barbeariaId);
+      res.setHeader('Cache-Control', 'public, max-age=3600');
+      res.json(resultado);
+    } catch (error) {
+      res.status(500).json({ erro: 'Erro ao buscar serviço mais popular' });
+    }
+  }
+
   /** GET /cliente/barbearia/:barbeariaId/barbeiros */
   static async barbeiros(req: ClienteAuthRequest, res: Response): Promise<void> {
     try {
@@ -211,9 +222,10 @@ export class ClienteAppController {
   /** GET /cliente/barbearia/:barbeariaId/horarios-disponiveis */
   static async horariosDisponiveis(req: ClienteAuthRequest, res: Response): Promise<void> {
     try {
-      const { barbeiroId, data, servicoId } = req.query;
-      if (!barbeiroId || !data || !servicoId) {
-        res.status(400).json({ erro: 'barbeiroId, data e servicoId são obrigatórios' });
+      const { barbeiroId, data, servicosIds, servicoId } = req.query;
+      const ids = servicosIds ? (servicosIds as string).split(',') : (servicoId ? [servicoId as string] : []);
+      if (!barbeiroId || !data || ids.length === 0) {
+        res.status(400).json({ erro: 'barbeiroId, data e servicosIds são obrigatórios' });
         return;
       }
 
@@ -221,11 +233,36 @@ export class ClienteAppController {
         req.params.barbeariaId,
         barbeiroId as string,
         data as string,
-        servicoId as string
+        ids
       );
       res.json(slots);
     } catch (error) {
       const msg = error instanceof Error ? error.message : 'Erro ao buscar horários';
+      res.status(400).json({ erro: msg });
+    }
+  }
+
+  /** GET /cliente/barbearia/:barbeariaId/disponibilidade-semana */
+  static async disponibilidadeSemana(req: ClienteAuthRequest, res: Response): Promise<void> {
+    try {
+      const { barbeiroId, duracao, inicio, fim } = req.query;
+      
+      const disponibilidades = await ClienteAppService.disponibilidadeSemana(
+        req.params.barbeariaId,
+        {
+          barbeiroId: barbeiroId as string | undefined,
+          duracaoMinutos: duracao ? parseInt(duracao as string, 10) : undefined,
+          inicioStr: inicio as string | undefined,
+          fimStr: fim as string | undefined
+        }
+      );
+      
+      // Cache de 30 segundos (via Header, para o navegador/proxy, além do cache de memória no Service se houver)
+      res.setHeader('Cache-Control', 'public, max-age=30');
+      res.json(disponibilidades);
+    } catch (error) {
+      console.error(error);
+      const msg = error instanceof Error ? error.message : 'Erro ao buscar disponibilidade';
       res.status(400).json({ erro: msg });
     }
   }

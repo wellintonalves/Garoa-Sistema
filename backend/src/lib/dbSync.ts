@@ -1,7 +1,26 @@
 import { Client } from 'pg';
+import { execSync } from 'child_process';
+import path from 'path';
 
 export async function copiarBanco(sourceUrl: string, targetUrl: string) {
   const startTime = Date.now();
+  
+  console.log('🔄 Sincronizando schema do banco de destino via Prisma...');
+  try {
+    // Usa db push pois o db de backup não armazena a tabela _prisma_migrations
+    execSync('npx prisma db push --skip-generate --accept-data-loss', {
+      env: {
+        ...process.env,
+        DATABASE_URL: targetUrl
+      },
+      stdio: 'inherit',
+      cwd: path.resolve(__dirname, '../../')
+    });
+    console.log('✅ Schema sincronizado com sucesso no destino.');
+  } catch (error) {
+    console.error('❌ Falha ao sincronizar schema no banco de destino:', error);
+    throw new Error('Falha ao sincronizar schema do banco de destino.');
+  }
   
   const sslSource = !sourceUrl.includes('.railway.internal') ? { rejectUnauthorized: false } : false;
   const sourceClient = new Client({

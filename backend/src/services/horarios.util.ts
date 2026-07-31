@@ -145,7 +145,12 @@ export class HorariosUtil {
         const agDate = new Date(ag.dataHora);
         const agHM = getHoraMinutoBrasilia(agDate);
         const agInicioM = agHM.hora * 60 + agHM.minuto;
-        const agFimM = agInicioM + (ag.servico?.duracaoMinutos || 30);
+        
+        const agDuracao = ag.itens && ag.itens.length > 0 
+          ? ag.itens.reduce((acc: number, item: any) => acc + item.duracaoMinutos, 0)
+          : (ag.servico?.duracaoMinutos || 30);
+          
+        const agFimM = agInicioM + agDuracao;
         return slotInicioM < agFimM && slotFimM > agInicioM;
       });
 

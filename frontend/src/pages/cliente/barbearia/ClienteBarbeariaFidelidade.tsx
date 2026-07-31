@@ -112,7 +112,7 @@ export function ClienteBarbeariaFidelidade() {
   const dashoffset = circunferencia - (progresso / 100) * circunferencia;
 
   return (
-    <div className="px-5 py-6 animate-fade-in max-w-2xl mx-auto pb-16">
+    <div className="px-5 py-6 animate-fade-in max-w-2xl mx-auto pb-32 md:pb-16">
       {/* Alertas */}
       {mensagemSucesso && (
         <div className="mb-6 p-4 rounded-md flex items-center gap-3 animate-fade-in" style={{ background: 'var(--sucesso-fundo)', border: '1px solid var(--sucesso)' }}>
@@ -244,23 +244,18 @@ export function ClienteBarbeariaFidelidade() {
           <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '12px', color: 'var(--texto-secundario)', marginBottom: '14px', lineHeight: 1.5 }}>
             Compartilhe seu código exclusivo. Quando um amigo concluir o primeiro agendamento, você é recompensado automaticamente!
           </p>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <div style={{
-              flex: 1, padding: '12px 16px', background: 'var(--fundo-input)',
-              border: '1px solid var(--amber)', borderRadius: '8px',
-              fontFamily: 'var(--fonte-mono)', fontSize: '20px', fontWeight: 700,
-              color: 'var(--amber)', letterSpacing: '0.2em', textAlign: 'center',
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+            <div className="min-w-0 break-all text-center rounded-lg p-3 sm:flex-1 font-mono font-bold text-lg sm:text-xl tracking-[0.2em] sm:tracking-[0.35em]" style={{
+              background: 'var(--fundo-input)', border: '1px solid var(--amber)', color: 'var(--amber)'
             }}>
               {codigoIndicacao}
             </div>
-            <button onClick={copiarCodigo} style={{
-              padding: '12px 16px', background: copiado ? 'var(--sucesso-fundo)' : 'rgba(var(--cor-primaria-rgb), 0.15)',
+            <button onClick={copiarCodigo} className="min-h-[48px] w-full sm:w-auto flex items-center justify-center gap-2 rounded-lg font-interface font-semibold text-xs px-4 py-3 transition-all duration-200" style={{
+              background: copiado ? 'var(--sucesso-fundo)' : 'rgba(var(--cor-primaria-rgb), 0.15)',
               border: `1px solid ${copiado ? 'var(--sucesso)' : 'var(--amber)'}`,
-              borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px',
-              color: copiado ? 'var(--sucesso)' : 'var(--amber)', fontSize: '12px', fontFamily: 'var(--fonte-interface)',
-              fontWeight: 600, transition: 'all 0.2s',
+              color: copiado ? 'var(--sucesso)' : 'var(--amber)',
             }}>
-              {copiado ? <CheckCircle size={16} weight="fill" /> : <Copy size={16} />}
+              {copiado ? <CheckCircle size={18} weight="fill" /> : <Copy size={18} />}
               {copiado ? 'Copiado!' : 'Copiar'}
             </button>
           </div>

@@ -1,10 +1,13 @@
 // Cliente HTTP configurado para a API
 import axios from 'axios';
+import { handleApiError } from './errorHandler';
 
 // Garante que a baseURL sempre tenha protocolo (https://)
 function resolveApiUrl(): string {
   const envUrl = import.meta.env.VITE_API_URL;
   if (!envUrl) return 'http://localhost:3001';
+  // Se for caminho relativo, usa diretamente
+  if (envUrl.startsWith('/')) return envUrl;
   // Se não começa com http:// ou https://, adiciona https://
   if (!envUrl.startsWith('http://') && !envUrl.startsWith('https://')) {
     return `https://${envUrl}`;
@@ -31,12 +34,11 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    return handleApiError(error, () => {
       localStorage.removeItem('@garoa:token');
       localStorage.removeItem('@garoa:usuario');
       window.location.href = '/admin/login';
-    }
-    return Promise.reject(error);
+    });
   }
 );
 

@@ -46,6 +46,7 @@ export class AgendamentoService {
         cliente: { include: { usuario: { select: { nome: true } } } },
         barbeiro: { include: { usuario: { select: { nome: true } } } },
         servico: { select: { nome: true, duracaoMinutos: true, preco: true, cor: true } },
+        itens: { include: { servico: true } },
       },
       orderBy: { dataHora: 'asc' },
     });
@@ -59,6 +60,7 @@ export class AgendamentoService {
         cliente: { include: { usuario: { select: { nome: true, email: true } } } },
         barbeiro: { include: { usuario: { select: { nome: true } } } },
         servico: true,
+        itens: { include: { servico: true } },
       },
     });
 
@@ -106,13 +108,14 @@ export class AgendamentoService {
         status: { notIn: ['CANCELADO'] },
         dataHora: { gte: dataInicioDia, lte: dataFimDia },
       },
-      include: { servico: true }
+      include: { servico: true, itens: true }
     });
 
     const conflitoAgendamento = agendamentosDia.some(ag => {
       const agDate = new Date(ag.dataHora);
       const agInicioM = agDate.getUTCHours() * 60 + agDate.getUTCMinutes();
-      const agFimM = agInicioM + ag.servico.duracaoMinutos;
+      const duracao = (ag as any).itens?.length ? (ag as any).itens.reduce((acc: number, i: any) => acc + i.duracaoMinutos, 0) : (ag.servico?.duracaoMinutos || 30);
+      const agFimM = agInicioM + duracao;
       
       const reqInicioM = dataInicio.getUTCHours() * 60 + dataInicio.getUTCMinutes();
       const reqFimM = reqInicioM + duracaoTotal;
@@ -145,11 +148,20 @@ export class AgendamentoService {
         dataHora: dataInicio,
         observacoes: dados.observacoes,
         valorCobrado: valorTotal,
+        itens: {
+          create: todosServicos.map(s => ({
+            servicoId: s.id,
+            precoCobrado: s.preco,
+            duracaoMinutos: s.duracaoMinutos,
+            comissaoPercent: s.comissaoPercent,
+          }))
+        }
       } as any,
       include: {
         cliente: { include: { usuario: { select: { nome: true } } } },
         barbeiro: { include: { usuario: { select: { nome: true } } } },
         servico: { select: { nome: true, duracaoMinutos: true, cor: true } },
+        itens: { include: { servico: true } },
       },
     });
   }
@@ -169,6 +181,7 @@ export class AgendamentoService {
         cliente: { include: { usuario: { select: { nome: true } } } },
         barbeiro: { include: { usuario: { select: { nome: true } } } },
         servico: { select: { nome: true, duracaoMinutos: true, cor: true, preco: true } },
+        itens: { include: { servico: true } },
       },
     });
 
@@ -200,7 +213,10 @@ export class AgendamentoService {
         dataHora: { gte: inicio, lte: fim },
         status: { not: 'CANCELADO' },
       },
-      include: { servico: { select: { duracaoMinutos: true } } },
+      include: { 
+        servico: { select: { duracaoMinutos: true } },
+        itens: { select: { duracaoMinutos: true } } 
+      },
       orderBy: { dataHora: 'asc' },
     });
 

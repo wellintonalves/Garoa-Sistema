@@ -7,6 +7,7 @@ import { SkeletonPage } from '../components/Skeleton';
 import { dataBrasilia } from '../utils/datas';
 import api from '../api/client';
 import { PALETA_CORES_BARBEIROS } from '../styles/tokens';
+import { formatarNomeServico } from '../utils/formato';
 
 /** Extrai hora e minuto de um Date no fuso de Brasília */
 function getHoraMinutoBrasilia(date: Date): { hora: number; minuto: number } {
@@ -328,7 +329,7 @@ export function Agenda() {
             </div>
             <div>
               <p className="truncate" style={{ fontFamily: 'var(--fonte-interface)', fontSize: isMobile ? '0.8125rem' : '0.8125rem', background: 'transparent', color: 'var(--text-primary)', padding: 0, borderRadius: 0, display: 'inline-block', maxWidth: '100%', lineHeight: 1.2 }}>
-                {ag.servico.nome}
+                {formatarNomeServico(ag)}
               </p>
             </div>
           </div>
@@ -742,7 +743,7 @@ export function Agenda() {
             
             <div className="flex flex-col gap-2 mb-2" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '14px', color: 'var(--text-primary)' }}>
               <p><strong style={{ color: 'var(--texto-secundario)' }}>Cliente:</strong> {agendamentoSelecionado.cliente.usuario.nome}</p>
-              <p><strong style={{ color: 'var(--texto-secundario)' }}>Serviço:</strong> {agendamentoSelecionado.servico.nome} ({agendamentoSelecionado.servico.duracaoMinutos} min)</p>
+              <p><strong style={{ color: 'var(--texto-secundario)' }}>Serviço:</strong> {formatarNomeServico(agendamentoSelecionado)} ({agendamentoSelecionado.servico.duracaoMinutos} min)</p>
               <p><strong style={{ color: 'var(--texto-secundario)' }}>Barbeiro:</strong> {agendamentoSelecionado.barbeiro.usuario.nome}</p>
               <p><strong style={{ color: 'var(--texto-secundario)' }}>Data/Hora:</strong> {new Date(agendamentoSelecionado.dataHora).toLocaleString('pt-BR')}</p>
               <p><strong style={{ color: 'var(--texto-secundario)' }}>Status Atual:</strong> {statusLabels[agendamentoSelecionado.status] || agendamentoSelecionado.status}</p>

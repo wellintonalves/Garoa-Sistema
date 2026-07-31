@@ -24,15 +24,21 @@ interface DadosAtualizacao {
 }
 
 export class BarbeiroService {
-  /** Lista todos os barbeiros ativos */
-  static async listarTodos(barbeariaId?: string) {
+  /** Lista todos os barbeiros */
+  static async listarTodos(barbeariaId?: string, apenasAtivos: boolean = true) {
+    const where: any = {};
+    if (barbeariaId) where.barbeariaId = barbeariaId;
+    if (apenasAtivos) where.ativo = true;
 
     return prisma.barbeiro.findMany({
-      where: { ...(barbeariaId ? { barbeariaId } : {}) },
+      where,
       include: {
         usuario: {
           select: { id: true, nome: true, email: true, papel: true },
         },
+        _count: {
+          select: { agendamentos: true, comissoes: true, movimentacoes: true }
+        }
       },
       orderBy: { usuario: { nome: 'asc' } },
     });
@@ -143,6 +149,34 @@ export class BarbeiroService {
     return prisma.barbeiro.update({
       where: { id },
       data: { ativo: false } as never,
+    });
+  }
+
+  /** Exclui permanentemente um barbeiro se não tiver vínculos */
+  static async excluirPermanentemente(id: string) {
+    const barbeiro = await prisma.barbeiro.findUnique({
+      where: { id },
+      include: {
+        _count: {
+          select: { agendamentos: true, comissoes: true, movimentacoes: true }
+        }
+      }
+    });
+
+    if (!barbeiro) {
+      throw new Error('Barbeiro não encontrado');
+    }
+
+    const { agendamentos, comissoes, movimentacoes } = barbeiro._count;
+    if (agendamentos > 0 || comissoes > 0 || movimentacoes > 0) {
+      throw new Error('Este barbeiro possui histórico de atendimentos e não pode ser excluído. Ele permanecerá nos relatórios, mas não aparecerá na agenda nem em novos agendamentos.');
+    }
+
+    // Exclui o barbeiro e o usuário associado (dependendo do schema, se onDelete: Cascade, excluir usuario é suficiente)
+    // Como a FK geralmente está em barbeiro referenciando usuario, excluímos barbeiro e depois o usuário.
+    return prisma.$transaction(async (tx) => {
+      await tx.barbeiro.delete({ where: { id } });
+      await tx.usuario.delete({ where: { id: barbeiro.usuarioId } });
     });
   }
 }

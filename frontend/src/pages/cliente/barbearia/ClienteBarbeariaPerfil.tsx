@@ -139,7 +139,7 @@ export function ClienteBarbeariaPerfil() {
   const tier = getTier(atendimentos);
 
   return (
-    <div className="px-5 py-6 animate-fade-in max-w-2xl mx-auto pb-16">
+    <div className="px-5 py-6 animate-fade-in max-w-2xl mx-auto pb-32 md:pb-16">
       {/* Header do Perfil (Avatar + Badge) */}
       <div className="flex flex-col items-center justify-center text-center mb-8">
         <div className="relative mb-4">
@@ -169,10 +169,10 @@ export function ClienteBarbeariaPerfil() {
       </div>
 
       {/* Stats Horizontais */}
-      <div className="grid grid-cols-3 gap-3 mb-8">
-        <div className="flex flex-col items-center justify-center p-4 rounded-md shadow-sm" style={{ background: 'var(--fundo-sidebar)', border: '1px solid var(--borda)' }}>
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-8">
+        <div className="min-w-0 flex flex-col items-center justify-center py-4 px-2 sm:px-4 rounded-md shadow-sm" style={{ background: 'var(--fundo-sidebar)', border: '1px solid var(--borda)' }}>
           <CalendarCheck size={20} weight="bold" style={{ color: 'var(--cor-primaria)', marginBottom: '8px' }} />
-          <span style={{ fontFamily: 'var(--fonte-mono)', fontSize: '22px', fontWeight: 700, color: 'var(--text-primary)' }}>
+          <span className="tabular-nums tracking-tight" style={{ fontFamily: 'var(--fonte-mono)', fontSize: 'clamp(1.1rem,5vw,1.5rem)', fontWeight: 700, color: 'var(--text-primary)' }}>
             {atendimentos}
           </span>
           <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', textTransform: 'uppercase', color: 'var(--texto-secundario)', marginTop: '2px', letterSpacing: '0.06em', fontWeight: 600 }}>
@@ -180,9 +180,9 @@ export function ClienteBarbeariaPerfil() {
           </span>
         </div>
 
-        <div className="flex flex-col items-center justify-center p-4 rounded-md shadow-sm" style={{ background: 'var(--fundo-sidebar)', border: '1px solid var(--borda)' }}>
+        <div className="min-w-0 flex flex-col items-center justify-center py-4 px-2 sm:px-4 rounded-md shadow-sm" style={{ background: 'var(--fundo-sidebar)', border: '1px solid var(--borda)' }}>
           <CalendarX size={20} weight="bold" style={{ color: 'var(--text-disabled)', marginBottom: '8px' }} />
-          <span style={{ fontFamily: 'var(--fonte-mono)', fontSize: '22px', fontWeight: 700, color: 'var(--text-primary)' }}>
+          <span className="tabular-nums tracking-tight" style={{ fontFamily: 'var(--fonte-mono)', fontSize: 'clamp(1.1rem,5vw,1.5rem)', fontWeight: 700, color: 'var(--text-primary)' }}>
             {faltas}
           </span>
           <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', textTransform: 'uppercase', color: 'var(--texto-secundario)', marginTop: '2px', letterSpacing: '0.06em', fontWeight: 600 }}>
@@ -190,9 +190,9 @@ export function ClienteBarbeariaPerfil() {
           </span>
         </div>
 
-        <div className="flex flex-col items-center justify-center p-4 rounded-md shadow-sm" style={{ background: 'var(--fundo-sidebar)', border: '1px solid var(--borda)' }}>
+        <div className="col-span-2 sm:col-span-1 min-w-0 flex flex-col items-center justify-center py-4 px-2 sm:px-4 rounded-md shadow-sm" style={{ background: 'var(--fundo-sidebar)', border: '1px solid var(--borda)' }}>
           <CurrencyDollar size={20} weight="bold" style={{ color: 'var(--sucesso)', marginBottom: '8px' }} />
-          <span style={{ fontFamily: 'var(--fonte-mono)', fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)' }}>
+          <span className="tabular-nums tracking-tight" style={{ fontFamily: 'var(--fonte-mono)', fontSize: 'clamp(1.1rem,5vw,1.5rem)', fontWeight: 700, color: 'var(--text-primary)' }}>
             {fmtMonetario(gastoTotal)}
           </span>
           <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', textTransform: 'uppercase', color: 'var(--texto-secundario)', marginTop: '2px', letterSpacing: '0.06em', fontWeight: 600 }}>

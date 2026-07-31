@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useOutletContext, useNavigate } from 'react-router-dom';
 import { Check, Clock, Scissors, Calendar, Plus, Prohibit as Ban, TrendUp as TrendingUp, CurrencyDollar as DollarSign, Users, Briefcase } from '@phosphor-icons/react';
+import { formatarNomeServico } from '../../utils/formato';
 import barbeiroApi from '../../api/barbeiroApi';
 import { Modal } from '../../components/Modal';
 
@@ -286,7 +287,7 @@ export function BarbeiroHoje() {
                           {a.cliente.usuario.nome}
                         </p>
                         <p className="text-sm" style={{ color: 'var(--texto-secundario)' }}>
-                          {a.servico.nome} • R$ {Number(a.valorCobrado).toFixed(2)}
+                          {formatarNomeServico(a)} • R$ {Number(a.valorCobrado).toFixed(2)}
                         </p>
                       </div>
 
@@ -326,7 +327,7 @@ export function BarbeiroHoje() {
                             {a.cliente.usuario.nome}
                           </p>
                           <p className="text-xs mt-0.5" style={{ color: 'var(--texto-secundario)' }}>
-                            {a.servico.nome}
+                            {formatarNomeServico(a)}
                           </p>
                         </div>
                       </div>
@@ -356,7 +357,7 @@ export function BarbeiroHoje() {
                 {concluindoAg.cliente.usuario.nome}
               </p>
               <p className="text-sm" style={{ color: 'var(--texto-secundario)' }}>
-                {concluindoAg.servico.nome} • <span className="font-semibold" style={{ color: 'var(--text-primary)' }}>R$ {Number(concluindoAg.valorCobrado).toFixed(2)}</span>
+                {formatarNomeServico(concluindoAg)} • <span className="font-semibold" style={{ color: 'var(--text-primary)' }}>R$ {Number(concluindoAg.valorCobrado).toFixed(2)}</span>
               </p>
             </div>
 

@@ -6,6 +6,7 @@ import clienteApi from '../../../api/clienteApi';
 import { useClienteAuth } from '../../../hooks/useClienteAuth';
 import { EstadoVazio } from '../../../components/ui/EstadoVazio';
 import { SkeletonCard, SkeletonText } from '../../../components/ui/Skeleton';
+import { formatarNomeServico } from '../../../utils/formato';
 
 interface BarbeariaCtx {
   barbearia: { id: string; nome: string; logo: string | null; endereco: string | null; createdAt: string } | null;
@@ -199,7 +200,7 @@ export function ClienteBarbeariaInicio() {
             <div className="flex flex-col md:flex-row md:items-end md:justify-between mb-6">
               <div>
                 <h2 className="text-[24px] md:text-[26px]" style={{ fontFamily: 'var(--fonte-interface)', fontWeight: 600, color: 'var(--text-primary)' }}>
-                  {prox.servico.nome}
+                  {formatarNomeServico(prox)}
                 </h2>
                 <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '13px', color: 'var(--texto-secundario)', marginTop: '4px' }}>
                   com <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{prox.barbeiro.usuario.nome}</span>
@@ -292,7 +293,7 @@ export function ClienteBarbeariaInicio() {
                 <tbody>
                   {agendamentosPassados.map(a => (
                     <tr key={a.id} className="border-b border-[var(--borda)] last:border-0 hover:bg-[var(--superficie-2)] transition-colors">
-                      <td className="p-4" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '14px', fontWeight: 500, color: 'var(--text-primary)' }}>{a.servico.nome}</td>
+                      <td className="p-4" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '14px', fontWeight: 500, color: 'var(--text-primary)' }}>{formatarNomeServico(a)}</td>
                       <td className="p-4" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '13px', color: 'var(--texto-secundario)' }}>com {a.barbeiro.usuario.nome}</td>
                       <td className="p-4 text-right" style={{ fontFamily: 'var(--fonte-mono)', fontSize: '14px', fontWeight: 500, color: 'var(--text-primary)' }}>R$ {a.valorCobrado || '--'}</td>
                       <td className="p-4 text-right" style={{ fontFamily: 'var(--fonte-mono)', fontSize: '13px', color: 'var(--texto-secundario)' }}>{fmtData(a.dataHora)}</td>
@@ -308,7 +309,7 @@ export function ClienteBarbeariaInicio() {
               {agendamentosPassados.slice(0, 3).map(a => (
                 <div key={a.id} className="flex items-center justify-between p-3.5 rounded-md border border-[var(--borda)] bg-[var(--superficie-1)]">
                   <div>
-                    <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '14px', fontWeight: 500, color: 'var(--text-primary)' }}>{a.servico.nome}</p>
+                    <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '14px', fontWeight: 500, color: 'var(--text-primary)' }}>{formatarNomeServico(a)}</p>
                     <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '12px', color: 'var(--texto-secundario)', marginTop: '2px' }}>com {a.barbeiro.usuario.nome}</p>
                   </div>
                   <div className="text-right">
@@ -318,7 +319,7 @@ export function ClienteBarbeariaInicio() {
                 </div>
               ))}
               {agendamentosPassados.length > 3 && (
-                <button className="py-3 text-center w-full mt-1" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '12px', textTransform: 'uppercase', color: 'var(--texto-secundario)', letterSpacing: '0.04em', fontWeight: 600 }}>
+                <button className="py-3 text-center w-full mt-1" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '13px', color: 'var(--texto-secundario)', fontWeight: 500 }}>
                   Ver todo histórico →
                 </button>
               )}
@@ -337,14 +338,14 @@ export function ClienteBarbeariaInicio() {
                 <div className="w-8 h-8 rounded-md flex items-center justify-center bg-[var(--superficie-2)] border border-[var(--borda)] text-[var(--texto-secundario)]"><ArrowsClockwise size={16} /></div>
                 <div>
                   <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '13px', fontWeight: 500, color: 'var(--text-primary)' }}>Repetir último corte</p>
-                  <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', color: 'var(--texto-secundario)' }}>{ultimoConcluido.servico.nome} · {ultimoConcluido.barbeiro.usuario.nome}</p>
+                  <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', color: 'var(--texto-secundario)' }}>{formatarNomeServico(ultimoConcluido)} · {ultimoConcluido.barbeiro.usuario.nome}</p>
                 </div>
               </button>
             )}
 
-            <button onClick={() => navigate(`/cliente/barbearia/${barbeariaId}/agendar`)} className="flex items-center gap-3 w-full text-left p-3 md:p-2.5 rounded-md border border-[var(--borda)] bg-[var(--superficie-1)] hover:bg-[var(--superficie-2)] transition-colors">
+            <button onClick={() => navigate(`/cliente/barbearia/${barbeariaId}/horarios`)} className="flex items-center gap-3 w-full text-left p-3 md:p-2.5 rounded-md border border-[var(--borda)] bg-[var(--superficie-1)] hover:bg-[var(--superficie-2)] transition-colors">
               <div className="w-8 h-8 rounded-md flex items-center justify-center bg-[rgba(var(--cor-primaria-rgb),0.12)] border border-[var(--amber)] text-[var(--amber)]"><Clock size={16} /></div>
-              <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '13px', fontWeight: 500, color: 'var(--text-primary)' }}>Ver horários hoje</p>
+              <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '13px', fontWeight: 500, color: 'var(--text-primary)' }}>Ver horários disponíveis</p>
             </button>
 
             <button onClick={() => navigate(`/cliente/barbearia/${barbeariaId}/chat`)} className="flex items-center gap-3 w-full text-left p-3 md:p-2.5 rounded-md border border-[var(--borda)] bg-[var(--superficie-1)] hover:bg-[var(--superficie-2)] transition-colors">

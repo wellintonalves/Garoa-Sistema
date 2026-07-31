@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback, FormEvent } from 'react';
 import { useOutletContext, useParams, useNavigate } from 'react-router-dom';
-import { PaperPlaneRight, SpeakerHigh, SpeakerX, Check, Checks, CaretLeft } from '@phosphor-icons/react';
+import { PaperPlaneRight, SpeakerHigh, SpeakerX, Check, Checks, CaretLeft, CaretDown } from '@phosphor-icons/react';
 import clienteApi from '../../../api/clienteApi';
 import { useChatSounds } from '../../../hooks/useChatSounds';
 
@@ -30,6 +30,7 @@ export function ClienteBarbeariaChat() {
   const [adminDigitando, setAdminDigitando] = useState(false);
   const [texto, setTexto] = useState('');
   const [enviando, setEnviando] = useState(false);
+  const [novasNaoVistas, setNovasNaoVistas] = useState(0);
   
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -39,6 +40,14 @@ export function ClienteBarbeariaChat() {
   // Utiliza um Set para rastrear IDs conhecidos de mensagens e evitar tocar som duplicado
   const msgIdsConhecidos = useRef<Set<string>>(new Set());
   const lastTypingTime = useRef<number>(0);
+  const inicializou = useRef(false);
+
+  const isScrolledToBottom = useCallback(() => {
+    if (!bottomRef.current) return true;
+    const container = bottomRef.current.parentElement;
+    if (!container) return true;
+    return container.scrollHeight - container.scrollTop - container.clientHeight < 100;
+  }, []);
 
   const fetchMensagens = useCallback(async () => {
     if (!barbeariaId) return;
@@ -49,20 +58,40 @@ export function ClienteBarbeariaChat() {
       const novasMensagens = res.data.mensagens;
 
       let temNovaDoAdmin = false;
+      let countNovasDoAdmin = 0;
       novasMensagens.forEach(msg => {
         if (!msgIdsConhecidos.current.has(msg.id)) {
           msgIdsConhecidos.current.add(msg.id);
           if (msg.remetente === 'ADMIN') {
             temNovaDoAdmin = true;
+            countNovasDoAdmin++;
           }
         }
       });
 
-      if (temNovaDoAdmin) {
-        playReceived();
+      if (!inicializou.current) {
+        setMensagens(novasMensagens);
+        setTimeout(() => {
+          bottomRef.current?.scrollIntoView({ behavior: 'auto' });
+        }, 50);
+        inicializou.current = true;
+      } else {
+        const currentlyAtBottom = isScrolledToBottom();
+        setMensagens(novasMensagens);
+        
+        if (temNovaDoAdmin) {
+          if (document.visibilityState !== 'visible' || !currentlyAtBottom) {
+            playReceived();
+          }
+          if (currentlyAtBottom) {
+            setTimeout(() => {
+              bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+            }, 50);
+          } else {
+            setNovasNaoVistas(prev => prev + countNovasDoAdmin);
+          }
+        }
       }
-      
-      setMensagens(novasMensagens);
     } catch {
       // silencioso
     }
@@ -76,11 +105,23 @@ export function ClienteBarbeariaChat() {
 
   const scrollToBottom = () => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    setNovasNaoVistas(0);
   };
 
   useEffect(() => {
-    scrollToBottom();
-  }, [mensagens, adminDigitando]);
+    if (adminDigitando && isScrolledToBottom()) {
+      scrollToBottom();
+    }
+  }, [adminDigitando, isScrolledToBottom]);
+
+  const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
+    const target = e.currentTarget;
+    if (target.scrollHeight - target.scrollTop - target.clientHeight < 100) {
+      if (novasNaoVistas > 0) {
+        setNovasNaoVistas(0);
+      }
+    }
+  }, [novasNaoVistas]);
 
   const handleTyping = (val: string) => {
     setTexto(val);
@@ -220,7 +261,23 @@ export function ClienteBarbeariaChat() {
       </div>
 
       {/* Mensagens */}
-      <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-6 flex flex-col gap-1 pb-[env(safe-area-inset-bottom)]">
+      <div 
+        className="flex-1 overflow-y-auto px-4 sm:px-6 py-6 flex flex-col gap-1 pb-[env(safe-area-inset-bottom)] relative"
+        onScroll={handleScroll}
+      >
+        {novasNaoVistas > 0 && (
+          <button
+            onClick={scrollToBottom}
+            className="fixed right-6 bottom-[90px] md:bottom-[100px] w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-transform hover:scale-105 active:scale-95"
+            style={{ background: 'var(--cor-primaria)', color: 'var(--texto-sobre-primaria)', zIndex: 50 }}
+            aria-label="Rolar para baixo"
+          >
+            <CaretDown size={24} weight="bold" />
+            <span className="absolute -top-1 -right-1 flex items-center justify-center w-5 h-5 text-[10px] font-bold rounded-full" style={{ background: 'var(--error)', color: 'var(--error-text)' }}>
+              {novasNaoVistas > 9 ? '9+' : novasNaoVistas}
+            </span>
+          </button>
+        )}
         {mensagens.length === 0 && !enviando && (
           <div className="flex flex-col items-center justify-center flex-1 gap-3 text-center opacity-60">
             <div className="w-16 h-16 rounded-full flex items-center justify-center mb-2" style={{ background: 'rgba(var(--texto-secundario-rgb), 0.1)' }}>

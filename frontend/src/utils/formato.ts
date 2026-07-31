@@ -28,3 +28,10 @@ export function calcularDelta(atual: number, anterior: number): number | null {
   if (anterior === 0) return atual === 0 ? 0 : null;
   return ((atual - anterior) / anterior) * 100;
 }
+
+export function formatarNomeServico(ag: any): string {
+  if (ag?.itens && ag.itens.length > 0) {
+    return ag.itens.map((i: any) => i.servico?.nome).filter(Boolean).join(' + ');
+  }
+  return ag?.servico?.nome || 'Serviço';
+}

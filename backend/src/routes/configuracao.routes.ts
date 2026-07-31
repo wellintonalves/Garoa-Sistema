@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { ConfiguracaoController } from '../controllers/configuracao.controller';
+import { BackupController } from '../controllers/backup.controller';
 import { authMiddleware } from '../middlewares/auth.middleware';
 import { roleMiddleware } from '../middlewares/role.middleware';
 
@@ -14,5 +15,7 @@ router.put('/', ConfiguracaoController.atualizar);
 
 router.get('/minha-barbearia', ConfiguracaoController.getMinhaBarbearia);
 router.put('/minha-barbearia', ConfiguracaoController.updateMinhaBarbearia);
+
+router.post('/backup/forcar', BackupController.forcarBackup);
 
 export default router;

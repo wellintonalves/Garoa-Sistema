@@ -51,6 +51,18 @@ export class ChatController {
     }
   }
 
+  /** GET /cliente/barbearia/:barbeariaId/chat/nao-lidas */
+  static async clienteTotalNaoLidas(req: ClienteAuthRequest, res: Response): Promise<void> {
+    try {
+      const clienteId = req.cliente!.clienteId;
+      const { barbeariaId } = req.params;
+      const total = await ChatService.clienteTotalNaoLidas(clienteId, barbeariaId);
+      res.json({ total });
+    } catch (error) {
+      res.status(500).json({ erro: 'Erro ao contar mensagens' });
+    }
+  }
+
   // ─── Admin ─────────────────────────────────────────────────────────────────
 
   /** GET /chat/conversas */

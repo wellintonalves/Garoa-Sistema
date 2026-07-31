@@ -1,9 +1,11 @@
 // Cliente HTTP isolado para o app do barbeiro
 import axios from 'axios';
+import { handleApiError } from './errorHandler';
 
 function resolveApiUrl(): string {
   const envUrl = import.meta.env.VITE_API_URL;
   if (!envUrl) return 'http://localhost:3001';
+  if (envUrl.startsWith('/')) return envUrl;
   if (!envUrl.startsWith('http://') && !envUrl.startsWith('https://')) {
     return `https://${envUrl}`;
   }
@@ -29,18 +31,16 @@ barbeiroApi.interceptors.request.use((config) => {
 barbeiroApi.interceptors.response.use(
   (response) => response,
   (error) => {
-    const status = error.response?.status;
     const url = error.config?.url || '';
-    // Só desloga se o endpoint de sessão do proprio barbeiro rejeitar o token,
-    // evitando que um 401 de rota secundaria derrube a sessao inteira.
     const rotasCriticas = ['/barbeiro/perfil', '/barbeiro/agenda-hoje'];
     const ehRotaCritica = rotasCriticas.some((r) => url.includes(r));
-    if (status === 401 && ehRotaCritica && window.location.pathname.startsWith('/barbeiro')) {
-      localStorage.removeItem('@garoa:barbeiro_token');
-      localStorage.removeItem('@garoa:barbeiro_dados');
-      window.location.href = '/barbeiro/login';
-    }
-    return Promise.reject(error);
+    return handleApiError(error, () => {
+      if (ehRotaCritica && window.location.pathname.startsWith('/barbeiro')) {
+        localStorage.removeItem('@garoa:barbeiro_token');
+        localStorage.removeItem('@garoa:barbeiro_dados');
+        window.location.href = '/barbeiro/login';
+      }
+    });
   }
 );
 
