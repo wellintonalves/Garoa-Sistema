@@ -1,7 +1,8 @@
 // Aba Agendar — fluxo em etapas: serviço → barbeiro → data/horário → confirmação
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { Check, ArrowLeft, Scissors, Star, CheckCircle, CaretDown, CaretUp } from '@phosphor-icons/react';
+import { ModalAlert } from '../../../components/ModalAlert';
 import clienteApi from '../../../api/clienteApi';
 import { hojeBrasilia } from '../../../utils/datas';
 import { SkeletonCard, SkeletonText } from '../../../components/ui/Skeleton';
@@ -39,12 +40,25 @@ export function ClienteBarbeariaAgendar() {
   const [mostrarTodosServicos, setMostrarTodosServicos] = useState(false);
 
   const [searchParams] = useSearchParams();
-  const isFluxoRapido = searchParams.get('fluxoRapido') === 'true';
+  const isFluxoRapido = searchParams.get('fluxoRapido') === 'true' || searchParams.get('fluxoRapido') === '1';
+  const preServicoId = searchParams.get('servicoId');
   const preBarbeiroId = searchParams.get('barbeiroId');
-  const preData = searchParams.get('data');
-  const preHora = searchParams.get('hora');
+  const [fluxoRapidoProcessado, setFluxoRapidoProcessado] = useState(false);
 
   const [erroDuracao, setErroDuracao] = useState('');
+  const [erroSlots, setErroSlots] = useState('');
+  const [modalObj, setModalObj] = useState<{aberto: boolean; titulo: string; mensagem: string; tipo: 'erro'|'sucesso'|'aviso'|'info'; textoBotao?: string; onConfirm?: () => void; isConfirm?: boolean}>({ aberto: false, titulo: '', mensagem: '', tipo: 'info' });
+  const [retrySlots, setRetrySlots] = useState(0);
+
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  const scrollDates = (direction: 'left' | 'right') => {
+    if (scrollRef.current) {
+      const scrollAmount = direction === 'left' ? -200 : 200;
+      scrollRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    }
+  };
 
   useEffect(() => {
     if (barbeariaId) {
@@ -69,26 +83,39 @@ export function ClienteBarbeariaAgendar() {
 
   useEffect(() => {
     if (barbeariaId && !carregando && servicos.length > 0 && barbeiros.length > 0) {
-      if (isFluxoRapido && preBarbeiroId && preData && preHora && servicosSel.length === 0) {
-        const b = barbeiros.find(b => b.id === preBarbeiroId);
-        if (b) {
+      if (isFluxoRapido && preBarbeiroId && preServicoId && !fluxoRapidoProcessado) {
+        setFluxoRapidoProcessado(true);
+        const s = servicos.find(serv => serv.id === preServicoId);
+        const b = barbeiros.find(barb => barb.id === preBarbeiroId);
+        
+        if (!s) {
+          setModalObj({ aberto: true, titulo: 'Aviso', mensagem: 'O serviço do seu último corte não está mais disponível.', tipo: 'aviso' });
+          setEtapa('servico');
+        } else if (!b) {
+          setServicosSel([s]);
+          setModalObj({ aberto: true, titulo: 'Aviso', mensagem: 'O barbeiro do seu último corte não está mais atendendo.', tipo: 'aviso' });
+          setEtapa('barbeiro');
+        } else {
+          setServicosSel([s]);
           setBarbeiroSel(b);
-          setDataSel(preData);
-          setHorarioSel(preHora);
-          // O usuário começa na etapa 1 (serviço) para escolher.
-          // Depois que escolher o serviço, verificamos se a duração cabe no slot selecionado.
+          setEtapa('data');
         }
       }
     }
-  }, [carregando, servicos, barbeiros, isFluxoRapido, preBarbeiroId, preData, preHora, barbeariaId]);
+  }, [carregando, servicos, barbeiros, isFluxoRapido, preBarbeiroId, preServicoId, barbeariaId, fluxoRapidoProcessado]);
 
   useEffect(() => {
     // Revalidação de duração no fluxo rápido ao selecionar serviços
     if (isFluxoRapido && dataSel && barbeiroSel && servicosSel.length > 0 && barbeariaId && horarioSel) {
       setCarregandoSlots(true);
       setErroDuracao('');
+      setErroSlots('');
+      if (abortControllerRef.current) abortControllerRef.current.abort();
+      abortControllerRef.current = new AbortController();
+      
       clienteApi.get<Slot[]>(`/cliente/barbearia/${barbeariaId}/horarios-disponiveis`, {
-        params: { barbeiroId: barbeiroSel.id, data: dataSel, servicosIds: servicosSel.map(s => s.id).join(',') }
+        params: { barbeiroId: barbeiroSel.id, data: dataSel, servicoId: servicosSel[0]?.id },
+        signal: abortControllerRef.current.signal
       }).then(r => {
         const availableSlots = r.data;
         setSlots(availableSlots);
@@ -97,29 +124,40 @@ export function ClienteBarbeariaAgendar() {
         const slotAindaValido = availableSlots.find(s => s.horario === horarioSel && s.disponivel);
         
         if (!slotAindaValido) {
-          // A duração é maior do que o slot comporta
           setErroDuracao(`Os serviços selecionados levam ${servicosSel.reduce((a,b)=>a+b.duracaoMinutos,0)} min e não cabem no horário de ${horarioSel}.`);
-          setHorarioSel(''); // Limpa o horário pré-selecionado para forçar a escolha na etapa data
-          // Se estava prestes a pular para confirmação, vamos segurá-lo na tela
+          setHorarioSel(''); 
         } else {
-          // Se coube, avança direto para confirmação já que tudo foi preenchido
           setEtapa('confirmacao');
         }
       })
-      .catch(() => setSlots([]))
+      .catch(err => {
+        if (err.name === 'CanceledError' || err.name === 'AbortError') return;
+        setSlots([]);
+        setErroSlots('Falha de rede. Não foi possível buscar os horários.');
+      })
       .finally(() => setCarregandoSlots(false));
-      return; // sai para não cair no useEffect de slots normal
+      return () => abortControllerRef.current?.abort(); // sai para não cair no useEffect de slots normal
     }
 
     if (dataSel && barbeiroSel && servicosSel.length > 0 && barbeariaId && etapa === 'data') {
       setCarregandoSlots(true);
+      setErroSlots('');
+      const controller = new AbortController();
+
       clienteApi.get<Slot[]>(`/cliente/barbearia/${barbeariaId}/horarios-disponiveis`, {
-        params: { barbeiroId: barbeiroSel.id, data: dataSel, servicosIds: servicosSel.map(s => s.id).join(',') }
+        params: { barbeiroId: barbeiroSel.id, data: dataSel, servicoId: servicosSel[0]?.id, servicosIds: servicosSel.map(s => s.id).join(',') },
+        signal: controller.signal
       }).then(r => setSlots(r.data))
-        .catch(() => setSlots([]))
+        .catch(err => {
+          if (err.name === 'CanceledError' || err.name === 'AbortError') return;
+          setSlots([]);
+          setErroSlots('Falha de rede. Não foi possível buscar os horários.');
+        })
         .finally(() => setCarregandoSlots(false));
+        
+      return () => controller.abort();
     }
-  }, [dataSel, barbeiroSel, servicosSel, barbeariaId, etapa, isFluxoRapido]);
+  }, [dataSel, barbeiroSel, servicosSel, barbeariaId, etapa, isFluxoRapido, retrySlots]);
 
   useEffect(() => {
     if (sucesso) {
@@ -131,6 +169,21 @@ export function ClienteBarbeariaAgendar() {
   const fmt = (v: string | number) => Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   const hoje = hojeBrasilia();
 
+  const diasDisponiveis = useMemo(() => {
+    return Array.from({ length: 14 }).map((_, i) => {
+      const d = new Date(hoje + 'T12:00:00');
+      d.setDate(d.getDate() + i);
+      return d.toISOString().split('T')[0];
+    });
+  }, [hoje]);
+
+  // Se não tem dataSel e diasDisponiveis está preenchido, seleciona o primeiro
+  useEffect(() => {
+    if (etapa === 'data' && !dataSel && diasDisponiveis.length > 0) {
+      setDataSel(diasDisponiveis[0]);
+    }
+  }, [etapa, dataSel, diasDisponiveis]);
+
   const totalPreco = servicosSel.reduce((acc, s) => acc + Number(s.preco), 0);
   const totalDuracao = servicosSel.reduce((acc, s) => acc + s.duracaoMinutos, 0);
 
@@ -139,14 +192,22 @@ export function ClienteBarbeariaAgendar() {
     setEnviando(true);
     try {
       await clienteApi.post(`/cliente/barbearia/${barbeariaId}/agendar`, {
-        servicosIds: servicosSel.map(s => s.id),
+        servicoId: servicosSel[0]?.id,
         barbeiroId: barbeiroSel.id,
         data: dataSel,
         hora: horarioSel,
       });
       setSucesso(true);
+      setModalObj({ 
+        aberto: true, 
+        titulo: 'Agendamento Confirmado!', 
+        mensagem: 'Seu horário foi marcado com sucesso. Te esperamos na barbearia!', 
+        tipo: 'sucesso', 
+        textoBotao: 'Ver meus agendamentos',
+        onConfirm: () => navigate(`/cliente/barbearia/${barbeariaId}`)
+      });
     } catch { 
-      alert('Erro ao realizar o agendamento. Tente outro horário.'); 
+      setModalObj({ aberto: true, titulo: 'Erro no agendamento', mensagem: 'Erro ao realizar o agendamento. Tente outro horário.', tipo: 'erro' });
     } finally { 
       setEnviando(false); 
     }
@@ -164,13 +225,22 @@ export function ClienteBarbeariaAgendar() {
           Agendamento Confirmado!
         </h2>
         <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '14px', color: 'var(--texto-secundario)', textAlign: 'center', marginBottom: '28px' }}>
-          Tudo pronto! Te esperamos no dia <span className="font-semibold text-[var(--text-primary)]">{new Date(dataSel + 'T00:00').toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' })}</span> às <span className="font-semibold text-[var(--amber)]">{horarioSel}</span>.
+          {(() => {
+            const dataObj = new Date(dataSel + 'T00:00');
+            const dataFormatada = dataObj.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' });
+            const prefixoData = /^[0-9]/.test(dataFormatada) ? 'no dia ' : '';
+            return (
+              <>
+                Tudo pronto! Te esperamos {prefixoData}<span className="font-semibold text-[var(--text-primary)]">{dataFormatada}</span> às <span className="font-semibold text-[var(--amber)]">{horarioSel}</span>.
+              </>
+            );
+          })()}
         </p>
 
         {/* Card Resumo do Agendamento */}
         <div className="w-full bg-[var(--fundo-sidebar)] border border-[var(--borda)] rounded-lg p-5 mb-8 text-left shadow-md">
           <div className="flex justify-between items-start pb-3 border-b border-[var(--borda)] mb-3">
-            <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '12px', color: 'var(--texto-secundario)', textTransform: 'uppercase' }}>Serviços</span>
+            <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '12px', color: 'var(--texto-secundario)' }}>Serviços</span>
             <div className="flex flex-col items-end text-right">
               {servicosSel.map(s => (
                 <span key={s.id} style={{ fontFamily: 'var(--fonte-interface)', fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)' }}>{s.nome}</span>
@@ -178,20 +248,20 @@ export function ClienteBarbeariaAgendar() {
             </div>
           </div>
           <div className="flex justify-between items-center pb-3 border-b border-[var(--borda)] mb-3">
-            <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '12px', color: 'var(--texto-secundario)', textTransform: 'uppercase' }}>Profissional</span>
+            <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '12px', color: 'var(--texto-secundario)' }}>Profissional</span>
             <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)' }}>{barbeiroSel?.usuario.nome}</span>
           </div>
           <div className="flex justify-between items-center pb-3 border-b border-[var(--borda)] mb-3">
-            <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '12px', color: 'var(--texto-secundario)', textTransform: 'uppercase' }}>Horário</span>
+            <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '12px', color: 'var(--texto-secundario)' }}>Horário</span>
             <span style={{ fontFamily: 'var(--fonte-mono)', fontSize: '14px', fontWeight: 600, color: 'var(--amber)' }}>{horarioSel}</span>
           </div>
           <div className="flex justify-between items-center">
-            <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '12px', color: 'var(--texto-secundario)', textTransform: 'uppercase' }}>Valor Total</span>
+            <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '12px', color: 'var(--texto-secundario)' }}>Valor Total</span>
             <span style={{ fontFamily: 'var(--fonte-mono)', fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)' }}>{fmt(totalPreco)}</span>
           </div>
         </div>
 
-        <button onClick={() => navigate(`/cliente/barbearia/${barbeariaId}`)} className="btn-primary w-full justify-center flex items-center gap-2" style={{ height: '48px', textTransform: 'uppercase', fontSize: '13px', fontWeight: 600, letterSpacing: '0.04em' }}>
+        <button onClick={() => navigate(`/cliente/barbearia/${barbeariaId}`)} className="btn-primary w-full justify-center flex items-center gap-2" style={{ height: '48px', fontSize: '13px', fontWeight: 600, letterSpacing: '0.04em' }}>
           Ver meus agendamentos
         </button>
       </div>
@@ -219,16 +289,7 @@ export function ClienteBarbeariaAgendar() {
   };
 
   const proximaEtapa = () => {
-    if (etapa === 'servico' && servicosSel.length > 0) {
-      if (isFluxoRapido && barbeiroSel && dataSel && horarioSel) {
-        // A validação de duração fará o setEtapa('confirmacao') automaticamente no useEffect
-        // Se já perdeu o horarioSel por erroDuracao, envia pra data
-      } else if (isFluxoRapido && barbeiroSel && dataSel && !horarioSel) {
-        setEtapa('data');
-      } else {
-        setEtapa('barbeiro');
-      }
-    }
+    if (etapa === 'servico' && servicosSel.length > 0) setEtapa('barbeiro');
     else if (etapa === 'barbeiro' && barbeiroSel) setEtapa('data');
     else if (etapa === 'data' && dataSel && horarioSel) setEtapa('confirmacao');
     else if (etapa === 'confirmacao') confirmarAgendamento();
@@ -272,8 +333,7 @@ export function ClienteBarbeariaAgendar() {
         {/* Stepper Bar Contínuo */}
         <div className="w-full h-2 rounded-full overflow-hidden bg-[var(--fundo-sidebar)] border border-[var(--borda)] relative flex">
           {etapas.map((e, i) => {
-            const preFilled = (i === 1 && isFluxoRapido && preBarbeiroId) || (i === 2 && isFluxoRapido && preData);
-            const isAtivo = i <= etapaIdx || preFilled;
+            const isAtivo = i <= etapaIdx || (isFluxoRapido && etapaIdx >= 2 && i < 2);
             return (
               <div key={e.key} className="h-full flex-1 border-r border-[var(--borda)] last:border-0 transition-all duration-300"
                    style={{ background: isAtivo ? 'var(--amber)' : 'transparent', opacity: i === etapaIdx ? 1 : isAtivo ? 0.6 : 1 }} />
@@ -284,8 +344,7 @@ export function ClienteBarbeariaAgendar() {
         {/* Rótulos das Etapas */}
         <div className="flex justify-between items-center mt-2.5">
           {etapas.map((e, i) => {
-            const preFilled = (i === 1 && isFluxoRapido && preBarbeiroId) || (i === 2 && isFluxoRapido && preData);
-            const isAtivo = i <= etapaIdx || preFilled;
+            const isAtivo = i <= etapaIdx || (isFluxoRapido && etapaIdx >= 2 && i < 2);
             return (
               <span key={e.key} style={{ 
                 fontFamily: 'var(--fonte-interface)', 
@@ -309,7 +368,7 @@ export function ClienteBarbeariaAgendar() {
             if (etapa === 'data') setEtapa('barbeiro');
             if (etapa === 'confirmacao') setEtapa('data');
           }} className="flex items-center gap-2 mb-4"
-            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--texto-secundario)', fontFamily: 'var(--fonte-interface)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 600 }}>
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--texto-secundario)', fontFamily: 'var(--fonte-interface)', fontSize: '11px', letterSpacing: '0.04em', fontWeight: 600, minHeight: '48px' }}>
             <ArrowLeft size={14} /> Voltar uma etapa
           </button>
         )}
@@ -373,7 +432,7 @@ export function ClienteBarbeariaAgendar() {
             <button
               onClick={() => setMostrarTodosServicos(!mostrarTodosServicos)}
               className="w-full py-3 mt-2 flex items-center justify-center gap-2 rounded-md border border-[var(--borda)] bg-[var(--superficie-1)] hover:bg-[var(--superficie-2)] transition-colors"
-              style={{ fontFamily: 'var(--fonte-interface)', fontSize: '12px', fontWeight: 600, color: 'var(--texto-secundario)', textTransform: 'uppercase', letterSpacing: '0.04em' }}
+              style={{ fontFamily: 'var(--fonte-interface)', fontSize: '12px', fontWeight: 600, color: 'var(--texto-secundario)', letterSpacing: '0.04em' }}
             >
               {mostrarTodosServicos ? (
                 <>Ver menos opções <CaretUp size={14} /></>
@@ -414,7 +473,7 @@ export function ClienteBarbeariaAgendar() {
                     <p style={{ fontFamily: 'var(--fonte-interface)', fontWeight: 600, color: 'var(--text-primary)', fontSize: '15px' }}>{b.usuario.nome}</p>
                     <div className="flex gap-1.5 mt-1.5 flex-wrap">
                       {b.especialidades.slice(0, 2).map((e, i) => (
-                        <span key={i} style={{ fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.04em', background: 'var(--superficie-1)', padding: '2px 6px', borderRadius: '4px', border: '1px solid var(--borda)', color: 'var(--texto-secundario)' }}>{e}</span>
+                        <span key={i} style={{ fontSize: '9px', letterSpacing: '0.04em', background: 'var(--superficie-1)', padding: '2px 6px', borderRadius: '4px', border: '1px solid var(--borda)', color: 'var(--texto-secundario)' }}>{e}</span>
                       ))}
                     </div>
                   </div>
@@ -429,10 +488,40 @@ export function ClienteBarbeariaAgendar() {
       {/* Conteúdo Etapa 3: Data e Horário */}
       {etapa === 'data' && (
         <div>
-          <div className="mb-6 p-4 rounded-md" style={{ background: 'var(--fundo-sidebar)', border: '1px solid var(--borda)' }}>
-            <label className="block mb-2" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--texto-secundario)', fontWeight: 600 }}>Escolha a Data</label>
-            <input type="date" value={dataSel} onChange={e => { setDataSel(e.target.value); setHorarioSel(''); }}
-              min={hoje} className="w-full bg-[var(--fundo-input)] border border-[var(--borda-forte)] rounded p-3 text-[var(--text-primary)] font-interface focus:outline-none focus:border-[var(--amber)] transition-colors outline-none" style={{ fontFamily: 'var(--fonte-mono)' }} />
+          <div className="mb-6 p-4 rounded-md relative group" style={{ background: 'var(--fundo-sidebar)', border: '1px solid var(--borda)' }}>
+            <label className="block mb-3" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', letterSpacing: '0.04em', color: 'var(--texto-secundario)', fontWeight: 600 }}>Escolha a data</label>
+            
+            {/* Setas de navegação no desktop */}
+            <button onClick={() => scrollDates('left')} className="hidden md:flex absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 items-center justify-center bg-[var(--superficie-1)] border border-[var(--borda)] rounded-full shadow-sm z-10 hover:bg-[var(--fundo-input)] opacity-0 group-hover:opacity-100 transition-opacity">
+              <CaretDown size={16} weight="bold" className="rotate-90 text-[var(--text-primary)]" />
+            </button>
+            <button onClick={() => scrollDates('right')} className="hidden md:flex absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 items-center justify-center bg-[var(--superficie-1)] border border-[var(--borda)] rounded-full shadow-sm z-10 hover:bg-[var(--fundo-input)] opacity-0 group-hover:opacity-100 transition-opacity">
+              <CaretDown size={16} weight="bold" className="-rotate-90 text-[var(--text-primary)]" />
+            </button>
+
+            <div ref={scrollRef} className="flex gap-2 overflow-x-auto pb-2 hide-scrollbar scroll-smooth" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', scrollSnapType: 'x mandatory' }}>
+              {diasDisponiveis.map((diaStr: string) => {
+                const dateObj = new Date(diaStr + 'T12:00:00');
+                const isSel = dataSel === diaStr;
+                const sem = dateObj.toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.', '');
+                const num = dateObj.getDate();
+                return (
+                  <button
+                    key={diaStr}
+                    onClick={() => { setDataSel(diaStr); setHorarioSel(''); }}
+                    style={{ scrollSnapAlign: 'start' }}
+                    className={`flex-shrink-0 w-16 py-3 rounded-lg flex flex-col items-center gap-1 border transition-all ${
+                      isSel 
+                        ? 'border-[var(--amber)] bg-[rgba(var(--amber-rgb),0.1)]' 
+                        : 'border-[var(--borda)] bg-[var(--superficie-1)] hover:border-[var(--amber)] hover:bg-[rgba(var(--amber-rgb),0.05)]'
+                    }`}
+                  >
+                    <span className="capitalize" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', color: isSel ? 'var(--amber)' : 'var(--texto-secundario)', fontWeight: 600 }}>{sem}</span>
+                    <span style={{ fontSize: '18px', fontFamily: 'var(--fonte-mono)', color: isSel ? 'var(--amber)' : 'var(--text-primary)', fontWeight: 700 }}>{num}</span>
+                  </button>
+                )
+              })}
+            </div>
           </div>
 
           {dataSel && (
@@ -443,11 +532,18 @@ export function ClienteBarbeariaAgendar() {
                   <p style={{ fontFamily: 'var(--fonte-interface)' }}>{erroDuracao}</p>
                 </div>
               )}
-              <label className="block mb-3" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--texto-secundario)', fontWeight: 600 }}>Horários Disponíveis</label>
-              {carregandoSlots ? (
+              <label className="block mb-3" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', letterSpacing: '0.04em', color: 'var(--texto-secundario)', fontWeight: 600 }}>Horários Disponíveis</label>
+              {erroSlots ? (
+                <div className="p-6 text-center border border-dashed border-[var(--erro)] rounded-md bg-[var(--erro-fundo)]">
+                  <p className="mb-3 text-[var(--erro)] font-medium text-sm font-interface">{erroSlots}</p>
+                  <button onClick={() => setRetrySlots(r => r + 1)} className="px-4 py-2 bg-[var(--erro)] rounded font-interface text-sm font-semibold hover:opacity-90 transition-opacity" style={{ color: 'var(--texto-sobre-primaria)' }}>
+                    Tentar novamente
+                  </button>
+                </div>
+              ) : carregandoSlots ? (
                 <div className="grid grid-cols-4 md:grid-cols-5 gap-2">
                   {Array.from({ length: 10 }).map((_, i) => (
-                    <SkeletonCard key={i} style={{ height: '44px', width: '100%' }} />
+                    <SkeletonCard key={i} style={{ height: '48px', width: '100%' }} />
                   ))}
                 </div>
               ) : slots.length > 0 ? (
@@ -455,17 +551,21 @@ export function ClienteBarbeariaAgendar() {
                   {slots.map(s => (
                     <button key={s.horario}
                       disabled={!s.disponivel}
+                      aria-disabled={!s.disponivel}
                       onClick={() => setHorarioSel(s.horario)}
                       style={{
-                        padding: '12px 4px',
+                        height: '48px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
                         fontFamily: 'var(--fonte-mono)',
                         fontSize: '14px',
                         textAlign: 'center',
                         cursor: s.disponivel ? 'pointer' : 'not-allowed',
-                        background: horarioSel === s.horario ? 'var(--amber)' : s.disponivel ? 'var(--fundo-sidebar)' : 'transparent',
-                        color: horarioSel === s.horario ? 'var(--texto-sobre-primaria)' : s.disponivel ? 'var(--text-primary)' : 'var(--text-disabled)',
+                        background: horarioSel === s.horario ? 'var(--amber)' : s.disponivel ? 'var(--fundo-sidebar)' : 'var(--superficie-2)',
+                        color: horarioSel === s.horario ? 'var(--texto-sobre-primaria)' : s.disponivel ? 'var(--text-primary)' : 'var(--texto-secundario)',
                         border: horarioSel === s.horario ? '1px solid var(--amber)' : s.disponivel ? '1px solid var(--borda)' : '1px dashed var(--borda)',
-                        opacity: s.disponivel ? 1 : 0.3,
+                        opacity: s.disponivel ? 1 : 0.6,
                         borderRadius: '6px',
                         fontWeight: 600
                       }}>
@@ -495,7 +595,7 @@ export function ClienteBarbeariaAgendar() {
             <div className="flex flex-col gap-5">
               <div className="flex justify-between items-start">
                 <div>
-                  <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--texto-secundario)', textTransform: 'uppercase', marginBottom: '4px', fontWeight: 600 }}>Serviços</p>
+                  <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--texto-secundario)', marginBottom: '4px', fontWeight: 600 }}>Serviços</p>
                   <div className="flex flex-col gap-1">
                     {servicosSel.map(s => (
                       <p key={s.id} style={{ fontFamily: 'var(--fonte-interface)', fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)' }}>{s.nome}</p>
@@ -507,20 +607,20 @@ export function ClienteBarbeariaAgendar() {
 
               <div className="flex justify-between items-start">
                 <div>
-                  <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--texto-secundario)', textTransform: 'uppercase', marginBottom: '2px', fontWeight: 600 }}>Profissional</p>
+                  <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--texto-secundario)', marginBottom: '2px', fontWeight: 600 }}>Profissional</p>
                   <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '16px', fontWeight: 600, color: 'var(--text-primary)' }}>{barbeiroSel?.usuario.nome}</p>
                 </div>
               </div>
 
               <div className="flex justify-between items-start">
                 <div>
-                  <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--texto-secundario)', textTransform: 'uppercase', marginBottom: '2px', fontWeight: 600 }}>Data</p>
+                  <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--texto-secundario)', marginBottom: '2px', fontWeight: 600 }}>Data</p>
                   <p className="capitalize" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '16px', fontWeight: 600, color: 'var(--text-primary)' }}>
                     {new Date(dataSel + 'T00:00').toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: 'short' })}
                   </p>
                 </div>
                 <div className="text-right">
-                  <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--texto-secundario)', textTransform: 'uppercase', marginBottom: '2px', fontWeight: 600 }}>Horário</p>
+                  <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--texto-secundario)', marginBottom: '2px', fontWeight: 600 }}>Horário</p>
                   <p style={{ fontFamily: 'var(--fonte-mono)', fontSize: '16px', color: 'var(--amber)', fontWeight: 700 }}>{horarioSel}</p>
                 </div>
               </div>
@@ -587,6 +687,22 @@ export function ClienteBarbeariaAgendar() {
           {getTextoBotao()}
         </button>
       </div>
+      {/* Modal Alert */}
+      <ModalAlert 
+        aberto={modalObj.aberto} 
+        titulo={modalObj.titulo} 
+        mensagem={modalObj.mensagem} 
+        tipo={modalObj.tipo} 
+        isConfirm={modalObj.isConfirm}
+        textoBotao={modalObj.tipo === 'sucesso' ? 'Ver meus agendamentos' : 'Entendi'}
+        onConfirmar={modalObj.onConfirm}
+        onFechar={() => {
+          setModalObj(m => ({ ...m, aberto: false }));
+          if (modalObj.tipo === 'sucesso' && modalObj.onConfirm) {
+            modalObj.onConfirm();
+          }
+        }} 
+      />
     </div>
   );
 }
