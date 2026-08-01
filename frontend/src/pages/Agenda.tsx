@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { CaretLeft, CaretRight, Plus, CaretDown } from '@phosphor-icons/react';
 import { Modal } from '../components/Modal';
 import { SkeletonPage } from '../components/Skeleton';
-import { dataBrasilia } from '../utils/datas';
+import { dataBrasilia, hojeBrasilia } from '../utils/datas';
 import api from '../api/client';
 import { PALETA_CORES_BARBEIROS } from '../styles/tokens';
 import { formatarNomeServico } from '../utils/formato';
