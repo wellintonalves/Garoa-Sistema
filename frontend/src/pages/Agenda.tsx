@@ -50,7 +50,7 @@ interface Agendamento {
   servico: { nome: string; duracaoMinutos: number; cor: string };
 }
 
-interface Barbeiro { id: string; usuario: { nome: string }; cor: string }
+interface Barbeiro { id: string; usuario: { nome: string }; cor: string; ativo?: boolean }
 interface Cliente { id: string; usuario: { nome: string } }
 interface Servico { id: string; nome: string; preco: string; duracaoMinutos: number; cor: string }
 interface Bloqueio {
@@ -160,7 +160,7 @@ export function Agenda() {
       const [resAgendamentos, resBloq, resBarb] = await Promise.allSettled([
         api.get<Agendamento[]>('/agendamentos', { params: { dataInicio, dataFim } }),
         api.get<Bloqueio[]>('/bloqueios'),
-        api.get<Barbeiro[]>('/barbeiros')
+        api.get<Barbeiro[]>('/barbeiros?todos=true')
       ]);
 
       if (resAgendamentos.status === 'fulfilled') {
@@ -340,6 +340,13 @@ export function Agenda() {
 
   if (carregando) return <SkeletonPage />;
 
+  const barbeirosValidos = barbeiros.filter(b => {
+    if (b.ativo !== false) return true;
+    const temAgendamento = agendamentos.some(a => a.barbeiroId === b.id);
+    const temBloqueio = bloqueios.some(bl => bl.barbeiroId === b.id);
+    return temAgendamento || temBloqueio;
+  });
+
   return (
     <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', minWidth: 0 }}>
       {/* Header */}
@@ -485,7 +492,7 @@ export function Agenda() {
               Todos os barbeiros
             </button>
 
-            {barbeiros.map((b) => {
+            {barbeirosValidos.map((b) => {
               const cor = getBarbeiroColor(b.id, barbeiros);
               const isSelected = filtroBarbeiro === b.id;
               return (
@@ -521,7 +528,7 @@ export function Agenda() {
       <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', overflowX: 'auto', width: '100%', position: 'relative' }}>
         <div style={{ minWidth: isMobile ? '100%' : '700px' }}>
           {(() => {
-            const barbeirosExibidos = filtroBarbeiro === 'todos' ? barbeiros : barbeiros.filter(b => b.id === filtroBarbeiro);
+            const barbeirosExibidos = filtroBarbeiro === 'todos' ? barbeirosValidos : barbeirosValidos.filter(b => b.id === filtroBarbeiro);
             const cols = viewMode === 'day' ? barbeirosExibidos.length : diasExibidos.length;
             const agora = new Date();
                         const horariosExibidos = horarios; // Pode filtrar baseado nos barbeiros
@@ -661,7 +668,7 @@ export function Agenda() {
             <label className="input-label">Barbeiro</label>
             <select value={form.barbeiroId} onChange={(e) => setForm({ ...form, barbeiroId: e.target.value })} className="ds-select">
               <option value="">Selecione...</option>
-              {barbeiros.map((b) => <option key={b.id} value={b.id}>{b.usuario.nome}</option>)}
+              {barbeiros.filter(b => b.ativo !== false).map((b) => <option key={b.id} value={b.id}>{b.usuario.nome}</option>)}
             </select>
           </div>
           <div>
@@ -697,7 +704,7 @@ export function Agenda() {
             <label className="input-label">Barbeiro</label>
             <select value={formBloqueio.barbeiroId} onChange={(e) => setFormBloqueio({ ...formBloqueio, barbeiroId: e.target.value })} className="ds-select">
               <option value="">Selecione...</option>
-              {barbeiros.map((b) => <option key={b.id} value={b.id}>{b.usuario.nome}</option>)}
+              {barbeiros.filter(b => b.ativo !== false).map((b) => <option key={b.id} value={b.id}>{b.usuario.nome}</option>)}
             </select>
           </div>
           <div>
