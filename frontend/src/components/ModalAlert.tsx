@@ -136,7 +136,7 @@ export function ModalAlert({
             className="w-12 h-12 flex items-center justify-center rounded-full mb-4"
             style={{ backgroundColor: configTipo[tipo].bgCor, color: configTipo[tipo].cor }}
           >
-            <Icon size={28} weight="fill" />
+            <Icon size={28} weight="regular" />
           </div>
           
           <h2 
@@ -177,12 +177,10 @@ export function ModalAlert({
                 if (isConfirm && onConfirmar) onConfirmar();
                 onFechar();
               }}
-              className="flex-1 rounded-lg font-semibold transition-colors flex items-center justify-center"
+              className="flex-1 rounded-lg font-semibold transition-colors flex items-center justify-center btn-primary"
               style={{ 
                 minHeight: '48px',
                 fontFamily: 'var(--fonte-interface)',
-                background: configTipo[tipo].cor,
-                color: 'var(--texto-sobre-primaria)',
                 border: 'none'
               }}
             >

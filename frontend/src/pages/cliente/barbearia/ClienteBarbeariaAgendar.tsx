@@ -516,7 +516,9 @@ export function ClienteBarbeariaAgendar() {
                         : 'border-[var(--borda)] bg-[var(--superficie-1)] hover:border-[var(--amber)] hover:bg-[rgba(var(--amber-rgb),0.05)]'
                     }`}
                   >
-                    <span className="capitalize" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', color: isSel ? 'var(--amber)' : 'var(--texto-secundario)', fontWeight: 600 }}>{sem}</span>
+                    <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', color: isSel ? 'var(--amber)' : 'var(--texto-secundario)', fontWeight: 600 }}>
+                      {sem.charAt(0).toUpperCase() + sem.slice(1)}
+                    </span>
                     <span style={{ fontSize: '18px', fontFamily: 'var(--fonte-mono)', color: isSel ? 'var(--amber)' : 'var(--text-primary)', fontWeight: 700 }}>{num}</span>
                   </button>
                 )
@@ -615,8 +617,11 @@ export function ClienteBarbeariaAgendar() {
               <div className="flex justify-between items-start">
                 <div>
                   <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--texto-secundario)', marginBottom: '2px', fontWeight: 600 }}>Data</p>
-                  <p className="capitalize" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '16px', fontWeight: 600, color: 'var(--text-primary)' }}>
-                    {new Date(dataSel + 'T00:00').toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: 'short' })}
+                  <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '16px', fontWeight: 600, color: 'var(--text-primary)' }}>
+                    {(() => {
+                      const str = new Date(dataSel + 'T00:00').toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: 'short' });
+                      return str.charAt(0).toUpperCase() + str.slice(1);
+                    })()}
                   </p>
                 </div>
                 <div className="text-right">

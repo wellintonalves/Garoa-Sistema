@@ -468,6 +468,12 @@ nav span {
   z-index: 50;
 }
 
+@media (min-width: 768px) {
+  .bottom-tab-bar {
+    display: none !important;
+  }
+}
+
 .bottom-tab-item {
   display: flex;
   flex-direction: column;
