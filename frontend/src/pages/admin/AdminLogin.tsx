@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Envelope as Mail, Lock, WarningCircle as AlertCircle, UserPlus, Eye, EyeSlash as EyeOff } from '@phosphor-icons/react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 import api from '../../api/client';
 import { useAuth } from '../../hooks/useAuth';
@@ -12,7 +12,9 @@ export function AdminLogin() {
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [mostrarSenha, setMostrarSenha] = useState(false);
-  const [erro, setErro] = useState('');
+  const [searchParams] = useSearchParams();
+  const expirado = searchParams.get('exp') === '1';
+  const [erro, setErro] = useState(expirado ? 'Sua sessão expirou. Entre novamente para continuar.' : '');
   const [carregando, setCarregando] = useState(false);
 
   async function handleLogin(e: React.FormEvent) {

@@ -1,5 +1,7 @@
 import { createContext, useState, useEffect, ReactNode } from 'react';
 import { api } from '../api';
+import { tokenEstaValido } from '../lib/auth/tokenValido';
+import { limparSessao } from '../lib/auth/limparSessao';
 
 interface UsuarioCliente {
   id: string;
@@ -34,9 +36,13 @@ export function ClientAuthProvider({ children }: { children: ReactNode }) {
       const userStr = localStorage.getItem(`@Garoa:client_user_${slug}`);
       
       if (token && userStr && slug) {
-        setSlugAtual(slug);
-        setCliente(JSON.parse(userStr));
-        api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        if (tokenEstaValido(token)) {
+          setSlugAtual(slug);
+          setCliente(JSON.parse(userStr));
+          api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        } else {
+          limparSessao();
+        }
       }
     }
     setCarregando(false);
@@ -51,10 +57,7 @@ export function ClientAuthProvider({ children }: { children: ReactNode }) {
   };
 
   const sair = () => {
-    if (slugAtual) {
-      localStorage.removeItem(`@Garoa:client_token_${slugAtual}`);
-      localStorage.removeItem(`@Garoa:client_user_${slugAtual}`);
-    }
+    limparSessao();
     setCliente(null);
     setSlugAtual(null);
     delete api.defaults.headers.common['Authorization'];

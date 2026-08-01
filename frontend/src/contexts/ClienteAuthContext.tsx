@@ -1,6 +1,8 @@
 // Contexto de autenticação do cliente — gerencia login/logout isolado do admin
 import { createContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import clienteApi from '../api/clienteApi';
+import { tokenEstaValido } from '../lib/auth/tokenValido';
+import { limparSessao } from '../lib/auth/limparSessao';
 
 interface DadosCliente {
   clienteId: string;
@@ -28,11 +30,14 @@ export function ClienteAuthProvider({ children }: { children: ReactNode }) {
     const dadosSalvos = localStorage.getItem('@garoa:cliente_dados');
 
     if (tokenSalvo && dadosSalvos) {
-      try {
-        setCliente(JSON.parse(dadosSalvos) as DadosCliente);
-      } catch {
-        localStorage.removeItem('@garoa:cliente_token');
-        localStorage.removeItem('@garoa:cliente_dados');
+      if (tokenEstaValido(tokenSalvo)) {
+        try {
+          setCliente(JSON.parse(dadosSalvos) as DadosCliente);
+        } catch {
+          limparSessao();
+        }
+      } else {
+        limparSessao();
       }
     }
     setCarregando(false);
@@ -65,8 +70,7 @@ export function ClienteAuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const logout = useCallback(() => {
-    localStorage.removeItem('@garoa:cliente_token');
-    localStorage.removeItem('@garoa:cliente_dados');
+    limparSessao();
     setCliente(null);
     window.location.href = '/';
   }, []);

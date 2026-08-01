@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Envelope, Lock, WarningCircle, Eye, EyeSlash } from '@phosphor-icons/react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import Lottie from 'lottie-react';
 import premiumAnimation from '../../assets/animations/premium.json';
 import { useClienteAuth } from '../../hooks/useClienteAuth';
@@ -14,7 +14,9 @@ export function ClienteLoginPrincipal() {
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [mostrarSenha, setMostrarSenha] = useState(false);
-  const [erro, setErro] = useState('');
+  const [searchParams] = useSearchParams();
+  const expirado = searchParams.get('exp') === '1';
+  const [erro, setErro] = useState(expirado ? 'Sua sessão expirou. Entre novamente para continuar.' : '');
   const [carregando, setCarregando] = useState(false);
 
   async function handleLogin(e: React.FormEvent) {

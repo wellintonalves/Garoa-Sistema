@@ -1,6 +1,8 @@
 // Contexto de autenticação — gerencia login/logout e estado do usuário
 import { createContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import api from '../api/client';
+import { tokenEstaValido } from '../lib/auth/tokenValido';
+import { limparSessao } from '../lib/auth/limparSessao';
 
 interface Usuario {
   id: string;
@@ -29,11 +31,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const usuarioSalvo = localStorage.getItem('@garoa:usuario');
 
     if (tokenSalvo && usuarioSalvo) {
-      try {
-        setUsuario(JSON.parse(usuarioSalvo) as Usuario);
-      } catch {
-        localStorage.removeItem('@garoa:token');
-        localStorage.removeItem('@garoa:usuario');
+      if (tokenEstaValido(tokenSalvo)) {
+        try {
+          setUsuario(JSON.parse(usuarioSalvo) as Usuario);
+        } catch {
+          limparSessao();
+        }
+      } else {
+        limparSessao();
       }
     }
     setCarregando(false);
@@ -55,8 +60,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const logout = useCallback(() => {
-    localStorage.removeItem('@garoa:token');
-    localStorage.removeItem('@garoa:usuario');
+    limparSessao();
     setUsuario(null);
   }, []);
 

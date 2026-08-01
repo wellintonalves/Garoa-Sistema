@@ -33,13 +33,7 @@ api.interceptors.request.use((config) => {
 // Interceptor — redireciona para login em caso de 401
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
-    return handleApiError(error, () => {
-      localStorage.removeItem('@garoa:token');
-      localStorage.removeItem('@garoa:usuario');
-      window.location.href = '/admin/login';
-    });
-  }
+  (error) => handleApiError(error)
 );
 
 // Deduplicação de requisições GET simultâneas (evita requests repetidos na montagem)

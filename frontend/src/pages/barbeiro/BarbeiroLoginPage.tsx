@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Envelope as Mail, Lock, WarningCircle as AlertCircle, Eye, EyeSlash as EyeOff } from '@phosphor-icons/react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import Lottie from 'lottie-react';
 import mustacheAnimation from '../../assets/animations/mustache-amber.json';
 import { useBarbeiroAuth } from '../../hooks/useBarbeiroAuth';
@@ -18,7 +18,9 @@ export function BarbeiroLoginPage() {
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [mostrarSenha, setMostrarSenha] = useState(false);
-  const [erro, setErro] = useState('');
+  const [searchParams] = useSearchParams();
+  const expirado = searchParams.get('exp') === '1';
+  const [erro, setErro] = useState(expirado ? 'Sua sessão expirou. Entre novamente para continuar.' : '');
   const [carregando, setCarregando] = useState(false);
   const [barbearias, setBarbearias] = useState<BarbeariaOpcao[]>([]);
   const [barbeariaId, setBarbeariaId] = useState('');

@@ -1,6 +1,8 @@
 // Contexto de autenticação do barbeiro — gerencia login/logout isolado do admin
 import { createContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import barbeiroApi from '../api/barbeiroApi';
+import { tokenEstaValido } from '../lib/auth/tokenValido';
+import { limparSessao } from '../lib/auth/limparSessao';
 
 interface DadosBarbeiro {
   barbeiroId: string;
@@ -28,11 +30,14 @@ export function BarbeiroAuthProvider({ children }: { children: ReactNode }) {
     const dadosSalvos = localStorage.getItem('@garoa:barbeiro_dados');
 
     if (tokenSalvo && dadosSalvos) {
-      try {
-        setBarbeiro(JSON.parse(dadosSalvos) as DadosBarbeiro);
-      } catch {
-        localStorage.removeItem('@garoa:barbeiro_token');
-        localStorage.removeItem('@garoa:barbeiro_dados');
+      if (tokenEstaValido(tokenSalvo)) {
+        try {
+          setBarbeiro(JSON.parse(dadosSalvos) as DadosBarbeiro);
+        } catch {
+          limparSessao();
+        }
+      } else {
+        limparSessao();
       }
     }
     setCarregando(false);
@@ -48,8 +53,7 @@ export function BarbeiroAuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const logout = useCallback(() => {
-    localStorage.removeItem('@garoa:barbeiro_token');
-    localStorage.removeItem('@garoa:barbeiro_dados');
+    limparSessao();
     setBarbeiro(null);
     window.location.href = '/barbeiro/login';
   }, []);

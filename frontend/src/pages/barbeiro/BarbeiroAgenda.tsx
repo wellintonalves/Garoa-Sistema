@@ -31,13 +31,13 @@ export function BarbeiroAgenda() {
   const [form, setForm] = useState({ data: '', horaInicio: '', horaFim: '', motivo: '' });
   
   const [sucessoMsg, setSucessoMsg] = useState('');
-  const [erroMsg, setErroMsg] = useState('');
+  const [erroApi, setErroApi] = useState(false);
 
-  const mostrarErro = (msg: string) => { setErroMsg(msg); setTimeout(() => setErroMsg(''), 4000); };
   const mostrarSucesso = (msg: string) => { setSucessoMsg(msg); setTimeout(() => setSucessoMsg(''), 3000); };
 
   function carregar() {
     setCarregando(true);
+    setErroApi(false);
     Promise.all([
       barbeiroApi.get<AgendamentoAgenda[]>('/barbeiro/agenda', { params: { data: dataSel } }),
       barbeiroApi.get<Bloqueio[]>('/bloqueios')
@@ -45,7 +45,7 @@ export function BarbeiroAgenda() {
       setAgendamentos(resAg.data);
       setBloqueios(resBl.data.filter(b => b.dataInicio.startsWith(dataSel)));
     })
-    .catch(() => mostrarErro('Erro ao carregar a agenda'))
+    .catch(() => setErroApi(true))
     .finally(() => setCarregando(false));
   }
 
@@ -117,11 +117,7 @@ export function BarbeiroAgenda() {
           {sucessoMsg}
         </div>
       )}
-      {erroMsg && (
-        <div className="bg-[var(--perigo-fundo)] text-[var(--perigo)] p-3 rounded-lg mb-4 text-sm font-medium border border-[var(--perigo)]">
-          {erroMsg}
-        </div>
-      )}
+
 
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl md:text-3xl font-semibold" style={{ color: 'var(--text-primary)' }}>
@@ -148,6 +144,12 @@ export function BarbeiroAgenda() {
         <div className="flex justify-center py-20" style={{ color: 'var(--texto-secundario)' }}>
           <Clock className="animate-spin mr-2" /> Carregando agenda...
         </div>
+      ) : erroApi ? (
+        <div className="flex flex-col items-center justify-center py-20" style={{ color: 'var(--texto-secundario)', border: '1px solid var(--border)', borderRadius: '8px', background: 'var(--bg-surface)' }}>
+          <Ban size={48} className="mb-4" style={{ color: 'var(--perigo)' }} />
+          <p className="mb-4">Não conseguimos carregar sua agenda agora. Tente novamente em instantes.</p>
+          <button onClick={carregar} className="btn-primary px-6 py-2">Tentar novamente</button>
+        </div>
       ) : (
         <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', overflowX: 'hidden', width: '100%', position: 'relative' }}>
           <div style={{ display: 'grid', gridTemplateColumns: `60px 1fr`, borderBottom: '1px solid var(--border)' }}>
@@ -156,6 +158,14 @@ export function BarbeiroAgenda() {
               <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-primary)' }}>Seus Agendamentos</p>
             </div>
           </div>
+          
+          {agendamentos.length === 0 && bloqueios.length === 0 && (
+            <div className="flex flex-col items-center justify-center py-12 border-b border-[var(--border)]">
+              <p style={{ color: 'var(--text-primary)', fontWeight: 500 }}>Nenhum agendamento para este dia.</p>
+              <p style={{ color: 'var(--texto-secundario)', fontSize: '0.875rem', marginTop: '4px' }}>Aproveite para organizar seu espaço.</p>
+            </div>
+          )}
+
           <div style={{ position: 'relative' }}>
             {isHoje && (
               <div style={{

@@ -1,1 +1,6 @@
 Em QUALQUER altera√ß√£o de UI/estilo do Valen Barber, siga rigorosamente o design.md na raiz do projeto: tipografia Montserrat, √≠cones Phosphor, cores/tokens SEMPRE via vari√°veis de tema (--cor-primaria, etc.) e NUNCA hardcode, al√©m dos padr√µes de bot√µes, cards, inputs, n√∫meros (Stripe), tabelas, badges, navega√ß√£o e agenda. N√£o introduza cores, fontes ou estilos fora do design.md.
+  
+## 16. Mensagens de Erro e Tratamento de Exceá‰es Visuais  
+O usu†rio final Ç o cliente da barbearia, o barbeiro e o dono. Nenhuma mensagem vis°vel pode conter status code, nome de exceá∆o, stack trace, nome de campo tÇcnico, nome de tabela ou jarg∆o. Detalhe tÇcnico vai exclusivamente para o console.error do servidor.  
+Textos a usar: sessao expirada -> \" Sua sess∆o expirou. Entre novamente para "continuar.\; falha de rede -> \N∆o" foi poss°vel conectar. Verifique sua internet e tente de "novo.\; erro na agenda -> \N∆o" conseguimos carregar sua agenda agora. Tente novamente em "instantes.\; erro em lista generica -> \N∆o" conseguimos carregar essas informaá‰es. Tente novamente em "instantes.\.  
+Toda tela de erro sem sa°da precisa de bot∆o de aá∆o (Tentar novamente ou Entrar novamente), nunca s¢ texto. 

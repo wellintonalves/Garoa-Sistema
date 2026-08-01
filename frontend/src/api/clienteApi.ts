@@ -30,15 +30,7 @@ clienteApi.interceptors.request.use((config) => {
 // Interceptor — redireciona para login do cliente em caso de 401
 clienteApi.interceptors.response.use(
   (response) => response,
-  (error) => {
-    return handleApiError(error, () => {
-      if (window.location.pathname.startsWith('/cliente')) {
-        localStorage.removeItem('@garoa:cliente_token');
-        localStorage.removeItem('@garoa:cliente_dados');
-        window.location.href = '/cliente';
-      }
-    });
-  }
+  (error) => handleApiError(error)
 );
 
 export const getDisponibilidadeSemana = async (

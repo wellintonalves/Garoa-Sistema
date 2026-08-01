@@ -1,6 +1,6 @@
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useClientAuth } from '../../hooks/useClientAuth';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { api } from '../../api';
 import { ModalAlert } from '../../components/ModalAlert';
 
@@ -11,6 +11,13 @@ export function LoginClient() {
   const { entrar } = useClientAuth();
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
+  const [searchParams] = useSearchParams();
+
+  useEffect(() => {
+    if (searchParams.get('exp') === '1') {
+      setModalObj({ aberto: true, titulo: 'Sessão Expirada', mensagem: 'Sua sessão expirou. Entre novamente para continuar.', tipo: 'aviso', textoBotao: 'Entendi' });
+    }
+  }, [searchParams]);
 
   const handleLogin = async (e: any) => {
     e.preventDefault();

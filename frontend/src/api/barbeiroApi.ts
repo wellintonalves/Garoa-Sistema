@@ -30,18 +30,7 @@ barbeiroApi.interceptors.request.use((config) => {
 // Interceptor — redireciona para login do barbeiro em caso de 401
 barbeiroApi.interceptors.response.use(
   (response) => response,
-  (error) => {
-    const url = error.config?.url || '';
-    const rotasCriticas = ['/barbeiro/perfil', '/barbeiro/agenda-hoje'];
-    const ehRotaCritica = rotasCriticas.some((r) => url.includes(r));
-    return handleApiError(error, () => {
-      if (ehRotaCritica && window.location.pathname.startsWith('/barbeiro')) {
-        localStorage.removeItem('@garoa:barbeiro_token');
-        localStorage.removeItem('@garoa:barbeiro_dados');
-        window.location.href = '/barbeiro/login';
-      }
-    });
-  }
+  (error) => handleApiError(error)
 );
 
 export default barbeiroApi;
