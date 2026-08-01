@@ -97,12 +97,12 @@ function getBarbeiroColor(id: string, listaBarbeiros: {id: string}[] = []): stri
 
 export function Agenda() {
   const [semanaInicio, setSemanaInicio] = useState(() => {
-    const d = new Date(); d.setDate(d.getDate() - d.getDay() + 1); d.setHours(0, 0, 0, 0); return d;
+    const d = new Date(hojeBrasilia() + 'T12:00:00-03:00'); d.setDate(d.getDate() - d.getDay() + 1); return d;
   });
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [viewMode, setViewMode] = useState<'day' | 'week'>('day');
   const [diaMobile, setDiaMobile] = useState(() => {
-    const d = new Date(); d.setHours(0, 0, 0, 0); return d;
+    const d = new Date(hojeBrasilia() + 'T12:00:00-03:00'); return d;
   });
 
   useEffect(() => {
@@ -285,7 +285,6 @@ export function Agenda() {
       if (novaStr < inicioStr || novaStr > fimStr) {
         const novaSemana = new Date(nova);
         novaSemana.setDate(novaSemana.getDate() - novaSemana.getDay() + 1);
-        novaSemana.setHours(0, 0, 0, 0);
         setSemanaInicio(novaSemana);
       }
     } else {
