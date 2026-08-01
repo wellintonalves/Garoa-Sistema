@@ -131,12 +131,17 @@ export function BarbeiroAgenda() {
       {/* Seletor de Data */}
       <div className="mb-8 max-w-xs">
         <label className="input-label flex items-center gap-1 mb-2"><CalendarIcon size={14} />Escolha a Data</label>
-        <input 
-          type="date" 
-          value={dataSel} 
-          onChange={(e) => setDataSel(e.target.value)}
-          className="ds-input text-lg" 
-        />
+        <div className="flex gap-2">
+          <input 
+            type="date" 
+            value={dataSel} 
+            onChange={(e) => setDataSel(e.target.value)}
+            className="ds-input flex-1" 
+          />
+          <button onClick={() => setDataSel(hojeBrasilia())} className="btn-secondary whitespace-nowrap">
+            Ir para Hoje
+          </button>
+        </div>
       </div>
 
       {/* Lista de Agendamentos e Bloqueios (Formato Calendário) */}
@@ -181,7 +186,7 @@ export function BarbeiroAgenda() {
               const dtBase = `${dataSel}T${horario}:00-03:00`;
               
               const ags = agendamentos.filter(ag => {
-                const h = new Date(ag.dataHora).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                const h = new Date(ag.dataHora).toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit' });
                 return h === horario;
               });
 
