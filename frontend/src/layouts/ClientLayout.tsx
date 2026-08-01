@@ -13,7 +13,7 @@ export function ClientLayout() {
 
   useEffect(() => {
     if (slug) {
-      api.get(`/b/${slug}`).then((res) => {
+      api.get(`/publico/barbearia/slug/${slug}`).then((res) => {
         setBarbearia(res.data);
       }).catch(() => {
         navigate('/login');

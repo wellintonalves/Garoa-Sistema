@@ -18,7 +18,7 @@ export function Convite() {
     }
 
     // Busca a barbearia pelo slug
-    clienteApi.get(`/cliente/buscar-barbearia-slug/${slug}`)
+    clienteApi.get(`/publico/barbearia/slug/${slug}`)
       .then((res: any) => {
         setBarbearia(res.data);
         

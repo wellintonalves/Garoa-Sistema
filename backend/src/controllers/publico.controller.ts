@@ -12,6 +12,32 @@ import {
 import { HorariosUtil } from '../services/horarios.util';
 
 export class PublicoController {
+  /** GET /publico/barbearia/slug/:slug */
+  static async buscarBarbeariaPorSlug(req: Request, res: Response): Promise<void> {
+    try {
+      const { slug } = req.params;
+      const barbearia = await prisma.barbearia.findUnique({
+        where: { slug: slug as string },
+        select: {
+          id: true,
+          nome: true,
+          slug: true,
+          logo: true,
+          endereco: true,
+        },
+      });
+
+      if (!barbearia) {
+        res.status(404).json({ erro: 'Barbearia não encontrada' });
+        return;
+      }
+
+      res.json(barbearia);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ erro: 'Erro ao buscar barbearia' });
+    }
+  }
   /** GET /publico/servicos */
   static async listarServicos(_req: Request, res: Response): Promise<void> {
     try {
