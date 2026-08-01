@@ -240,11 +240,32 @@ export class ClienteAppController {
       const clienteId = req.cliente?.clienteId;
       if (!clienteId) { res.status(401).json({ erro: 'Não autorizado' }); return; }
 
+      const { servicosIds, barbeiroId, data, hora } = req.body;
+      const camposInvalidos: string[] = [];
+      if (!servicosIds || !Array.isArray(servicosIds) || servicosIds.length === 0) camposInvalidos.push('servicosIds');
+      if (!barbeiroId) camposInvalidos.push('barbeiroId');
+      if (!data) camposInvalidos.push('data');
+      if (!hora) camposInvalidos.push('hora');
+
+      if (camposInvalidos.length > 0) {
+        res.status(400).json({ erro: 'Dados inválidos', campos: camposInvalidos });
+        return;
+      }
+
       const agendamento = await ClienteAppService.agendar(clienteId, req.params.barbeariaId, req.body);
       res.status(201).json(agendamento);
-    } catch (error) {
+    } catch (error: any) {
       console.error('[ClienteAppController.agendar] Erro:', error);
-      res.status(400).json({ erro: 'Não foi possível concluir o agendamento' });
+      const msg = error instanceof Error ? error.message : 'Erro inesperado';
+      
+      let statusCode = 400;
+      if (msg.toLowerCase().includes('não encontrad')) statusCode = 404;
+      else if (msg.toLowerCase().includes('ocupado') || msg.toLowerCase().includes('indisponível') || msg.toLowerCase().includes('conflito') || msg.toLowerCase().includes('bloqueado')) statusCode = 409;
+      else if (msg.toLowerCase().includes('inesperado')) statusCode = 500;
+      
+      const safeMsg = (msg.includes('Prisma') || msg.includes('Database')) ? 'Não foi possível concluir o agendamento' : msg;
+
+      res.status(statusCode).json({ erro: safeMsg });
     }
   }
 

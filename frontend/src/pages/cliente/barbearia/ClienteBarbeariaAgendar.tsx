@@ -192,7 +192,7 @@ export function ClienteBarbeariaAgendar() {
     setEnviando(true);
     try {
       await clienteApi.post(`/cliente/barbearia/${barbeariaId}/agendar`, {
-        servicoId: servicosSel[0]?.id,
+        servicosIds: servicosSel.map(s => s.id),
         barbeiroId: barbeiroSel.id,
         data: dataSel,
         hora: horarioSel,
