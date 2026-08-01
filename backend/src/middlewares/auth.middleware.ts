@@ -36,6 +36,43 @@ export function authMiddleware(req: AuthRequest, res: Response, next: NextFuncti
       next();
     }
   } catch {
-    res.status(401).json({ erro: 'Token inválido ou expirado' });
+    // Tenta validar como token de barbeiro (necessário pois barbeiros acessam rotas protegidas como /bloqueios)
+    try {
+      const decodedBarbeiro = jwt.verify(token, authConfig.secretBarbeiro) as any;
+      
+      if (decodedBarbeiro.barbeiroId) {
+        req.usuario = {
+          id: decodedBarbeiro.usuarioId,
+          nome: decodedBarbeiro.nome,
+          email: decodedBarbeiro.email,
+          papel: 'BARBEIRO',
+          barbeariaId: decodedBarbeiro.barbeariaId
+        } as UsuarioJWT;
+
+        if (decodedBarbeiro.barbeariaId) {
+          const { tenantStorage } = require('../lib/als');
+          tenantStorage.run({ barbeariaId: decodedBarbeiro.barbeariaId }, () => {
+            next();
+          });
+        } else {
+          // Fallback legacy
+          const { prisma } = require('../lib/prisma');
+          prisma.barbeiro.findUnique({ where: { id: decodedBarbeiro.barbeiroId }, select: { barbeariaId: true } })
+            .then((b: any) => {
+              if (b?.barbeariaId) {
+                const { tenantStorage } = require('../lib/als');
+                tenantStorage.run({ barbeariaId: b.barbeariaId }, () => next());
+              } else {
+                next();
+              }
+            })
+            .catch(() => next());
+        }
+      } else {
+        throw new Error('Não é um token de barbeiro válido');
+      }
+    } catch {
+      res.status(401).json({ erro: 'Token inválido ou expirado' });
+    }
   }
 }
