@@ -18,6 +18,7 @@ interface Barbeiro {
   comissaoPercent: number;
   cor: string;
   ativo: boolean;
+  horariosTrabalho?: any;
   usuario: { id: string; nome: string; email: string };
   _count?: {
     agendamentos: number;
@@ -251,6 +252,21 @@ export function Barbeiros() {
                 >
                   {totalHistorico > 0 ? `${totalHistorico} registro${totalHistorico !== 1 ? 's' : ''} no histórico` : 'Sem histórico'}
                 </p>
+                {!b.horariosTrabalho && (
+                  <p
+                    style={{
+                      fontFamily: 'var(--fonte-interface)',
+                      fontSize: '10px',
+                      color: 'var(--amber)',
+                      letterSpacing: '0.04em',
+                      marginTop: '4px',
+                      fontWeight: 600
+                    }}
+                    title="Este barbeiro não tem jornada própria. A agenda usará os horários da barbearia."
+                  >
+                    ⚠️ Jornada não configurada
+                  </p>
+                )}
               </div>
               {/* Indicadores */}
               <div className="ml-auto flex flex-col gap-1 items-end">
