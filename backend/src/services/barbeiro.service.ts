@@ -37,7 +37,7 @@ export class BarbeiroService {
           select: { id: true, nome: true, email: true, papel: true },
         },
         _count: {
-          select: { agendamentos: true, comissoes: true, movimentacoes: true }
+          select: { agendamentos: true, lancamentos: true }
         }
       },
       orderBy: { usuario: { nome: 'asc' } },
@@ -158,7 +158,7 @@ export class BarbeiroService {
       where: { id },
       include: {
         _count: {
-          select: { agendamentos: true, comissoes: true, movimentacoes: true }
+          select: { agendamentos: true, lancamentos: true }
         }
       }
     });
@@ -167,8 +167,8 @@ export class BarbeiroService {
       throw new Error('Barbeiro não encontrado');
     }
 
-    const { agendamentos, comissoes, movimentacoes } = barbeiro._count;
-    if (agendamentos > 0 || comissoes > 0 || movimentacoes > 0) {
+    const { agendamentos, lancamentos } = barbeiro._count;
+    if (agendamentos > 0 || lancamentos > 0) {
       throw new Error('Este barbeiro possui histórico de atendimentos e não pode ser excluído. Ele permanecerá nos relatórios, mas não aparecerá na agenda nem em novos agendamentos.');
     }
 
