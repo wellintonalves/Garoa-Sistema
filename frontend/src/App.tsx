@@ -46,6 +46,8 @@ const ClienteBarbeariaAgendar = lazy(() => import('./pages/cliente/barbearia/Cli
 const ClienteBarbeariaFidelidade = lazy(() => import('./pages/cliente/barbearia/ClienteBarbeariaFidelidade').then(m => ({ default: m.ClienteBarbeariaFidelidade })));
 const ClienteBarbeariaPerfil = lazy(() => import('./pages/cliente/barbearia/ClienteBarbeariaPerfil').then(m => ({ default: m.ClienteBarbeariaPerfil })));
 const ClienteBarbeariaChat = lazy(() => import('./pages/cliente/barbearia/ClienteBarbeariaChat').then(m => ({ default: m.ClienteBarbeariaChat })));
+const ClienteBarbeariaHistorico = lazy(() => import('./pages/cliente/barbearia/ClienteBarbeariaHistorico').then(m => ({ default: m.ClienteBarbeariaHistorico })));
+const Convite = lazy(() => import('./pages/cliente/Convite').then(m => ({ default: m.Convite })));
 
 
 const AdminLogin = lazy(() => import('./pages/admin/AdminLogin').then(m => ({ default: m.AdminLogin })));
@@ -86,6 +88,7 @@ export function App() {
                   <Route path="/cadastro" element={<ClienteCadastro />} />
                   <Route path="/verificar-email" element={<VerificarEmail />} />
                   <Route path="/recuperar-senha" element={<RecuperarSenha />} />
+                  <Route path="/convite/:slug/:codigo" element={<Convite />} />
 
                   {/* === App do Cliente (após login) === */}
                   <Route path="/cliente/home" element={<ClienteHome />} />
@@ -93,6 +96,7 @@ export function App() {
                   <Route path="/cliente/barbearia/:barbeariaId" element={<ErrorBoundary><ClienteLayout /></ErrorBoundary>}>
                     <Route index element={<ClienteBarbeariaInicio />} />
                     <Route path="agendar" element={<ClienteBarbeariaAgendar />} />
+                    <Route path="historico" element={<ClienteBarbeariaHistorico />} />
                     <Route path="fidelidade" element={<ClienteBarbeariaFidelidade />} />
                     <Route path="perfil" element={<ClienteBarbeariaPerfil />} />
                     <Route path="chat" element={<ClienteBarbeariaChat />} />
