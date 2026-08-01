@@ -185,7 +185,7 @@ export function ClienteBarbeariaDisponibilidade() {
                 style={{
                   background: isSel ? 'var(--amber)' : 'var(--superficie-1)',
                   borderColor: isSel ? 'var(--amber)' : 'var(--borda)',
-                  color: isSel ? '#000' : 'var(--text-primary)'
+                  color: isSel ? 'var(--texto-sobre-primaria)' : 'var(--text-primary)'
                 }}
               >
                 <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', fontWeight: 600, opacity: isSel ? 0.8 : 0.6 }}>{fmtDiaSemana(dStr)}</span>

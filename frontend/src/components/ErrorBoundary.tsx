@@ -40,7 +40,7 @@ export class ErrorBoundary extends Component<Props, State> {
             </p>
             <button
               onClick={() => window.location.reload()}
-              style={{ background: 'var(--amber)', color: '#000', fontWeight: 600, fontFamily: 'var(--fonte-interface)', fontSize: '14px', padding: '12px 24px', borderRadius: '8px', cursor: 'pointer', border: 'none' }}
+              style={{ background: 'var(--amber)', color: 'var(--texto-sobre-primaria)', fontWeight: 600, fontFamily: 'var(--fonte-interface)', fontSize: '14px', padding: '12px 24px', borderRadius: '8px', cursor: 'pointer', border: 'none' }}
             >
               Tentar Novamente
             </button>
