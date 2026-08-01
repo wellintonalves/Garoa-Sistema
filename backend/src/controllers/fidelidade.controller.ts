@@ -44,6 +44,7 @@ export class FidelidadeController {
         pontosPorVisita,
         pontosDobroAniversario,
         pontosPorIndicacao,
+        pontosParaIndicado,
         pontosBoasVindas,
         regrasPorServico,
       } = req.body;
@@ -56,6 +57,7 @@ export class FidelidadeController {
           pontosPorVisita,
           pontosDobroAniversario,
           pontosPorIndicacao: pontosPorIndicacao ?? 0,
+          pontosParaIndicado: pontosParaIndicado ?? 0,
           pontosBoasVindas: pontosBoasVindas ?? 0,
           regrasPorServico: regrasPorServico ?? null,
         },
@@ -66,6 +68,7 @@ export class FidelidadeController {
           pontosPorVisita,
           pontosDobroAniversario,
           pontosPorIndicacao: pontosPorIndicacao ?? 0,
+          pontosParaIndicado: pontosParaIndicado ?? 0,
           pontosBoasVindas: pontosBoasVindas ?? 0,
           regrasPorServico: regrasPorServico ?? null,
         },

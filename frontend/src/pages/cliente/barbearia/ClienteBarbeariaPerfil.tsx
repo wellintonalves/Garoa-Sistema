@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useClienteAuth } from '../../../hooks/useClienteAuth';
 import { SeletorTema } from '../../../components/SeletorTema';
+import { ModalAlert } from '../../../components/ModalAlert';
 import { User, SignOut, LinkBreak, Scissors, FloppyDisk, Monitor, CalendarCheck, CalendarX, CurrencyDollar, Medal } from '@phosphor-icons/react';
 import clienteApi from '../../../api/clienteApi';
 import { SkeletonCard, SkeletonText } from '../../../components/ui/Skeleton';
@@ -48,6 +49,7 @@ export function ClienteBarbeariaPerfil() {
   const [salvando, setSalvando] = useState(false);
   const [carregando, setCarregando] = useState(true);
   const [mensagem, setMensagem] = useState('');
+  const [modalObj, setModalObj] = useState<{aberto: boolean; titulo: string; mensagem: string; tipo: 'erro'|'sucesso'|'aviso'|'info'; isConfirm?: boolean, onConfirm?: () => void, textoBotao?: string}>({ aberto: false, titulo: '', mensagem: '', tipo: 'info' });
 
   // Stats por barbearia (calculados dos agendamentos da barbearia atual)
   const [statsLocais, setStatsLocais] = useState<{ atendimentos: number; faltas: number; gastoTotal: number } | null>(null);
@@ -98,13 +100,25 @@ export function ClienteBarbeariaPerfil() {
     }
   }
 
-  async function desconectar(barbId: string) {
-    if (!confirm('Desconectar desta barbearia? Você deixará de acessá-la na sua lista rápida.')) return;
-    try {
-      await clienteApi.delete(`/cliente/desconectar-barbearia/${barbId}`);
-      setBarbearias(prev => prev.filter(b => b.id !== barbId));
-    } catch { /* empty */ }
-  }
+  const handleDesconectar = async (barbId: string) => {
+    setModalObj({
+      aberto: true,
+      titulo: 'Desconectar Barbearia',
+      mensagem: 'Desconectar desta barbearia? Você deixará de acessá-la na sua lista rápida.',
+      tipo: 'aviso',
+      isConfirm: true,
+      textoBotao: 'Desconectar',
+      onConfirm: async () => {
+        try {
+          await clienteApi.delete(`/cliente/desconectar-barbearia/${barbId}`);
+          setBarbearias(prev => prev.filter(b => b.id !== barbId));
+          setModalObj(m => ({ ...m, aberto: false }));
+        } catch { 
+          setModalObj({ aberto: true, titulo: 'Erro', mensagem: 'Erro ao desconectar', tipo: 'erro', textoBotao: 'Entendi' });
+        }
+      }
+    });
+  };
 
   function handleLogout() {
     logout();
@@ -259,9 +273,12 @@ export function ClienteBarbeariaPerfil() {
                   </div>
                   <span style={{ fontFamily: 'var(--fonte-interface)', fontWeight: 600, color: 'var(--text-primary)', fontSize: '14px' }}>{b.nome}</span>
                 </div>
-                <button onClick={() => desconectar(b.id)}
-                  className="p-2 text-[var(--texto-secundario)] hover:text-[var(--erro)] transition-colors"
-                  title="Desconectar barbearia">
+                <button
+                  onClick={() => handleDesconectar(b.id)}
+                  className="w-10 h-10 flex items-center justify-center rounded-lg border border-[var(--borda)] flex-shrink-0 transition-colors"
+                  style={{ color: 'var(--erro)' }}
+                  aria-label="Desconectar desta barbearia"
+                >
                   <LinkBreak size={18} />
                 </button>
               </div>
@@ -278,6 +295,19 @@ export function ClienteBarbeariaPerfil() {
           <SignOut size={18} weight="bold" /> Sair da Conta
         </button>
       </div>
+
+      <ModalAlert 
+        aberto={modalObj.aberto} 
+        titulo={modalObj.titulo} 
+        mensagem={modalObj.mensagem} 
+        tipo={modalObj.tipo} 
+        isConfirm={modalObj.isConfirm}
+        textoBotao={modalObj.textoBotao || 'Entendi'}
+        onConfirmar={modalObj.onConfirm}
+        onFechar={() => {
+          setModalObj(m => ({ ...m, aberto: false }));
+        }} 
+      />
     </div>
   );
 }

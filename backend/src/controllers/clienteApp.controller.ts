@@ -211,9 +211,13 @@ export class ClienteAppController {
   /** GET /cliente/barbearia/:barbeariaId/horarios-disponiveis */
   static async horariosDisponiveis(req: ClienteAuthRequest, res: Response): Promise<void> {
     try {
-      const { barbeiroId, data, servicoId } = req.query;
-      if (!barbeiroId || !data || !servicoId) {
-        res.status(400).json({ erro: 'barbeiroId, data e servicoId são obrigatórios' });
+      const { barbeiroId, data, servicoId, servicosIds } = req.query;
+      if (!barbeiroId || !data) {
+        res.status(400).json({ erro: 'barbeiroId e data são obrigatórios' });
+        return;
+      }
+      if (!servicoId && !servicosIds) {
+        res.status(400).json({ erro: 'servicoId ou servicosIds é obrigatório' });
         return;
       }
 
@@ -221,7 +225,7 @@ export class ClienteAppController {
         req.params.barbeariaId,
         barbeiroId as string,
         data as string,
-        servicoId as string
+        (servicosIds as string) || (servicoId as string)
       );
       res.json(slots);
     } catch (error) {
@@ -239,8 +243,8 @@ export class ClienteAppController {
       const agendamento = await ClienteAppService.agendar(clienteId, req.params.barbeariaId, req.body);
       res.status(201).json(agendamento);
     } catch (error) {
-      const msg = error instanceof Error ? error.message : 'Erro ao agendar';
-      res.status(400).json({ erro: msg });
+      console.error('[ClienteAppController.agendar] Erro:', error);
+      res.status(400).json({ erro: 'Não foi possível concluir o agendamento' });
     }
   }
 

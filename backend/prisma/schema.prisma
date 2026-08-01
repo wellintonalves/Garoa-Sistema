@@ -351,6 +351,7 @@ model ConfiguracaoFidelidade {
   pontosPorVisita        Int      @default(0)
   pontosDobroAniversario Boolean  @default(false)
   pontosPorIndicacao     Int      @default(0)
+  pontosParaIndicado     Int      @default(0)
   pontosBoasVindas       Int      @default(0)
   regrasPorServico       Json?
   createdAt              DateTime @default(now())

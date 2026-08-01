@@ -1,12 +1,13 @@
-
 import { useNavigate, useParams } from 'react-router-dom';
 import { useClientAuth } from '../../hooks/useClientAuth';
 import { useState } from 'react';
 import { api } from '../../api';
+import { ModalAlert } from '../../components/ModalAlert';
 
 export function LoginClient() {
   const navigate = useNavigate();
   const { slug } = useParams();
+  const [modalObj, setModalObj] = useState<{aberto: boolean; titulo: string; mensagem: string; tipo: 'erro'|'sucesso'|'aviso'|'info'; isConfirm?: boolean, onConfirm?: () => void, textoBotao?: string}>({ aberto: false, titulo: '', mensagem: '', tipo: 'info' });
   const { entrar } = useClientAuth();
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
@@ -17,8 +18,8 @@ export function LoginClient() {
       const res = await api.post('/b/' + slug + '/auth/login', { email, senha });
       entrar(slug as string, res.data.token, res.data.usuario);
       navigate('/b/' + slug + '/app');
-    } catch (err) {
-      alert('Erro no login');
+    } catch (err: any) {
+      setModalObj({ aberto: true, titulo: 'Falha no login', mensagem: err.response?.data?.erro || 'Erro no login', tipo: 'erro', textoBotao: 'Entendi' });
     }
   };
 
@@ -30,6 +31,19 @@ export function LoginClient() {
         <input className='mb-6 p-2 rounded bg-[var(--superficie-2)] border-[var(--borda-forte)] border bg-[var(--superficie-2)] border-[var(--borda-forte)] text-[var(--texto-principal)]' type='password' placeholder='Senha' value={senha} onChange={e => setSenha(e.target.value)} required />
         <button type='submit' className='bg-orange-500 text-[var(--texto-principal)] p-2 rounded font-semibold'>Entrar</button>
       </form>
+
+      <ModalAlert 
+        aberto={modalObj.aberto} 
+        titulo={modalObj.titulo} 
+        mensagem={modalObj.mensagem} 
+        tipo={modalObj.tipo} 
+        isConfirm={modalObj.isConfirm}
+        textoBotao={modalObj.textoBotao || 'Entendi'}
+        onConfirmar={modalObj.onConfirm}
+        onFechar={() => {
+          setModalObj(m => ({ ...m, aberto: false }));
+        }} 
+      />
     </div>
   );
 }

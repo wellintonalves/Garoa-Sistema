@@ -123,19 +123,36 @@ export async function creditarPontosPorAgendamento(agendamentoId: string) {
 
         if (indicacao) {
           const pontosIndicacao = (config as any).pontosPorIndicacao as number;
-          await prisma.pontoFidelidade.create({
-            data: {
-              clienteId: indicacao.indicadorId,
-              barbeariaId: agendamento.barbeariaId,
-              pontos: pontosIndicacao,
-              descricao: 'Indicação bem-sucedida — amigo completou primeiro agendamento',
-            },
-          });
+          const pontosParaIndicado = (config as any).pontosParaIndicado as number || 0;
+
+          if (pontosIndicacao > 0) {
+            await prisma.pontoFidelidade.create({
+              data: {
+                clienteId: indicacao.indicadorId,
+                barbeariaId: agendamento.barbeariaId,
+                pontos: pontosIndicacao,
+                descricao: 'Indicação bem-sucedida — amigo completou primeiro agendamento',
+              },
+            });
+            console.log(`[Fidelidade] ${pontosIndicacao} pontos de indicação registrados para indicador ${indicacao.indicadorId}`);
+          }
+
+          if (pontosParaIndicado > 0) {
+            await prisma.pontoFidelidade.create({
+              data: {
+                clienteId: indicacao.indicadoId,
+                barbeariaId: agendamento.barbeariaId,
+                pontos: pontosParaIndicado,
+                descricao: 'Ganho de pontos por ser indicado',
+              },
+            });
+            console.log(`[Fidelidade] ${pontosParaIndicado} pontos registrados para indicado ${indicacao.indicadoId}`);
+          }
+
           await (prisma as any).indicacao.update({
             where: { id: indicacao.id },
             data: { pontosAwardados: true },
           });
-          console.log(`[Fidelidade] ${pontosIndicacao} pontos de indicação registrados para indicador ${indicacao.indicadorId}`);
         }
       }
     }

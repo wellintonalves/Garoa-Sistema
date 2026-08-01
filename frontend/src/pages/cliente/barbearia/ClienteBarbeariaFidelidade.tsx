@@ -1,16 +1,17 @@
 // Aba Fidelidade — pontos, progresso e histórico
 import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import { Gift, CheckCircle, XCircle, Clock, ShareNetwork, Copy } from '@phosphor-icons/react';
+import { useParams, useOutletContext } from 'react-router-dom';
+import { Gift, CheckCircle, Clock, ShareNetwork, Copy } from '@phosphor-icons/react';
 import clienteApi from '../../../api/clienteApi';
 import { SkeletonCard, SkeletonText } from '../../../components/ui/Skeleton';
 import { EstadoVazio } from '../../../components/ui/EstadoVazio';
+import { ModalAlert } from '../../../components/ModalAlert';
 
 interface FidelidadeData {
   saldo: number;
   totalGanhos: number;
   totalUsados: number;
-  config: { ativo: boolean };
+  config: { ativo: boolean; pontosPorIndicacao: number; pontosParaIndicado: number; };
   recompensas: Array<{ 
     id: string; 
     nome: string; 
@@ -27,10 +28,10 @@ export function ClienteBarbeariaFidelidade() {
   const [dados, setDados] = useState<FidelidadeData | null>(null);
   const [carregando, setCarregando] = useState(true);
   const [resgatando, setResgatando] = useState<string | null>(null);
-  const [mensagemSucesso, setMensagemSucesso] = useState<string | null>(null);
-  const [mensagemErro, setMensagemErro] = useState<string | null>(null);
+  const [modalObj, setModalObj] = useState<{aberto: boolean; titulo: string; mensagem: string; tipo: 'erro'|'sucesso'|'aviso'|'info'; isConfirm?: boolean, onConfirm?: () => void, textoBotao?: string}>({ aberto: false, titulo: '', mensagem: '', tipo: 'info' });
   const [codigoIndicacao, setCodigoIndicacao] = useState<string | null>(null);
   const [copiado, setCopiado] = useState(false);
+  const { barbearia } = useOutletContext<{ barbearia: any }>();
 
   useEffect(() => {
     carregarFidelidade();
@@ -49,30 +50,92 @@ export function ClienteBarbeariaFidelidade() {
     }
   }
 
-  function copiarCodigo() {
-    if (codigoIndicacao) {
-      navigator.clipboard.writeText(codigoIndicacao).then(() => {
-        setCopiado(true);
-        setTimeout(() => setCopiado(false), 2000);
+  async function handleCopiarCodigo() {
+    if (!codigoIndicacao || !barbearia?.slug) return;
+    const urlPublica = import.meta.env.VITE_URL_PUBLICA || window.location.origin;
+    const texto = `${urlPublica}/convite/${barbearia.slug}/${codigoIndicacao}`;
+
+    const fallbackCopy = () => {
+      try {
+        const textArea = document.createElement("textarea");
+        textArea.value = texto;
+        textArea.style.position = "fixed";
+        textArea.style.left = "-999999px";
+        textArea.style.top = "-999999px";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        const successful = document.execCommand('copy');
+        textArea.remove();
+        return successful;
+      } catch (err) {
+        return false;
+      }
+    };
+
+    let sucesso = false;
+
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(texto);
+        sucesso = true;
+      } else {
+        sucesso = fallbackCopy();
+      }
+    } catch (err) {
+      sucesso = fallbackCopy();
+    }
+
+    if (sucesso) {
+      setCopiado(true);
+      setTimeout(() => setCopiado(false), 2000);
+    } else {
+      setModalObj({
+        aberto: true,
+        titulo: 'Copiar link',
+        mensagem: 'Não foi possível copiar automaticamente.',
+        tipo: 'erro',
+        textoBotao: 'Entendi'
+      });
+    }
+  }
+
+  function compartilharCodigo() {
+    if (!codigoIndicacao || !barbearia?.slug) return;
+    const urlPublica = import.meta.env.VITE_URL_PUBLICA || window.location.origin;
+    const url = `${urlPublica}/convite/${barbearia.slug}/${codigoIndicacao}`;
+    if (navigator.share) {
+      navigator.share({
+        title: 'Convite para Barbearia',
+        text: `Ganhe pontos e prêmios na nossa barbearia!`,
+        url: url,
+      }).catch((err) => {
+        console.log('Erro ao compartilhar', err);
       });
     }
   }
 
   async function resgatar(recompensaId: string) {
-    if (!confirm('Deseja realmente resgatar esta recompensa?')) return;
-    
-    setResgatando(recompensaId);
-    try {
-      await clienteApi.post(`/cliente/barbearia/${barbeariaId}/fidelidade/resgatar`, { recompensaId });
-      setMensagemSucesso('Solicitação enviada! Confirme no caixa na sua próxima visita.');
-      carregarFidelidade();
-      setTimeout(() => setMensagemSucesso(null), 5000);
-    } catch (error: any) {
-      setMensagemErro(error.response?.data?.erro || 'Erro ao resgatar recompensa.');
-      setTimeout(() => setMensagemErro(null), 5000);
-    } finally {
-      setResgatando(null);
-    }
+    setModalObj({
+      aberto: true,
+      titulo: 'Confirmar resgate',
+      mensagem: 'Deseja realmente resgatar esta recompensa?',
+      tipo: 'aviso',
+      isConfirm: true,
+      textoBotao: 'Resgatar',
+      onConfirm: async () => {
+        setResgatando(recompensaId);
+        try {
+          await clienteApi.post(`/cliente/barbearia/${barbeariaId}/fidelidade/resgatar`, { recompensaId });
+          setModalObj({ aberto: true, titulo: 'Sucesso', mensagem: 'Solicitação enviada! Confirme no caixa na sua próxima visita.', tipo: 'sucesso', textoBotao: 'Entendi' });
+          carregarFidelidade();
+        } catch (error: any) {
+          setModalObj({ aberto: true, titulo: 'Erro', mensagem: error.response?.data?.erro || 'Erro ao resgatar recompensa.', tipo: 'erro', textoBotao: 'Entendi' });
+        } finally {
+          setResgatando(null);
+        }
+      }
+    });
   }
 
   if (carregando) {
@@ -101,7 +164,6 @@ export function ClienteBarbeariaFidelidade() {
     );
   }
 
-  // Cálculos para o anel de progresso
   const proximas = [...dados.recompensas].sort((a,b) => a.pontosNecessarios - b.pontosNecessarios).filter(r => r.pontosNecessarios > dados.saldo);
   const proxima = proximas.length > 0 ? proximas[0] : null;
   const maxPontos = proxima ? proxima.pontosNecessarios : (dados.recompensas.length > 0 ? Math.max(...dados.recompensas.map(r => r.pontosNecessarios)) : 100);
@@ -113,21 +175,6 @@ export function ClienteBarbeariaFidelidade() {
 
   return (
     <div className="px-5 py-6 animate-fade-in max-w-2xl mx-auto pb-32 md:pb-16">
-      {/* Alertas */}
-      {mensagemSucesso && (
-        <div className="mb-6 p-4 rounded-md flex items-center gap-3 animate-fade-in" style={{ background: 'var(--sucesso-fundo)', border: '1px solid var(--sucesso)' }}>
-          <CheckCircle weight="fill" style={{ color: 'var(--sucesso)' }} size={20} />
-          <span style={{ color: 'var(--sucesso)', fontSize: '13px', fontFamily: 'var(--fonte-interface)', fontWeight: 600 }}>{mensagemSucesso}</span>
-        </div>
-      )}
-      {mensagemErro && (
-        <div className="mb-6 p-4 rounded-md flex items-center gap-3 animate-fade-in" style={{ background: 'var(--perigo-fundo)', border: '1px solid var(--erro)' }}>
-          <XCircle weight="fill" style={{ color: 'var(--erro)' }} size={20} />
-          <span style={{ color: 'var(--erro)', fontSize: '13px', fontFamily: 'var(--fonte-interface)', fontWeight: 600 }}>{mensagemErro}</span>
-        </div>
-      )}
-
-      {/* Título Principal */}
       <div className="mb-8">
         <h1 style={{ fontFamily: 'var(--fonte-serif)', fontSize: '24px', fontWeight: 600, color: 'var(--text-primary)' }}>
           Seus Pontos
@@ -137,18 +184,15 @@ export function ClienteBarbeariaFidelidade() {
         </p>
       </div>
 
-      {/* Progress Ring (SVG) */}
       <div className="flex flex-col items-center justify-center mb-10 p-6 rounded-xl bg-[var(--fundo-sidebar)] border border-[var(--borda)] shadow-sm">
         <div className="relative flex items-center justify-center mb-4">
           <svg className="transform -rotate-90" width="180" height="180">
-            {/* Fundo do anel */}
             <circle
               cx="90" cy="90" r={raio}
               fill="transparent"
               stroke="var(--superficie-2)"
               strokeWidth="10"
             />
-            {/* Anel de progresso com glow */}
             <circle
               cx="90" cy="90" r={raio}
               fill="transparent"
@@ -184,7 +228,6 @@ export function ClienteBarbeariaFidelidade() {
         ) : null}
       </div>
 
-      {/* Recompensas */}
       <div className="mb-10">
         <h2 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--texto-secundario)', marginBottom: '16px', fontWeight: 600 }}>
           Prêmios Disponíveis
@@ -232,37 +275,64 @@ export function ClienteBarbeariaFidelidade() {
         )}
       </div>
 
-      {/* Código de Indicação */}
       {codigoIndicacao && (
         <div className="mb-10 p-5 rounded-xl" style={{ background: 'var(--fundo-sidebar)', border: '1px solid var(--borda)' }}>
           <div className="flex items-center gap-2 mb-2">
             <ShareNetwork size={18} style={{ color: 'var(--amber)' }} weight="bold" />
             <h2 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>
-              Indique amigos e ganhe pontos
+              Indique amigos
             </h2>
           </div>
-          <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '12px', color: 'var(--texto-secundario)', marginBottom: '14px', lineHeight: 1.5 }}>
-            Compartilhe seu código exclusivo. Quando um amigo concluir o primeiro agendamento, você é recompensado automaticamente!
+          <p style={{ fontSize: '12px', color: 'var(--texto-secundario)', marginBottom: '16px' }}>
+            {dados.config.pontosPorIndicacao > 0 ? (
+              <>
+                Convide amigos e ganhe <strong>{dados.config.pontosPorIndicacao} pontos</strong> por amigo que concluir o 1º agendamento.
+                {dados.config.pontosParaIndicado > 0 && ` Seu amigo também ganha ${dados.config.pontosParaIndicado} pontos ao se cadastrar!`}
+              </>
+            ) : (
+              "Convide amigos para a barbearia. Compartilhe seu código exclusivo."
+            )}
           </p>
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-            <div className="min-w-0 break-all text-center rounded-lg p-3 sm:flex-1 font-mono font-bold text-lg sm:text-xl tracking-[0.2em] sm:tracking-[0.35em]" style={{
-              background: 'var(--fundo-input)', border: '1px solid var(--amber)', color: 'var(--amber)'
-            }}>
-              {codigoIndicacao}
+          
+          <div className="mb-4">
+            <label style={{ display: 'block', fontSize: '12px', color: 'var(--texto-secundario)', marginBottom: '6px', fontWeight: 600 }}>
+              Seu código de indicação (para ditar):
+            </label>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <strong style={{ fontSize: '16px', letterSpacing: '0.05em', color: 'var(--text-primary)', fontFamily: 'var(--fonte-interface)' }}>{codigoIndicacao}</strong>
             </div>
-            <button onClick={copiarCodigo} className="min-h-[48px] w-full sm:w-auto flex items-center justify-center gap-2 rounded-lg font-interface font-semibold text-xs px-4 py-3 transition-all duration-200" style={{
+          </div>
+          <div className="flex gap-2 mb-4">
+            <input
+              type="text"
+              readOnly
+              value={`${import.meta.env.VITE_URL_PUBLICA || window.location.origin}/convite/${barbearia?.slug || ''}/${codigoIndicacao || ''}`}
+              style={{ flex: 1, padding: '12px', borderRadius: '8px', border: '1px solid var(--borda)', background: 'var(--fundo-superficie)', color: 'var(--text-primary)', fontSize: '13px' }}
+            />
+          </div>
+          <div className="flex gap-2">
+            <button onClick={handleCopiarCodigo} className="flex-1 flex items-center justify-center gap-2 rounded-lg font-interface font-semibold text-xs px-4 py-3 transition-all duration-200" style={{
               background: copiado ? 'var(--sucesso-fundo)' : 'rgba(var(--cor-primaria-rgb), 0.15)',
               border: `1px solid ${copiado ? 'var(--sucesso)' : 'var(--amber)'}`,
               color: copiado ? 'var(--sucesso)' : 'var(--amber)',
             }}>
               {copiado ? <CheckCircle size={18} weight="fill" /> : <Copy size={18} />}
-              {copiado ? 'Copiado!' : 'Copiar'}
+              {copiado ? 'Copiado!' : 'Copiar Link'}
             </button>
+            {typeof navigator.share === 'function' && (
+              <button onClick={compartilharCodigo} className="flex-1 flex items-center justify-center gap-2 rounded-lg font-interface font-semibold text-xs px-4 py-3 transition-all duration-200" style={{
+                background: 'var(--amber)',
+                color: 'var(--fundo)',
+                border: '1px solid var(--amber)'
+              }}>
+                <ShareNetwork size={18} />
+                Compartilhar
+              </button>
+            )}
           </div>
         </div>
       )}
 
-      {/* Histórico Timeline */}
       <div>
         <h2 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--texto-secundario)', marginBottom: '20px', fontWeight: 600 }}>
           Histórico
@@ -277,7 +347,6 @@ export function ClienteBarbeariaFidelidade() {
           <div className="relative ml-3 border-l border-[var(--borda)] pl-6 flex flex-col gap-6">
             {dados.historico.map(h => (
               <div key={h.id} className="relative">
-                {/* Dot Timeline */}
                 <div className="absolute -left-[30px] top-[2px] w-3 h-3 rounded-full" 
                      style={{ background: h.tipo === 'GANHO' ? 'var(--amber)' : 'var(--superficie-2)', border: h.tipo === 'GANHO' ? 'none' : '2px solid var(--texto-secundario)' }} />
                 
@@ -315,6 +384,19 @@ export function ClienteBarbeariaFidelidade() {
           </div>
         )}
       </div>
+
+      <ModalAlert 
+        aberto={modalObj.aberto} 
+        titulo={modalObj.titulo} 
+        mensagem={modalObj.mensagem} 
+        tipo={modalObj.tipo} 
+        isConfirm={modalObj.isConfirm}
+        textoBotao={modalObj.textoBotao || 'Entendi'}
+        onConfirmar={modalObj.onConfirm}
+        onFechar={() => {
+          setModalObj(m => ({ ...m, aberto: false }));
+        }} 
+      />
     </div>
   );
 }

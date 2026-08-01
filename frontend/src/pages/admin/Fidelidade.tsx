@@ -14,6 +14,7 @@ interface ConfigFidelidade {
   pontosPorVisita: number;
   pontosDobroAniversario: boolean;
   pontosPorIndicacao: number;
+  pontosParaIndicado: number;
   pontosBoasVindas: number;
   regrasPorServico: Array<{ servicoId: string; pontos: number }> | null;
 }
@@ -143,7 +144,7 @@ export function Fidelidade() {
 function TabRegras({ showToast }: { showToast: (m: string, t?: 'ok' | 'erro') => void }) {
   const [config, setConfig] = useState<ConfigFidelidade>({
     ativo: false, pontosPorReal: 0, pontosPorVisita: 0, pontosDobroAniversario: false,
-    pontosPorIndicacao: 0, pontosBoasVindas: 0, regrasPorServico: null,
+    pontosPorIndicacao: 0, pontosParaIndicado: 0, pontosBoasVindas: 0, regrasPorServico: null,
   });
   const [servicos, setServicos] = useState<Servico[]>([]);
   const [carregando, setCarregando] = useState(true);
@@ -159,6 +160,7 @@ function TabRegras({ showToast }: { showToast: (m: string, t?: 'ok' | 'erro') =>
             pontosPorVisita: resConfig.data.pontosPorVisita ?? 0,
             pontosDobroAniversario: resConfig.data.pontosDobroAniversario ?? false,
             pontosPorIndicacao: resConfig.data.pontosPorIndicacao ?? 0,
+            pontosParaIndicado: resConfig.data.pontosParaIndicado ?? 0,
             pontosBoasVindas: resConfig.data.pontosBoasVindas ?? 0,
             regrasPorServico: resConfig.data.regrasPorServico ?? null,
           });
@@ -316,10 +318,15 @@ function TabRegras({ showToast }: { showToast: (m: string, t?: 'ok' | 'erro') =>
                   value={config.pontosBoasVindas}
                   onChange={e => setConfig({ ...config, pontosBoasVindas: Number(e.target.value) })} />
               </FieldGroup>
-              <FieldGroup label="Pontos por indicação" hint="Dado a quem indicou após 1º agendamento concluído">
+              <FieldGroup label="Pontos por indicação" hint="Para o cliente que convidou">
                 <input type="number" min="0" style={inputStyle}
                   value={config.pontosPorIndicacao}
                   onChange={e => setConfig({ ...config, pontosPorIndicacao: Number(e.target.value) })} />
+              </FieldGroup>
+              <FieldGroup label="Pontos para quem foi indicado" hint="Para o cliente novo que usou o convite">
+                <input type="number" min="0" style={inputStyle}
+                  value={config.pontosParaIndicado}
+                  onChange={e => setConfig({ ...config, pontosParaIndicado: Number(e.target.value) })} />
               </FieldGroup>
             </div>
             <div style={{

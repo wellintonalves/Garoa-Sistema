@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useClientAuth } from '../../hooks/useClientAuth';
 import { useState } from 'react';
 import { api } from '../../api';
+import { ModalAlert } from '../../components/ModalAlert';
 
 export function RegisterClient() {
   const navigate = useNavigate();
@@ -12,6 +13,7 @@ export function RegisterClient() {
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [telefone, setTelefone] = useState('');
+  const [modalObj, setModalObj] = useState<{aberto: boolean; titulo: string; mensagem: string; tipo: 'erro'|'sucesso'|'aviso'|'info'; isConfirm?: boolean, onConfirm?: () => void, textoBotao?: string}>({ aberto: false, titulo: '', mensagem: '', tipo: 'info' });
 
   const handleRegister = async (e: any) => {
     e.preventDefault();
@@ -19,8 +21,8 @@ export function RegisterClient() {
       const res = await api.post('/b/' + slug + '/auth/register', { nome, email, senha, telefone });
       entrar(slug as string, res.data.token, res.data.usuario);
       navigate('/b/' + slug + '/app');
-    } catch (err) {
-      alert('Erro ao registrar');
+    } catch (err: any) {
+      setModalObj({ aberto: true, titulo: 'Falha no cadastro', mensagem: err.response?.data?.erro || 'Erro ao registrar', tipo: 'erro', textoBotao: 'Entendi' });
     }
   };
 
@@ -34,6 +36,19 @@ export function RegisterClient() {
         <input className='mb-6 p-2 rounded bg-[var(--superficie-2)] border-[var(--borda-forte)] border bg-[var(--superficie-2)] border-[var(--borda-forte)] text-[var(--texto-principal)]' type='password' placeholder='Senha' value={senha} onChange={e => setSenha(e.target.value)} required />
         <button type='submit' className='bg-orange-500 text-[var(--texto-principal)] p-2 rounded font-semibold'>Cadastrar</button>
       </form>
+      
+      <ModalAlert 
+        aberto={modalObj.aberto} 
+        titulo={modalObj.titulo} 
+        mensagem={modalObj.mensagem} 
+        tipo={modalObj.tipo} 
+        isConfirm={modalObj.isConfirm}
+        textoBotao={modalObj.textoBotao || 'Entendi'}
+        onConfirmar={modalObj.onConfirm}
+        onFechar={() => {
+          setModalObj(m => ({ ...m, aberto: false }));
+        }} 
+      />
     </div>
   );
 }

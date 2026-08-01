@@ -253,20 +253,53 @@ export class ClienteAppService {
 
           // Não pode se auto-indicar
           if (indicador && indicador.id !== clienteId) {
-            // Verifica se o indicado já tem indicação nesta barbearia
-            const indicacaoExistente = await (prisma as any).indicacao.findFirst({
-              where: { indicadoId: clienteId, barbeariaId },
+            // Verifica agendamentos concluídos anteriores
+            const concluidosAnteriores = await prisma.agendamento.count({
+              where: {
+                clienteId,
+                barbeariaId,
+                status: 'CONCLUIDO'
+              }
             });
 
-            if (!indicacaoExistente) {
-              await (prisma as any).indicacao.create({
-                data: {
-                  barbeariaId,
-                  indicadorId: indicador.id,
-                  indicadoId: clienteId,
-                  pontosAwardados: false,
-                },
+            if (concluidosAnteriores === 0) {
+              const clienteAtual = await prisma.cliente.findUnique({
+                where: { id: clienteId },
+                include: { usuario: true }
               });
+
+              let suspeitaFraude = false;
+              if (clienteAtual?.telefone) {
+                const mesmoTelefone = await (prisma as any).indicacao.findFirst({
+                  where: { barbeariaId, indicado: { telefone: clienteAtual.telefone } }
+                });
+                if (mesmoTelefone) suspeitaFraude = true;
+              }
+
+              if (clienteAtual?.usuario?.email) {
+                const mesmoEmail = await (prisma as any).indicacao.findFirst({
+                  where: { barbeariaId, indicado: { usuario: { email: clienteAtual.usuario.email } } }
+                });
+                if (mesmoEmail) suspeitaFraude = true;
+              }
+
+              if (!suspeitaFraude) {
+                // Verifica se o indicado já tem indicação nesta barbearia
+                const indicacaoExistente = await (prisma as any).indicacao.findFirst({
+                  where: { indicadoId: clienteId, barbeariaId },
+                });
+
+                if (!indicacaoExistente) {
+                  await (prisma as any).indicacao.create({
+                    data: {
+                      barbeariaId,
+                      indicadorId: indicador.id,
+                      indicadoId: clienteId,
+                      pontosAwardados: false,
+                    },
+                  });
+                }
+              }
             }
           }
         }
@@ -430,9 +463,16 @@ export class ClienteAppService {
   }
 
   /** Horários disponíveis */
-  static async horariosDisponiveis(barbeariaId: string, barbeiroId: string, data: string, servicoId: string) {
-    const servico = await prisma.servico.findUnique({ where: { id: servicoId } });
-    if (!servico) throw new Error('Serviço não encontrado');
+  static async horariosDisponiveis(barbeariaId: string, barbeiroId: string, data: string, servicosParam: string) {
+    const ids = servicosParam.split(',').map(id => id.trim()).filter(Boolean);
+    if (ids.length === 0) throw new Error('Serviço não informado');
+
+    const servicos = await prisma.servico.findMany({
+      where: { id: { in: ids } }
+    });
+    if (servicos.length !== ids.length) throw new Error('Um ou mais serviços não foram encontrados');
+
+    const duracaoTotal = servicos.reduce((acc, s) => acc + s.duracaoMinutos, 0);
 
     const barbearia = await prisma.barbearia.findUnique({ where: { id: barbeariaId } });
     if (!barbearia) throw new Error('Barbearia não encontrada');
@@ -464,27 +504,43 @@ export class ClienteAppService {
     const slotsInfo = HorariosUtil.gerarSlotsDisponiveis({
       dataStr: data,
       configDia,
-      duracaoMinutos: servico.duracaoMinutos,
+      duracaoMinutos: duracaoTotal,
       agendamentos,
       bloqueios
     });
 
-    return slotsInfo.filter(s => s.disponivel).map(s => ({
+    return slotsInfo.map(s => ({
       horario: s.horario,
-      disponivel: true
+      disponivel: s.disponivel,
+      ocupado: s.ocupado,
     }));
   }
 
   /** Cria agendamento pelo cliente */
   static async agendar(clienteId: string, barbeariaId: string, dados: {
     barbeiroId: string;
-    servicoId: string;
+    servicosIds: string[];
     data: string;
     hora: string;
     observacoes?: string;
   }) {
-    const servico = await prisma.servico.findUnique({ where: { id: dados.servicoId } });
-    if (!servico) throw new Error('Serviço não encontrado');
+    if (!dados.servicosIds || dados.servicosIds.length === 0) {
+      throw new Error('Serviço não informado');
+    }
+
+    const servicos = await prisma.servico.findMany({
+      where: { id: { in: dados.servicosIds } }
+    });
+    
+    if (servicos.length !== dados.servicosIds.length) {
+      throw new Error('Um ou mais serviços não encontrados');
+    }
+
+    const duracaoTotal = servicos.reduce((acc, s) => acc + s.duracaoMinutos, 0);
+    const precoTotal = servicos.reduce((acc, s) => acc + Number(s.preco), 0);
+    // Para simplificar, o banco de dados armazena apenas UM servicoId na tabela Agendamento (por enquanto).
+    // Usaremos o primeiro servico da lista para a chave estrangeira (que é obrigatória)
+    const servicoPrincipalId = dados.servicosIds[0];
 
     const dataHora = toBrasiliaDate(`${dados.data}T${dados.hora}:00`);
 
@@ -492,7 +548,7 @@ export class ClienteAppService {
       barbeariaId,
       barbeiroId: dados.barbeiroId,
       dataHora,
-      duracaoMinutos: servico.duracaoMinutos
+      duracaoMinutos: duracaoTotal
     });
 
     const dataInicioDia = inicioDiaBrasilia(dados.data);
@@ -508,7 +564,7 @@ export class ClienteAppService {
     });
 
     const reqInicioM = dataHora.getUTCHours() * 60 + dataHora.getUTCMinutes();
-    const reqFimM = reqInicioM + servico.duracaoMinutos;
+    const reqFimM = reqInicioM + duracaoTotal;
 
     const conflito = agendamentosDia.some(ag => {
       const agDate = new Date(ag.dataHora);
@@ -522,7 +578,7 @@ export class ClienteAppService {
     const conflitoBloqueio = await prisma.bloqueioAgenda.findFirst({
       where: {
         barbeiroId: dados.barbeiroId,
-        dataInicio: { lt: new Date(dataHora.getTime() + servico.duracaoMinutos * 60000) },
+        dataInicio: { lt: new Date(dataHora.getTime() + duracaoTotal * 60000) },
         dataFim: { gt: dataHora }
       }
     });
@@ -534,9 +590,9 @@ export class ClienteAppService {
         barbeariaId,
         clienteId,
         barbeiroId: dados.barbeiroId,
-        servicoId: dados.servicoId,
+        servicoId: servicoPrincipalId,
         dataHora,
-        valorCobrado: servico.preco,
+        valorCobrado: precoTotal,
         origem: 'APP_CLIENTE',
         observacoes: dados.observacoes,
       },
@@ -607,7 +663,7 @@ export class ClienteAppService {
       saldo,
       totalGanhos,
       totalUsados,
-      config: config || { ativo: false },
+      config: config ? { ...config, pontosParaIndicado: (config as any).pontosParaIndicado ?? 0 } : { ativo: false },
       recompensas,
       historico,
     };

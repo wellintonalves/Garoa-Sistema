@@ -28,11 +28,16 @@ export function ClienteHome() {
   const [mensagemSucesso, setMensagemSucesso] = useState<string | null>(null);
   const [mensagemErro, setMensagemErro] = useState<string | null>(null);
 
-  // Conectar automaticamente se veio de um slug
+  // Conectar automaticamente se veio de um slug ou tem convite pendente
   useEffect(() => {
     const slug = searchParams.get('slug');
     if (slug) {
       conectarPorSlug(slug);
+    } else {
+      const inviteBarbearia = localStorage.getItem('valen_invite_barbearia');
+      if (inviteBarbearia) {
+        conectarBarbearia(inviteBarbearia);
+      }
     }
   }, [searchParams]);
 
@@ -60,7 +65,15 @@ export function ClienteHome() {
 
   async function conectarBarbearia(barbeariaId: string) {
     try {
-      await clienteApi.post('/cliente/conectar-barbearia', { barbeariaId });
+      const codigoIndicacao = localStorage.getItem('valen_invite_code') || undefined;
+      await clienteApi.post('/cliente/conectar-barbearia', { barbeariaId, codigoIndicacao });
+      
+      // Limpa após usar com sucesso (opcional, mas evita reuso acidental)
+      if (localStorage.getItem('valen_invite_barbearia') === barbeariaId) {
+        localStorage.removeItem('valen_invite_code');
+        localStorage.removeItem('valen_invite_barbearia');
+      }
+
       carregarMinhasBarbearias();
       setResultados([]);
       setBusca('');
@@ -73,7 +86,14 @@ export function ClienteHome() {
       const res = await clienteApi.get<BarbeariaItem>('/cliente/buscar-barbearia-slug/' + slug);
       console.log("[ClienteHome] Barbearia encontrada:", res.data);
       
-      await clienteApi.post('/cliente/conectar-barbearia', { barbeariaId: res.data.id });
+      const codigoIndicacao = localStorage.getItem('valen_invite_code') || undefined;
+      await clienteApi.post('/cliente/conectar-barbearia', { barbeariaId: res.data.id, codigoIndicacao });
+      
+      if (localStorage.getItem('valen_invite_barbearia') === res.data.id) {
+        localStorage.removeItem('valen_invite_code');
+        localStorage.removeItem('valen_invite_barbearia');
+      }
+
       carregarMinhasBarbearias();
       
       setMensagemSucesso(`Conectado à ${res.data.nome}!`);

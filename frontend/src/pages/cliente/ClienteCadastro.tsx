@@ -3,7 +3,7 @@
 import { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useClienteAuth } from '../../hooks/useClienteAuth';
-import { User, Phone, Envelope, Lock, WarningCircle, Scissors, ArrowLeft, Eye, EyeSlash } from '@phosphor-icons/react';
+import { User, Phone, Envelope, Lock, WarningCircle, Scissors, ArrowLeft, Eye, EyeSlash, Gift } from '@phosphor-icons/react';
 
 export function ClienteCadastro() {
   const navigate = useNavigate();
@@ -15,6 +15,7 @@ export function ClienteCadastro() {
   const [mostrarSenha, setMostrarSenha] = useState(false);
   const [erro, setErro] = useState('');
   const [enviando, setEnviando] = useState(false);
+  const [codigoIndicacao, setCodigoIndicacao] = useState(() => localStorage.getItem('valen_invite_code') || '');
 
   const nomeBarbearia = import.meta.env.VITE_BARBEARIA_NOME || 'GAROA';
 
@@ -322,14 +323,32 @@ export function ClienteCadastro() {
                 onFocus={handleFocus}
                 onBlur={handleBlur}
               />
-                    <button
-                      type="button"
-                      onClick={() => setMostrarSenha(!mostrarSenha)}
-                      aria-label={mostrarSenha ? "Ocultar senha" : "Mostrar senha"}
-                      style={{ position: 'absolute', right: '0', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--texto-secundario)', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '44px', height: '44px', padding: 0 }}
-                    >
-                      {mostrarSenha ? <EyeSlash size={18} weight="regular" aria-hidden="true" /> : <Eye size={18} weight="regular" aria-hidden="true" />}
-                    </button>
+              <button
+                type="button"
+                onClick={() => setMostrarSenha(!mostrarSenha)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-[var(--texto-secundario)] hover:text-[var(--text-primary)] transition-colors"
+                aria-label={mostrarSenha ? "Ocultar senha" : "Mostrar senha"}
+              >
+                {mostrarSenha ? <EyeSlash size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
+          </div>
+
+          {/* Código de Indicação (Opcional) */}
+          <div>
+            <label style={labelStyle}>Código de Indicação (Opcional)</label>
+            <div style={{ position: 'relative' }}>
+              <Gift size={18} weight="regular" style={iconStyle} aria-hidden="true" />
+              <input
+                id="cadastro-codigo-indicacao"
+                type="text"
+                value={codigoIndicacao}
+                onChange={(e) => setCodigoIndicacao(e.target.value.toUpperCase())}
+                placeholder="Se tiver um, cole aqui"
+                style={inputStyle}
+                onFocus={handleFocus}
+                onBlur={handleBlur}
+              />
             </div>
           </div>
 
