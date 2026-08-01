@@ -16,10 +16,16 @@ interface BarbeariaCtx {
 interface AgendamentoItem {
   id: string;
   dataHora: string;
-  status: string;
-  valorCobrado: string;
-  servico: { nome: string };
-  barbeiro: { usuario: { nome: string } };
+  status: 'PENDENTE' | 'CONFIRMADO' | 'CANCELADO' | 'CONCLUIDO';
+  valorCobrado?: number;
+  servicoId: string;
+  barbeiroId: string;
+  servico?: { id?: string; nome: string; duracaoMinutos?: number };
+  servicos?: Array<{ id: string; nome: string; duracaoMinutos?: number }>;
+  barbeiro: {
+    id?: string;
+    usuario: { nome: string; }; 
+  };
 }
 
 interface FidelidadeResumo {
@@ -115,6 +121,67 @@ export function ClienteBarbeariaInicio() {
   const fidPercent = fidelidade.proxima
     ? Math.min(100, Math.round((fidelidade.saldo / fidelidade.proxima) * 100))
     : fidelidade.saldo > 0 ? 100 : 0;
+
+  const handleCalendario = () => {
+    if (!prox) return;
+    const servicoNome = formatarNomeServico(prox);
+    const barbeariaNome = barbearia?.nome || 'Barbearia';
+    const barbeiroNome = prox.barbeiro?.usuario?.nome || '';
+    const valor = prox.valorCobrado ? `R$ ${prox.valorCobrado}` : '';
+    const start = new Date(prox.dataHora);
+    const duracao = prox.servico?.duracaoMinutos || 30;
+    const end = new Date(start.getTime() + duracao * 60000);
+
+    const fmtICSDate = (d: Date) => d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+    
+    const startIcs = fmtICSDate(start);
+    const endIcs = fmtICSDate(end);
+    
+    const isAndroid = /android/i.test(navigator.userAgent);
+    if (isAndroid) {
+      const gcalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(servicoNome + ' — ' + barbeariaNome)}&dates=${startIcs}/${endIcs}&location=${encodeURIComponent(barbearia?.endereco || '')}&details=${encodeURIComponent('Profissional: ' + barbeiroNome + '\nValor: ' + valor)}`;
+      window.open(gcalUrl, '_blank', 'noopener,noreferrer');
+    } else {
+      const icsContent = `BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Valen Barber//App//PT
+BEGIN:VEVENT
+UID:${prox.id}
+DTSTAMP:${fmtICSDate(new Date())}
+DTSTART:${startIcs}
+DTEND:${endIcs}
+SUMMARY:${servicoNome} — ${barbeariaNome}
+DESCRIPTION:Profissional: ${barbeiroNome}\\nValor: ${valor}
+LOCATION:${barbearia?.endereco || ''}
+BEGIN:VALARM
+TRIGGER:-PT1H
+ACTION:DISPLAY
+DESCRIPTION:Lembrete de agendamento
+END:VALARM
+END:VEVENT
+END:VCALENDAR`;
+      const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `agendamento_${prox.id}.ics`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+  };
+
+  const handleComoChegar = () => {
+    if (!barbearia?.endereco) return;
+    const destino = encodeURIComponent(`${barbearia.nome}, ${barbearia.endereco}`);
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    if (isIOS) {
+      window.open(`https://maps.apple.com/?daddr=${destino}`, '_blank', 'noopener,noreferrer');
+    } else {
+      window.open(`https://www.google.com/maps/dir/?api=1&destination=${destino}`, '_blank', 'noopener,noreferrer');
+    }
+  };
 
   const fmtData = (d: string) => new Date(d).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
   const fmtHora = (d: string) => new Date(d).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
@@ -229,8 +296,14 @@ export function ClienteBarbeariaInicio() {
               </div>
 
               <div className="flex items-center gap-2 mt-2 md:mt-0">
-                <button className="btn-ghost flex-1 md:flex-none flex items-center justify-center gap-1.5"><CalendarPlus size={16} /> Calendário</button>
-                <button className="btn-ghost-amber flex-1 md:flex-none flex items-center justify-center gap-1.5"><NavigationArrow size={16} /> Como chegar</button>
+                <button onClick={handleCalendario} className="btn-ghost flex-1 md:flex-none flex items-center justify-center gap-1.5"><CalendarPlus size={16} /> Calendário</button>
+                <button 
+                  onClick={handleComoChegar}
+                  disabled={!barbearia?.endereco}
+                  title={!barbearia?.endereco ? "Endereço não cadastrado" : undefined}
+                  className="btn-ghost-amber flex-1 md:flex-none flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed">
+                  <NavigationArrow size={16} /> Como chegar
+                </button>
               </div>
             </div>
           </div>
@@ -319,7 +392,7 @@ export function ClienteBarbeariaInicio() {
                 </div>
               ))}
               {agendamentosPassados.length > 3 && (
-                <button className="py-3 text-center w-full mt-1" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '13px', color: 'var(--texto-secundario)', fontWeight: 500 }}>
+                <button onClick={() => navigate(`/cliente/barbearia/${barbeariaId}/historico`)} className="flex items-center justify-center w-full min-h-[48px] py-2 mt-1 border border-[var(--borda)] rounded-md bg-[var(--superficie-1)] hover:bg-[var(--superficie-2)] transition-colors" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '13px', color: 'var(--texto-secundario)', fontWeight: 600 }}>
                   Ver todo histórico →
                 </button>
               )}
@@ -334,7 +407,7 @@ export function ClienteBarbeariaInicio() {
           <h2 className="section-label-amber mb-4 md:mb-5">Atalhos</h2>
           <div className="flex flex-col gap-3">
             {ultimoConcluido && (
-              <button onClick={() => navigate(`/cliente/barbearia/${barbeariaId}/agendar`)} className="flex items-center gap-3 w-full text-left p-3 md:p-2.5 rounded-md border border-[var(--borda)] bg-[var(--superficie-1)] hover:bg-[var(--superficie-2)] transition-colors">
+              <button onClick={() => navigate(`/cliente/barbearia/${barbeariaId}/agendar?servicoId=${ultimoConcluido.servicoId || ''}&barbeiroId=${ultimoConcluido.barbeiroId || ''}&fluxoRapido=1`)} className="flex items-center gap-3 w-full text-left p-3 md:p-2.5 rounded-md border border-[var(--borda)] bg-[var(--superficie-1)] hover:bg-[var(--superficie-2)] transition-colors">
                 <div className="w-8 h-8 rounded-md flex items-center justify-center bg-[var(--superficie-2)] border border-[var(--borda)] text-[var(--texto-secundario)]"><ArrowsClockwise size={16} /></div>
                 <div>
                   <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '13px', fontWeight: 500, color: 'var(--text-primary)' }}>Repetir último corte</p>
