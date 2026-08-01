@@ -12,11 +12,8 @@ import {
   getHoraMinutoBrasilia,
   criarDataHoraBrasilia,
   formatarHorario,
-  diaBrasiliaStr,
 } from '../lib/timezone';
 import { HorariosUtil } from './horarios.util';
-
-const dispCache = new Map<string, { expires: number, data: any }>();
 
 interface DadosCadastroCliente {
   nome: string;
@@ -32,69 +29,6 @@ interface RespostaAuthCliente {
 }
 
 export class ClienteAppService {
-  // Cache for most popular service
-  private static popularServiceCache = new Map<string, { servicoId: string | null; expiresAt: number }>();
-
-  /** Retorna o serviço mais agendado nos últimos 90 dias (concluídos) */
-  static async servicoMaisPopular(barbeariaId: string): Promise<{ servicoId: string | null }> {
-    const now = Date.now();
-    const cached = this.popularServiceCache.get(barbeariaId);
-    if (cached && cached.expiresAt > now) {
-      return { servicoId: cached.servicoId };
-    }
-
-    const dataLimite = new Date(now - 90 * 24 * 60 * 60 * 1000); // 90 days ago
-
-    // Buscar agendamentos concluídos nos últimos 90 dias
-    const agendamentos = await prisma.agendamento.findMany({
-      where: {
-        barbeariaId,
-        status: 'CONCLUIDO',
-        dataHora: { gte: dataLimite }
-      },
-      select: { servicoId: true, valorCobrado: true, itens: { select: { servicoId: true, precoCobrado: true } } }
-    });
-
-    if (agendamentos.length < 5) {
-      const result = { servicoId: null };
-      this.popularServiceCache.set(barbeariaId, { ...result, expiresAt: now + 3600000 }); // 1 hour cache
-      return result;
-    }
-
-    const stats = new Map<string, { count: number; faturamento: number }>();
-    for (const ag of agendamentos) {
-      if (ag.itens && ag.itens.length > 0) {
-        for (const item of ag.itens) {
-          const current = stats.get(item.servicoId) || { count: 0, faturamento: 0 };
-          stats.set(item.servicoId, { count: current.count + 1, faturamento: current.faturamento + Number(item.precoCobrado || 0) });
-        }
-      } else if (ag.servicoId) {
-        const current = stats.get(ag.servicoId) || { count: 0, faturamento: 0 };
-        stats.set(ag.servicoId, {
-          count: current.count + 1,
-          faturamento: current.faturamento + Number(ag.valorCobrado || 0)
-        });
-      }
-    }
-
-    let popularId: string | null = null;
-    let maxCount = -1;
-    let maxFaturamento = -1;
-
-    for (const [sId, s] of Array.from(stats.entries())) {
-      if (s.count > maxCount || (s.count === maxCount && s.faturamento > maxFaturamento)) {
-        popularId = sId;
-        maxCount = s.count;
-        maxFaturamento = s.faturamento;
-      }
-    }
-
-    const result = { servicoId: popularId };
-    this.popularServiceCache.set(barbeariaId, { ...result, expiresAt: now + 3600000 }); // 1 hour cache
-    return result;
-  }
-
-
   /** Cadastro global de cliente (sem barbearia fixa) */
   static async registrar(dados: DadosCadastroCliente): Promise<RespostaAuthCliente> {
     // Bônus: Limpeza automática de registros pendentes antigos (> 24h)
@@ -496,11 +430,9 @@ export class ClienteAppService {
   }
 
   /** Horários disponíveis */
-  static async horariosDisponiveis(barbeariaId: string, barbeiroId: string, data: string, servicosIds: string[]) {
-    const servicos = await prisma.servico.findMany({ where: { id: { in: servicosIds } } });
-    if (servicos.length === 0) throw new Error('Serviço não encontrado');
-
-    const duracaoTotal = servicos.reduce((acc, s) => acc + s.duracaoMinutos, 0);
+  static async horariosDisponiveis(barbeariaId: string, barbeiroId: string, data: string, servicoId: string) {
+    const servico = await prisma.servico.findUnique({ where: { id: servicoId } });
+    if (!servico) throw new Error('Serviço não encontrado');
 
     const barbearia = await prisma.barbearia.findUnique({ where: { id: barbeariaId } });
     if (!barbearia) throw new Error('Barbearia não encontrada');
@@ -515,10 +447,7 @@ export class ClienteAppService {
         dataHora: { gte: inicio, lte: fim },
         status: { not: 'CANCELADO' },
       },
-      include: { 
-        itens: { select: { duracaoMinutos: true } }, 
-        servico: { select: { duracaoMinutos: true } } 
-      },
+      include: { servico: { select: { duracaoMinutos: true } } },
       orderBy: { dataHora: 'asc' },
     });
 
@@ -535,7 +464,7 @@ export class ClienteAppService {
     const slotsInfo = HorariosUtil.gerarSlotsDisponiveis({
       dataStr: data,
       configDia,
-      duracaoMinutos: duracaoTotal,
+      duracaoMinutos: servico.duracaoMinutos,
       agendamentos,
       bloqueios
     });
@@ -546,175 +475,16 @@ export class ClienteAppService {
     }));
   }
 
-  /** Visão de 7 dias de disponibilidade (fluxo rápido do cliente) */
-  static async disponibilidadeSemana(barbeariaId: string, params: {
-    barbeiroId?: string;
-    duracaoMinutos?: number;
-    inicioStr?: string;
-    fimStr?: string;
-  }) {
-    // 1. Resolver Datas (se não vier, default = hoje até +6 dias)
-    const hojeSP = diaBrasiliaStr();
-    let { inicioStr, fimStr } = params;
-    
-    if (!inicioStr || !fimStr) {
-      inicioStr = hojeSP;
-      const dataFimDate = new Date(`${hojeSP}T12:00:00Z`);
-      dataFimDate.setDate(dataFimDate.getDate() + 6);
-      fimStr = dataFimDate.toISOString().split('T')[0];
-    }
-    
-    // 2. Chave de Cache (30 seg)
-    const cacheKey = `${barbeariaId}_${params.barbeiroId || 'all'}_${params.duracaoMinutos || 'min'}_${inicioStr}_${fimStr}`;
-    const cached = dispCache.get(cacheKey);
-    if (cached && cached.expires > Date.now()) {
-      return cached.data;
-    }
-
-    // 3. Descobrir a duração mínima se não informada
-    let duracaoReal = params.duracaoMinutos;
-    if (!duracaoReal) {
-      const servicoMin = await prisma.servico.findFirst({
-        where: { barbeariaId, ativo: true },
-        orderBy: { duracaoMinutos: 'asc' },
-        select: { duracaoMinutos: true }
-      });
-      duracaoReal = servicoMin?.duracaoMinutos || 30;
-    }
-
-    // 4. Barbeiros
-    let barbeirosWhere: Prisma.BarbeiroWhereInput = { barbeariaId, ativo: true };
-    if (params.barbeiroId) {
-      barbeirosWhere.id = params.barbeiroId;
-    }
-    
-    const barbeiros = await prisma.barbeiro.findMany({
-      where: barbeirosWhere,
-      select: { id: true, usuario: { select: { nome: true } } }
-    });
-
-    if (barbeiros.length === 0) return [];
-
-    const dataInicioRange = inicioDiaBrasilia(inicioStr);
-    const dataFimRange = fimDiaBrasilia(fimStr);
-
-    // 5. Agendamentos e Bloqueios em lote
-    const agendamentosAll = await prisma.agendamento.findMany({
-      where: {
-        barbeariaId,
-        barbeiroId: params.barbeiroId ? params.barbeiroId : undefined,
-        dataHora: { gte: dataInicioRange, lte: dataFimRange },
-        status: { not: 'CANCELADO' }
-      },
-      include: {
-        itens: { select: { duracaoMinutos: true } },
-        servico: { select: { duracaoMinutos: true } }
-      }
-    });
-
-    const bloqueiosAll = await prisma.bloqueioAgenda.findMany({
-      where: {
-        barbeiroId: params.barbeiroId ? params.barbeiroId : undefined,
-        dataInicio: { lte: dataFimRange },
-        dataFim: { gte: dataInicioRange }
-      }
-    });
-
-    // Construir dias da semana: iterar de inicioStr até fimStr
-    const diasRange: string[] = [];
-    let dIter = new Date(`${inicioStr}T12:00:00Z`);
-    const dEnd = new Date(`${fimStr}T12:00:00Z`);
-    while (dIter <= dEnd) {
-      diasRange.push(dIter.toISOString().split('T')[0]);
-      dIter.setDate(dIter.getDate() + 1);
-    }
-
-    const agoraSP = new Date(); // Para filtrar slots passados de hoje
-
-    const resultado = await Promise.all(barbeiros.map(async (barb) => {
-      const agendsBarb = agendamentosAll.filter(a => a.barbeiroId === barb.id);
-      const blocksBarb = bloqueiosAll.filter(b => b.barbeiroId === barb.id);
-
-      const diasDisponiveis = await Promise.all(diasRange.map(async (dataAtual) => {
-        const configDia = await HorariosUtil.getConfigDia(barbeariaId, dataAtual, barb.id);
-        
-        let folga = configDia.fechado;
-        let slotsFinais: any[] = [];
-
-        if (!folga) {
-          const slotsRaw = HorariosUtil.gerarSlotsDisponiveis({
-            dataStr: dataAtual,
-            configDia,
-            duracaoMinutos: duracaoReal!,
-            agendamentos: agendsBarb,
-            bloqueios: blocksBarb
-          });
-
-          const isHoje = dataAtual === hojeSP;
-
-          slotsFinais = slotsRaw.map(s => {
-            // Se for hoje, filtra slots passados
-            if (isHoje) {
-              const [h, m] = s.horario.split(':').map(Number);
-              const slotDateSP = criarDataHoraBrasilia(dataAtual, h, m);
-              if (slotDateSP < agoraSP) {
-                 return null; // Slot passou
-              }
-            }
-            return {
-              horario: s.horario,
-              disponivel: s.disponivel
-            };
-          }).filter(s => s !== null);
-          
-          // Se gerou 0 slots porque todos passaram (ou porque lotou), ainda é um dia de trabalho (não folga)
-        }
-
-        return {
-          data: dataAtual,
-          folga: folga,
-          fechado: folga, // mantendo similar ao folga para semantica da UI
-          slots: slotsFinais
-        };
-      }));
-
-      return {
-        barbeiroId: barb.id,
-        barbeiroNome: barb.usuario?.nome || 'Barbeiro',
-        dias: diasDisponiveis
-      };
-    }));
-
-    dispCache.set(cacheKey, { expires: Date.now() + 30000, data: resultado });
-    
-    // Limpeza de cache velha para evitar leak
-    if (dispCache.size > 1000) {
-      const now = Date.now();
-      for (const [k, v] of dispCache.entries()) {
-        if (v.expires < now) dispCache.delete(k);
-      }
-    }
-
-    return resultado;
-  }
-
   /** Cria agendamento pelo cliente */
   static async agendar(clienteId: string, barbeariaId: string, dados: {
     barbeiroId: string;
-    servicosIds?: string[];
-    servicoId?: string;
+    servicoId: string;
     data: string;
     hora: string;
     observacoes?: string;
   }) {
-    const ids = dados.servicosIds && dados.servicosIds.length > 0 ? dados.servicosIds : (dados.servicoId ? [dados.servicoId] : []);
-    if (ids.length === 0) throw new Error('Pelo menos um serviço deve ser selecionado');
-
-    const servicos = await prisma.servico.findMany({ where: { id: { in: ids } } });
-    if (servicos.length !== ids.length) throw new Error('Um ou mais serviços não foram encontrados');
-
-    const duracaoTotal = servicos.reduce((acc, s) => acc + s.duracaoMinutos, 0);
-    const valorTotal = servicos.reduce((acc, s) => acc + Number(s.preco), 0);
+    const servico = await prisma.servico.findUnique({ where: { id: dados.servicoId } });
+    if (!servico) throw new Error('Serviço não encontrado');
 
     const dataHora = toBrasiliaDate(`${dados.data}T${dados.hora}:00`);
 
@@ -722,7 +492,7 @@ export class ClienteAppService {
       barbeariaId,
       barbeiroId: dados.barbeiroId,
       dataHora,
-      duracaoMinutos: duracaoTotal
+      duracaoMinutos: servico.duracaoMinutos
     });
 
     const dataInicioDia = inicioDiaBrasilia(dados.data);
@@ -734,19 +504,16 @@ export class ClienteAppService {
         status: { notIn: ['CANCELADO'] },
         dataHora: { gte: dataInicioDia, lte: dataFimDia },
       },
-      include: { itens: true, servico: true }
+      include: { servico: true }
     });
 
     const reqInicioM = dataHora.getUTCHours() * 60 + dataHora.getUTCMinutes();
-    const reqFimM = reqInicioM + duracaoTotal;
+    const reqFimM = reqInicioM + servico.duracaoMinutos;
 
     const conflito = agendamentosDia.some(ag => {
       const agDate = new Date(ag.dataHora);
       const agInicioM = agDate.getUTCHours() * 60 + agDate.getUTCMinutes();
-      const agDuracao = (ag as any).itens && (ag as any).itens.length > 0
-        ? (ag as any).itens.reduce((acc: number, i: any) => acc + i.duracaoMinutos, 0)
-        : ((ag as any).servico?.duracaoMinutos || 30);
-      const agFimM = agInicioM + agDuracao;
+      const agFimM = agInicioM + (ag.servico?.duracaoMinutos || 0);
       return reqInicioM < agFimM && reqFimM > agInicioM;
     });
 
@@ -755,7 +522,7 @@ export class ClienteAppService {
     const conflitoBloqueio = await prisma.bloqueioAgenda.findFirst({
       where: {
         barbeiroId: dados.barbeiroId,
-        dataInicio: { lt: new Date(dataHora.getTime() + duracaoTotal * 60000) },
+        dataInicio: { lt: new Date(dataHora.getTime() + servico.duracaoMinutos * 60000) },
         dataFim: { gt: dataHora }
       }
     });
@@ -767,19 +534,11 @@ export class ClienteAppService {
         barbeariaId,
         clienteId,
         barbeiroId: dados.barbeiroId,
-        servicosIds: ids, // opcional manter aqui para index
+        servicoId: dados.servicoId,
         dataHora,
-        valorCobrado: valorTotal,
+        valorCobrado: servico.preco,
         origem: 'APP_CLIENTE',
         observacoes: dados.observacoes,
-        itens: {
-          create: servicos.map(s => ({
-            servicoId: s.id,
-            precoCobrado: s.preco,
-            duracaoMinutos: s.duracaoMinutos,
-            comissaoPercent: s.comissaoPercent,
-          }))
-        }
       },
     });
 

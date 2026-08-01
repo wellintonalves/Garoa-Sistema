@@ -46,27 +46,14 @@ export class FinanceiroService {
 
     // Se for serviço prestado e tiver barbeiro vinculado
     if (dados.tipo === 'ENTRADA' && dados.barbeiroId) {
-      if (dados.agendamentoId) {
-        const agendamento = await prisma.agendamento.findUnique({
-          where: { id: dados.agendamentoId },
-          include: { itens: true }
-        });
-        if (agendamento && (agendamento as any).itens && (agendamento as any).itens.length > 0) {
-          valorComissao = (agendamento as any).itens.reduce((acc: number, i: any) => acc + (Number(i.precoCobrado) * Number(i.comissaoPercent)) / 100, 0);
-          valorLiquido = dados.valor - (valorComissao || 0);
-        }
-      }
+      const barbeiro = await prisma.barbeiro.findUnique({
+        where: { id: dados.barbeiroId },
+        select: { comissaoPercent: true }
+      });
 
-      if (valorComissao === null) {
-        const barbeiro = await prisma.barbeiro.findUnique({
-          where: { id: dados.barbeiroId },
-          select: { comissaoPercent: true }
-        });
-
-        if (barbeiro) {
-          valorComissao = (dados.valor * barbeiro.comissaoPercent) / 100;
-          valorLiquido = dados.valor - valorComissao;
-        }
+      if (barbeiro) {
+        valorComissao = (dados.valor * barbeiro.comissaoPercent) / 100;
+        valorLiquido = dados.valor - valorComissao;
       }
     }
 

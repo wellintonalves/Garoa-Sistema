@@ -1,7 +1,7 @@
 // Aba Início da barbearia — visão geral para o cliente
 import { useState, useEffect } from 'react';
 import { useNavigate, useOutletContext, useParams } from 'react-router-dom';
-import { CalendarBlank, Plus, CalendarPlus, NavigationArrow, ArrowsClockwise, Clock, ChatCircle, Star, MapPin } from '@phosphor-icons/react';
+import { CalendarBlank, Plus, CalendarPlus, NavigationArrow, ArrowsClockwise, ChatCircle, Star, MapPin } from '@phosphor-icons/react';
 import clienteApi from '../../../api/clienteApi';
 import { useClienteAuth } from '../../../hooks/useClienteAuth';
 import { EstadoVazio } from '../../../components/ui/EstadoVazio';
@@ -343,10 +343,7 @@ export function ClienteBarbeariaInicio() {
               </button>
             )}
 
-            <button onClick={() => navigate(`/cliente/barbearia/${barbeariaId}/horarios`)} className="flex items-center gap-3 w-full text-left p-3 md:p-2.5 rounded-md border border-[var(--borda)] bg-[var(--superficie-1)] hover:bg-[var(--superficie-2)] transition-colors">
-              <div className="w-8 h-8 rounded-md flex items-center justify-center bg-[rgba(var(--cor-primaria-rgb),0.12)] border border-[var(--amber)] text-[var(--amber)]"><Clock size={16} /></div>
-              <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '13px', fontWeight: 500, color: 'var(--text-primary)' }}>Ver horários disponíveis</p>
-            </button>
+
 
             <button onClick={() => navigate(`/cliente/barbearia/${barbeariaId}/chat`)} className="flex items-center gap-3 w-full text-left p-3 md:p-2.5 rounded-md border border-[var(--borda)] bg-[var(--superficie-1)] hover:bg-[var(--superficie-2)] transition-colors">
               <div className="w-8 h-8 rounded-md flex items-center justify-center bg-[rgba(var(--cor-primaria-rgb),0.12)] border border-[var(--amber)] text-[var(--amber)]"><ChatCircle size={16} /></div>

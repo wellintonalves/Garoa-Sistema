@@ -46,7 +46,7 @@ const ClienteBarbeariaAgendar = lazy(() => import('./pages/cliente/barbearia/Cli
 const ClienteBarbeariaFidelidade = lazy(() => import('./pages/cliente/barbearia/ClienteBarbeariaFidelidade').then(m => ({ default: m.ClienteBarbeariaFidelidade })));
 const ClienteBarbeariaPerfil = lazy(() => import('./pages/cliente/barbearia/ClienteBarbeariaPerfil').then(m => ({ default: m.ClienteBarbeariaPerfil })));
 const ClienteBarbeariaChat = lazy(() => import('./pages/cliente/barbearia/ClienteBarbeariaChat').then(m => ({ default: m.ClienteBarbeariaChat })));
-const ClienteBarbeariaDisponibilidade = lazy(() => import('./pages/cliente/barbearia/ClienteBarbeariaDisponibilidade').then(m => ({ default: m.ClienteBarbeariaDisponibilidade })));
+
 
 const AdminLogin = lazy(() => import('./pages/admin/AdminLogin').then(m => ({ default: m.AdminLogin })));
 const AdminPrimeiroAcesso = lazy(() => import('./pages/admin/AdminPrimeiroAcesso').then(m => ({ default: m.AdminPrimeiroAcesso })));
@@ -96,7 +96,7 @@ export function App() {
                     <Route path="fidelidade" element={<ClienteBarbeariaFidelidade />} />
                     <Route path="perfil" element={<ClienteBarbeariaPerfil />} />
                     <Route path="chat" element={<ClienteBarbeariaChat />} />
-                    <Route path="horarios" element={<ClienteBarbeariaDisponibilidade />} />
+
                   </Route>
 
                   {/* === Login do Administrador === */}

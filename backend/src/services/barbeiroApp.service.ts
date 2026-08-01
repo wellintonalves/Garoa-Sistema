@@ -183,7 +183,7 @@ export class BarbeiroAppService {
   ) {
     const agendamento = await prisma.agendamento.findUnique({
       where: { id: agendamentoId },
-      include: { servico: true, itens: { include: { servico: true } } },
+      include: { servico: true },
     });
 
     if (!agendamento) throw new Error('Agendamento não encontrado');
@@ -216,7 +216,7 @@ export class BarbeiroAppService {
         barbeariaId: agendamento.barbeariaId || barbeariaId,
         tipo: 'ENTRADA',
         categoria: 'Serviço',
-        descricao: `${(agendamento as any).itens?.length ? (agendamento as any).itens.map((i: any) => i.servico?.nome).filter(Boolean).join(' + ') : (agendamento.servico?.nome || 'Serviços')} — concluído pelo barbeiro`,
+        descricao: `${agendamento.servico?.nome || 'Serviço'} — concluído pelo barbeiro`,
         valor: agendamento.valorCobrado,
         formaPagamento: formaPagamento as 'DINHEIRO' | 'PIX' | 'CARTAO_DEBITO' | 'CARTAO_CREDITO',
         agendamentoId,
