@@ -21,8 +21,7 @@ interface Barbeiro {
   usuario: { id: string; nome: string; email: string };
   _count?: {
     agendamentos: number;
-    comissoes: number;
-    movimentacoes: number;
+    lancamentos: number;
   };
 }
 
@@ -188,7 +187,7 @@ export function Barbeiros() {
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '12px' }}>
         {barbeiros.map(b => {
-          const totalHistorico = b._count ? b._count.agendamentos + b._count.comissoes + b._count.movimentacoes : 0;
+          const totalHistorico = b._count ? b._count.agendamentos + (b._count.lancamentos || 0) : 0;
           return (
           <div
             key={b.id}
@@ -372,7 +371,8 @@ export function Barbeiros() {
               </button>
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Seção de Comissões por Período */}

@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Clock } from '@phosphor-icons/react';
 import { getDisponibilidadeSemana } from '../../../api/clienteApi';
 import { SkeletonCard, SkeletonText } from '../../../components/ui/Skeleton';
-import { diaBrasiliaStr } from '../../../utils/datas';
+import { dataBrasilia } from '../../../utils/datas';
 
 interface Slot {
   horario: string;
@@ -34,7 +34,7 @@ export function ClienteBarbeariaDisponibilidade() {
   // Gerar faixa de 7 dias começando de hoje SP
   const diasRange = useMemo(() => {
     const arr = [];
-    const hoje = new Date(`${diaBrasiliaStr()}T12:00:00Z`);
+    const hoje = new Date(`${dataBrasilia()}T12:00:00Z`);
     for (let i = 0; i < 7; i++) {
       const d = new Date(hoje);
       d.setDate(hoje.getDate() + i);
