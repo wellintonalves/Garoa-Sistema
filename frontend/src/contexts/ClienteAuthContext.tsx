@@ -13,7 +13,7 @@ interface ClienteAuthContextData {
   cliente: DadosCliente | null;
   carregando: boolean;
   login: (email: string, senha: string) => Promise<void>;
-  registrar: (nome: string, email: string, senha: string, telefone: string) => Promise<{ usuarioId: string }>;
+  registrar: (nome: string, email: string, senha: string, telefone: string, barbeariaId?: string, codigoIndicacao?: string) => Promise<{ usuarioId: string }>;
   logout: () => void;
 }
 
@@ -55,9 +55,10 @@ export function ClienteAuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const registrar = useCallback(async (nome: string, email: string, senha: string, telefone: string) => {
+  const registrar = useCallback(async (nome: string, email: string, senha: string, telefone: string, barbeariaId?: string, codigoIndicacao?: string) => {
     const response = await clienteApi.post<{ mensagem: string; usuarioId: string }>('/cliente/register', {
-      nome, email, senha, telefone,
+      nome, email, senha, telefone, barbeariaId, codigoIndicacao
+
     });
     
     return { usuarioId: response.data.usuarioId };

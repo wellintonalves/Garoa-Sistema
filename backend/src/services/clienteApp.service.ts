@@ -20,6 +20,8 @@ interface DadosCadastroCliente {
   email: string;
   senha: string;
   telefone?: string;
+  barbeariaId?: string;
+  codigoIndicacao?: string;
 }
 
 interface RespostaAuthCliente {
@@ -81,6 +83,14 @@ export class ClienteAppService {
           { expiresIn: authConfig.expiresIn } as jwt.SignOptions
         );
 
+        if (dados.barbeariaId) {
+          try {
+            await this.conectarBarbearia(existente.cliente!.id, dados.barbeariaId, dados.codigoIndicacao);
+          } catch (e) {
+            console.error('[Registro Cliente] Erro ao conectar barbearia via convite:', e);
+          }
+        }
+
         return { token, cliente: payload, isNovo: false };
       }
     }
@@ -119,6 +129,14 @@ export class ClienteAppService {
       authConfig.secretCliente as jwt.Secret,
       { expiresIn: authConfig.expiresIn } as jwt.SignOptions
     );
+
+    if (dados.barbeariaId) {
+      try {
+        await this.conectarBarbearia(cliente.id, dados.barbeariaId, dados.codigoIndicacao);
+      } catch (e) {
+        console.error('[Registro Cliente] Erro ao conectar barbearia via convite:', e);
+      }
+    }
 
     return { token, cliente: payload, isNovo: true };
   }

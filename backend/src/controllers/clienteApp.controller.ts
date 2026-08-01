@@ -9,7 +9,7 @@ export class ClienteAppController {
   /** POST /cliente/register */
   static async registrar(req: Request, res: Response): Promise<void> {
     try {
-      const { nome, email, senha, telefone } = req.body;
+      const { nome, email, senha, telefone, barbeariaId, codigoIndicacao } = req.body;
 
       if (!nome || !email || !senha) {
         res.status(400).json({ erro: 'Nome, email e senha são obrigatórios' });
@@ -21,7 +21,7 @@ export class ClienteAppController {
         return;
       }
 
-      const resultado = await ClienteAppService.registrar({ nome, email, senha, telefone });
+      const resultado = await ClienteAppService.registrar({ nome, email, senha, telefone, barbeariaId, codigoIndicacao });
 
       // Tenta enviar o email mas não bloqueia o cadastro se falhar
       try {

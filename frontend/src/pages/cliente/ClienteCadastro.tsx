@@ -16,6 +16,8 @@ export function ClienteCadastro() {
   const [erro, setErro] = useState('');
   const [enviando, setEnviando] = useState(false);
   const [codigoIndicacao, setCodigoIndicacao] = useState(() => localStorage.getItem('valen_invite_code') || '');
+  const [barbeariaId] = useState(() => localStorage.getItem('valen_invite_barbearia') || undefined);
+  const [nomeBarbeariaConvite] = useState(() => localStorage.getItem('valen_invite_barbearia_nome') || undefined);
 
   const nomeBarbearia = import.meta.env.VITE_BARBEARIA_NOME || 'GAROA';
 
@@ -216,6 +218,28 @@ export function ClienteCadastro() {
             {nomeBarbearia} Barbearia
           </p>
         </div>
+
+        {nomeBarbeariaConvite && barbeariaId && (
+          <div className="animate-fade-in" style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            padding: '12px 16px',
+            background: 'rgba(var(--cor-primaria-rgb), 0.1)',
+            border: '1px solid rgba(var(--cor-primaria-rgb), 0.2)',
+            borderRadius: '12px',
+            color: 'var(--texto-principal)',
+            fontFamily: 'var(--fonte-interface)',
+            fontSize: '12px',
+            marginBottom: '1rem',
+            width: '100%',
+          }}>
+            <Gift size={24} weight="regular" style={{ color: 'var(--cor-primaria)' }} className="flex-shrink-0" aria-hidden="true" />
+            <span style={{ lineHeight: 1.4 }}>
+              Você foi convidado para a barbearia <strong style={{ color: 'var(--cor-primaria)', fontWeight: 'bold' }}>{nomeBarbeariaConvite}</strong>
+            </span>
+          </div>
+        )}
 
         {/* Formulário */}
         <form

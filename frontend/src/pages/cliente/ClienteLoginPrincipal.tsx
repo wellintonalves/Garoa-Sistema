@@ -23,7 +23,7 @@ export function ClienteLoginPrincipal() {
     setCarregando(true);
     try {
       await login(email.trim(), senha);
-      navigate('/cliente/home');
+      navigate(location.state?.destino || '/cliente/home');
     } catch (err: any) {
       setErro(err?.response?.data?.erro || 'Email ou senha incorretos.');
     } finally {

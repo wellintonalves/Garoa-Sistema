@@ -19,16 +19,41 @@ export function Convite() {
 
     // Busca a barbearia pelo slug
     clienteApi.get(`/publico/barbearia/slug/${slug}`)
-      .then((res: any) => {
+      .then(async (res: any) => {
         setBarbearia(res.data);
         
-        // Salva o convite no localStorage para ser usado no login/cadastro ou conexão
+        const token = localStorage.getItem('@garoa:cliente_token');
+        
+        if (token) {
+          // Usuário já está logado. Conecta automaticamente.
+          try {
+            await clienteApi.post('/cliente/conectar-barbearia', {
+              barbeariaId: res.data.id,
+              codigoIndicacao: codigo
+            });
+            // Conectado com sucesso (ou já era conectado), vai direto pra área
+            navigate(`/cliente/barbearia/${res.data.id}`);
+            return;
+          } catch (err: any) {
+             const status = err.response?.status;
+             if (status === 401) {
+               // Token expirado. Segue pro cadastro/login
+             } else {
+               // Fraude, já conectado, etc. Ignora e vai pra barbearia
+               navigate(`/cliente/barbearia/${res.data.id}`);
+               return;
+             }
+          }
+        }
+        
+        // Se não logado (ou token expirou), salva intenção no localStorage e vai pro cadastro
         localStorage.setItem('valen_invite_code', codigo);
         localStorage.setItem('valen_invite_barbearia', res.data.id);
+        localStorage.setItem('valen_invite_barbearia_nome', res.data.nome);
         
-        // Direciona o usuário para a barbearia
+        // Direciona o usuário para o cadastro
         setTimeout(() => {
-          navigate(`/b/${slug}`);
+          navigate(`/cadastro`);
         }, 1500);
       })
       .catch(() => {
