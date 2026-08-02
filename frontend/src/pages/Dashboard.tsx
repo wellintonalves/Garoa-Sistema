@@ -128,34 +128,32 @@ export function Dashboard() {
         >
           Acompanhe os resultados da sua barbearia
         </p>
-      </div>
-
-      {/* Filtros */}
-      <div className="card" style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', alignItems: 'flex-end', justifyContent: 'space-between' }}>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+      </div>      {/* Filtros */}
+      <div className="card flex flex-col lg:flex-row gap-4 lg:items-end lg:justify-between min-w-0">
+        <div className="grid grid-cols-2 lg:flex gap-2 w-full lg:w-auto min-w-0">
           <button
-            className={`${periodoAtivo === 'hoje' ? 'btn-primary' : 'btn-secondary'} max-md:min-h-[48px]`}
+            className={`${periodoAtivo === 'hoje' ? 'btn-primary' : 'btn-secondary'} min-h-[48px] lg:min-h-0 w-full min-w-0`}
             onClick={() => setShortcut('hoje')}
             style={{ padding: '8px 16px', fontSize: '10px' }}
           >
             Hoje
           </button>
           <button
-            className={`${periodoAtivo === 'esta_semana' ? 'btn-primary' : 'btn-secondary'} max-md:min-h-[48px]`}
+            className={`${periodoAtivo === 'esta_semana' ? 'btn-primary' : 'btn-secondary'} min-h-[48px] lg:min-h-0 w-full min-w-0`}
             onClick={() => setShortcut('esta_semana')}
             style={{ padding: '8px 16px', fontSize: '10px' }}
           >
             Esta Semana
           </button>
           <button
-            className={`${periodoAtivo === 'este_mes' ? 'btn-primary' : 'btn-secondary'} max-md:min-h-[48px]`}
+            className={`${periodoAtivo === 'este_mes' ? 'btn-primary' : 'btn-secondary'} min-h-[48px] lg:min-h-0 w-full min-w-0`}
             onClick={() => setShortcut('este_mes')}
             style={{ padding: '8px 16px', fontSize: '10px' }}
           >
             Este Mês
           </button>
           <button
-            className={`${periodoAtivo === 'mes_anterior' ? 'btn-primary' : 'btn-secondary'} max-md:min-h-[48px]`}
+            className={`${periodoAtivo === 'mes_anterior' ? 'btn-primary' : 'btn-secondary'} min-h-[48px] lg:min-h-0 w-full min-w-0`}
             onClick={() => setShortcut('mes_anterior')}
             style={{ padding: '8px 16px', fontSize: '10px' }}
           >
@@ -163,29 +161,29 @@ export function Dashboard() {
           </button>
         </div>
 
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', alignItems: 'flex-end' }}>
-          <div>
-            <label className="input-label">Data Início</label>
+        <div className="flex flex-col lg:flex-row gap-4 w-full lg:w-auto lg:items-end min-w-0">
+          <div className="flex flex-col gap-1 w-full lg:w-auto min-w-0">
+            <label className="input-label truncate">Data Início</label>
             <input
               type="date"
               value={filtros.inicio}
               onChange={(e) => handleCustomDateChange('inicio', e.target.value)}
-              className="ds-input"
-              style={{ minHeight: '34px', padding: '6px 12px' }}
+              className="ds-input min-h-[48px] lg:min-h-[34px] w-full lg:w-auto min-w-0 max-w-full box-border appearance-none"
+              style={{ padding: '6px 12px' }}
             />
           </div>
-          <div>
-            <label className="input-label">Data Fim</label>
+          <div className="flex flex-col gap-1 w-full lg:w-auto min-w-0">
+            <label className="input-label truncate">Data Fim</label>
             <input
               type="date"
               value={filtros.fim}
               onChange={(e) => handleCustomDateChange('fim', e.target.value)}
-              className="ds-input"
-              style={{ minHeight: '34px', padding: '6px 12px' }}
+              className="ds-input min-h-[48px] lg:min-h-[34px] w-full lg:w-auto min-w-0 max-w-full box-border appearance-none"
+              style={{ padding: '6px 12px' }}
             />
           </div>
-          <button onClick={buscarDados} className="btn-primary max-md:min-h-[48px]" disabled={carregando} style={{ padding: '8px 16px', fontSize: '10px', height: '34px' }}>
-            <Calendar size={12} /> {carregando ? 'Buscando...' : 'Aplicar'}
+          <button onClick={buscarDados} className="btn-primary min-h-[48px] lg:min-h-[34px] w-full lg:w-auto flex items-center justify-center gap-2 min-w-0" disabled={carregando} style={{ padding: '8px 16px', fontSize: '10px' }}>
+            <Calendar size={12} className="shrink-0" /> <span className="truncate">{carregando ? 'Buscando...' : 'Aplicar'}</span>
           </button>
         </div>
       </div>
@@ -225,7 +223,6 @@ export function Dashboard() {
               valor={formatarMoeda(dados.faturamentoTotal || (dados.faturamentoServicos + dados.faturamentoProdutos))}
               icone={CurrencyDollar}
               subtexto="Total de Serviços e Produtos"
-              destaque
               delta={dados.variacaoFaturamento}
               serie={dados.metricas?.faturamentoTotal?.serie}
               rotuloComparativo={getRotuloComparativo(periodoAtivo)}
