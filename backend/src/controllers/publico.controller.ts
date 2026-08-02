@@ -241,6 +241,12 @@ export class PublicoController {
       // Converte para horário de Brasília
       const dataHoraBrasilia = toBrasiliaDate(dataHora);
 
+      await HorariosUtil.validarConflitoCliente({
+        clienteId: cliente.id,
+        dataHora: dataHoraBrasilia,
+        duracaoMinutos: servico.duracaoMinutos
+      });
+
       const agendamento = await prisma.agendamento.create({
         data: {
           clienteId: cliente.id,

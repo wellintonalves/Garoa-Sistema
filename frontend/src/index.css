@@ -264,6 +264,11 @@ h1, h2, h3, h4, .titulo {
   border-color: var(--cor-primaria);
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--cor-primaria) 28%, transparent);
 }
+.ds-select option {
+  background: var(--bg-surface);
+  color: var(--text-primary);
+}
+
 
 .ds-textarea {
   width: 100%;

@@ -10,7 +10,7 @@ import {
   formatarHorario,
 } from '../lib/timezone';
 import { creditarPontosPorAgendamento } from './fidelidade.engine';
-import { HorariosUtil } from './horarios.util';
+import { HorariosUtil, injetarDuracaoTotalServicos } from './horarios.util';
 
 interface DadosAgendamento {
   clienteId: string;
@@ -40,7 +40,7 @@ export class AgendamentoService {
       where.dataHora = { gte: inicio, lte: fim };
     }
 
-    return prisma.agendamento.findMany({
+    const agendamentos = await prisma.agendamento.findMany({
       where,
       include: {
         cliente: { include: { usuario: { select: { nome: true } } } },
@@ -49,6 +49,8 @@ export class AgendamentoService {
       },
       orderBy: { dataHora: 'asc' },
     });
+    
+    return injetarDuracaoTotalServicos(agendamentos);
   }
 
   /** Busca agendamento por ID */
@@ -63,7 +65,8 @@ export class AgendamentoService {
     });
 
     if (!agendamento) throw new Error('Agendamento não encontrado');
-    return agendamento;
+    const [ag] = await injetarDuracaoTotalServicos([agendamento]);
+    return ag;
   }
 
   /** Cria um novo agendamento */
@@ -96,11 +99,17 @@ export class AgendamentoService {
       duracaoMinutos: duracaoTotal
     });
 
+    await HorariosUtil.validarConflitoCliente({
+      clienteId: dados.clienteId,
+      dataHora: dataInicio,
+      duracaoMinutos: duracaoTotal
+    });
+
     const dataStr = dados.dataHora.split('T')[0] || dataInicio.toISOString().split('T')[0];
     const dataInicioDia = inicioDiaBrasilia(dataStr);
     const dataFimDia = fimDiaBrasilia(dataStr);
 
-    const agendamentosDia = await prisma.agendamento.findMany({
+    let agendamentosDia = await prisma.agendamento.findMany({
       where: {
         barbeiroId: dados.barbeiroId,
         status: { notIn: ['CANCELADO'] },
@@ -109,10 +118,12 @@ export class AgendamentoService {
       include: { servico: true }
     });
 
+    agendamentosDia = await injetarDuracaoTotalServicos(agendamentosDia);
+
     const conflitoAgendamento = agendamentosDia.some(ag => {
       const agDate = new Date(ag.dataHora);
       const agInicioM = agDate.getUTCHours() * 60 + agDate.getUTCMinutes();
-      const agFimM = agInicioM + (ag.servico?.duracaoMinutos || 0);
+      const agFimM = agInicioM + ((ag as any).duracaoTotal || ag.servico?.duracaoMinutos || 0);
       
       const reqInicioM = dataInicio.getUTCHours() * 60 + dataInicio.getUTCMinutes();
       const reqFimM = reqInicioM + duracaoTotal;
@@ -156,8 +167,28 @@ export class AgendamentoService {
 
   /** Atualiza status ou dados do agendamento */
   static async atualizar(id: string, dados: Partial<DadosAgendamento & { status: StatusAgendamento }>) {
-    const agendamentoOriginal = await prisma.agendamento.findUnique({ where: { id } });
+    const agendamentoOriginal = await prisma.agendamento.findUnique({ 
+      where: { id },
+      include: { servico: true }
+    });
     const statusOriginal = agendamentoOriginal?.status;
+
+    if (dados.dataHora || dados.servicoId) {
+      const novaDataHora = dados.dataHora ? toBrasiliaDate(dados.dataHora) : agendamentoOriginal!.dataHora;
+      let novaDuracao = agendamentoOriginal!.servico.duracaoMinutos;
+      
+      if (dados.servicoId && dados.servicoId !== agendamentoOriginal!.servicoId) {
+        const novoServico = await prisma.servico.findUnique({ where: { id: dados.servicoId } });
+        if (novoServico) novaDuracao = novoServico.duracaoMinutos;
+      }
+      
+      await HorariosUtil.validarConflitoCliente({
+        clienteId: agendamentoOriginal!.clienteId,
+        dataHora: novaDataHora,
+        duracaoMinutos: novaDuracao,
+        ignorarAgendamentoId: id
+      });
+    }
 
     const agendamento = await prisma.agendamento.update({
       where: { id },
@@ -200,9 +231,10 @@ export class AgendamentoService {
         dataHora: { gte: inicio, lte: fim },
         status: { not: 'CANCELADO' },
       },
-      include: { servico: { select: { duracaoMinutos: true } } },
+      include: { servico: { select: { duracaoMinutos: true, nome: true, id: true } } },
       orderBy: { dataHora: 'asc' },
     });
+    const agendamentosComDuracao = await injetarDuracaoTotalServicos(agendamentos);
 
     // Busca bloqueios do dia
     const bloqueios = await prisma.bloqueioAgenda.findMany({
@@ -224,7 +256,7 @@ export class AgendamentoService {
       dataStr: data,
       configDia,
       duracaoMinutos: 30, // grade de exibição de 30 min
-      agendamentos,
+      agendamentos: agendamentosComDuracao,
       bloqueios
     }).map(s => ({
       horario: s.horario,

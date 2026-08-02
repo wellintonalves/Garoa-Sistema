@@ -150,6 +150,7 @@ Nunca use estas variáveis diretamente nos componentes; utilize sempre os tokens
 - `height: 44px;` padding `0 14px`.
 - Rótulo acima: fonte `Inter Tight`, peso 500/600, `0.875rem` ou mínimo `0.8125rem` (`13px`), cor `var(--texto-secundario)`. (Sem uppercase).
 - Foco: `border-color: var(--borda-foco);`
+- **Elementos `<select>` e `<option>`**: O sistema suporta modo claro e escuro. Elementos nativos `<option>` herdam a cor do texto, mas navegadores geralmente não invertem o fundo sozinhos, resultando em "texto branco no fundo branco" no modo escuro. Portanto, é obrigatório definir no CSS global explicitamente `background-color: var(--fundo-superficie)` e `color: var(--texto-principal)` para as tags `<option>` de qualquer `<select>`.
 
 ---
 

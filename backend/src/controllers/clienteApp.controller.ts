@@ -225,7 +225,8 @@ export class ClienteAppController {
         req.params.barbeariaId,
         barbeiroId as string,
         data as string,
-        (servicosIds as string) || (servicoId as string)
+        (servicosIds as string) || (servicoId as string),
+        req.cliente?.clienteId
       );
       res.json(slots);
     } catch (error) {

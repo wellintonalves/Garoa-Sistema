@@ -3,7 +3,45 @@ import {
   criarDataHoraBrasilia,
   formatarHorario,
   getHoraMinutoBrasilia,
+  inicioDiaBrasilia,
+  fimDiaBrasilia,
 } from '../lib/timezone';
+
+export async function injetarDuracaoTotalServicos(agendamentos: any[]) {
+  if (!agendamentos || agendamentos.length === 0) return agendamentos;
+  const { prisma } = require('../lib/prisma');
+  const servicosIdsSet = new Set<string>();
+  for (const ag of agendamentos) {
+    if (ag.servicosIds && ag.servicosIds.length > 0) {
+      ag.servicosIds.forEach((id: string) => servicosIdsSet.add(id));
+    } else if (ag.servicoId) {
+      servicosIdsSet.add(ag.servicoId);
+    }
+  }
+  if (servicosIdsSet.size === 0) return agendamentos;
+  
+  const servicos = await prisma.servico.findMany({
+    where: { id: { in: Array.from(servicosIdsSet) } },
+    select: { id: true, duracaoMinutos: true, nome: true }
+  });
+  const mapa = Object.fromEntries(servicos.map((s: any) => [s.id, s]));
+  
+  for (const ag of agendamentos) {
+    if (ag.servico) {
+      let duracaoTotal = 0;
+      let nomeFinal = ag.servico.nome;
+      if (ag.servicosIds && ag.servicosIds.length > 0) {
+        duracaoTotal = ag.servicosIds.reduce((sum: number, id: string) => sum + (mapa[id]?.duracaoMinutos || 0), 0);
+        nomeFinal = ag.servicosIds.map((id: string) => mapa[id]?.nome).filter(Boolean).join('/');
+      } else {
+        duracaoTotal = ag.servico.duracaoMinutos || 0;
+      }
+      ag.servico.duracaoMinutos = duracaoTotal;
+      ag.servico.nome = nomeFinal;
+    }
+  }
+  return agendamentos;
+}
 
 export interface DiaConfig {
   fechado: boolean;
@@ -90,6 +128,57 @@ export class HorariosUtil {
     }
   }
 
+  /** Valida se o cliente já possui um agendamento conflitante no mesmo horário (inclusive com outro barbeiro) */
+  static async validarConflitoCliente(params: {
+    clienteId: string;
+    dataHora: Date;
+    duracaoMinutos: number;
+    ignorarAgendamentoId?: string;
+  }): Promise<void> {
+    const { prisma } = require('../lib/prisma');
+    
+    // Convert to visually local date string based on UTC values from toBrasiliaDate
+    const ano = params.dataHora.getUTCFullYear();
+    const mes = String(params.dataHora.getUTCMonth() + 1).padStart(2, '0');
+    const dia = String(params.dataHora.getUTCDate()).padStart(2, '0');
+    const dataStr = `${ano}-${mes}-${dia}`;
+    
+    const dataInicioDia = inicioDiaBrasilia(dataStr);
+    const dataFimDia = fimDiaBrasilia(dataStr);
+
+    let agendamentosCliente = await prisma.agendamento.findMany({
+      where: {
+        clienteId: params.clienteId,
+        status: { in: ['AGUARDANDO', 'CONFIRMADO', 'CONCLUIDO'] },
+        dataHora: { gte: dataInicioDia, lte: dataFimDia },
+        id: params.ignorarAgendamentoId ? { not: params.ignorarAgendamentoId } : undefined
+      },
+      include: { servico: true, barbeiro: { include: { usuario: true } } }
+    });
+
+    agendamentosCliente = await injetarDuracaoTotalServicos(agendamentosCliente);
+
+    const reqInicioM = params.dataHora.getUTCHours() * 60 + params.dataHora.getUTCMinutes();
+    const reqFimM = reqInicioM + params.duracaoMinutos;
+
+    for (const ag of agendamentosCliente) {
+      const agDate = new Date(ag.dataHora);
+      const agInicioM = agDate.getUTCHours() * 60 + agDate.getUTCMinutes();
+      const agFimM = agInicioM + (ag.servico?.duracaoMinutos || 0);
+      
+      const conflita = (reqInicioM < agFimM) && (agInicioM < reqFimM);
+      if (conflita) {
+        const horaFmt = String(agInicioM / 60 | 0).padStart(2, '0') + ':' + String(agInicioM % 60).padStart(2, '0');
+        const nomeBarbeiro = ag.barbeiro?.usuario?.nome || 'outro barbeiro';
+        const nomeServico = ag.servico?.nome || 'um serviço';
+        
+        const erro: any = new Error(`Você já tem um agendamento de ${nomeServico} às ${horaFmt} com ${nomeBarbeiro}. Escolha outro horário.`);
+        erro.status = 409;
+        throw erro;
+      }
+    }
+  }
+
   /** Gera slots cobrindo o expediente, detalhando disponibilidade, agendamentos e bloqueios */
   static gerarSlotsDisponiveis(params: {
     dataStr: string;
@@ -97,6 +186,7 @@ export class HorariosUtil {
     duracaoMinutos: number;
     agendamentos: Array<any>;
     bloqueios: Array<any>;
+    agendamentosCliente?: Array<any>;
   }): Array<{ horario: string; disponivel: boolean; ocupado?: boolean; agendamentoId?: string; bloqueado?: boolean; motivoBloqueio?: string | null }> {
     if (params.configDia.fechado) {
       return [];
@@ -153,6 +243,23 @@ export class HorariosUtil {
         const agFimM = agInicioM + agDuracao;
         return slotInicioM < agFimM && slotFimM > agInicioM;
       });
+
+      // Conflito com agendamentos paralelos do mesmo cliente
+      let conflitoCliente = false;
+      if (params.agendamentosCliente && params.agendamentosCliente.length > 0) {
+        conflitoCliente = params.agendamentosCliente.some(ag => {
+          const agDate = new Date(ag.dataHora);
+          // Converter dataHora do agendamento do cliente para minutos locais para comparar de forma justa
+          const agInicioM = agDate.getUTCHours() * 60 + agDate.getUTCMinutes();
+          const agFimM = agInicioM + (ag.servico?.duracaoMinutos || 0);
+          return slotInicioM < agFimM && slotFimM > agInicioM;
+        });
+      }
+
+      // Se o cliente tem conflito no horário, não oferecemos o slot (ele não existe para ele)
+      if (conflitoCliente) {
+        continue;
+      }
 
       // Conflito bloqueios
       const bloqueioConflitante = params.bloqueios.find(bl => {

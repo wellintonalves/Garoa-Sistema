@@ -13,7 +13,7 @@ import {
   criarDataHoraBrasilia,
   formatarHorario,
 } from '../lib/timezone';
-import { HorariosUtil } from './horarios.util';
+import { HorariosUtil, injetarDuracaoTotalServicos } from './horarios.util';
 
 interface DadosCadastroCliente {
   nome: string;
@@ -481,7 +481,7 @@ export class ClienteAppService {
   }
 
   /** Horários disponíveis */
-  static async horariosDisponiveis(barbeariaId: string, barbeiroId: string, data: string, servicosParam: string) {
+  static async horariosDisponiveis(barbeariaId: string, barbeiroId: string, data: string, servicosParam: string, clienteId?: string) {
     const ids = servicosParam.split(',').map(id => id.trim()).filter(Boolean);
     if (ids.length === 0) throw new Error('Serviço não informado');
 
@@ -516,6 +516,19 @@ export class ClienteAppService {
         dataFim: { gte: inicio },
       }
     });
+    
+    let agendamentosCliente: any[] = [];
+    if (clienteId) {
+      agendamentosCliente = await prisma.agendamento.findMany({
+        where: {
+          clienteId,
+          status: { in: ['AGUARDANDO', 'CONFIRMADO', 'CONCLUIDO'] },
+          dataHora: { gte: inicio, lte: fim },
+        },
+        include: { servico: true }
+      });
+      agendamentosCliente = await injetarDuracaoTotalServicos(agendamentosCliente);
+    }
 
     const configDia = await HorariosUtil.getConfigDia(barbeariaId, data, barbeiroId);
     
@@ -524,7 +537,8 @@ export class ClienteAppService {
       configDia,
       duracaoMinutos: duracaoTotal,
       agendamentos,
-      bloqueios
+      bloqueios,
+      agendamentosCliente
     });
 
     return slotsInfo.map(s => ({
@@ -565,6 +579,12 @@ export class ClienteAppService {
     await HorariosUtil.validarDentroDoFuncionamento({
       barbeariaId,
       barbeiroId: dados.barbeiroId,
+      dataHora,
+      duracaoMinutos: duracaoTotal
+    });
+
+    await HorariosUtil.validarConflitoCliente({
+      clienteId,
       dataHora,
       duracaoMinutos: duracaoTotal
     });

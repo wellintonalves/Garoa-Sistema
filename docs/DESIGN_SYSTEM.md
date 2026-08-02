@@ -190,3 +190,7 @@ Nunca use estas variáveis diretamente nos componentes; utilize sempre os tokens
 
 - Régua de horários e blocos de tempo utilizam a fonte `JetBrains Mono` para precisão na exibição de horas e minutos.
 - Status do agendamento reflete a paleta semântica de sinalização (sucesso, aviso, info, erro ou neutro cloud).
+
+## Selects e Opções (Dropdowns)
+
+**Regra Crítica para <option>:** NUNCA aplique as propriedades ackground-color ou color nas tags <option>. Deixe que o navegador renderize as opções nativamente. Como o sistema utiliza color-scheme via CSS (em 	okens.css), o sistema operacional automaticamente adaptará o fundo e o texto do menu suspenso para o modo claro ou escuro garantindo o contraste perfeito e acessibilidade (evitando texto branco em fundo branco).

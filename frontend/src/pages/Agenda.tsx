@@ -3,11 +3,14 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { CaretLeft, CaretRight, Plus, CaretDown } from '@phosphor-icons/react';
 import { Modal } from '../components/Modal';
+import { ModalAlert } from '../components/ModalAlert';
 import { SkeletonPage } from '../components/Skeleton';
+import { AgendaMobile } from '../components/agenda/AgendaMobile';
 import { dataBrasilia, hojeBrasilia } from '../utils/datas';
 import api from '../api/client';
 import { PALETA_CORES_BARBEIROS } from '../styles/tokens';
 import { formatarNomeServico } from '../utils/formato';
+import { calcularLanes, EventoBase } from '../utils/lanes';
 
 /** Extrai hora e minuto de um Date no fuso de Brasília */
 function getHoraMinutoBrasilia(date: Date): { hora: number; minuto: number } {
@@ -77,8 +80,6 @@ const statusLabels: Record<string, string> = {
 };
 
 const diasSemana = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
-const horarios = Array.from({ length: 22 }, (_, i) => `${String(Math.floor(i / 2) + 8).padStart(2, '0')}:${i % 2 === 0 ? '00' : '30'}`);
-
 const PALETA_CORES = PALETA_CORES_BARBEIROS;
 
 function getBarbeiroColor(id: string, listaBarbeiros: {id: string}[] = []): string {
@@ -100,6 +101,14 @@ export function Agenda() {
     const d = new Date(hojeBrasilia() + 'T12:00:00-03:00'); d.setDate(d.getDate() - d.getDay() + 1); return d;
   });
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [modoMobile, setModoMobile] = useState<'grade' | 'lista'>(() => {
+    return (localStorage.getItem('agenda.modoVisualizacao') as 'grade' | 'lista') || 'grade';
+  });
+  
+  useEffect(() => {
+    localStorage.setItem('agenda.modoVisualizacao', modoMobile);
+  }, [modoMobile]);
+
   const [viewMode, setViewMode] = useState<'day' | 'week'>('day');
   const [diaMobile, setDiaMobile] = useState(() => {
     const d = new Date(hojeBrasilia() + 'T12:00:00-03:00'); return d;
@@ -113,8 +122,11 @@ export function Agenda() {
   const [agendamentos, setAgendamentos] = useState<Agendamento[]>([]);
   const [bloqueios, setBloqueios] = useState<Bloqueio[]>([]);
   const [carregando, setCarregando] = useState(true);
+  const [configuracao, setConfiguracao] = useState<any>(null);
   const [modalAberto, setModalAberto] = useState(false);
+  const [overflowModal, setOverflowModal] = useState<{aberto: boolean; eventos: EventoBase[]}>({ aberto: false, eventos: [] });
   const [modalBloqueioAberto, setModalBloqueioAberto] = useState(false);
+  const [cancelarAlertAberto, setCancelarAlertAberto] = useState(false);
   const [agendamentoSelecionado, setAgendamentoSelecionado] = useState<Agendamento | null>(null);
   const [alterandoStatus, setAlterandoStatus] = useState<string | null>(null);
   const [erroStatus, setErroStatus] = useState<string | null>(null);
@@ -148,7 +160,7 @@ export function Agenda() {
   const diasDaSemana = Array.from({ length: 7 }, (_, i) => {
     const d = new Date(semanaInicio); d.setDate(semanaInicio.getDate() + i); return d;
   });
-  const diasExibidos = isMobile ? [diaMobile] : diasDaSemana;
+  const diasExibidos = viewMode === 'day' ? [diaMobile] : diasDaSemana;
 
   const carregar = useCallback(async () => {
     setCarregando(true);
@@ -157,10 +169,11 @@ export function Agenda() {
       const dataInicio = dataBrasilia(diasDaSemana[0]);
       const dataFim = dataBrasilia(diasDaSemana[6]);
 
-      const [resAgendamentos, resBloq, resBarb] = await Promise.allSettled([
+      const [resAgendamentos, resBloq, resBarb, resConfig] = await Promise.allSettled([
         api.get<Agendamento[]>('/agendamentos', { params: { dataInicio, dataFim } }),
         api.get<Bloqueio[]>('/bloqueios'),
-        api.get<Barbeiro[]>('/barbeiros?todos=true')
+        api.get<Barbeiro[]>('/barbeiros?todos=true'),
+        api.get('/configuracoes')
       ]);
 
       if (resAgendamentos.status === 'fulfilled') {
@@ -179,6 +192,13 @@ export function Agenda() {
         setBarbeiros(resBarb.value.data);
       } else {
         console.error('Erro ao carregar barbeiros:', resBarb.reason);
+      }
+      
+      if (resConfig.status === 'fulfilled') {
+        setConfiguracao(resConfig.value.data.horariosFuncionamento || 'vazio');
+      } else {
+        console.error('Erro ao carregar configuracoes:', resConfig.reason);
+        setConfiguracao('erro');
       }
     } catch (err) {
       console.error('Erro inesperado no carregar:', err);
@@ -257,6 +277,7 @@ export function Agenda() {
     try {
       await api.put(`/agendamentos/${agendamentoSelecionado.id}`, { status: novoStatus });
       setAgendamentoSelecionado(null);
+      setCancelarAlertAberto(false);
       carregar();
     } catch (err: any) {
       console.error('Erro ao alterar status:', err);
@@ -273,7 +294,7 @@ export function Agenda() {
   }
 
   function navegar(direcao: number) {
-    if (isMobile) {
+    if (viewMode === 'day') {
       const nova = new Date(diaMobile);
       nova.setDate(nova.getDate() + direcao);
       setDiaMobile(nova);
@@ -293,49 +314,87 @@ export function Agenda() {
   }
 
   
-  const renderCelula = (ags: Agendamento[], bls: Bloqueio[], key: string, getOffset: (idx: number) => number) => (
-    <div key={key} style={{ borderLeft: '1px solid var(--border)', height: '48px', position: 'relative' }}>
-      {bls.map((bl, idx) => (
-        <div key={bl.id} className="truncate cursor-pointer" onClick={() => removerBloqueio(bl.id)} title="Clique para remover bloqueio"
-          style={{
-            padding: '4px 8px', background: 'repeating-linear-gradient(45deg, var(--bg-surface2), var(--bg-surface2) 10px, transparent 10px, transparent 20px)',
-            borderLeft: `3px solid var(--texto-secundario)`, color: 'var(--texto-secundario)', fontFamily: 'var(--fonte-interface)', fontSize: isMobile ? '0.8125rem' : '0.8125rem',
-            borderRadius: '0 4px 4px 0', lineHeight: 1.2, position: 'absolute', top: '2px', left: '2px', right: '2px', height: '44px', zIndex: 5 + idx
-          }}>
-          <p className="truncate pr-1" style={{ fontWeight: 600, marginBottom: '2px' }}>{bl.barbeiro.usuario.nome}</p>
-          <p className="truncate" style={{ fontSize: isMobile ? '0.8125rem' : '0.8125rem' }}>Bloqueado</p>
-        </div>
-      ))}
-      {ags.map((ag, idx) => {
-        const st = statusStyles[ag.status] || statusStyles['AGUARDANDO'];
-                const isConcluido = ag.status === 'CONCLUIDO';
-        const cor = st.color;
-        const bg = st.bg;
-        
-        const duracao = ag.servico.duracaoMinutos || 30;
-        const heightPx = Math.max(44, (duracao / 30) * 49 - 5);
+  
+  const mapearParaEventos = (ags: Agendamento[], bls: Bloqueio[]): EventoBase[] => {
+    const evs: EventoBase[] = [];
+    ags.forEach(ag => {
+      const d = new Date(ag.dataHora);
+      const hm = getHoraMinutoBrasilia(d);
+      const iniMin = hm.hora * 60 + hm.minuto;
+      const dur = ag.servico.duracaoMinutos || 30;
+      evs.push({ id: ag.id, inicioMinutos: iniMin, fimMinutos: iniMin + dur, tipo: 'AGENDAMENTO', original: ag });
+    });
+    bls.forEach(bl => {
+      const dInicio = new Date(bl.dataInicio);
+      const hmIni = getHoraMinutoBrasilia(dInicio);
+      const dFim = new Date(bl.dataFim);
+      const hmFim = getHoraMinutoBrasilia(dFim);
+      evs.push({ id: bl.id, inicioMinutos: hmIni.hora * 60 + hmIni.minuto, fimMinutos: hmFim.hora * 60 + hmFim.minuto, tipo: 'BLOQUEIO', original: bl });
+    });
+    return evs;
+  };
 
+  const getEventosColuna = (dia: Date, barbeiroId?: string): EventoBase[] => {
+    const diaISO = dataBrasilia(dia);
+    const ags = agendamentos.filter(ag => getDataBrasilia(new Date(ag.dataHora)) === diaISO && (!barbeiroId || ag.barbeiroId === barbeiroId) && ag.status !== 'CANCELADO');
+    const bls = bloqueios.filter(bl => getDataBrasilia(new Date(bl.dataInicio)) === diaISO && (!barbeiroId || bl.barbeiroId === barbeiroId));
+    return mapearParaEventos(ags, bls);
+  };
+
+  const renderEventosColuna = (eventosBase: EventoBase[], minOfDay: number, maxLanes: number = 3) => {
+    const lanes = calcularLanes(eventosBase, maxLanes);
+    return lanes.map(ev => {
+      const laneWidth = 100 / ev.totalLanes;
+      const leftOffset = ev.lane * laneWidth;
+      const topPx = (ev.inicioMinutos - minOfDay) * (48 / 30);
+      const heightPx = (ev.fimMinutos - ev.inicioMinutos) * (48 / 30);
+      
+      if (ev.isOverflow) {
+        if (ev.overflowCount === undefined) return null;
         return (
-          <div key={ag.id} className="cursor-pointer flex flex-col overflow-hidden" onClick={() => setAgendamentoSelecionado(ag)}
-            style={{
-              padding: '6px 8px', background: bg, borderLeft: `3px solid ${cor}`, color: 'var(--text-primary)', opacity: isConcluido ? 0.7 : 1,
-              fontFamily: 'var(--fonte-interface)', fontSize: isMobile ? '0.8125rem' : '0.8125rem', position: 'absolute', top: '2px', left: `${2 + (getOffset(idx) * 10)}px`, right: '2px',
-              height: `${heightPx}px`, zIndex: 10 + idx, borderRadius: '0 4px 4px 0', lineHeight: 1.2
-            }}>
-            <div className="flex justify-between items-start mb-1.5">
-              <p className="truncate pr-1" style={{ fontWeight: 600 }}>{ag.cliente.usuario.nome}</p>
-              {ag.origem === 'ONLINE' && <span className="bg-[var(--cor-primaria)] text-[var(--texto-sobre-primaria)] px-1 rounded text-[8px] font-bold shrink-0">WEB</span>}
-            </div>
-            <div>
-              <p className="truncate" style={{ fontFamily: 'var(--fonte-interface)', fontSize: isMobile ? '0.8125rem' : '0.8125rem', background: 'transparent', color: 'var(--text-primary)', padding: 0, borderRadius: 0, display: 'inline-block', maxWidth: '100%', lineHeight: 1.2 }}>
-                {formatarNomeServico(ag)}
-              </p>
-            </div>
+          <div key={`overflow-${ev.id}`}
+            onClick={(e) => { e.stopPropagation(); setOverflowModal({ aberto: true, eventos: ev.grupoCluster || [] }); }}
+            style={{ position: 'absolute', top: `${topPx + 2}px`, left: `${leftOffset}%`, width: `${laneWidth}%`, height: `${heightPx - 4}px`, background: 'var(--bg-surface2)', border: '1px solid var(--border)', zIndex: 30, pointerEvents: 'auto', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--texto-secundario)', fontWeight: 600, fontSize: '0.8125rem' }}>
+            +{ev.overflowCount}
           </div>
         );
-      })}
-    </div>
-  );
+      }
+      
+      if (ev.tipo === 'BLOQUEIO') {
+        const bl = ev.original as Bloqueio;
+        return (
+          <div key={bl.id} className="truncate cursor-pointer flex flex-col" onClick={() => removerBloqueio(bl.id)} title="Clique para remover bloqueio"
+            style={{ position: 'absolute', top: `${topPx + 2}px`, left: `${leftOffset}%`, width: `calc(${laneWidth}% - 4px)`, height: `${heightPx - 4}px`, padding: '4px 8px', background: 'repeating-linear-gradient(45deg, var(--bg-surface2), var(--bg-surface2) 10px, transparent 10px, transparent 20px)', borderLeft: `3px solid var(--texto-secundario)`, color: 'var(--texto-secundario)', fontFamily: 'var(--fonte-interface)', fontSize: '0.8125rem', borderRadius: '0 4px 4px 0', lineHeight: 1.2, zIndex: 20, pointerEvents: 'auto' }}>
+            <p className="truncate pr-1" style={{ fontWeight: 600, marginBottom: '2px' }}>{bl?.barbeiro?.usuario?.nome || 'Bloqueado'}</p>
+            <p className="truncate" style={{ fontSize: '0.8125rem' }}>Bloqueado</p>
+          </div>
+        );
+      }
+
+      const ag = ev.original as Agendamento;
+      const st = statusStyles[ag.status] || statusStyles['AGUARDANDO'];
+      const title = `${String(Math.floor(ev.inicioMinutos/60)).padStart(2,'0')}:${String(ev.inicioMinutos%60).padStart(2,'0')} · ${ag?.cliente?.usuario?.nome || 'Cliente'} · ${formatarNomeServico(ag)} · ${ag?.barbeiro?.usuario?.nome || 'Barbeiro'}`;
+      
+      const isCompact = heightPx < 35;
+      const clientName = laneWidth < 40 ? ag?.cliente?.usuario?.nome || 'Cliente'.split(' ')[0] : ag?.cliente?.usuario?.nome || 'Cliente';
+
+      return (
+        <div key={ag.id} className="cursor-pointer overflow-hidden" onClick={() => setAgendamentoSelecionado(ag)} title={title}
+          style={{ position: 'absolute', top: `${topPx + 2}px`, left: `${leftOffset}%`, width: `calc(${laneWidth}% - 4px)`, height: `${heightPx - 4}px`, padding: isCompact ? '2px 4px' : '6px 8px', background: st.bg, borderLeft: `3px solid ${st.color}`, color: 'var(--text-primary)', opacity: ag.status === 'CONCLUIDO' ? 0.7 : 1, fontFamily: 'var(--fonte-interface)', fontSize: '0.8125rem', borderRadius: '0 4px 4px 0', lineHeight: 1.2, zIndex: 20, pointerEvents: 'auto', display: 'flex', flexDirection: isCompact ? 'row' : 'column', gap: isCompact ? '4px' : '0', alignItems: isCompact ? 'center' : 'flex-start', boxShadow: '0 1px 2px rgba(0,0,0,0.1)' }}>
+          <div className={`flex justify-between items-center overflow-hidden w-full ${isCompact ? '' : 'mb-1.5'}`}>
+            <p className="truncate pr-1 shrink-0" style={{ fontWeight: 600, fontSize: isCompact ? '11px' : '13px' }}>{clientName}</p>
+            {(!isCompact && ag.origem === 'ONLINE') && <span className="bg-[var(--cor-primaria)] text-[var(--texto-sobre-primaria)] px-1 rounded text-[8px] font-bold shrink-0">WEB</span>}
+          </div>
+          <div className="overflow-hidden w-full">
+            <p className="truncate" style={{ fontFamily: 'var(--fonte-interface)', fontSize: isCompact ? '11px' : '0.8125rem', color: isCompact ? 'var(--texto-secundario)' : 'inherit' }}>
+              {isCompact ? ` - ${formatarNomeServico(ag)}` : formatarNomeServico(ag)}
+            </p>
+          </div>
+        </div>
+      );
+    });
+  };
+
 
   if (carregando) return <SkeletonPage />;
 
@@ -384,7 +443,7 @@ export function Agenda() {
                 letterSpacing: '0.04em',
               }}
             >
-              {isMobile ? (
+              {viewMode === 'day' ? (
                 `${diasSemana[diaMobile.getDay()]}, ${diaMobile.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })}`
               ) : (
                 `${diasDaSemana[0].toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })} — ${diasDaSemana[6].toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })}`
@@ -413,8 +472,9 @@ export function Agenda() {
       </div>
 
       {/* Filtros de Barbeiro (Dropdown) */}
-      <div className="relative" style={{ width: '100%', maxWidth: '300px' }} ref={dropdownRef}>
-        <button
+      {(!isMobile || modoMobile === 'lista') && (
+        <div className="relative" style={{ width: '100%', maxWidth: isMobile ? 'none' : '300px' }} ref={dropdownRef}>
+          <button
           onClick={() => setDropdownAberto(prev => !prev)}
           style={{
             display: 'flex',
@@ -522,17 +582,88 @@ export function Agenda() {
           </div>
         )}
       </div>
+      )}
 
       {/* Calendário semanal/diário */}
-      <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', overflowX: 'auto', width: '100%', position: 'relative' }}>
-        <div style={{ minWidth: isMobile ? '100%' : '700px' }}>
-          {(() => {
-            const barbeirosExibidos = filtroBarbeiro === 'todos' ? barbeirosValidos : barbeirosValidos.filter(b => b.id === filtroBarbeiro);
-            const cols = viewMode === 'day' ? barbeirosExibidos.length : diasExibidos.length;
-            const agora = new Date();
-                        const horariosExibidos = horarios; // Pode filtrar baseado nos barbeiros
-            
-            return (
+      {(() => {
+        if (carregando || !configuracao) {
+          return (
+            <div style={{ padding: '24px', textAlign: 'center', color: 'var(--texto-secundario)' }}>
+              <p className="font-interface font-medium">Carregando horários...</p>
+            </div>
+          );
+        }
+
+        const barbeirosExibidos = filtroBarbeiro === 'todos' ? barbeirosValidos : barbeirosValidos.filter(b => b.id === filtroBarbeiro);
+        const cols = viewMode === 'day' ? barbeirosExibidos.length : diasExibidos.length;
+        const agora = new Date();
+        const CHAVES_DIA = ['domingo', 'segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sabado'];
+
+        const getConfigDia = (diaDate: Date) => {
+          if (configuracao === 'vazio' || configuracao === 'erro') {
+            return { fechado: false, abertura: '08:00', fechamento: '20:00' };
+          }
+          const diaSemana = CHAVES_DIA[diaDate.getDay()];
+          return configuracao[diaSemana] || { fechado: true };
+        };
+
+        const isAlmoco = (horario: string, c: any) => {
+          if (!c || c.fechado || !c.temAlmoco || !c.almocoInicio || !c.almocoFim) return false;
+          if (!/^\d{2}:\d{2}$/.test(c.almocoInicio) || !/^\d{2}:\d{2}$/.test(c.almocoFim)) return false;
+          const [h, m] = horario.split(':').map(Number);
+          const hm = h * 60 + m;
+          const [aiH, aiM] = c.almocoInicio.split(':').map(Number);
+          const [afH, afM] = c.almocoFim.split(':').map(Number);
+          const ai = aiH * 60 + aiM;
+          const af = afH * 60 + afM;
+          return hm >= ai && hm < af;
+        };
+
+        let min = 24 * 60;
+        let max = 0;
+        let todosFechados = true;
+        
+        for (const d of diasExibidos) {
+          const c = getConfigDia(d);
+          if (c.fechado === false && c.abertura && c.fechamento && /^\d{2}:\d{2}$/.test(c.abertura) && /^\d{2}:\d{2}$/.test(c.fechamento)) {
+            todosFechados = false;
+            const [ah, am] = c.abertura.split(':').map(Number);
+            const [fh, fm] = c.fechamento.split(':').map(Number);
+            if (!isNaN(ah) && !isNaN(am) && ah * 60 + am < min) min = ah * 60 + am;
+            if (!isNaN(fh) && !isNaN(fm) && fh * 60 + fm > max) max = fh * 60 + fm;
+          }
+        }
+
+        if (todosFechados) {
+          return (
+            <div style={{ padding: '32px', textAlign: 'center' }}>
+              <p className="font-interface font-medium text-[var(--texto-secundario)]">Barbearia fechada neste(s) dia(s)</p>
+            </div>
+          );
+        }
+
+        const horariosExibidos: string[] = [];
+        for (let m = min; m < max; m += 30) {
+          horariosExibidos.push(`${String(Math.floor(m / 60)).padStart(2, '0')}:${m % 60 === 0 ? '00' : '30'}`);
+        }
+        
+        return isMobile ? (
+          <AgendaMobile 
+            agendamentos={agendamentos}
+            bloqueios={bloqueios}
+            barbeiros={barbeiros}
+            diaMobile={diaMobile}
+            horarios={horariosExibidos}
+            getColor={(id) => getBarbeiroColor(id, barbeiros)}
+            abrirModal={abrirModal}
+            setAgendamentoSelecionado={setAgendamentoSelecionado}
+            removerBloqueio={removerBloqueio}
+            modo={modoMobile}
+            setModo={setModoMobile}
+          />
+        ) : (
+          <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', overflowX: 'auto', width: '100%', position: 'relative' }}>
+            <div style={{ minWidth: isMobile ? '100%' : '700px' }}>
               <>
                 {/* Cabeçalho das colunas */}
                 <div style={{ display: 'grid', gridTemplateColumns: `60px repeat(${Math.max(cols, 1)}, 1fr)`, borderBottom: '1px solid var(--border)' }}>
@@ -558,77 +689,56 @@ export function Agenda() {
                   {/* Linha do Agora */}
                   {viewMode === 'day' && diaMobile.toDateString() === agora.toDateString() && (
                     <div style={{
-                      position: 'absolute',
-                      left: '60px',
-                      right: 0,
-                      top: `${((agora.getHours() - 8) * 60 + agora.getMinutes()) * (48 / 30)}px`,
-                      borderTop: '2px solid var(--cor-primaria)',
-                      zIndex: 40,
-                      pointerEvents: 'none'
+                      position: 'absolute', left: '60px', right: 0,
+                      top: `${((agora.getHours() * 60 + agora.getMinutes()) - min) * (48 / 30)}px`,
+                      borderTop: '2px solid var(--cor-primaria)', zIndex: 40, pointerEvents: 'none'
                     }}>
                       <div style={{ position: 'absolute', left: '-4px', top: '-5px', width: '8px', height: '8px', borderRadius: '50%', background: 'var(--cor-primaria)' }} />
                     </div>
                   )}
 
+                  {/* Fundo da Grade */}
                   {horariosExibidos.map((horario) => (
                     <div key={horario} style={{ display: 'grid', gridTemplateColumns: `60px repeat(${Math.max(cols, 1)}, 1fr)`, borderBottom: '1px solid var(--border)' }}>
                       <div className="text-right pr-3 pt-3" style={{ padding: '8px', fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--text-disabled)', letterSpacing: '0.04em', height: '48px' }}>
                         {horario}
                       </div>
-                      
                       {viewMode === 'day' ? barbeirosExibidos.map((barbeiro) => {
-                        const diaISO = dataBrasilia(diaMobile);
-                        
-                        const ags = agendamentos.filter(ag => {
-                          const d = new Date(ag.dataHora);
-                          const dataBR = getDataBrasilia(d);
-                          const hm = getHoraMinutoBrasilia(d);
-                          const horarioAg = `${String(hm.hora).padStart(2, '0')}:${String(hm.minuto).padStart(2, '0')}`;
-                          return dataBR === diaISO && horarioAg === horario && ag.barbeiroId === barbeiro.id;
-                        });
-
-                        const bls = bloqueios.filter(bl => {
-                          const dInicio = new Date(bl.dataInicio);
-                          const dFim = new Date(bl.dataFim);
-                          const dtAtual = new Date(diaISO + 'T' + horario + ':00-03:00');
-                          return dtAtual >= dInicio && dtAtual < dFim && bl.barbeiroId === barbeiro.id;
-                        });
-
-                        return renderCelula(ags, bls, barbeiro.id, idx => idx);
+                        const inAlmoco = isAlmoco(horario, getConfigDia(diaMobile));
+                        return <div key={barbeiro.id} style={{ borderLeft: '1px solid var(--border)', background: inAlmoco ? 'repeating-linear-gradient(45deg, var(--bg-surface), var(--bg-surface) 10px, var(--bg-surface2) 10px, var(--bg-surface2) 20px)' : 'transparent' }} />;
                       }) : diasExibidos.map((dia, diaIdx) => {
-                        const diaISO = dataBrasilia(dia);
-                        
-                        const ags = agendamentos.filter(ag => {
-                          const d = new Date(ag.dataHora);
-                          const dataBR = getDataBrasilia(d);
-                          const hm = getHoraMinutoBrasilia(d);
-                          const horarioAg = `${String(hm.hora).padStart(2, '0')}:${String(hm.minuto).padStart(2, '0')}`;
-                          const checkBarbeiro = filtroBarbeiro === 'todos' || ag.barbeiroId === filtroBarbeiro;
-                          return dataBR === diaISO && horarioAg === horario && checkBarbeiro;
-                        });
-
-                        const bls = bloqueios.filter(bl => {
-                          const dInicio = new Date(bl.dataInicio);
-                          const dFim = new Date(bl.dataFim);
-                          const dtAtual = new Date(diaISO + 'T' + horario + ':00-03:00');
-                          const checkBarbeiro = filtroBarbeiro === 'todos' || bl.barbeiroId === filtroBarbeiro;
-                          return dtAtual >= dInicio && dtAtual < dFim && checkBarbeiro;
-                        });
-
-                        return renderCelula(ags, bls, String(diaIdx), idx => idx);
+                        const cDia = getConfigDia(dia);
+                        const diaFechado = cDia.fechado;
+                        const inAlmoco = isAlmoco(horario, cDia);
+                        return <div key={diaIdx} style={{ borderLeft: '1px solid var(--border)', background: diaFechado || inAlmoco ? 'repeating-linear-gradient(45deg, var(--bg-surface), var(--bg-surface) 10px, var(--bg-surface2) 10px, var(--bg-surface2) 20px)' : 'transparent', opacity: diaFechado ? 0.7 : 1 }} />;
                       })}
                       {cols === 0 && <div style={{ borderLeft: '1px solid var(--border)', height: '48px' }} />}
                     </div>
                   ))}
+
+                  {/* Camada de Eventos */}
+                  <div style={{ position: 'absolute', top: 0, left: '60px', right: 0, bottom: 0, display: 'grid', gridTemplateColumns: `repeat(${Math.max(cols, 1)}, 1fr)`, pointerEvents: 'none' }}>
+                    {viewMode === 'day' ? barbeirosExibidos.map(barbeiro => (
+                      <div key={barbeiro.id} style={{ position: 'relative', width: '100%', height: '100%' }}>
+                        {renderEventosColuna(getEventosColuna(diaMobile, barbeiro.id), min, 3)}
+                      </div>
+                    )) : diasExibidos.map((dia, diaIdx) => {
+                      const cDia = getConfigDia(dia);
+                      return (
+                        <div key={diaIdx} style={{ position: 'relative', width: '100%', height: '100%' }}>
+                           {!cDia.fechado && renderEventosColuna(getEventosColuna(dia, filtroBarbeiro === 'todos' ? undefined : filtroBarbeiro), min, 3)}
+                        </div>
+                      );
+                    })}
+                    {cols === 0 && <div />}
+                  </div>
                 </div>
               </>
-            );
-          })()}
-        </div>
-      </div>
-      
-      
-      {/* Legenda */}
+            </div>
+          </div>
+        );
+      })()}
+{/* Footer safe area on mobile */}
       <div className="flex flex-wrap gap-4">
         {Object.entries(statusStyles).map(([status, st]) => (
           <div key={status} className="flex items-center gap-2">
@@ -695,6 +805,36 @@ export function Agenda() {
           </button>
         </div>
       </Modal>
+
+      {/* Modal de Overflow */}
+      <Modal aberto={overflowModal.aberto} onFechar={() => setOverflowModal({ aberto: false, eventos: [] })} titulo="Agendamentos">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          {overflowModal.eventos.map(ev => {
+            if (ev.tipo === 'BLOQUEIO') {
+              const bl = ev.original as Bloqueio;
+              return (
+                <div key={bl.id} style={{ padding: '12px', background: 'var(--bg-surface2)', borderRadius: '8px', borderLeft: '4px solid var(--texto-secundario)' }}>
+                  <p style={{ fontWeight: 600 }}>{bl?.barbeiro?.usuario?.nome || 'Bloqueado'}</p>
+                  <p style={{ fontSize: '13px', color: 'var(--texto-secundario)' }}>Bloqueio: {bl.motivo || 'Indisponível'}</p>
+                </div>
+              );
+            }
+            const ag = ev.original as Agendamento;
+            const st = statusStyles[ag.status] || statusStyles['AGUARDANDO'];
+            return (
+              <div key={ag.id} onClick={() => { setAgendamentoSelecionado(ag); setOverflowModal({ aberto: false, eventos: [] }); }} style={{ padding: '12px', background: st.bg, borderRadius: '8px', borderLeft: `4px solid ${st.color}`, display: 'flex', flexDirection: 'column', gap: '4px', cursor: 'pointer' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <p style={{ fontWeight: 600 }}>{ag?.cliente?.usuario?.nome || 'Cliente'}</p>
+                  <span style={{ fontSize: '12px', color: st.color, fontWeight: 600 }}>{statusLabels[ag.status]}</span>
+                </div>
+                <p style={{ fontSize: '13px' }}>{ag?.barbeiro?.usuario?.nome || 'Barbeiro'} · {formatarNomeServico(ag)}</p>
+                <p style={{ fontSize: '13px', color: 'var(--texto-secundario)' }}>{String(Math.floor(ev.inicioMinutos/60)).padStart(2,'0')}:{String(ev.inicioMinutos%60).padStart(2,'0')} - {String(Math.floor(ev.fimMinutos/60)).padStart(2,'0')}:{String(ev.fimMinutos%60).padStart(2,'0')}</p>
+              </div>
+            );
+          })}
+        </div>
+      </Modal>
+  
 
       {/* Modal para Bloqueio de Agenda */}
       <Modal aberto={modalBloqueioAberto} onFechar={() => setModalBloqueioAberto(false)} titulo="Bloquear Horário">
@@ -775,7 +915,7 @@ export function Agenda() {
                     {alterandoStatus === 'CONCLUIDO' ? 'Carregando...' : 'Concluir Agendamento'}
                   </button>
                   <button 
-                    onClick={() => mudarStatus('CANCELADO')} 
+                    onClick={() => setCancelarAlertAberto(true)} 
                     className="btn-secondary w-full justify-center"
                     disabled={alterandoStatus !== null}
                     style={{ background: 'var(--error)', color: 'var(--error-text)', opacity: alterandoStatus !== null ? 0.7 : 1 }}
@@ -796,7 +936,7 @@ export function Agenda() {
                     {alterandoStatus === 'CONCLUIDO' ? 'Carregando...' : 'Concluir Agendamento'}
                   </button>
                   <button 
-                    onClick={() => mudarStatus('CANCELADO')} 
+                    onClick={() => setCancelarAlertAberto(true)} 
                     className="btn-secondary w-full justify-center"
                     disabled={alterandoStatus !== null}
                     style={{ background: 'var(--error)', color: 'var(--error-text)', opacity: alterandoStatus !== null ? 0.7 : 1 }}
@@ -821,6 +961,18 @@ export function Agenda() {
           </div>
         )}
       </Modal>
+
+      <ModalAlert
+        aberto={cancelarAlertAberto}
+        onFechar={() => setCancelarAlertAberto(false)}
+        onConfirmar={() => mudarStatus('CANCELADO')}
+        titulo="Cancelar Agendamento"
+        mensagem="Tem certeza que deseja cancelar este agendamento? Ele será removido da agenda."
+        tipo="aviso"
+        textoBotao="Sim, cancelar"
+        textoCancelar="Não, voltar"
+        isConfirm={true}
+      />
     </div>
   );
 }

@@ -2,6 +2,7 @@ import { Response } from 'express';
 import { prisma } from '../lib/prisma';
 import { AuthService } from '../services/auth.service';
 import { AuthRequest } from '../types';
+import { HorariosUtil } from '../services/horarios.util';
 
 export class TenantController {
   /** GET /b/:slug - Retorna os dados públicos da barbearia */
@@ -263,6 +264,12 @@ export class TenantController {
       if (!servico) { res.status(404).json({ erro: 'Serviço não encontrado' }); return; }
 
       const dataHora = new Date(`${data}T${hora}:00`);
+
+      await HorariosUtil.validarConflitoCliente({
+        clienteId: finalClienteId,
+        dataHora,
+        duracaoMinutos: servico.duracaoMinutos
+      });
 
       const agendamento = await prisma.agendamento.create({
         data: {
