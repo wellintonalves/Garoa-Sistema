@@ -592,7 +592,7 @@ export class ClienteAppService {
     const dataInicioDia = inicioDiaBrasilia(dados.data);
     const dataFimDia = fimDiaBrasilia(dados.data);
 
-    const agendamentosDia = await prisma.agendamento.findMany({
+    let agendamentosDia = await prisma.agendamento.findMany({
       where: {
         barbeiroId: dados.barbeiroId,
         status: { notIn: ['CANCELADO'] },
@@ -600,6 +600,8 @@ export class ClienteAppService {
       },
       include: { servico: true }
     });
+
+    agendamentosDia = await injetarDuracaoTotalServicos(agendamentosDia);
 
     const reqInicioM = dataHora.getUTCHours() * 60 + dataHora.getUTCMinutes();
     const reqFimM = reqInicioM + duracaoTotal;

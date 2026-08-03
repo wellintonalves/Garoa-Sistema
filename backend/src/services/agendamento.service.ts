@@ -203,9 +203,43 @@ export class AgendamentoService {
       },
     });
 
-    // Lógica de pontuação — só executa quando o status muda para CONCLUIDO
+    // Lógica de pontuação e financeiro — só executa quando o status muda para CONCLUIDO
     if (dados.status === 'CONCLUIDO' && statusOriginal !== 'CONCLUIDO') {
       await creditarPontosPorAgendamento(agendamento.id);
+
+      // Cria lançamento financeiro caso não exista (quando concluído pelo painel web)
+      const lancamentoExistente = await prisma.lancamentoFinanceiro.findFirst({
+        where: { agendamentoId: agendamento.id }
+      });
+
+      if (!lancamentoExistente) {
+        const barbeiro = await prisma.barbeiro.findUnique({
+          where: { id: agendamento.barbeiroId },
+          select: { comissaoPercent: true, barbeariaId: true },
+        });
+
+        const valor = Number(agendamento.valorCobrado);
+        const comissaoPercent = barbeiro?.comissaoPercent || 50;
+        const valorComissao = (valor * comissaoPercent) / 100;
+        const valorLiquido = valor - valorComissao;
+
+        await prisma.lancamentoFinanceiro.create({
+          data: {
+            barbeariaId: agendamento.barbeariaId || barbeiro?.barbeariaId || '',
+            tipo: 'ENTRADA',
+            categoria: 'Serviço',
+            descricao: `${agendamento.servico?.nome || 'Serviço'} — concluído pelo painel`,
+            valor: agendamento.valorCobrado,
+            formaPagamento: 'PIX', // Forma padrão pelo painel, pode ser alterada no financeiro
+            agendamentoId: agendamento.id,
+            barbeiroId: agendamento.barbeiroId,
+            servicoId: agendamento.servicoId,
+            valorComissao,
+            valorLiquido,
+            data: new Date(),
+          },
+        });
+      }
     }
 
     return agendamento;

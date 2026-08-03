@@ -15,7 +15,8 @@ app.use(compression());
 const allowedOrigins = [
   'https://valenbarber.com.br',
   'https://barbearia-frontend-production-bb18.up.railway.app',
-  'http://localhost:5173'
+  'http://localhost:5173',
+  'http://192.168.15.6:5173'
 ];
 
 app.use(cors({

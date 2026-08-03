@@ -9,7 +9,7 @@ import {
   criarDataHoraBrasilia,
   formatarHorario,
 } from '../lib/timezone';
-import { HorariosUtil } from '../services/horarios.util';
+import { HorariosUtil, injetarDuracaoTotalServicos } from '../services/horarios.util';
 
 export class PublicoController {
   /** GET /publico/barbearia/slug/:slug */
@@ -208,7 +208,7 @@ export class PublicoController {
 
         for (const barb of barbeirosAtivos) {
           // Checar conflito
-          const agendamentosDia = await prisma.agendamento.findMany({
+          let agendamentosDia = await prisma.agendamento.findMany({
             where: {
               barbeiroId: barb.id,
               status: { notIn: ['CANCELADO', 'CONCLUIDO'] },
@@ -216,6 +216,8 @@ export class PublicoController {
             },
             include: { servico: true }
           });
+
+          agendamentosDia = await injetarDuracaoTotalServicos(agendamentosDia);
 
           const conflito = agendamentosDia.some(ag => {
             const agHM = getHoraMinutoBrasilia(new Date(ag.dataHora));

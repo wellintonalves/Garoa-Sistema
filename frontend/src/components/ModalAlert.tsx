@@ -114,7 +114,7 @@ export function ModalAlert({
           border: '1px solid var(--borda-forte)',
           boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.3)',
         }}
-        onAnimationEnd={() => {
+        onTransitionEnd={() => {
           if (fechando) {
             setVisivel(false);
             setFechando(false);
