@@ -768,32 +768,32 @@ export function Agenda() {
           )}
           <div>
             <label className="input-label">Cliente</label>
-            <select value={form.clienteId} onChange={(e) => setForm({ ...form, clienteId: e.target.value })} className="ds-select">
+            <select value={form.clienteId} onChange={(e) => { setForm({ ...form, clienteId: e.target.value }); setErroSalvar(null); }} className="ds-select">
               <option value="">Selecione...</option>
               {clientes.map((c) => <option key={c.id} value={c.id}>{c.usuario.nome}</option>)}
             </select>
           </div>
           <div>
             <label className="input-label">Barbeiro</label>
-            <select value={form.barbeiroId} onChange={(e) => setForm({ ...form, barbeiroId: e.target.value })} className="ds-select">
+            <select value={form.barbeiroId} onChange={(e) => { setForm({ ...form, barbeiroId: e.target.value }); setErroSalvar(null); }} className="ds-select">
               <option value="">Selecione...</option>
               {barbeiros.filter(b => b.ativo !== false).map((b) => <option key={b.id} value={b.id}>{b.usuario.nome}</option>)}
             </select>
           </div>
           <div>
             <label className="input-label">Serviço</label>
-            <select value={form.servicoId} onChange={(e) => setForm({ ...form, servicoId: e.target.value })} className="ds-select">
+            <select value={form.servicoId} onChange={(e) => { setForm({ ...form, servicoId: e.target.value }); setErroSalvar(null); }} className="ds-select">
               <option value="">Selecione...</option>
               {servicos.map((s) => <option key={s.id} value={s.id}>{s.nome} — R$ {Number(s.preco).toFixed(2)}</option>)}
             </select>
           </div>
           <div>
             <label className="input-label">Data e Horário</label>
-            <input type="datetime-local" value={form.dataHora} onChange={(e) => setForm({ ...form, dataHora: e.target.value })} className="ds-input" />
+            <input type="datetime-local" value={form.dataHora} onChange={(e) => { setForm({ ...form, dataHora: e.target.value }); setErroSalvar(null); }} className="ds-input" />
           </div>
           <div>
             <label className="input-label">Observações</label>
-            <textarea value={form.observacoes} onChange={(e) => setForm({ ...form, observacoes: e.target.value })} rows={2} className="ds-textarea" />
+            <textarea value={form.observacoes} onChange={(e) => { setForm({ ...form, observacoes: e.target.value }); setErroSalvar(null); }} rows={2} className="ds-textarea" />
           </div>
           <button 
             onClick={criarAgendamento} 

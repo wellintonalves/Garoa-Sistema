@@ -5,6 +5,7 @@ import {
   getHoraMinutoBrasilia,
   inicioDiaBrasilia,
   fimDiaBrasilia,
+  diaBrasiliaStr,
 } from '../lib/timezone';
 
 export async function injetarDuracaoTotalServicos(agendamentos: any[]) {
@@ -137,11 +138,8 @@ export class HorariosUtil {
   }): Promise<void> {
     const { prisma } = require('../lib/prisma');
     
-    // Convert to visually local date string based on UTC values from toBrasiliaDate
-    const ano = params.dataHora.getUTCFullYear();
-    const mes = String(params.dataHora.getUTCMonth() + 1).padStart(2, '0');
-    const dia = String(params.dataHora.getUTCDate()).padStart(2, '0');
-    const dataStr = `${ano}-${mes}-${dia}`;
+    // Usa diaBrasiliaStr para garantir a data local correta
+    const dataStr = diaBrasiliaStr(params.dataHora);
     
     const dataInicioDia = inicioDiaBrasilia(dataStr);
     const dataFimDia = fimDiaBrasilia(dataStr);
@@ -159,7 +157,7 @@ export class HorariosUtil {
     agendamentosCliente = await injetarDuracaoTotalServicos(agendamentosCliente);
 
     const reqInicioM = params.dataHora.getUTCHours() * 60 + params.dataHora.getUTCMinutes();
-    const reqFimM = reqInicioM + params.duracaoMinutos;
+    const reqFimM = reqInicioM + Number(params.duracaoMinutos);
 
     for (const ag of agendamentosCliente) {
       const agDate = new Date(ag.dataHora);
@@ -167,12 +165,14 @@ export class HorariosUtil {
       const agFimM = agInicioM + (ag.servico?.duracaoMinutos || 0);
       
       const conflita = (reqInicioM < agFimM) && (agInicioM < reqFimM);
+      
+      console.log(`[CONFLITO CHECK] Req: ${reqInicioM} - ${reqFimM} | Ag: ${agInicioM} - ${agFimM} | Conflita: ${conflita} | params.duracao: ${params.duracaoMinutos} | ag.duracao: ${ag.servico?.duracaoMinutos}`);
+
       if (conflita) {
-        const horaFmt = String(agInicioM / 60 | 0).padStart(2, '0') + ':' + String(agInicioM % 60).padStart(2, '0');
         const nomeBarbeiro = ag.barbeiro?.usuario?.nome || 'outro barbeiro';
         const nomeServico = ag.servico?.nome || 'um serviço';
         
-        const erro: any = new Error(`Você já tem um agendamento de ${nomeServico} às ${horaFmt} com ${nomeBarbeiro}. Escolha outro horário.`);
+        const erro: any = new Error(`Você já tem um agendamento de ${nomeServico} com ${nomeBarbeiro} que conflita com este horário. Escolha outro horário.`);
         erro.status = 409;
         throw erro;
       }
@@ -250,7 +250,8 @@ export class HorariosUtil {
         conflitoCliente = params.agendamentosCliente.some(ag => {
           const agDate = new Date(ag.dataHora);
           // Converter dataHora do agendamento do cliente para minutos locais para comparar de forma justa
-          const agInicioM = agDate.getUTCHours() * 60 + agDate.getUTCMinutes();
+          const agHM = getHoraMinutoBrasilia(agDate);
+          const agInicioM = agHM.hora * 60 + agHM.minuto;
           const agFimM = agInicioM + (ag.servico?.duracaoMinutos || 0);
           return slotInicioM < agFimM && slotFimM > agInicioM;
         });
