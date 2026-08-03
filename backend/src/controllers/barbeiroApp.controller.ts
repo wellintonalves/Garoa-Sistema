@@ -93,7 +93,7 @@ export class BarbeiroAppController {
       const barbeiro = req.barbeiro;
       if (!barbeiro) { res.status(401).json({ erro: 'Não autorizado' }); return; }
 
-      const { formaPagamento } = req.body;
+      const { formaPagamento, valorCobrado, pontosUsados } = req.body;
       if (!formaPagamento) {
         res.status(400).json({ erro: 'Forma de pagamento é obrigatória' });
         return;
@@ -103,7 +103,9 @@ export class BarbeiroAppController {
         req.params.id,
         barbeiro.barbeiroId,
         barbeiro.barbeariaId,
-        formaPagamento
+        formaPagamento,
+        valorCobrado,
+        pontosUsados
       );
       res.json(resultado);
     } catch (error) {

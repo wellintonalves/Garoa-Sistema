@@ -16,6 +16,7 @@ interface ConfigFidelidade {
   pontosPorIndicacao: number;
   pontosParaIndicado: number;
   pontosBoasVindas: number;
+  valorPorPonto: string; // Using string to allow comma and dot
   regrasPorServico: Array<{ servicoId: string; pontos: number }> | null;
 }
 
@@ -144,7 +145,7 @@ export function Fidelidade() {
 function TabRegras({ showToast }: { showToast: (m: string, t?: 'ok' | 'erro') => void }) {
   const [config, setConfig] = useState<ConfigFidelidade>({
     ativo: false, pontosPorReal: 0, pontosPorVisita: 0, pontosDobroAniversario: false,
-    pontosPorIndicacao: 0, pontosParaIndicado: 0, pontosBoasVindas: 0, regrasPorServico: null,
+    pontosPorIndicacao: 0, pontosParaIndicado: 0, pontosBoasVindas: 0, valorPorPonto: '0,00', regrasPorServico: null,
   });
   const [servicos, setServicos] = useState<Servico[]>([]);
   const [carregando, setCarregando] = useState(true);
@@ -162,6 +163,7 @@ function TabRegras({ showToast }: { showToast: (m: string, t?: 'ok' | 'erro') =>
             pontosPorIndicacao: resConfig.data.pontosPorIndicacao ?? 0,
             pontosParaIndicado: resConfig.data.pontosParaIndicado ?? 0,
             pontosBoasVindas: resConfig.data.pontosBoasVindas ?? 0,
+            valorPorPonto: resConfig.data.valorPorPonto ? String(resConfig.data.valorPorPonto) : '0,00',
             regrasPorServico: resConfig.data.regrasPorServico ?? null,
           });
         }
@@ -193,6 +195,7 @@ function TabRegras({ showToast }: { showToast: (m: string, t?: 'ok' | 'erro') =>
         pontosPorVisita: Number(config.pontosPorVisita),
         pontosPorIndicacao: Number(config.pontosPorIndicacao),
         pontosBoasVindas: Number(config.pontosBoasVindas),
+        valorPorPonto: Number(config.valorPorPonto.replace(',', '.')),
       });
       showToast('Regras salvas com sucesso!');
     } catch {
@@ -339,6 +342,23 @@ function TabRegras({ showToast }: { showToast: (m: string, t?: 'ok' | 'erro') =>
                 conectar-se à barbearia, os pontos de boas-vindas são creditados para o novo cliente imediatamente.
                 Os pontos de indicação são creditados para quem indicou assim que o amigo conclui o primeiro agendamento.
               </p>
+            </div>
+          </Card>
+
+          {/* Valor Monetário */}
+          <Card style={{ marginTop: '16px' }}>
+            <SectionTitle>Valor do Ponto</SectionTitle>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}>
+              <FieldGroup label="Valor do Ponto em Desconto (R$)" hint="">
+                <input type="text" style={inputStyle}
+                  value={config.valorPorPonto}
+                  onChange={e => setConfig({ ...config, valorPorPonto: e.target.value })} 
+                  placeholder="0,00"
+                />
+                <p style={{ fontSize: '11px', color: 'var(--texto-secundario)', marginTop: '6px' }}>
+                  Ex: 0,05 — o cliente usa 100 pontos e ganha R$ 5,00 de desconto
+                </p>
+              </FieldGroup>
             </div>
           </Card>
         </>

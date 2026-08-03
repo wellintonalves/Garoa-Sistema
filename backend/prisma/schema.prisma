@@ -353,6 +353,7 @@ model ConfiguracaoFidelidade {
   pontosPorIndicacao     Int      @default(0)
   pontosParaIndicado     Int      @default(0)
   pontosBoasVindas       Int      @default(0)
+  valorPorPonto          Decimal  @default(0.00) @db.Decimal(10, 2)
   regrasPorServico       Json?
   createdAt              DateTime @default(now())
   updatedAt              DateTime @updatedAt

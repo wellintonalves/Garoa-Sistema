@@ -15,6 +15,7 @@ router.get('/aniversariantes', roleMiddleware('ADMIN', 'BARBEIRO'), ClienteContr
 // CRUD
 router.get('/', roleMiddleware('ADMIN', 'BARBEIRO'), ClienteController.listar);
 router.get('/:id', roleMiddleware('ADMIN', 'BARBEIRO'), ClienteController.buscar);
+router.get('/:id/fidelidade', roleMiddleware('ADMIN', 'BARBEIRO'), ClienteController.saldoFidelidade);
 router.post('/', roleMiddleware('ADMIN'), ClienteController.criar);
 router.put('/:id', roleMiddleware('ADMIN'), ClienteController.atualizar);
 router.delete('/:id', roleMiddleware('ADMIN'), ClienteController.remover);

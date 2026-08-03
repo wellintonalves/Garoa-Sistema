@@ -1,6 +1,6 @@
 // Serviço de agendamentos — CRUD + horários livres
 import { prisma } from '../lib/prisma';
-import { StatusAgendamento } from '@prisma/client';
+import { StatusAgendamento, FormaPagamento } from '@prisma/client';
 import {
   toBrasiliaDate,
   inicioDiaBrasilia,
@@ -166,83 +166,205 @@ export class AgendamentoService {
   }
 
   /** Atualiza status ou dados do agendamento */
-  static async atualizar(id: string, dados: Partial<DadosAgendamento & { status: StatusAgendamento }>) {
-    const agendamentoOriginal = await prisma.agendamento.findUnique({ 
-      where: { id },
-      include: { servico: true }
-    });
-    const statusOriginal = agendamentoOriginal?.status;
+  static async atualizar(
+    id: string,
+    dados: Partial<
+      DadosAgendamento & {
+        status: StatusAgendamento;
+        formaPagamento?: FormaPagamento;
+        pontosUsados?: number;
+        descontoPercentual?: number;
+        descontoReais?: number;
+      }
+    >
+  ) {
+    const { formaPagamento, pontosUsados, descontoPercentual, descontoReais, ...dadosAgendamento } = dados;
 
-    if (dados.dataHora || dados.servicoId) {
-      const novaDataHora = dados.dataHora ? toBrasiliaDate(dados.dataHora) : agendamentoOriginal!.dataHora;
-      let novaDuracao = agendamentoOriginal!.servico.duracaoMinutos;
-      
-      if (dados.servicoId && dados.servicoId !== agendamentoOriginal!.servicoId) {
-        const novoServico = await prisma.servico.findUnique({ where: { id: dados.servicoId } });
+    const agendamentoOriginal = await prisma.agendamento.findUnique({
+      where: { id },
+      include: { servico: true },
+    });
+
+    if (!agendamentoOriginal) {
+      throw new Error('Agendamento não encontrado');
+    }
+
+    if (agendamentoOriginal.status === 'CONCLUIDO') {
+      const error: any = new Error('Este agendamento já foi concluído e não pode ser alterado.');
+      error.status = 409;
+      throw error;
+    }
+
+    const statusOriginal = agendamentoOriginal.status;
+
+    if (dadosAgendamento.dataHora || dadosAgendamento.servicoId) {
+      const novaDataHora = dadosAgendamento.dataHora
+        ? toBrasiliaDate(dadosAgendamento.dataHora)
+        : agendamentoOriginal.dataHora;
+      let novaDuracao = agendamentoOriginal.servico.duracaoMinutos;
+
+      if (dadosAgendamento.servicoId && dadosAgendamento.servicoId !== agendamentoOriginal.servicoId) {
+        const novoServico = await prisma.servico.findUnique({ where: { id: dadosAgendamento.servicoId } });
         if (novoServico) novaDuracao = novoServico.duracaoMinutos;
       }
-      
+
       await HorariosUtil.validarConflitoCliente({
-        clienteId: agendamentoOriginal!.clienteId,
+        clienteId: agendamentoOriginal.clienteId,
         dataHora: novaDataHora,
         duracaoMinutos: novaDuracao,
-        ignorarAgendamentoId: id
+        ignorarAgendamentoId: id,
       });
     }
 
-    const agendamento = await prisma.agendamento.update({
-      where: { id },
-      data: {
-        ...dados,
-        dataHora: dados.dataHora ? toBrasiliaDate(dados.dataHora) : undefined,
-      } as any,
-      include: {
-        cliente: { include: { usuario: { select: { nome: true } } } },
-        barbeiro: { include: { usuario: { select: { nome: true } } } },
-        servico: { select: { nome: true, duracaoMinutos: true, cor: true, preco: true } },
-      },
-    });
+    // Limpa propriedades extras que não pertencem ao modelo Agendamento para o update
+    delete (dadosAgendamento as any).formaPagamento;
+    delete (dadosAgendamento as any).pontosUsados;
+    delete (dadosAgendamento as any).descontoPercentual;
+    delete (dadosAgendamento as any).descontoReais;
 
-    // Lógica de pontuação e financeiro — só executa quando o status muda para CONCLUIDO
-    if (dados.status === 'CONCLUIDO' && statusOriginal !== 'CONCLUIDO') {
-      await creditarPontosPorAgendamento(agendamento.id);
+    let resultadoFinal: any = null;
 
-      // Cria lançamento financeiro caso não exista (quando concluído pelo painel web)
-      const lancamentoExistente = await prisma.lancamentoFinanceiro.findFirst({
-        where: { agendamentoId: agendamento.id }
+    if ((dadosAgendamento.status as string) === 'CONCLUIDO' && (statusOriginal as string) !== 'CONCLUIDO') {
+      // 1. Validar forma de pagamento
+      const formasPermitidas = Object.values(FormaPagamento);
+      if (formaPagamento && !formasPermitidas.includes(formaPagamento as FormaPagamento)) {
+        const error: any = new Error('Forma de pagamento inválida.');
+        error.status = 400;
+        throw error;
+      }
+
+      // 2. Validar pontos usados
+      const pontosAUsar = pontosUsados ? Math.floor(pontosUsados) : 0;
+      if (pontosAUsar < 0) {
+        const error: any = new Error('A quantidade de pontos usados não pode ser negativa.');
+        error.status = 400;
+        throw error;
+      }
+
+      // Buscar configuração de fidelidade e saldo
+      const config = await prisma.configuracaoFidelidade.findUnique({
+        where: { barbeariaId: agendamentoOriginal.barbeariaId! },
       });
+      const valorPorPonto = config?.valorPorPonto ? Number(config.valorPorPonto) : 0;
 
-      if (!lancamentoExistente) {
-        const barbeiro = await prisma.barbeiro.findUnique({
-          where: { id: agendamento.barbeiroId },
+      if (pontosAUsar > 0) {
+        const historico = await prisma.pontoFidelidade.findMany({
+          where: { clienteId: agendamentoOriginal.clienteId },
+        });
+        const saldoPontos = historico.reduce((acc, p) => acc + p.pontos, 0);
+
+        if (pontosAUsar > saldoPontos) {
+          const error: any = new Error(`Saldo insuficiente de pontos. O cliente possui ${saldoPontos} pontos.`);
+          error.status = 400;
+          throw error;
+        }
+      }
+
+      // 3. Calcular descontos
+      // Ordem fixa de cálculo:
+      // 1. valorBruto = valor do serviço
+      // 2. aplica desconto percentual  → valorBruto * (1 - pct/100)
+      // 3. subtrai desconto em reais
+      // 4. subtrai desconto de pontos  → pontosUsados * valorPorPonto
+      // 5. valorFinal = max(resultado, 0)
+      const valorBruto = Number(agendamentoOriginal.servico.preco);
+      
+      const pct = descontoPercentual ? Number(descontoPercentual) : 0;
+      const valorAposPct = valorBruto * (1 - pct / 100);
+      
+      const reais = descontoReais ? Number(descontoReais) : 0;
+      const valorAposReais = valorAposPct - reais;
+      
+      const descontoPontos = pontosAUsar * valorPorPonto;
+      const valorAposPontos = valorAposReais - descontoPontos;
+      
+      const valorFinal = Math.max(valorAposPontos, 0);
+
+      // Usar $transaction para garantir atomicidade
+      resultadoFinal = await prisma.$transaction(async (tx) => {
+        // A. Atualiza o agendamento
+        const updated = await tx.agendamento.update({
+          where: { id },
+          data: {
+            ...dadosAgendamento,
+            valorCobrado: valorFinal,
+            dataHora: dadosAgendamento.dataHora ? toBrasiliaDate(dadosAgendamento.dataHora) : undefined,
+          } as any,
+          include: {
+            cliente: { include: { usuario: { select: { nome: true } } } },
+            barbeiro: { include: { usuario: { select: { nome: true } } } },
+            servico: { select: { nome: true, duracaoMinutos: true, cor: true, preco: true } },
+          },
+        });
+
+        // B. Debita pontos do cliente (se usou pontos)
+        if (pontosAUsar > 0) {
+          await tx.pontoFidelidade.create({
+            data: {
+              clienteId: agendamentoOriginal.clienteId,
+              barbeariaId: agendamentoOriginal.barbeariaId,
+              pontos: -pontosAUsar,
+              descricao: `Resgate no serviço ${agendamentoOriginal.servico.nome}`,
+              data: new Date(),
+            },
+          });
+        }
+
+        // C. Cria o lançamento financeiro
+        const barbeiro = await tx.barbeiro.findUnique({
+          where: { id: agendamentoOriginal.barbeiroId },
           select: { comissaoPercent: true, barbeariaId: true },
         });
 
-        const valor = Number(agendamento.valorCobrado);
+        // Comissão é sobre o VALOR BRUTO
         const comissaoPercent = barbeiro?.comissaoPercent || 50;
-        const valorComissao = (valor * comissaoPercent) / 100;
-        const valorLiquido = valor - valorComissao;
+        const valorComissao = (valorBruto * comissaoPercent) / 100;
+        
+        // A receita da barbearia será o valor final (pago pelo cliente) menos a comissão (baseada no bruto)
+        // Isso reflete o fato de que o desconto é um custo comercial da barbearia
+        const valorLiquido = valorFinal - valorComissao;
 
-        await prisma.lancamentoFinanceiro.create({
+        await tx.lancamentoFinanceiro.create({
           data: {
-            barbeariaId: agendamento.barbeariaId || barbeiro?.barbeariaId || '',
+            barbeariaId: agendamentoOriginal.barbeariaId || barbeiro?.barbeariaId || '',
             tipo: 'ENTRADA',
             categoria: 'Serviço',
-            descricao: `${agendamento.servico?.nome || 'Serviço'} — concluído pelo painel`,
-            valor: agendamento.valorCobrado,
-            formaPagamento: 'PIX', // Forma padrão pelo painel, pode ser alterada no financeiro
-            agendamentoId: agendamento.id,
-            barbeiroId: agendamento.barbeiroId,
-            servicoId: agendamento.servicoId,
+            descricao: `${agendamentoOriginal.servico.nome} — concluído pelo painel`,
+            valor: valorFinal,
+            formaPagamento: formaPagamento || 'PIX',
+            agendamentoId: updated.id,
+            barbeiroId: agendamentoOriginal.barbeiroId,
+            servicoId: agendamentoOriginal.servicoId,
             valorComissao,
             valorLiquido,
             data: new Date(),
           },
         });
-      }
+
+        return updated;
+      });
+
+      // D. Creditar pontos ganhos pelo agendamento concluído (fora da tx principal pq envolve regras complexas do fidelidade.engine.ts)
+      // Como o motor usa chamadas separadas e `find` em outras configurações, é seguro rodar logo após a transação
+      await creditarPontosPorAgendamento(resultadoFinal.id);
+
+    } else {
+      // Se não está concluindo (apenas reagendando, etc), apenas update simples
+      resultadoFinal = await prisma.agendamento.update({
+        where: { id },
+        data: {
+          ...dadosAgendamento,
+          dataHora: dadosAgendamento.dataHora ? toBrasiliaDate(dadosAgendamento.dataHora) : undefined,
+        } as any,
+        include: {
+          cliente: { include: { usuario: { select: { nome: true } } } },
+          barbeiro: { include: { usuario: { select: { nome: true } } } },
+          servico: { select: { nome: true, duracaoMinutos: true, cor: true, preco: true } },
+        },
+      });
     }
 
-    return agendamento;
+    return resultadoFinal;
   }
 
   /** Cancela um agendamento */

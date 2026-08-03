@@ -3,7 +3,7 @@ import { useOutletContext, useNavigate } from 'react-router-dom';
 import { Check, Clock, Scissors, Calendar, Plus, Prohibit as Ban, TrendUp as TrendingUp, CurrencyDollar as DollarSign, Users, Briefcase } from '@phosphor-icons/react';
 import { formatarNomeServico } from '../../utils/formato';
 import barbeiroApi from '../../api/barbeiroApi';
-import { Modal } from '../../components/Modal';
+import { ModalConcluirServico } from '../../components/ModalConcluirServico';
 
 // Interfaces
 interface AgendamentoHoje {
@@ -32,8 +32,6 @@ export function BarbeiroHoje() {
   const [atualizandoStatus, setAtualizandoStatus] = useState(false);
 
   const [concluindoAg, setConcluindoAg] = useState<AgendamentoHoje | null>(null);
-  const [concluindoId, setConcluindoId] = useState<string | null>(null);
-  const [formaPagamento, setFormaPagamento] = useState('PIX');
   const [sucessoMsg, setSucessoMsg] = useState('');
   const [erroMsg, setErroMsg] = useState('');
 
@@ -81,19 +79,16 @@ export function BarbeiroHoje() {
     }
   }
 
-  async function confirmarConclusao() {
+  async function confirmarConclusao(dados: any) {
     if (!concluindoAg) return;
-    setConcluindoId(concluindoAg.id);
     setErroMsg('');
     try {
-      await barbeiroApi.post(`/barbeiro/concluir-agendamento/${concluindoAg.id}`, { formaPagamento });
+      await barbeiroApi.post(`/barbeiro/concluir-agendamento/${concluindoAg.id}`, dados);
       await carregarDados();
       setConcluindoAg(null);
       mostrarSucesso(`Atendimento concluído com sucesso!`);
     } catch (err: any) {
       setErroMsg(err.response?.data?.erro || 'Erro ao concluir');
-    } finally {
-      setConcluindoId(null);
     }
   }
 
@@ -294,7 +289,6 @@ export function BarbeiroHoje() {
                       <button 
                         onClick={() => {
                           setConcluindoAg(a);
-                          setFormaPagamento('PIX');
                           setErroMsg('');
                         }}
                         className="w-full py-3 px-4 text-[var(--texto-principal)] font-medium rounded-xl text-sm flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
@@ -345,55 +339,12 @@ export function BarbeiroHoje() {
       )}
 
       {/* Modal Conclusão */}
-      <Modal 
+      <ModalConcluirServico 
         aberto={!!concluindoAg} 
         onFechar={() => setConcluindoAg(null)} 
-        titulo="Concluir Atendimento"
-      >
-        {concluindoAg && (
-          <div className="flex flex-col gap-5 p-1">
-            <div className="p-4 rounded-xl border" style={{ background: 'var(--bg-surface2)', borderColor: 'var(--border)' }}>
-              <p className="font-medium text-lg mb-1" style={{ color: 'var(--text-primary)' }}>
-                {concluindoAg.cliente.usuario.nome}
-              </p>
-              <p className="text-sm" style={{ color: 'var(--texto-secundario)' }}>
-                {formatarNomeServico(concluindoAg)} • <span className="font-semibold" style={{ color: 'var(--text-primary)' }}>R$ {Number(concluindoAg.valorCobrado).toFixed(2)}</span>
-              </p>
-            </div>
-
-            {erroMsg && (
-              <div className="bg-[var(--perigo-fundo)] text-[var(--perigo)] text-sm p-3 rounded-lg border border-[var(--perigo)]">
-                {erroMsg}
-              </div>
-            )}
-
-            <div>
-              <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-primary)' }}>Forma de Pagamento</label>
-              <select 
-                value={formaPagamento} 
-                onChange={e => setFormaPagamento(e.target.value)}
-                disabled={!!concluindoId}
-                className="w-full p-3 rounded-xl border focus:outline-none focus:ring-2"
-                style={{ background: 'var(--bg-surface)', borderColor: 'var(--border)', color: 'var(--text-primary)', outlineColor: 'var(--cor-primaria)' }}
-              >
-                <option value="DINHEIRO">Dinheiro</option>
-                <option value="PIX">PIX</option>
-                <option value="CARTAO_DEBITO">Cartão de Débito</option>
-                <option value="CARTAO_CREDITO">Cartão de Crédito</option>
-              </select>
-            </div>
-
-            <button 
-              onClick={confirmarConclusao}
-              disabled={!!concluindoId}
-              className="w-full py-3.5 text-[var(--texto-principal)] font-medium rounded-xl flex justify-center items-center gap-2 hover:opacity-90 transition-opacity disabled:opacity-50 mt-2"
-              style={{ background: 'var(--cor-primaria)' }}
-            >
-              {concluindoId ? 'Processando...' : 'Confirmar e Finalizar'}
-            </button>
-          </div>
-        )}
-      </Modal>
+        agendamento={concluindoAg as any}
+        onConfirmar={confirmarConclusao}
+      />
     </div>
   );
 }

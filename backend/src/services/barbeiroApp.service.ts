@@ -6,6 +6,7 @@ import { authConfig } from '../config/auth';
 import { BarbeiroJWT } from '../types';
 import { diaBrasiliaStr, inicioDiaBrasilia, fimDiaBrasilia } from '../lib/timezone';
 import { creditarPontosPorAgendamento } from './fidelidade.engine';
+import { FormaPagamento } from '@prisma/client';
 
 interface RespostaAuthBarbeiro {
   token: string;
@@ -179,56 +180,150 @@ export class BarbeiroAppService {
     agendamentoId: string,
     barbeiroId: string,
     barbeariaId: string,
-    formaPagamento: string
+    formaPagamento: string,
+    valorCobrado?: number, // Este valorCobrado pode vir do frontend do barbeiro (ainda não atualizado, então aceitamos mas recalculamos se tiver pontos ou descontos)
+    pontosUsados?: number,
+    descontoPercentual?: number,
+    descontoReais?: number
   ) {
-    const agendamento = await prisma.agendamento.findUnique({
+    const agendamentoOriginal = await prisma.agendamento.findUnique({
       where: { id: agendamentoId },
       include: { servico: true },
     });
 
-    if (!agendamento) throw new Error('Agendamento não encontrado');
-    if (agendamento.barbeiroId !== barbeiroId) throw new Error('Este agendamento não pertence a você');
-    if (agendamento.status === 'CONCLUIDO') throw new Error('Agendamento já foi concluído');
+    if (!agendamentoOriginal) {
+      const error: any = new Error('Agendamento não encontrado');
+      error.status = 404;
+      throw error;
+    }
+    if (agendamentoOriginal.barbeiroId !== barbeiroId) {
+      const error: any = new Error('Este agendamento não pertence a você');
+      error.status = 403;
+      throw error;
+    }
+    if (agendamentoOriginal.status === 'CONCLUIDO') {
+      const error: any = new Error('Agendamento já foi concluído');
+      error.status = 409;
+      throw error;
+    }
 
-    // Atualiza status
-    await prisma.agendamento.update({
-      where: { id: agendamentoId },
-      data: { status: 'CONCLUIDO' },
+    // 1. Validar forma de pagamento
+    const formasPermitidas = Object.values(FormaPagamento);
+    if (!formasPermitidas.includes(formaPagamento as FormaPagamento)) {
+      const error: any = new Error('Forma de pagamento inválida.');
+      error.status = 400;
+      throw error;
+    }
+
+    // 2. Validar pontos usados
+    const pontosAUsar = pontosUsados ? Math.floor(pontosUsados) : 0;
+    if (pontosAUsar < 0) {
+      const error: any = new Error('A quantidade de pontos usados não pode ser negativa.');
+      error.status = 400;
+      throw error;
+    }
+
+    const config = await prisma.configuracaoFidelidade.findUnique({
+      where: { barbeariaId },
+    });
+    const valorPorPonto = config?.valorPorPonto ? Number(config.valorPorPonto) : 0;
+
+    if (pontosAUsar > 0) {
+      const historico = await prisma.pontoFidelidade.findMany({
+        where: { clienteId: agendamentoOriginal.clienteId },
+      });
+      const saldoPontos = historico.reduce((acc, p) => acc + p.pontos, 0);
+
+      if (pontosAUsar > saldoPontos) {
+        const error: any = new Error(`Saldo insuficiente de pontos. O cliente possui ${saldoPontos} pontos.`);
+        error.status = 400;
+        throw error;
+      }
+    }
+
+    // 3. Calcular descontos
+    let valorBruto = Number(agendamentoOriginal.servico.preco);
+    
+    // Se o barbeiro passar um valorCobrado manualmente que seja diferente do preço original
+    // e não houver descontos declarados (app antigo), consideramos o valorCobrado como bruto.
+    // Mas a regra de negócio exige os campos agora, então vamos tratar do jeito novo:
+    if (valorCobrado !== undefined && !descontoPercentual && !descontoReais && !pontosUsados) {
+      // Compatibilidade com versão anterior do app onde o barbeiro altera o valor total na mão
+      valorBruto = valorCobrado;
+    }
+
+    const pct = descontoPercentual ? Number(descontoPercentual) : 0;
+    const valorAposPct = valorBruto * (1 - pct / 100);
+    
+    const reais = descontoReais ? Number(descontoReais) : 0;
+    const valorAposReais = valorAposPct - reais;
+    
+    const descontoPontos = pontosAUsar * valorPorPonto;
+    const valorAposPontos = valorAposReais - descontoPontos;
+    
+    const valorFinal = Math.max(valorAposPontos, 0);
+
+    // Usar $transaction
+    const resultadoFinal = await prisma.$transaction(async (tx) => {
+      // A. Atualiza agendamento
+      const updated = await tx.agendamento.update({
+        where: { id: agendamentoId },
+        data: { 
+          status: 'CONCLUIDO',
+          valorCobrado: valorFinal
+        },
+      });
+
+      // B. Debita pontos (se usou)
+      if (pontosAUsar > 0) {
+        await tx.pontoFidelidade.create({
+          data: {
+            clienteId: agendamentoOriginal.clienteId,
+            barbeariaId: agendamentoOriginal.barbeariaId,
+            pontos: -pontosAUsar,
+            descricao: `Resgate no serviço ${agendamentoOriginal.servico.nome}`,
+            data: new Date(),
+          },
+        });
+      }
+
+      // C. Lançamento financeiro
+      const barbeiro = await tx.barbeiro.findUnique({
+        where: { id: barbeiroId },
+        select: { comissaoPercent: true },
+      });
+
+      const comissaoPercent = barbeiro?.comissaoPercent || 50;
+      const valorComissao = (valorBruto * comissaoPercent) / 100;
+      const valorLiquido = valorFinal - valorComissao;
+
+      await tx.lancamentoFinanceiro.create({
+        data: {
+          barbeariaId,
+          tipo: 'ENTRADA',
+          categoria: 'Serviço',
+          descricao: `${agendamentoOriginal.servico.nome} — concluído pelo Barbeiro App`,
+          valor: valorFinal,
+          formaPagamento: formaPagamento as FormaPagamento,
+          agendamentoId: updated.id,
+          barbeiroId,
+          servicoId: agendamentoOriginal.servicoId,
+          valorComissao,
+          valorLiquido,
+          data: new Date(),
+        },
+      });
+
+      return {
+        message: 'Agendamento concluído com sucesso',
+        agendamento: updated
+      };
     });
 
-    // Credita pontos de fidelidade (idempotente)
+    // Credita pontos de fidelidade ganhos
     await creditarPontosPorAgendamento(agendamentoId);
 
-    // Calcula comissão
-    const barbeiro = await prisma.barbeiro.findUnique({
-      where: { id: barbeiroId },
-      select: { comissaoPercent: true },
-    });
-
-    const valor = Number(agendamento.valorCobrado);
-    const comissaoPercent = barbeiro?.comissaoPercent || 50;
-    const valorComissao = (valor * comissaoPercent) / 100;
-    const valorLiquido = valor - valorComissao;
-
-    // Cria lançamento financeiro
-    const lancamento = await prisma.lancamentoFinanceiro.create({
-      data: {
-        barbeariaId: agendamento.barbeariaId || barbeariaId,
-        tipo: 'ENTRADA',
-        categoria: 'Serviço',
-        descricao: `${agendamento.servico?.nome || 'Serviço'} — concluído pelo barbeiro`,
-        valor: agendamento.valorCobrado,
-        formaPagamento: formaPagamento as 'DINHEIRO' | 'PIX' | 'CARTAO_DEBITO' | 'CARTAO_CREDITO',
-        agendamentoId,
-        barbeiroId,
-        servicoId: agendamento.servicoId,
-        valorComissao,
-        valorLiquido,
-        data: new Date(),
-      },
-    });
-
-    return { agendamento: { ...agendamento, status: 'CONCLUIDO' }, lancamento };
+    return resultadoFinal;
   }
 
   /** Perfil do barbeiro */

@@ -77,6 +77,23 @@ export class ClienteController {
     }
   }
 
+  /** GET /clientes/:id/fidelidade — retorna saldo e valor do ponto */
+  static async saldoFidelidade(req: AuthRequest, res: Response): Promise<void> {
+    try {
+      const barbeariaId = req.usuario?.barbeariaId;
+      if (!barbeariaId) {
+        res.status(400).json({ erro: 'Barbearia não identificada no token.' });
+        return;
+      }
+
+      const dados = await ClienteService.obterSaldoFidelidade(req.params.id, barbeariaId);
+      res.json(dados);
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : 'Erro ao buscar saldo fidelidade';
+      res.status(404).json({ erro: msg });
+    }
+  }
+
   /** POST /clientes/:id/pontos — adicionar pontos manualmente */
   static async adicionarPontos(req: AuthRequest, res: Response): Promise<void> {
     try {

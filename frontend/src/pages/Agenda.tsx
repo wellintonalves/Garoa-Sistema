@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { CaretLeft, CaretRight, Plus, CaretDown } from '@phosphor-icons/react';
 import { Modal } from '../components/Modal';
 import { ModalAlert } from '../components/ModalAlert';
+import { ModalConcluirServico } from '../components/ModalConcluirServico';
 import { SkeletonPage } from '../components/Skeleton';
 import { AgendaMobile } from '../components/agenda/AgendaMobile';
 import { dataBrasilia, hojeBrasilia } from '../utils/datas';
@@ -128,6 +129,7 @@ export function Agenda() {
   const [modalBloqueioAberto, setModalBloqueioAberto] = useState(false);
   const [cancelarAlertAberto, setCancelarAlertAberto] = useState(false);
   const [agendamentoSelecionado, setAgendamentoSelecionado] = useState<Agendamento | null>(null);
+  const [modalConcluirAberto, setModalConcluirAberto] = useState(false);
   const [alterandoStatus, setAlterandoStatus] = useState<string | null>(null);
   const [erroStatus, setErroStatus] = useState<string | null>(null);
   const [barbeiros, setBarbeiros] = useState<Barbeiro[]>([]);
@@ -907,7 +909,7 @@ export function Agenda() {
                     {alterandoStatus === 'CONFIRMADO' ? 'Carregando...' : 'Confirmar Agendamento'}
                   </button>
                   <button 
-                    onClick={() => mudarStatus('CONCLUIDO')} 
+                    onClick={() => setModalConcluirAberto(true)} 
                     className="btn-secondary w-full justify-center"
                     disabled={alterandoStatus !== null}
                     style={{ background: 'var(--sucesso-fundo)', color: 'var(--sucesso)', opacity: alterandoStatus !== null ? 0.7 : 1 }}
@@ -928,7 +930,7 @@ export function Agenda() {
               {agendamentoSelecionado.status === 'CONFIRMADO' && (
                 <>
                   <button 
-                    onClick={() => mudarStatus('CONCLUIDO')} 
+                    onClick={() => setModalConcluirAberto(true)} 
                     className="btn-secondary w-full justify-center"
                     disabled={alterandoStatus !== null}
                     style={{ background: 'var(--sucesso-fundo)', color: 'var(--sucesso)', opacity: alterandoStatus !== null ? 0.7 : 1 }}
@@ -972,6 +974,19 @@ export function Agenda() {
         textoBotao="Sim, cancelar"
         textoCancelar="Não, voltar"
         isConfirm={true}
+      />
+
+      <ModalConcluirServico
+        aberto={modalConcluirAberto}
+        onFechar={() => setModalConcluirAberto(false)}
+        agendamento={agendamentoSelecionado as any}
+        onConfirmar={async (dados) => {
+          if (!agendamentoSelecionado) return;
+          await api.put(`/agendamentos/${agendamentoSelecionado.id}`, dados);
+          setAgendamentoSelecionado(null);
+          setModalConcluirAberto(false);
+          carregar();
+        }}
       />
     </div>
   );

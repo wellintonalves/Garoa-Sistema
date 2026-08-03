@@ -145,6 +145,26 @@ export class ClienteService {
     return filtrado;
   }
 
+  /** Obtém o saldo de pontos atual e o valor do ponto para conversão */
+  static async obterSaldoFidelidade(clienteId: string, barbeariaId: string) {
+    const config = await prisma.configuracaoFidelidade.findUnique({
+      where: { barbeariaId }
+    });
+
+    const valorPorPonto = config?.valorPorPonto ? Number(config.valorPorPonto) : 0;
+
+    const pontos = await prisma.pontoFidelidade.findMany({
+      where: { clienteId, barbeariaId }
+    });
+
+    const saldoPontos = pontos.reduce((acc, p) => acc + p.pontos, 0);
+
+    return {
+      saldoPontos,
+      valorPorPonto
+    };
+  }
+
   /** Busca cliente por ID com perfil completo (para o modal) */
   static async buscarPorIdCompleto(id: string, barbeariaId: string) {
     const cliente: any = await (prisma.cliente as any).findUnique({
