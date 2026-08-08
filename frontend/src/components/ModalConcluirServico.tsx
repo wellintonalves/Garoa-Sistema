@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Modal } from './Modal';
 import api from '../api/client';
-import { CircleNotch } from '@phosphor-icons/react';
+import { CircleNotch, WarningCircle } from '@phosphor-icons/react';
 
 interface ModalConcluirServicoProps {
   aberto: boolean;
@@ -22,8 +22,8 @@ interface ModalConcluirServicoProps {
   onConfirmar: (dados: {
     status: 'CONCLUIDO';
     formaPagamento: string;
-    valorCobrado: number;
-    pontosUsados: number;
+    tipoDesconto: 'NENHUM' | 'REAIS' | 'PERCENTUAL' | 'PONTOS' | 'COMBINADO';
+    pontosUsados?: number;
     descontoPercentual?: number;
     descontoReais?: number;
   }) => Promise<void>;
@@ -38,109 +38,151 @@ const FORMAS_PAGAMENTO = [
 
 export function ModalConcluirServico({ aberto, onFechar, agendamento, onConfirmar }: ModalConcluirServicoProps) {
   const [formaPagamento, setFormaPagamento] = useState('PIX');
-  const [tipoDesconto, setTipoDesconto] = useState<'REAIS' | 'PERCENTUAL'>('REAIS');
-  const [valorDesconto, setValorDesconto] = useState('');
+  
+  // States do desconto
+  const [tipoManual, setTipoManual] = useState<'NENHUM' | 'REAIS' | 'PERCENTUAL'>('NENHUM');
+  const [valorDescontoManual, setValorDescontoManual] = useState('');
   const [pontosUsados, setPontosUsados] = useState('');
-  const [saldoPontos, setSaldoPontos] = useState(0);
-  const [valorPorPonto, setValorPorPonto] = useState(0);
+  
+  // State da fidelidade
+  const [fidelidade, setFidelidade] = useState<{
+    saldoPontos: number;
+    valorPorPonto: number;
+    percentualMaxPontos: number;
+    resgatePontosAtivo: boolean;
+    permitirCombinarDescontos: boolean;
+    descontoMaxReais: number;
+    descontoMaxPercentual: number;
+  } | null>(null);
+
+  // State da simulação
+  const [simulacao, setSimulacao] = useState<{
+    valorBruto: number;
+    descontoManual: number;
+    descontoPontos: number;
+    valorLiquido: number;
+    maxPontosUtilizaveis: number;
+  } | null>(null);
+
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
 
+  // Carregar saldo do cliente quando abre o modal
   useEffect(() => {
     if (aberto && agendamento) {
       setFormaPagamento('PIX');
-      setTipoDesconto('REAIS');
-      setValorDesconto('');
+      setTipoManual('NENHUM');
+      setValorDescontoManual('');
       setPontosUsados('');
       setErro(null);
+      setSimulacao(null);
+      setFidelidade(null);
       
-      // Buscar saldo de pontos do cliente e valor por ponto
-      api.get(`/clientes/${agendamento.cliente.id}/fidelidade`)
-        .then(res => {
-          setSaldoPontos(res.data.saldoPontos || 0);
-          setValorPorPonto(res.data.valorPorPonto ? Number(res.data.valorPorPonto) : 0);
-        })
-        .catch(err => console.error('Erro ao buscar pontos do cliente:', err));
+      api.get(`/fidelidade/clientes/${agendamento.cliente.id}/saldo`)
+        .then(res => setFidelidade(res.data))
+        .catch(err => console.error('Erro ao buscar saldo:', err));
     }
   }, [aberto, agendamento]);
 
-  if (!agendamento) return null;
+  // Simulação instantânea no frontend
+  useEffect(() => {
+    if (!aberto || !agendamento) return;
 
-  const valorOriginal = Number(agendamento.valorCobrado);
-  
-  let descontoCalculado = 0;
-  let descPct = 0;
-  let descReais = 0;
+    setErro(null);
 
-  if (valorDesconto) {
-    const val = Number(valorDesconto);
-    if (!isNaN(val) && val > 0) {
-      if (tipoDesconto === 'REAIS') {
-        descontoCalculado = val;
-        descReais = val;
-      } else {
-        descontoCalculado = (valorOriginal * val) / 100;
-        descPct = val;
-      }
+    const valorBruto = Number(agendamento.valorCobrado || 0);
+    const taxa = fidelidade ? Number((fidelidade as any).taxaConversaoPontos || fidelidade.valorPorPonto) : 1;
+    const saldoPontos = fidelidade ? Number(fidelidade.saldoPontos) : 0;
+    
+    // 1. Desconto Manual
+    let descontoManualFinal = 0;
+    if (tipoManual === 'REAIS') {
+      descontoManualFinal = Number(valorDescontoManual) || 0;
+    } else if (tipoManual === 'PERCENTUAL') {
+      const perc = Number(valorDescontoManual) || 0;
+      descontoManualFinal = valorBruto * (perc / 100);
     }
-  }
+    
+    // Calcula maxPontos baseado no que sobrou pra abater
+    const valorRestante = valorBruto - descontoManualFinal;
+    const maxPontosConvertiveis = Math.max(0, Math.floor(valorRestante / taxa));
+    const maxPontos = Math.min(saldoPontos, maxPontosConvertiveis);
+    
+    // 2. Desconto Fidelidade
+    const pts = Math.min(Number(pontosUsados) || 0, maxPontos);
+    const descontoPontos = pts * taxa;
 
-  let descontoPontosVal = 0;
-  const pontos = Number(pontosUsados);
-  if (!isNaN(pontos) && pontos > 0) {
-    descontoPontosVal = pontos * valorPorPonto;
-  }
+    let totalDesconto = descontoManualFinal + descontoPontos;
+    if (totalDesconto > valorBruto) {
+      totalDesconto = valorBruto;
+    }
 
-  const valorFinal = Math.max(0, valorOriginal - descontoCalculado - descontoPontosVal);
+    const valorLiquido = Math.max(0, valorBruto - totalDesconto);
+
+    setSimulacao({
+      valorBruto,
+      descontoManual: descontoManualFinal,
+      descontoPontos,
+      valorLiquido,
+      maxPontosUtilizaveis: maxPontos,
+    });
+  }, [tipoManual, valorDescontoManual, pontosUsados, aberto, agendamento, fidelidade]);
+
+  const obterTipoGeral = (): 'NENHUM' | 'REAIS' | 'PERCENTUAL' | 'PONTOS' | 'COMBINADO' => {
+    const temManual = tipoManual !== 'NENHUM' && Number(valorDescontoManual) > 0;
+    const temPontos = Number(pontosUsados) > 0;
+    if (temManual && temPontos) return 'COMBINADO';
+    if (temPontos) return 'PONTOS';
+    if (temManual) return tipoManual;
+    return 'NENHUM';
+  };
 
   const handleSubmit = async () => {
+    if (erro || !simulacao) return;
     setSalvando(true);
     setErro(null);
     try {
-      const pts = Number(pontosUsados) || 0;
-      if (pts > saldoPontos) {
-        setErro('O cliente não possui essa quantidade de pontos.');
-        setSalvando(false);
-        return;
-      }
-
+      const tipo = obterTipoGeral();
       await onConfirmar({
         status: 'CONCLUIDO',
         formaPagamento,
-        valorCobrado: valorFinal,
-        pontosUsados: pts,
-        descontoPercentual: descPct || undefined,
-        descontoReais: descReais || undefined,
+        tipoDesconto: tipo,
+        descontoReais: tipoManual === 'REAIS' ? Number(valorDescontoManual) : undefined,
+        descontoPercentual: tipoManual === 'PERCENTUAL' ? Number(valorDescontoManual) : undefined,
+        pontosUsados: Number(pontosUsados) || undefined,
       });
       onFechar();
     } catch (err: any) {
       setErro(err.response?.data?.erro || err.message || 'Erro ao concluir o agendamento');
+    } finally {
       setSalvando(false);
     }
   };
+
+  if (!agendamento) return null;
 
   return (
     <Modal aberto={aberto} onFechar={onFechar} titulo="Concluir Serviço">
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
         {erro && (
-          <div style={{ padding: '12px', background: 'var(--perigo-fundo)', border: '1px solid var(--error-text)', borderRadius: '6px', color: 'var(--error-text)', fontFamily: 'var(--fonte-interface)', fontSize: '13px', fontWeight: 500 }}>
-            {erro}
+          <div style={{ padding: '12px', background: 'var(--perigo-fundo)', border: '1px solid var(--perigo)', borderRadius: '6px', color: 'var(--perigo)', fontSize: '13px', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <WarningCircle size={16} /> {erro}
           </div>
         )}
 
-        <div className="flex flex-col gap-1 text-sm font-interface text-[var(--text-primary)]">
+        <div className="flex flex-col gap-1 text-sm text-[var(--text-primary)]">
           <p><strong className="text-[var(--texto-secundario)]">Serviço:</strong> {agendamento.servico.nome}</p>
           <p><strong className="text-[var(--texto-secundario)]">Cliente:</strong> {agendamento.cliente.usuario.nome}</p>
         </div>
 
         <div>
-          <label className="input-label mb-2">Forma de Pagamento</label>
+          <label className="text-xs font-semibold text-[var(--texto-secundario)] uppercase tracking-wider mb-2 block">Forma de Pagamento</label>
           <div className="flex flex-wrap gap-2">
             {FORMAS_PAGAMENTO.map(forma => (
               <button
                 key={forma.value}
                 onClick={() => setFormaPagamento(forma.value)}
-                className={`px-3 py-2 rounded-full text-xs font-medium transition-colors border ${
+                className={`px-3 py-2 rounded-md text-xs font-medium transition-colors border ${
                   formaPagamento === forma.value 
                   ? 'bg-[var(--cor-primaria)] text-[var(--texto-sobre-primaria)] border-[var(--cor-primaria)]' 
                   : 'bg-transparent text-[var(--text-primary)] border-[var(--border)] hover:bg-[var(--bg-surface2)]'
@@ -153,9 +195,18 @@ export function ModalConcluirServico({ aberto, onFechar, agendamento, onConfirma
         </div>
 
         <div>
-          <label className="input-label">Desconto</label>
+          <label className="text-xs font-semibold text-[var(--texto-secundario)] uppercase tracking-wider mb-2 block">Desconto Manual</label>
           <div className="flex gap-2">
-            <select value={tipoDesconto} onChange={(e) => setTipoDesconto(e.target.value as any)} className="ds-select w-24">
+            <select 
+              value={tipoManual} 
+              onChange={(e) => {
+                setTipoManual(e.target.value as any);
+                if (e.target.value === 'NENHUM') setValorDescontoManual('');
+              }} 
+              className="ds-select"
+              style={{ width: '110px', flexShrink: 0 }}
+            >
+              <option value="NENHUM">Nenhum</option>
               <option value="REAIS">R$</option>
               <option value="PERCENTUAL">%</option>
             </select>
@@ -163,74 +214,87 @@ export function ModalConcluirServico({ aberto, onFechar, agendamento, onConfirma
               type="number" 
               min="0"
               step="any"
-              placeholder="Ex: 10" 
-              value={valorDesconto} 
-              onChange={(e) => setValorDesconto(e.target.value)} 
+              placeholder={tipoManual === 'NENHUM' ? '---' : 'Ex: 10'} 
+              value={valorDescontoManual} 
+              onChange={e => setValorDescontoManual(e.target.value)} 
               className="ds-input flex-1"
+              disabled={tipoManual === 'NENHUM'}
             />
           </div>
         </div>
 
-        {valorPorPonto > 0 && (
+        {fidelidade?.resgatePontosAtivo && (
           <div style={{ borderTop: '1px solid var(--border)', paddingTop: '16px' }}>
-            <label className="input-label mb-2">Usar Pontos (Fidelidade)</label>
+            <label className="text-xs font-semibold text-[var(--texto-secundario)] uppercase tracking-wider mb-2 block">Resgatar Pontos</label>
             <div className="flex justify-between items-center mb-2">
-              <p className="text-xs text-[var(--texto-secundario)]">Saldo: {saldoPontos} pontos</p>
-              <p className="text-xs text-[var(--texto-secundario)]">Valor por ponto: R$ {valorPorPonto.toFixed(2)}</p>
+              <p className="text-xs text-[var(--texto-secundario)]">Saldo: <strong className="text-[var(--text-primary)]">{fidelidade.saldoPontos} pts</strong></p>
+              {simulacao && (
+                <p className="text-xs text-[var(--texto-secundario)]">
+                  Máximo: {simulacao.maxPontosUtilizaveis} pts
+                </p>
+              )}
             </div>
-            <div className="flex gap-4">
-              <div className="flex-1">
-                <input 
-                  type="number" 
-                  min="0"
-                  max={saldoPontos}
-                  placeholder="Qtd. Pontos" 
-                  value={pontosUsados} 
-                  onChange={(e) => setPontosUsados(e.target.value)} 
-                  className="ds-input"
-                />
-              </div>
-              <div className="flex-1">
-                <input 
-                  type="text" 
-                  readOnly
-                  placeholder="Desconto em R$" 
-                  value={descontoPontosVal > 0 ? `R$ ${descontoPontosVal.toFixed(2)}` : ''} 
-                  className="ds-input bg-[var(--bg-surface2)] text-[var(--texto-secundario)] cursor-not-allowed"
-                />
-              </div>
+            <div className="flex gap-2">
+              <input 
+                type="number" 
+                min="0"
+                max={simulacao?.maxPontosUtilizaveis || fidelidade.saldoPontos}
+                placeholder="Qtd. de pontos a resgatar" 
+                value={pontosUsados} 
+                onChange={e => setPontosUsados(e.target.value)} 
+                className="ds-input w-full"
+              />
+              <button 
+                onClick={() => setPontosUsados(String(simulacao?.maxPontosUtilizaveis || fidelidade.saldoPontos))}
+                className="px-3 py-2 bg-[var(--bg-surface2)] border border-[var(--border)] rounded-md text-xs font-medium text-[var(--text-primary)] hover:bg-[var(--border)] transition-colors"
+                type="button"
+              >
+                Máx
+              </button>
             </div>
+            {!fidelidade.permitirCombinarDescontos && tipoManual !== 'NENHUM' && Number(valorDescontoManual) > 0 && (
+              <p className="text-xs text-[var(--perigo)] mt-2">Atenção: A configuração não permite combinar desconto manual com pontos.</p>
+            )}
           </div>
         )}
 
-        <div className="bg-[var(--bg-surface2)] p-4 rounded-lg mt-2 font-mono text-sm border border-[var(--border)]">
+        <div className="bg-[var(--bg-surface2)] p-4 rounded-lg mt-2 font-mono text-sm border border-[var(--border)] relative overflow-hidden">
+          
+
           <div className="flex justify-between text-[var(--text-primary)] mb-1">
             <span>Valor Bruto:</span>
-            <span>R$ {valorOriginal.toFixed(2)}</span>
+            <span>R$ {simulacao ? simulacao.valorBruto.toFixed(2) : Number(agendamento.valorCobrado).toFixed(2)}</span>
           </div>
-          {descontoCalculado > 0 && (
+          
+          {simulacao && simulacao.descontoManual > 0 && (
             <div className="flex justify-between text-[var(--perigo)] mb-1">
               <span>Desconto (Manual):</span>
-              <span>- R$ {descontoCalculado.toFixed(2)}</span>
+              <span>- R$ {simulacao.descontoManual.toFixed(2)}</span>
             </div>
           )}
-          {descontoPontosVal > 0 && (
+          
+          {simulacao && simulacao.descontoPontos > 0 && (
             <div className="flex justify-between text-[var(--perigo)] mb-1">
               <span>Desconto (Pontos):</span>
-              <span>- R$ {descontoPontosVal.toFixed(2)}</span>
+              <span>- R$ {simulacao.descontoPontos.toFixed(2)}</span>
             </div>
           )}
+          
           <div className="flex justify-between font-bold text-lg text-[var(--text-primary)] mt-2 pt-2 border-t border-[var(--border)]">
             <span>Total a Cobrar:</span>
-            <span>R$ {valorFinal.toFixed(2)}</span>
+            <span>R$ {simulacao ? simulacao.valorLiquido.toFixed(2) : Number(agendamento.valorCobrado).toFixed(2)}</span>
           </div>
         </div>
 
         <button 
           onClick={handleSubmit} 
-          className="btn-primary w-full justify-center mt-2 min-h-[48px] flex items-center gap-2 transition-opacity"
-          disabled={salvando}
-          style={{ opacity: salvando ? 0.7 : 1 }}
+          className="w-full mt-2 min-h-[48px] flex items-center justify-center gap-2 rounded-md font-semibold text-sm transition-opacity"
+          style={{ 
+            background: 'var(--cor-primaria)', 
+            color: 'var(--texto-sobre-primaria)',
+            opacity: (salvando || erro) ? 0.6 : 1,
+            pointerEvents: (salvando || erro) ? 'none' : 'auto'
+          }}
         >
           {salvando ? (
             <>

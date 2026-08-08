@@ -18,6 +18,11 @@ interface ConfigFidelidade {
   pontosBoasVindas: number;
   valorPorPonto: string; // Using string to allow comma and dot
   regrasPorServico: Array<{ servicoId: string; pontos: number }> | null;
+  resgatePontosAtivo: boolean;
+  percentualMaxPontos: number;
+  descontoMaxReais: number;
+  descontoMaxPercentual: number;
+  permitirCombinarDescontos: boolean;
 }
 
 interface Servico { id: string; nome: string; preco: number }
@@ -146,6 +151,7 @@ function TabRegras({ showToast }: { showToast: (m: string, t?: 'ok' | 'erro') =>
   const [config, setConfig] = useState<ConfigFidelidade>({
     ativo: false, pontosPorReal: 0, pontosPorVisita: 0, pontosDobroAniversario: false,
     pontosPorIndicacao: 0, pontosParaIndicado: 0, pontosBoasVindas: 0, valorPorPonto: '0,00', regrasPorServico: null,
+    resgatePontosAtivo: false, percentualMaxPontos: 30, descontoMaxReais: 0, descontoMaxPercentual: 100, permitirCombinarDescontos: false
   });
   const [servicos, setServicos] = useState<Servico[]>([]);
   const [carregando, setCarregando] = useState(true);
@@ -165,6 +171,11 @@ function TabRegras({ showToast }: { showToast: (m: string, t?: 'ok' | 'erro') =>
             pontosBoasVindas: resConfig.data.pontosBoasVindas ?? 0,
             valorPorPonto: resConfig.data.valorPorPonto ? String(resConfig.data.valorPorPonto) : '0,00',
             regrasPorServico: resConfig.data.regrasPorServico ?? null,
+            resgatePontosAtivo: resConfig.data.resgatePontosAtivo ?? false,
+            percentualMaxPontos: resConfig.data.percentualMaxPontos ?? 30,
+            descontoMaxReais: resConfig.data.descontoMaxReais ?? 0,
+            descontoMaxPercentual: resConfig.data.descontoMaxPercentual ?? 100,
+            permitirCombinarDescontos: resConfig.data.permitirCombinarDescontos ?? false
           });
         }
         setServicos(resServ.data || []);
@@ -196,6 +207,9 @@ function TabRegras({ showToast }: { showToast: (m: string, t?: 'ok' | 'erro') =>
         pontosPorIndicacao: Number(config.pontosPorIndicacao),
         pontosBoasVindas: Number(config.pontosBoasVindas),
         valorPorPonto: Number(config.valorPorPonto.replace(',', '.')),
+        percentualMaxPontos: Number(config.percentualMaxPontos),
+        descontoMaxReais: Number(config.descontoMaxReais),
+        descontoMaxPercentual: Number(config.descontoMaxPercentual),
       });
       showToast('Regras salvas com sucesso!');
     } catch {
@@ -359,6 +373,48 @@ function TabRegras({ showToast }: { showToast: (m: string, t?: 'ok' | 'erro') =>
                   Ex: 0,05 — o cliente usa 100 pontos e ganha R$ 5,00 de desconto
                 </p>
               </FieldGroup>
+            </div>
+          </Card>
+
+          {/* Regras de Desconto e Resgate */}
+          <Card style={{ marginTop: '16px' }}>
+            <SectionTitle>Regras de Desconto e Resgate</SectionTitle>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '16px' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', userSelect: 'none' }}>
+                <Toggle checked={config.resgatePontosAtivo} onChange={v => setConfig({ ...config, resgatePontosAtivo: v })} />
+                <div>
+                  <span style={{ fontSize: '14px', fontWeight: 500, color: 'var(--text-primary)' }}>Permitir Resgate de Pontos</span>
+                  <p style={{ fontSize: '12px', color: 'var(--texto-secundario)', margin: '2px 0 0' }}>Se desativado, o cliente acumula mas não pode usar os pontos.</p>
+                </div>
+              </label>
+              
+              <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', userSelect: 'none' }}>
+                <Toggle checked={config.permitirCombinarDescontos} onChange={v => setConfig({ ...config, permitirCombinarDescontos: v })} />
+                <div>
+                  <span style={{ fontSize: '14px', fontWeight: 500, color: 'var(--text-primary)' }}>Permitir Combinar Descontos</span>
+                  <p style={{ fontSize: '12px', color: 'var(--texto-secundario)', margin: '2px 0 0' }}>Se ativado, o cliente pode usar pontos + desconto manual no mesmo agendamento.</p>
+                </div>
+              </label>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px', marginTop: '12px' }}>
+                <FieldGroup label="Teto do Valor do Serviço em Pontos (%)" hint="Limite máximo de desconto usando pontos">
+                  <input type="number" min="0" max="100" style={inputStyle}
+                    value={config.percentualMaxPontos}
+                    onChange={e => setConfig({ ...config, percentualMaxPontos: Number(e.target.value) })} />
+                </FieldGroup>
+                
+                <FieldGroup label="Desconto Máximo Manual (R$)" hint="0 = sem limite">
+                  <input type="number" min="0" style={inputStyle}
+                    value={config.descontoMaxReais}
+                    onChange={e => setConfig({ ...config, descontoMaxReais: Number(e.target.value) })} />
+                </FieldGroup>
+                
+                <FieldGroup label="Desconto Máximo Manual (%)" hint="0 a 100">
+                  <input type="number" min="0" max="100" style={inputStyle}
+                    value={config.descontoMaxPercentual}
+                    onChange={e => setConfig({ ...config, descontoMaxPercentual: Number(e.target.value) })} />
+                </FieldGroup>
+              </div>
             </div>
           </Card>
         </>
