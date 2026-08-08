@@ -95,4 +95,30 @@ export class AgendamentoController {
       res.status(500).json({ erro: msg });
     }
   }
+
+  /** POST /agendamentos/:id/simular-desconto */
+  static async simularDesconto(req: AuthRequest, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+      const { tipoDesconto, descontoReais, descontoPercentual, pontosUsados } = req.body;
+
+      if (!tipoDesconto) {
+        res.status(400).json({ erro: 'O campo tipoDesconto é obrigatório.' });
+        return;
+      }
+
+      const simulacao = await AgendamentoService.simularDesconto(
+        id,
+        tipoDesconto,
+        descontoReais ? Number(descontoReais) : 0,
+        descontoPercentual ? Number(descontoPercentual) : 0,
+        pontosUsados ? Number(pontosUsados) : 0
+      );
+
+      res.json(simulacao);
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : 'Erro ao simular desconto';
+      res.status(400).json({ erro: msg });
+    }
+  }
 }

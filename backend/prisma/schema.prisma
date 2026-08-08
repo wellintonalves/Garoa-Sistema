@@ -50,6 +50,21 @@ enum RemetenteMensagem {
   ADMIN
 }
 
+enum TipoDesconto {
+  NENHUM
+  REAIS
+  PERCENTUAL
+  PONTOS
+  COMBINADO
+}
+
+enum TipoTransacaoPontos {
+  ACUMULO
+  RESGATE
+  AJUSTE_MANUAL
+  ESTORNO
+}
+
 // --- Modelos ---
 
 enum StatusAprovacao {
@@ -210,7 +225,9 @@ model PontoFidelidade {
   clienteId     String
   barbeariaId   String?
   agendamentoId String?  @unique
+  tipo          TipoTransacaoPontos @default(ACUMULO)
   pontos        Int
+  saldoApos     Int                 @default(0)
   descricao     String
   data          DateTime @default(now())
 
@@ -251,6 +268,17 @@ model Agendamento {
   observacoes  String?
   valorCobrado Decimal            @db.Decimal(10, 2)
   origem       String             @default("SISTEMA")
+  
+  // Descontos e Fidelidade
+  valorBruto              Decimal            @default(0) @db.Decimal(10, 2)
+  tipoDesconto            TipoDesconto       @default(NENHUM)
+  descontoManual          Decimal            @default(0) @db.Decimal(10, 2)
+  descontoPercentualAplic Decimal?           @db.Decimal(10, 2)
+  pontosUtilizados        Int                @default(0)
+  descontoPontos          Decimal            @default(0) @db.Decimal(10, 2)
+  valorDesconto           Decimal            @default(0) @db.Decimal(10, 2)
+  valorLiquido            Decimal            @default(0) @db.Decimal(10, 2)
+  
   createdAt    DateTime           @default(now())
 
   barbearia Barbearia? @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
@@ -355,6 +383,14 @@ model ConfiguracaoFidelidade {
   pontosBoasVindas       Int      @default(0)
   valorPorPonto          Decimal  @default(0.00) @db.Decimal(10, 2)
   regrasPorServico       Json?
+  
+  // Resgate de pontos como desconto
+  resgatePontosAtivo        Boolean  @default(false)
+  percentualMaxPontos       Int      @default(30)
+  descontoMaxReais          Decimal  @default(0) @db.Decimal(10, 2)
+  descontoMaxPercentual     Decimal  @default(100) @db.Decimal(10, 2)
+  permitirCombinarDescontos Boolean  @default(false)
+  
   createdAt              DateTime @default(now())
   updatedAt              DateTime @updatedAt
 

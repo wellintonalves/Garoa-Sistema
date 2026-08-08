@@ -6,6 +6,10 @@ import { roleMiddleware } from '../middlewares/role.middleware';
 const router = Router();
 
 router.use(authMiddleware);
+
+// Rota acessível por barbeiro para o modal de checkout
+router.get('/clientes/:clienteId/saldo', roleMiddleware('ADMIN', 'BARBEIRO'), FidelidadeController.saldoCliente);
+
 router.use(roleMiddleware('ADMIN'));
 
 // Configuração

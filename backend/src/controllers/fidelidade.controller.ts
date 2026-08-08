@@ -47,6 +47,12 @@ export class FidelidadeController {
         pontosParaIndicado,
         pontosBoasVindas,
         regrasPorServico,
+        valorPorPonto,
+        resgatePontosAtivo,
+        percentualMaxPontos,
+        descontoMaxReais,
+        descontoMaxPercentual,
+        permitirCombinarDescontos
       } = req.body;
 
       const config = await prisma.configuracaoFidelidade.upsert({
@@ -59,7 +65,13 @@ export class FidelidadeController {
           pontosPorIndicacao: pontosPorIndicacao ?? 0,
           pontosParaIndicado: pontosParaIndicado ?? 0,
           pontosBoasVindas: pontosBoasVindas ?? 0,
+          valorPorPonto: valorPorPonto ?? 0,
           regrasPorServico: regrasPorServico ?? null,
+          resgatePontosAtivo: resgatePontosAtivo ?? false,
+          percentualMaxPontos: percentualMaxPontos ?? 30,
+          descontoMaxReais: descontoMaxReais ?? 0,
+          descontoMaxPercentual: descontoMaxPercentual ?? 100,
+          permitirCombinarDescontos: permitirCombinarDescontos ?? false
         },
         create: {
           barbeariaId,
@@ -70,7 +82,13 @@ export class FidelidadeController {
           pontosPorIndicacao: pontosPorIndicacao ?? 0,
           pontosParaIndicado: pontosParaIndicado ?? 0,
           pontosBoasVindas: pontosBoasVindas ?? 0,
+          valorPorPonto: valorPorPonto ?? 0,
           regrasPorServico: regrasPorServico ?? null,
+          resgatePontosAtivo: resgatePontosAtivo ?? false,
+          percentualMaxPontos: percentualMaxPontos ?? 30,
+          descontoMaxReais: descontoMaxReais ?? 0,
+          descontoMaxPercentual: descontoMaxPercentual ?? 100,
+          permitirCombinarDescontos: permitirCombinarDescontos ?? false
         },
       });
 
@@ -529,6 +547,60 @@ export class FidelidadeController {
     } catch (error) {
       console.error('Erro ao listar clientes com pontos:', error);
       res.status(500).json({ erro: 'Erro ao listar clientes.' });
+    }
+  }
+
+  // Obter saldo do cliente para o checkout
+  static async saldoCliente(req: AuthRequest, res: Response): Promise<void> {
+    try {
+      const barbeariaId = req.usuario?.barbeariaId;
+      const { clienteId } = req.params;
+
+      if (!barbeariaId) {
+        res.status(400).json({ erro: 'Barbearia ID não encontrado.' });
+        return;
+      }
+
+      // Valida se o cliente pertence à barbearia
+      const clienteBarbearia = await prisma.clienteBarbearia.findUnique({
+        where: { clienteId_barbeariaId: { clienteId, barbeariaId } },
+      });
+
+      if (!clienteBarbearia) {
+        res.status(404).json({ erro: 'Cliente não encontrado nesta barbearia.' });
+        return;
+      }
+
+      // Busca saldo do cliente
+      const [pontos, resgates, config] = await Promise.all([
+        prisma.pontoFidelidade.aggregate({
+          where: { clienteId, barbeariaId },
+          _sum: { pontos: true },
+        }),
+        prisma.resgateRecompensa.aggregate({
+          where: { clienteId, barbeariaId, status: { in: ['PENDENTE', 'CONFIRMADO'] } },
+          _sum: { pontosUsados: true },
+        }),
+        prisma.configuracaoFidelidade.findUnique({ where: { barbeariaId } }),
+      ]);
+
+      const totalGanho = pontos._sum.pontos || 0;
+      const totalGasto = resgates._sum.pontosUsados || 0;
+      const saldo = totalGanho - totalGasto;
+
+      res.json({
+        clienteId,
+        saldoPontos: saldo,
+        valorPorPonto: Number(config?.valorPorPonto || 0),
+        percentualMaxPontos: Number(config?.percentualMaxPontos || 0),
+        resgatePontosAtivo: config?.resgatePontosAtivo ?? false,
+        permitirCombinarDescontos: config?.permitirCombinarDescontos ?? false,
+        descontoMaxReais: Number(config?.descontoMaxReais || 0),
+        descontoMaxPercentual: Number(config?.descontoMaxPercentual || 0),
+      });
+    } catch (error) {
+      console.error('Erro ao obter saldo do cliente:', error);
+      res.status(500).json({ erro: 'Erro ao obter saldo do cliente.' });
     }
   }
 }

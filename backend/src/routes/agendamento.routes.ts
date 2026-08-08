@@ -11,6 +11,7 @@ router.use(authMiddleware);
 router.get('/', roleMiddleware('ADMIN', 'BARBEIRO'), AgendamentoController.listar);
 router.get('/:id', roleMiddleware('ADMIN', 'BARBEIRO'), AgendamentoController.buscar);
 router.post('/', roleMiddleware('ADMIN', 'BARBEIRO'), AgendamentoController.criar);
+router.post('/:id/simular-desconto', roleMiddleware('ADMIN', 'BARBEIRO'), AgendamentoController.simularDesconto);
 router.put('/:id', roleMiddleware('ADMIN', 'BARBEIRO'), AgendamentoController.atualizar);
 router.delete('/:id', roleMiddleware('ADMIN'), AgendamentoController.cancelar);
 

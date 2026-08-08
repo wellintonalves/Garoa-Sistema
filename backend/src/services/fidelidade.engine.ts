@@ -27,19 +27,19 @@ export async function creditarPontosPorAgendamento(agendamentoId: string) {
     return;
   }
 
-  // Idempotência: verificar se já existe pontuação para este agendamento
-  const pontuacaoExistente = await prisma.pontoFidelidade.findUnique({
-    where: { agendamentoId: agendamento.id },
-  });
+  const [pontuacaoExistente, config] = await Promise.all([
+    prisma.pontoFidelidade.findUnique({
+      where: { agendamentoId: agendamento.id },
+    }),
+    prisma.configuracaoFidelidade.findUnique({
+      where: { barbeariaId: agendamento.barbeariaId },
+    })
+  ]);
 
   if (pontuacaoExistente) {
     console.log(`[Fidelidade] Pontuação já registrada para o agendamento ${agendamento.id}`);
     return;
   }
-
-  const config = await prisma.configuracaoFidelidade.findUnique({
-    where: { barbeariaId: agendamento.barbeariaId },
-  });
 
   // Só pontua se o programa de fidelidade estiver ativo
   if (config && config.ativo) {

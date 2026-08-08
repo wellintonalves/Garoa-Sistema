@@ -11,6 +11,7 @@ import {
 } from '../lib/timezone';
 import { creditarPontosPorAgendamento } from './fidelidade.engine';
 import { HorariosUtil, injetarDuracaoTotalServicos } from './horarios.util';
+import { DescontoService, TipoDesconto } from './desconto.service';
 
 interface DadosAgendamento {
   clienteId: string;
@@ -172,13 +173,10 @@ export class AgendamentoService {
       DadosAgendamento & {
         status: StatusAgendamento;
         formaPagamento?: FormaPagamento;
-        pontosUsados?: number;
-        descontoPercentual?: number;
-        descontoReais?: number;
       }
     >
   ) {
-    const { formaPagamento, pontosUsados, descontoPercentual, descontoReais, ...dadosAgendamento } = dados;
+    const { formaPagamento, tipoDesconto, pontosUsados, descontoPercentual, descontoReais, ...dadosAgendamento } = dados as any;
 
     const agendamentoOriginal = await prisma.agendamento.findUnique({
       where: { id },
@@ -233,52 +231,48 @@ export class AgendamentoService {
         throw error;
       }
 
-      // 2. Validar pontos usados
-      const pontosAUsar = pontosUsados ? Math.floor(pontosUsados) : 0;
-      if (pontosAUsar < 0) {
-        const error: any = new Error('A quantidade de pontos usados não pode ser negativa.');
-        error.status = 400;
-        throw error;
-      }
-
-      // Buscar configuração de fidelidade e saldo
-      const config = await prisma.configuracaoFidelidade.findUnique({
+      // 2. Buscar configuração de fidelidade e saldo
+      const configFidelidade = await prisma.configuracaoFidelidade.findUnique({
         where: { barbeariaId: agendamentoOriginal.barbeariaId! },
       });
-      const valorPorPonto = config?.valorPorPonto ? Number(config.valorPorPonto) : 0;
+      if (!configFidelidade) throw new Error('Configuração de fidelidade não encontrada');
 
-      if (pontosAUsar > 0) {
-        const historico = await prisma.pontoFidelidade.findMany({
+      const [agregacaoPontos, agregacaoResgates] = await Promise.all([
+        prisma.pontoFidelidade.aggregate({
           where: { clienteId: agendamentoOriginal.clienteId },
-        });
-        const saldoPontos = historico.reduce((acc, p) => acc + p.pontos, 0);
+          _sum: { pontos: true }
+        }),
+        prisma.resgateRecompensa.aggregate({
+          where: { clienteId: agendamentoOriginal.clienteId, status: { in: ['PENDENTE', 'CONFIRMADO'] } },
+          _sum: { pontosUsados: true }
+        })
+      ]);
+      const totalGanho = agregacaoPontos._sum.pontos || 0;
+      const totalGasto = agregacaoResgates._sum.pontosUsados || 0;
+      const saldoPontos = totalGanho - totalGasto;
 
-        if (pontosAUsar > saldoPontos) {
-          const error: any = new Error(`Saldo insuficiente de pontos. O cliente possui ${saldoPontos} pontos.`);
-          error.status = 400;
-          throw error;
-        }
-      }
-
-      // 3. Calcular descontos
-      // Ordem fixa de cálculo:
-      // 1. valorBruto = valor do serviço
-      // 2. aplica desconto percentual  → valorBruto * (1 - pct/100)
-      // 3. subtrai desconto em reais
-      // 4. subtrai desconto de pontos  → pontosUsados * valorPorPonto
-      // 5. valorFinal = max(resultado, 0)
+      // 3. Calcular descontos usando DescontoService
       const valorBruto = Number(agendamentoOriginal.servico.preco);
       
-      const pct = descontoPercentual ? Number(descontoPercentual) : 0;
-      const valorAposPct = valorBruto * (1 - pct / 100);
-      
-      const reais = descontoReais ? Number(descontoReais) : 0;
-      const valorAposReais = valorAposPct - reais;
-      
-      const descontoPontos = pontosAUsar * valorPorPonto;
-      const valorAposPontos = valorAposReais - descontoPontos;
-      
-      const valorFinal = Math.max(valorAposPontos, 0);
+      const resultadoDesconto = DescontoService.calcularDesconto({
+        valorBruto,
+        tipo: tipoDesconto as TipoDesconto || 'NENHUM',
+        valorReais: descontoReais ? Number(descontoReais) : 0,
+        percentual: descontoPercentual ? Number(descontoPercentual) : 0,
+        pontos: pontosUsados ? Number(pontosUsados) : 0,
+        saldoPontos,
+        config: {
+          resgatePontosAtivo: configFidelidade.resgatePontosAtivo ?? false,
+          valorPorPonto: Number(configFidelidade.valorPorPonto),
+          percentualMaxPontos: Number(configFidelidade.percentualMaxPontos),
+          descontoMaxReais: Number(configFidelidade.descontoMaxReais),
+          descontoMaxPercentual: Number(configFidelidade.descontoMaxPercentual),
+          permitirCombinarDescontos: configFidelidade.permitirCombinarDescontos ?? false
+        }
+      });
+
+      const valorFinal = resultadoDesconto.valorLiquido;
+      const pontosAUsar = resultadoDesconto.pontosUtilizados;
 
       // Usar $transaction para garantir atomicidade
       resultadoFinal = await prisma.$transaction(async (tx) => {
@@ -288,6 +282,14 @@ export class AgendamentoService {
           data: {
             ...dadosAgendamento,
             valorCobrado: valorFinal,
+            tipoDesconto: tipoDesconto as TipoDesconto || 'NENHUM',
+            descontoPercentualAplic: descontoPercentual ? Number(descontoPercentual) : null,
+            descontoManual: descontoReais ? Number(descontoReais) : 0,
+            descontoPontos: Number(resultadoDesconto.descontoPontos),
+            pontosUtilizados: pontosAUsar,
+            valorBruto: Number(resultadoDesconto.valorBruto),
+            valorDesconto: Number(resultadoDesconto.valorDesconto),
+            valorLiquido: Number(resultadoDesconto.valorLiquido),
             dataHora: dadosAgendamento.dataHora ? toBrasiliaDate(dadosAgendamento.dataHora) : undefined,
           } as any,
           include: {
@@ -423,5 +425,60 @@ export class AgendamentoService {
     }));
 
     return { data, barbeiroId, slots };
+  }
+
+  /** Simula o valor de desconto e pontos antes de concluir */
+  static async simularDesconto(
+    agendamentoId: string,
+    tipoDesconto: TipoDesconto,
+    descontoReais: number = 0,
+    descontoPercentual: number = 0,
+    pontosUsados: number = 0
+  ) {
+    const agendamento = await prisma.agendamento.findUnique({
+      where: { id: agendamentoId },
+      include: { servico: true },
+    });
+
+    if (!agendamento) throw new Error('Agendamento não encontrado');
+
+    const [configFidelidade, agregacaoPontos, agregacaoResgates] = await Promise.all([
+      prisma.configuracaoFidelidade.findUnique({
+        where: { barbeariaId: agendamento.barbeariaId! },
+      }),
+      prisma.pontoFidelidade.aggregate({
+        where: { clienteId: agendamento.clienteId },
+        _sum: { pontos: true }
+      }),
+      prisma.resgateRecompensa.aggregate({
+        where: { clienteId: agendamento.clienteId, status: { in: ['PENDENTE', 'CONFIRMADO'] } },
+        _sum: { pontosUsados: true }
+      })
+    ]);
+
+    if (!configFidelidade) throw new Error('Configuração de fidelidade não encontrada');
+
+    const totalGanho = agregacaoPontos._sum.pontos || 0;
+    const totalGasto = agregacaoResgates._sum.pontosUsados || 0;
+    const saldoPontos = totalGanho - totalGasto;
+
+    const valorBruto = Number(agendamento.servico.preco);
+
+    return DescontoService.calcularDesconto({
+      valorBruto,
+      tipo: tipoDesconto,
+      valorReais: descontoReais,
+      percentual: descontoPercentual,
+      pontos: pontosUsados,
+      saldoPontos,
+      config: {
+        resgatePontosAtivo: configFidelidade.resgatePontosAtivo ?? false,
+        valorPorPonto: Number(configFidelidade.valorPorPonto),
+        percentualMaxPontos: Number(configFidelidade.percentualMaxPontos),
+        descontoMaxReais: Number(configFidelidade.descontoMaxReais),
+        descontoMaxPercentual: Number(configFidelidade.descontoMaxPercentual),
+        permitirCombinarDescontos: configFidelidade.permitirCombinarDescontos ?? false
+      }
+    });
   }
 }
