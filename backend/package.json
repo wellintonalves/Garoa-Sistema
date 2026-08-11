@@ -10,6 +10,7 @@
     "build": "npx prisma generate && tsc",
     "start": "npx prisma db push && node dist/server.js",
     "seed": "tsx prisma/seed.ts",
+    "seed:descontos": "tsx prisma/seed-testes-desconto.ts",
     "fix:admin": "tsx fix_admin_barbearia.ts",
     "backup:force": "tsx scripts/force_backup.ts"
   },
