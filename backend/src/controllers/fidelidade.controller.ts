@@ -417,11 +417,17 @@ export class FidelidadeController {
       }
 
       // Verifica se o cliente pertence a esta barbearia
-      const clienteBarbearia = await prisma.clienteBarbearia.findUnique({
-        where: { clienteId_barbeariaId: { clienteId, barbeariaId } },
+      const cliente = await prisma.cliente.findFirst({
+        where: { 
+          id: clienteId,
+          OR: [
+            { barbeariaId },
+            { clientesBarbearias: { some: { barbeariaId } } }
+          ]
+        }
       });
 
-      if (!clienteBarbearia) {
+      if (!cliente) {
         res.status(404).json({ erro: 'Cliente não encontrado nesta barbearia.' });
         return;
       }
@@ -555,6 +561,7 @@ export class FidelidadeController {
     try {
       const barbeariaId = req.usuario?.barbeariaId;
       const { clienteId } = req.params;
+      const valorServico = Number(req.query.valorServico);
 
       if (!barbeariaId) {
         res.status(400).json({ erro: 'Barbearia ID não encontrado.' });
@@ -562,11 +569,17 @@ export class FidelidadeController {
       }
 
       // Valida se o cliente pertence à barbearia
-      const clienteBarbearia = await prisma.clienteBarbearia.findUnique({
-        where: { clienteId_barbeariaId: { clienteId, barbeariaId } },
+      const cliente = await prisma.cliente.findFirst({
+        where: { 
+          id: clienteId,
+          OR: [
+            { barbeariaId },
+            { clientesBarbearias: { some: { barbeariaId } } }
+          ]
+        }
       });
 
-      if (!clienteBarbearia) {
+      if (!cliente) {
         res.status(404).json({ erro: 'Cliente não encontrado nesta barbearia.' });
         return;
       }
@@ -588,9 +601,27 @@ export class FidelidadeController {
       const totalGasto = resgates._sum.pontosUsados || 0;
       const saldo = totalGanho - totalGasto;
 
+      let maxPontosUtilizaveis = saldo;
+      let limitador: 'SALDO' | 'TETO' = 'SALDO';
+      let tetoReais = 0;
+
+      if (!isNaN(valorServico) && valorServico > 0 && config?.percentualMaxPontos && config?.valorPorPonto) {
+        const percentualMax = Number(config.percentualMaxPontos) / 100;
+        tetoReais = valorServico * percentualMax;
+        const maxPontosPeloTeto = Math.floor(tetoReais / Number(config.valorPorPonto));
+        
+        if (maxPontosPeloTeto < saldo) {
+          maxPontosUtilizaveis = maxPontosPeloTeto;
+          limitador = 'TETO';
+        }
+      }
+
       res.json({
         clienteId,
         saldoPontos: saldo,
+        maxPontosUtilizaveis,
+        tetoReais,
+        limitador,
         valorPorPonto: Number(config?.valorPorPonto || 0),
         percentualMaxPontos: Number(config?.percentualMaxPontos || 0),
         resgatePontosAtivo: config?.resgatePontosAtivo ?? false,

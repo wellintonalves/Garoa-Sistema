@@ -9,7 +9,7 @@ import {
   criarDataHoraBrasilia,
   formatarHorario,
 } from '../lib/timezone';
-import { creditarPontosPorAgendamento } from './fidelidade.engine';
+import { prepararOperacoesFidelidade, creditarPontosPorAgendamento } from './fidelidade.engine';
 import { HorariosUtil, injetarDuracaoTotalServicos } from './horarios.util';
 import { DescontoService, TipoDesconto } from './desconto.service';
 
@@ -231,13 +231,18 @@ export class AgendamentoService {
         throw error;
       }
 
-      // 2. Buscar configuração de fidelidade e saldo
-      const configFidelidade = await prisma.configuracaoFidelidade.findUnique({
-        where: { barbeariaId: agendamentoOriginal.barbeariaId! },
-      });
-      if (!configFidelidade) throw new Error('Configuração de fidelidade não encontrada');
-
-      const [agregacaoPontos, agregacaoResgates] = await Promise.all([
+      // 2. Buscar configuração de fidelidade, configuração global, barbeiro e saldo (FORA DA TRANSAÇÃO)
+      const [configFidelidade, configGlobal, barbeiro, agregacaoPontos, agregacaoResgates] = await Promise.all([
+        prisma.configuracaoFidelidade.findUnique({
+          where: { barbeariaId: agendamentoOriginal.barbeariaId! },
+        }),
+        prisma.configuracao.findUnique({
+          where: { barbeariaId: agendamentoOriginal.barbeariaId! },
+        }),
+        prisma.barbeiro.findUnique({
+          where: { id: agendamentoOriginal.barbeiroId },
+          select: { comissaoPercent: true, barbeariaId: true },
+        }),
         prisma.pontoFidelidade.aggregate({
           where: { clienteId: agendamentoOriginal.clienteId },
           _sum: { pontos: true }
@@ -247,6 +252,10 @@ export class AgendamentoService {
           _sum: { pontosUsados: true }
         })
       ]);
+
+      if (!configFidelidade) throw new Error('Configuração de fidelidade não encontrada');
+      if (!configGlobal) throw new Error('Configuração geral não encontrada');
+
       const totalGanho = agregacaoPontos._sum.pontos || 0;
       const totalGasto = agregacaoResgates._sum.pontosUsados || 0;
       const saldoPontos = totalGanho - totalGasto;
@@ -274,7 +283,24 @@ export class AgendamentoService {
       const valorFinal = resultadoDesconto.valorLiquido;
       const pontosAUsar = resultadoDesconto.pontosUtilizados;
 
-      // Usar $transaction para garantir atomicidade
+      // 4. Preparar pontos de acúmulo de fidelidade da visita (FORA DA TRANSAÇÃO)
+      // O motor calcula os pontos com base na configuração da barbearia (Bruto ou Líquido)
+      const baseParaPontos = configGlobal.baseCalculoPontos === 'VALOR_BRUTO' ? valorBruto : valorFinal;
+      const operacoesFidelidade = await prepararOperacoesFidelidade(
+        agendamentoOriginal.id,
+        agendamentoOriginal.clienteId,
+        agendamentoOriginal.barbeariaId!,
+        agendamentoOriginal.servicoId,
+        baseParaPontos
+      );
+
+      // 5. Preparar valores de Comissão
+      const comissaoPercent = barbeiro?.comissaoPercent || 50;
+      const baseComissao = configGlobal.baseCalculoComissao === 'VALOR_BRUTO' ? valorBruto : valorFinal;
+      const valorComissao = (baseComissao * comissaoPercent) / 100;
+      const valorLiquido = valorFinal - valorComissao;
+
+      // Usar $transaction para garantir atomicidade total
       resultadoFinal = await prisma.$transaction(async (tx) => {
         // A. Atualiza o agendamento
         const updated = await tx.agendamento.update({
@@ -299,12 +325,12 @@ export class AgendamentoService {
           },
         });
 
-        // B. Debita pontos do cliente (se usou pontos)
+        // B. Debita pontos do cliente (se usou pontos como desconto)
         if (pontosAUsar > 0) {
           await tx.pontoFidelidade.create({
             data: {
               clienteId: agendamentoOriginal.clienteId,
-              barbeariaId: agendamentoOriginal.barbeariaId,
+              barbeariaId: agendamentoOriginal.barbeariaId!,
               pontos: -pontosAUsar,
               descricao: `Resgate no serviço ${agendamentoOriginal.servico.nome}`,
               data: new Date(),
@@ -313,19 +339,6 @@ export class AgendamentoService {
         }
 
         // C. Cria o lançamento financeiro
-        const barbeiro = await tx.barbeiro.findUnique({
-          where: { id: agendamentoOriginal.barbeiroId },
-          select: { comissaoPercent: true, barbeariaId: true },
-        });
-
-        // Comissão é sobre o VALOR BRUTO
-        const comissaoPercent = barbeiro?.comissaoPercent || 50;
-        const valorComissao = (valorBruto * comissaoPercent) / 100;
-        
-        // A receita da barbearia será o valor final (pago pelo cliente) menos a comissão (baseada no bruto)
-        // Isso reflete o fato de que o desconto é um custo comercial da barbearia
-        const valorLiquido = valorFinal - valorComissao;
-
         await tx.lancamentoFinanceiro.create({
           data: {
             barbeariaId: agendamentoOriginal.barbeariaId || barbeiro?.barbeariaId || '',
@@ -339,16 +352,26 @@ export class AgendamentoService {
             servicoId: agendamentoOriginal.servicoId,
             valorComissao,
             valorLiquido,
+            percentualComissao: comissaoPercent,
+            baseComissaoAplicada: configGlobal.baseCalculoComissao,
             data: new Date(),
           },
         });
 
+        // D. Executa operações de fidelidade (credita pontos)
+        for (const op of operacoesFidelidade.pontosParaCriar) {
+          await tx.pontoFidelidade.create({ data: op });
+        }
+        
+        if (operacoesFidelidade.indicacaoParaAtualizarId) {
+          await (tx as any).indicacao.update({
+            where: { id: operacoesFidelidade.indicacaoParaAtualizarId },
+            data: { pontosAwardados: true }
+          });
+        }
+
         return updated;
       });
-
-      // D. Creditar pontos ganhos pelo agendamento concluído (fora da tx principal pq envolve regras complexas do fidelidade.engine.ts)
-      // Como o motor usa chamadas separadas e `find` em outras configurações, é seguro rodar logo após a transação
-      await creditarPontosPorAgendamento(resultadoFinal.id);
 
     } else {
       // Se não está concluindo (apenas reagendando, etc), apenas update simples

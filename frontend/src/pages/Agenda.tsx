@@ -408,7 +408,7 @@ export function Agenda() {
   });
 
   return (
-    <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', minWidth: 0 }}>
+    <div className="animate-fade-in flex flex-col gap-4 h-full" style={{ minWidth: 0, height: 'calc(100vh - 96px)' }}>
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <h1
@@ -664,11 +664,12 @@ export function Agenda() {
             setModo={setModoMobile}
           />
         ) : (
-          <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', overflowX: 'auto', width: '100%', position: 'relative' }}>
+          <div className="flex-1" style={{ display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+            <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', overflowX: 'auto', overflowY: 'auto', flex: 1, minHeight: 0, width: '100%', position: 'relative' }}>
             <div style={{ minWidth: isMobile ? '100%' : '700px' }}>
               <>
                 {/* Cabeçalho das colunas */}
-                <div style={{ display: 'grid', gridTemplateColumns: `60px repeat(${Math.max(cols, 1)}, 1fr)`, borderBottom: '1px solid var(--border)' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: `60px repeat(${Math.max(cols, 1)}, 1fr)`, borderBottom: '1px solid var(--border)', position: 'sticky', top: 0, zIndex: 50, background: 'var(--bg-surface)' }}>
                   <div style={{ padding: '8px' }} />
                   {viewMode === 'day' ? barbeirosExibidos.map((b) => (
                     <div key={b.id} className="text-center" style={{ padding: '12px', borderLeft: '1px solid var(--border)' }}>
@@ -737,6 +738,7 @@ export function Agenda() {
                 </div>
               </>
             </div>
+          </div>
           </div>
         );
       })()}

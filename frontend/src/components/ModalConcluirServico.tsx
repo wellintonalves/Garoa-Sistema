@@ -40,7 +40,7 @@ export function ModalConcluirServico({ aberto, onFechar, agendamento, onConfirma
   const [formaPagamento, setFormaPagamento] = useState('PIX');
   
   // States do desconto
-  const [tipoManual, setTipoManual] = useState<'NENHUM' | 'REAIS' | 'PERCENTUAL'>('NENHUM');
+  const [tipoManual, setTipoManual] = useState<'NENHUM' | 'REAIS' | 'PERCENTUAL' | 'PONTOS'>('NENHUM');
   const [valorDescontoManual, setValorDescontoManual] = useState('');
   const [pontosUsados, setPontosUsados] = useState('');
   
@@ -53,6 +53,9 @@ export function ModalConcluirServico({ aberto, onFechar, agendamento, onConfirma
     permitirCombinarDescontos: boolean;
     descontoMaxReais: number;
     descontoMaxPercentual: number;
+    maxPontosUtilizaveis: number;
+    limitador: 'SALDO' | 'TETO';
+    tetoReais: number;
   } | null>(null);
 
   // State da simulação
@@ -61,7 +64,6 @@ export function ModalConcluirServico({ aberto, onFechar, agendamento, onConfirma
     descontoManual: number;
     descontoPontos: number;
     valorLiquido: number;
-    maxPontosUtilizaveis: number;
   } | null>(null);
 
   const [salvando, setSalvando] = useState(false);
@@ -78,7 +80,7 @@ export function ModalConcluirServico({ aberto, onFechar, agendamento, onConfirma
       setSimulacao(null);
       setFidelidade(null);
       
-      api.get(`/fidelidade/clientes/${agendamento.cliente.id}/saldo`)
+      api.get(`/fidelidade/clientes/${agendamento.cliente.id}/saldo?valorServico=${agendamento.valorCobrado}`)
         .then(res => setFidelidade(res.data))
         .catch(err => console.error('Erro ao buscar saldo:', err));
     }
@@ -92,7 +94,6 @@ export function ModalConcluirServico({ aberto, onFechar, agendamento, onConfirma
 
     const valorBruto = Number(agendamento.valorCobrado || 0);
     const taxa = fidelidade ? Number((fidelidade as any).taxaConversaoPontos || fidelidade.valorPorPonto) : 1;
-    const saldoPontos = fidelidade ? Number(fidelidade.saldoPontos) : 0;
     
     // 1. Desconto Manual
     let descontoManualFinal = 0;
@@ -103,12 +104,8 @@ export function ModalConcluirServico({ aberto, onFechar, agendamento, onConfirma
       descontoManualFinal = valorBruto * (perc / 100);
     }
     
-    // Calcula maxPontos baseado no que sobrou pra abater
-    const valorRestante = valorBruto - descontoManualFinal;
-    const maxPontosConvertiveis = Math.max(0, Math.floor(valorRestante / taxa));
-    const maxPontos = Math.min(saldoPontos, maxPontosConvertiveis);
-    
     // 2. Desconto Fidelidade
+    const maxPontos = fidelidade ? Number(fidelidade.maxPontosUtilizaveis) : 0;
     const pts = Math.min(Number(pontosUsados) || 0, maxPontos);
     const descontoPontos = pts * taxa;
 
@@ -124,7 +121,6 @@ export function ModalConcluirServico({ aberto, onFechar, agendamento, onConfirma
       descontoManual: descontoManualFinal,
       descontoPontos,
       valorLiquido,
-      maxPontosUtilizaveis: maxPontos,
     });
   }, [tipoManual, valorDescontoManual, pontosUsados, aberto, agendamento, fidelidade]);
 
@@ -176,7 +172,7 @@ export function ModalConcluirServico({ aberto, onFechar, agendamento, onConfirma
         </div>
 
         <div>
-          <label className="text-xs font-semibold text-[var(--texto-secundario)] uppercase tracking-wider mb-2 block">Forma de Pagamento</label>
+          <label className="text-xs font-semibold text-[var(--texto-secundario)] mb-2 block">Forma de pagamento</label>
           <div className="flex flex-wrap gap-2">
             {FORMAS_PAGAMENTO.map(forma => (
               <button
@@ -195,94 +191,111 @@ export function ModalConcluirServico({ aberto, onFechar, agendamento, onConfirma
         </div>
 
         <div>
-          <label className="text-xs font-semibold text-[var(--texto-secundario)] uppercase tracking-wider mb-2 block">Desconto Manual</label>
+          <label className="text-xs font-semibold text-[var(--texto-secundario)] mb-2 block">Desconto</label>
           <div className="flex gap-2">
-            <select 
-              value={tipoManual} 
-              onChange={(e) => {
-                setTipoManual(e.target.value as any);
-                if (e.target.value === 'NENHUM') setValorDescontoManual('');
-              }} 
-              className="ds-select"
-              style={{ width: '110px', flexShrink: 0 }}
-            >
-              <option value="NENHUM">Nenhum</option>
-              <option value="REAIS">R$</option>
-              <option value="PERCENTUAL">%</option>
-            </select>
-            <input 
-              type="number" 
-              min="0"
-              step="any"
-              placeholder={tipoManual === 'NENHUM' ? '---' : 'Ex: 10'} 
-              value={valorDescontoManual} 
-              onChange={e => setValorDescontoManual(e.target.value)} 
-              className="ds-input flex-1"
-              disabled={tipoManual === 'NENHUM'}
-            />
-          </div>
-        </div>
-
-        {fidelidade?.resgatePontosAtivo && (
-          <div style={{ borderTop: '1px solid var(--border)', paddingTop: '16px' }}>
-            <label className="text-xs font-semibold text-[var(--texto-secundario)] uppercase tracking-wider mb-2 block">Resgatar Pontos</label>
-            <div className="flex justify-between items-center mb-2">
-              <p className="text-xs text-[var(--texto-secundario)]">Saldo: <strong className="text-[var(--text-primary)]">{fidelidade.saldoPontos} pts</strong></p>
-              {simulacao && (
-                <p className="text-xs text-[var(--texto-secundario)]">
-                  Máximo: {simulacao.maxPontosUtilizaveis} pts
-                </p>
-              )}
+            <div className="flex gap-1" style={{ flexShrink: 0 }}>
+              {[
+                { value: 'NENHUM', label: 'Nenhum' },
+                { value: 'REAIS', label: 'R$' },
+                { value: 'PERCENTUAL', label: '%' },
+                ...(fidelidade?.resgatePontosAtivo ? [{ value: 'PONTOS', label: 'Pontos' }] : []),
+              ].map(tipo => (
+                <button
+                  key={tipo.value}
+                  type="button"
+                  onClick={() => {
+                    setTipoManual(tipo.value as any);
+                    if (tipo.value === 'NENHUM') {
+                      setValorDescontoManual('');
+                      setPontosUsados('');
+                    } else if (tipo.value === 'PONTOS') {
+                      setValorDescontoManual('');
+                    } else {
+                      setPontosUsados('');
+                    }
+                  }}
+                  className={`px-3 py-2 rounded-md text-xs font-medium transition-colors border ${
+                    tipoManual === tipo.value 
+                    ? 'bg-[var(--cor-primaria)] text-[var(--texto-sobre-primaria)] border-[var(--cor-primaria)]' 
+                    : 'bg-transparent text-[var(--text-primary)] border-[var(--border)] hover:bg-[var(--bg-surface2)]'
+                  }`}
+                >
+                  {tipo.label}
+                </button>
+              ))}
             </div>
-            <div className="flex gap-2">
+            
+            {tipoManual === 'PONTOS' ? (
+              <div className="flex flex-1 gap-2">
+                <input 
+                  type="number" 
+                  min="0"
+                  max={fidelidade?.maxPontosUtilizaveis || 0}
+                  placeholder="Qtd. pontos" 
+                  value={pontosUsados} 
+                  onChange={e => setPontosUsados(e.target.value)} 
+                  className="ds-input flex-1 min-w-0"
+                />
+                <button 
+                  onClick={() => setPontosUsados(String(fidelidade?.maxPontosUtilizaveis || 0))}
+                  className="px-3 py-2 bg-[var(--bg-surface2)] border border-[var(--border)] rounded-md text-xs font-medium text-[var(--text-primary)] hover:bg-[var(--border)] transition-colors whitespace-nowrap"
+                  type="button"
+                >
+                  Máximo
+                </button>
+              </div>
+            ) : (
               <input 
                 type="number" 
                 min="0"
-                max={simulacao?.maxPontosUtilizaveis || fidelidade.saldoPontos}
-                placeholder="Qtd. de pontos a resgatar" 
-                value={pontosUsados} 
-                onChange={e => setPontosUsados(e.target.value)} 
-                className="ds-input w-full"
+                step="any"
+                placeholder={tipoManual === 'NENHUM' ? '---' : 'Ex: 10'} 
+                value={valorDescontoManual} 
+                onChange={e => setValorDescontoManual(e.target.value)} 
+                className="ds-input flex-1 min-w-0"
+                disabled={tipoManual === 'NENHUM'}
               />
-              <button 
-                onClick={() => setPontosUsados(String(simulacao?.maxPontosUtilizaveis || fidelidade.saldoPontos))}
-                className="px-3 py-2 bg-[var(--bg-surface2)] border border-[var(--border)] rounded-md text-xs font-medium text-[var(--text-primary)] hover:bg-[var(--border)] transition-colors"
-                type="button"
-              >
-                Máx
-              </button>
-            </div>
-            {!fidelidade.permitirCombinarDescontos && tipoManual !== 'NENHUM' && Number(valorDescontoManual) > 0 && (
-              <p className="text-xs text-[var(--perigo)] mt-2">Atenção: A configuração não permite combinar desconto manual com pontos.</p>
             )}
           </div>
-        )}
+          
+          {tipoManual === 'PONTOS' && (
+            <div className="flex flex-col gap-1 mt-2">
+              <p className="text-xs text-[var(--texto-secundario)]">Saldo do cliente: <strong className="text-[var(--text-primary)]">{fidelidade?.saldoPontos || 0} pts</strong></p>
+              {fidelidade && (
+                <p className="text-xs text-[var(--perigo)]">
+                  {fidelidade.limitador === 'TETO' 
+                    ? `Limite de ${fidelidade.percentualMaxPontos}% do serviço: máximo ${fidelidade.maxPontosUtilizaveis} pontos` 
+                    : `Limitado pelo saldo do cliente: máximo ${fidelidade.maxPontosUtilizaveis} pontos`}
+                </p>
+              )}
+            </div>
+          )}
+        </div>
 
         <div className="bg-[var(--bg-surface2)] p-4 rounded-lg mt-2 font-mono text-sm border border-[var(--border)] relative overflow-hidden">
           
-
           <div className="flex justify-between text-[var(--text-primary)] mb-1">
-            <span>Valor Bruto:</span>
-            <span>R$ {simulacao ? simulacao.valorBruto.toFixed(2) : Number(agendamento.valorCobrado).toFixed(2)}</span>
+            <span>Valor bruto:</span>
+            <span className="tabular-nums">R$ {simulacao ? simulacao.valorBruto.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : Number(agendamento.valorCobrado).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
           </div>
           
           {simulacao && simulacao.descontoManual > 0 && (
             <div className="flex justify-between text-[var(--perigo)] mb-1">
-              <span>Desconto (Manual):</span>
-              <span>- R$ {simulacao.descontoManual.toFixed(2)}</span>
+              <span>Desconto manual:</span>
+              <span className="tabular-nums">- R$ {simulacao.descontoManual.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
             </div>
           )}
           
           {simulacao && simulacao.descontoPontos > 0 && (
             <div className="flex justify-between text-[var(--perigo)] mb-1">
-              <span>Desconto (Pontos):</span>
-              <span>- R$ {simulacao.descontoPontos.toFixed(2)}</span>
+              <span>Desconto com pontos:</span>
+              <span className="tabular-nums">- R$ {simulacao.descontoPontos.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
             </div>
           )}
           
           <div className="flex justify-between font-bold text-lg text-[var(--text-primary)] mt-2 pt-2 border-t border-[var(--border)]">
-            <span>Total a Cobrar:</span>
-            <span>R$ {simulacao ? simulacao.valorLiquido.toFixed(2) : Number(agendamento.valorCobrado).toFixed(2)}</span>
+            <span>Total a cobrar:</span>
+            <span className="tabular-nums">R$ {simulacao ? simulacao.valorLiquido.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : Number(agendamento.valorCobrado).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
           </div>
         </div>
 

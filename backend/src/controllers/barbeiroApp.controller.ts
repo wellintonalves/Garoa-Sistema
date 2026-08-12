@@ -108,9 +108,10 @@ export class BarbeiroAppController {
         pontosUsados
       );
       res.json(resultado);
-    } catch (error) {
+    } catch (error: any) {
       const msg = error instanceof Error ? error.message : 'Erro ao concluir agendamento';
-      res.status(400).json({ erro: msg });
+      const status = error.status || 400;
+      res.status(status).json({ erro: msg });
     }
   }
 

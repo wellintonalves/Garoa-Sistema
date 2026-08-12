@@ -169,7 +169,7 @@ function TabRegras({ showToast }: { showToast: (m: string, t?: 'ok' | 'erro') =>
             pontosPorIndicacao: resConfig.data.pontosPorIndicacao ?? 0,
             pontosParaIndicado: resConfig.data.pontosParaIndicado ?? 0,
             pontosBoasVindas: resConfig.data.pontosBoasVindas ?? 0,
-            valorPorPonto: resConfig.data.valorPorPonto ? String(resConfig.data.valorPorPonto) : '0,00',
+            valorPorPonto: resConfig.data.valorPorPonto ? Number(resConfig.data.valorPorPonto).toFixed(2).replace('.', ',') : '0,00',
             regrasPorServico: resConfig.data.regrasPorServico ?? null,
             resgatePontosAtivo: resConfig.data.resgatePontosAtivo ?? false,
             percentualMaxPontos: resConfig.data.percentualMaxPontos ?? 30,

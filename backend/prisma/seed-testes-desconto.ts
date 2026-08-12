@@ -66,12 +66,12 @@ async function main() {
     servicos[s.nome] = serv.id;
   }
 
-  // 4. Barbeiro
-  console.log('Garantindo que existe um barbeiro para os testes...');
-  let barbeiro = await prisma.barbeiro.findFirst({
+  // 4. Barbeiros
+  console.log('Obtendo barbeiros para os testes...');
+  const barbeiros = await prisma.barbeiro.findMany({
     where: { barbeariaId: barbearia.id }
   });
-  if (!barbeiro) {
+  if (barbeiros.length === 0) {
     throw new Error('Nenhum barbeiro encontrado.');
   }
 
@@ -110,64 +110,35 @@ async function main() {
     }
 
     const clienteId = user.cliente?.id || (await prisma.cliente.findUnique({ where: { usuarioId: user.id } }))!.id;
-    clientesIds[c.nome.split(' ')[1]] = clienteId; // Guarda A, B, C, D
+    clientesIds[c.nome.split(' ')[1]] = clienteId; 
 
-    // Ajustar pontos se necessário
-    const historico = await prisma.pontoFidelidade.findMany({
+    // Limpar histórico antigo dos clientes de teste para garantir o saldo exato
+    await prisma.pontoFidelidade.deleteMany({
       where: { clienteId }
     });
 
-    let totalAtual = 0;
-    for (const h of historico) {
-      if (h.tipo === 'ACUMULO' || h.tipo === 'ESTORNO') totalAtual += h.pontos;
-      if (h.tipo === 'RESGATE') totalAtual -= h.pontos;
-    }
-
-    if (totalAtual !== c.pontos) {
-      const diferenca = c.pontos - totalAtual;
-      if (diferenca > 0) {
-        await prisma.pontoFidelidade.create({
-          data: {
-            clienteId,
-            barbeariaId: barbearia.id,
-            tipo: TipoTransacaoPontos.AJUSTE_MANUAL,
-            pontos: diferenca,
-            saldoApos: c.pontos,
-            descricao: 'Ajuste para seed de testes de desconto'
-          }
-        });
-      } else {
-        await prisma.pontoFidelidade.create({
-          data: {
-            clienteId,
-            barbeariaId: barbearia.id,
-            tipo: TipoTransacaoPontos.AJUSTE_MANUAL, // Usaremos manual e como os pontos em BD são Int, e o sistema pode tratar como resgate?
-            // Para não complicar com pontos negativos em schema que talvez não suporte,
-            // podemos apenas criar um resgate.
-            pontos: Math.abs(diferenca),
-            saldoApos: c.pontos,
-            descricao: 'Ajuste de redução para seed de testes de desconto'
-          }
-        });
-        // IMPORTANTE: no BD o valen-barber costuma usar aggregate() em vez de saldoApos, mas como vimos a logica soma ACUMULO/ESTORNO e subtrai RESGATE.
-        // Se a logica deles suportar AJUSTE_MANUAL, talvez seja tratado diferente. Para garantir, vamos usar ACUMULO/RESGATE dependendo do sinal
-        await prisma.pontoFidelidade.updateMany({
-           where: { descricao: 'Ajuste de redução para seed de testes de desconto' },
-           data: { tipo: TipoTransacaoPontos.RESGATE }
-        });
-      }
+    if (c.pontos > 0) {
+      await prisma.pontoFidelidade.create({
+        data: {
+          clienteId,
+          barbeariaId: barbearia.id,
+          tipo: TipoTransacaoPontos.AJUSTE_MANUAL,
+          pontos: c.pontos,
+          saldoApos: c.pontos,
+          descricao: 'Ajuste inicial para seed de testes de desconto'
+        }
+      });
     }
   }
 
-  // 6. Limpar agendamentos anteriores do teste
+  // 6. Limpar agendamentos anteriores
   console.log('Limpando agendamentos de testes anteriores...');
   await prisma.agendamento.deleteMany({
     where: { observacoes: { contains: 'TESTE-DESCONTO' } }
   });
 
-  // 7. Criar Agendamentos em Aberto (3 de cada)
-  console.log('Criando novos agendamentos de teste...');
-  const agora = new Date();
+  // 7. Criar Agendamentos
+  console.log('Criando novos agendamentos de teste (distribuídos)...');
   
   const cenarios = [
     { clienteLetra: 'A', servico: 'Corte social', preco: 35.00 },
@@ -178,15 +149,25 @@ async function main() {
     { clienteLetra: 'D', servico: 'Barba + corte', preco: 80.00 },
   ];
 
-  let hrOffset = 1;
+  let barbeiroIndex = 0;
+  
+  // Vamos começar às 09:00 de hoje
+  const dataBase = new Date();
+  dataBase.setHours(9, 0, 0, 0);
+
+  // Nós temos 18 agendamentos. Para distribuir sem sobrepor no mesmo barbeiro, 
+  // podemos avançar 30 mins e rodar o barbeiro.
+  let slotMinutos = 0;
+
   for (const cenario of cenarios) {
     const clienteId = clientesIds[cenario.clienteLetra];
     const servicoId = servicos[cenario.servico];
 
     for (let i = 0; i < 3; i++) {
-      const dataHora = new Date(agora);
-      dataHora.setHours(dataHora.getHours() + hrOffset);
-      hrOffset++;
+      const barbeiro = barbeiros[barbeiroIndex % barbeiros.length];
+      
+      const dataHora = new Date(dataBase);
+      dataHora.setMinutes(dataHora.getMinutes() + slotMinutos);
 
       await prisma.agendamento.create({
         data: {
@@ -201,6 +182,9 @@ async function main() {
           origem: 'SISTEMA',
         }
       });
+      
+      barbeiroIndex++;
+      slotMinutos += 30; // 30 min de incremento global garante que não sobreponha 
     }
   }
 

@@ -5,8 +5,9 @@ import { prisma } from '../lib/prisma';
 import { authConfig } from '../config/auth';
 import { BarbeiroJWT } from '../types';
 import { diaBrasiliaStr, inicioDiaBrasilia, fimDiaBrasilia } from '../lib/timezone';
-import { creditarPontosPorAgendamento } from './fidelidade.engine';
+import { prepararOperacoesFidelidade, creditarPontosPorAgendamento } from './fidelidade.engine';
 import { FormaPagamento } from '@prisma/client';
+import { DescontoService, TipoDesconto } from './desconto.service';
 
 interface RespostaAuthBarbeiro {
   token: string;
@@ -215,53 +216,81 @@ export class BarbeiroAppService {
       throw error;
     }
 
-    // 2. Validar pontos usados
-    const pontosAUsar = pontosUsados ? Math.floor(pontosUsados) : 0;
-    if (pontosAUsar < 0) {
-      const error: any = new Error('A quantidade de pontos usados não pode ser negativa.');
-      error.status = 400;
-      throw error;
-    }
-
-    const config = await prisma.configuracaoFidelidade.findUnique({
-      where: { barbeariaId },
-    });
-    const valorPorPonto = config?.valorPorPonto ? Number(config.valorPorPonto) : 0;
-
-    if (pontosAUsar > 0) {
-      const historico = await prisma.pontoFidelidade.findMany({
+    // 2. Buscar configuração de fidelidade, configuração global, barbeiro e saldo
+    const [configFidelidade, configGlobal, barbeiro, agregacaoPontos, agregacaoResgates] = await Promise.all([
+      prisma.configuracaoFidelidade.findUnique({
+        where: { barbeariaId: agendamentoOriginal.barbeariaId! },
+      }),
+      prisma.configuracao.findUnique({
+        where: { barbeariaId: agendamentoOriginal.barbeariaId! },
+      }),
+      prisma.barbeiro.findUnique({
+        where: { id: agendamentoOriginal.barbeiroId },
+        select: { comissaoPercent: true, barbeariaId: true },
+      }),
+      prisma.pontoFidelidade.aggregate({
         where: { clienteId: agendamentoOriginal.clienteId },
-      });
-      const saldoPontos = historico.reduce((acc, p) => acc + p.pontos, 0);
+        _sum: { pontos: true }
+      }),
+      prisma.resgateRecompensa.aggregate({
+        where: { clienteId: agendamentoOriginal.clienteId, status: { in: ['PENDENTE', 'CONFIRMADO'] } },
+        _sum: { pontosUsados: true }
+      })
+    ]);
 
-      if (pontosAUsar > saldoPontos) {
-        const error: any = new Error(`Saldo insuficiente de pontos. O cliente possui ${saldoPontos} pontos.`);
-        error.status = 400;
-        throw error;
-      }
-    }
+    if (!configFidelidade) throw new Error('Configuração de fidelidade não encontrada');
+    if (!configGlobal) throw new Error('Configuração geral não encontrada');
 
-    // 3. Calcular descontos
+    const totalGanho = agregacaoPontos._sum.pontos || 0;
+    const totalGasto = agregacaoResgates._sum.pontosUsados || 0;
+    const saldoPontos = totalGanho - totalGasto;
+
+    // 3. Calcular descontos usando DescontoService
     let valorBruto = Number(agendamentoOriginal.servico.preco);
-    
-    // Se o barbeiro passar um valorCobrado manualmente que seja diferente do preço original
-    // e não houver descontos declarados (app antigo), consideramos o valorCobrado como bruto.
-    // Mas a regra de negócio exige os campos agora, então vamos tratar do jeito novo:
     if (valorCobrado !== undefined && !descontoPercentual && !descontoReais && !pontosUsados) {
-      // Compatibilidade com versão anterior do app onde o barbeiro altera o valor total na mão
       valorBruto = valorCobrado;
     }
+    
+    let tipoDesconto: TipoDesconto = 'NENHUM';
+    if (pontosUsados && pontosUsados > 0) tipoDesconto = 'PONTOS';
+    else if (descontoReais && descontoReais > 0) tipoDesconto = 'REAIS';
+    else if (descontoPercentual && descontoPercentual > 0) tipoDesconto = 'PERCENTUAL';
 
-    const pct = descontoPercentual ? Number(descontoPercentual) : 0;
-    const valorAposPct = valorBruto * (1 - pct / 100);
-    
-    const reais = descontoReais ? Number(descontoReais) : 0;
-    const valorAposReais = valorAposPct - reais;
-    
-    const descontoPontos = pontosAUsar * valorPorPonto;
-    const valorAposPontos = valorAposReais - descontoPontos;
-    
-    const valorFinal = Math.max(valorAposPontos, 0);
+    const resultadoDesconto = DescontoService.calcularDesconto({
+      valorBruto,
+      tipo: tipoDesconto,
+      valorReais: descontoReais ? Number(descontoReais) : 0,
+      percentual: descontoPercentual ? Number(descontoPercentual) : 0,
+      pontos: pontosUsados ? Number(pontosUsados) : 0,
+      saldoPontos,
+      config: {
+        resgatePontosAtivo: configFidelidade.resgatePontosAtivo ?? false,
+        valorPorPonto: Number(configFidelidade.valorPorPonto),
+        percentualMaxPontos: Number(configFidelidade.percentualMaxPontos),
+        descontoMaxReais: Number(configFidelidade.descontoMaxReais),
+        descontoMaxPercentual: Number(configFidelidade.descontoMaxPercentual),
+        permitirCombinarDescontos: configFidelidade.permitirCombinarDescontos ?? false
+      }
+    });
+
+    const valorFinal = resultadoDesconto.valorLiquido;
+    const pontosAUsar = resultadoDesconto.pontosUtilizados;
+
+    // 4. Preparar pontos de acúmulo de fidelidade da visita
+    const baseParaPontos = configGlobal.baseCalculoPontos === 'VALOR_BRUTO' ? valorBruto : valorFinal;
+    const operacoesFidelidade = await prepararOperacoesFidelidade(
+      agendamentoOriginal.id,
+      agendamentoOriginal.clienteId,
+      agendamentoOriginal.barbeariaId!,
+      agendamentoOriginal.servicoId,
+      baseParaPontos
+    );
+
+    // 5. Preparar valores de Comissão
+    const comissaoPercent = barbeiro?.comissaoPercent || 50;
+    const baseComissao = configGlobal.baseCalculoComissao === 'VALOR_BRUTO' ? valorBruto : valorFinal;
+    const valorComissao = (baseComissao * comissaoPercent) / 100;
+    const valorLiquido = valorFinal - valorComissao;
 
     // Usar $transaction
     const resultadoFinal = await prisma.$transaction(async (tx) => {
@@ -270,8 +299,16 @@ export class BarbeiroAppService {
         where: { id: agendamentoId },
         data: { 
           status: 'CONCLUIDO',
-          valorCobrado: valorFinal
-        },
+          valorCobrado: valorFinal,
+          tipoDesconto,
+          descontoPercentualAplic: descontoPercentual ? Number(descontoPercentual) : null,
+          descontoManual: descontoReais ? Number(descontoReais) : 0,
+          descontoPontos: Number(resultadoDesconto.descontoPontos),
+          pontosUtilizados: pontosAUsar,
+          valorBruto: Number(resultadoDesconto.valorBruto),
+          valorDesconto: Number(resultadoDesconto.valorDesconto),
+          valorLiquido: Number(resultadoDesconto.valorLiquido),
+        } as any,
       });
 
       // B. Debita pontos (se usou)
@@ -279,7 +316,7 @@ export class BarbeiroAppService {
         await tx.pontoFidelidade.create({
           data: {
             clienteId: agendamentoOriginal.clienteId,
-            barbeariaId: agendamentoOriginal.barbeariaId,
+            barbeariaId: agendamentoOriginal.barbeariaId!,
             pontos: -pontosAUsar,
             descricao: `Resgate no serviço ${agendamentoOriginal.servico.nome}`,
             data: new Date(),
@@ -288,31 +325,36 @@ export class BarbeiroAppService {
       }
 
       // C. Lançamento financeiro
-      const barbeiro = await tx.barbeiro.findUnique({
-        where: { id: barbeiroId },
-        select: { comissaoPercent: true },
-      });
-
-      const comissaoPercent = barbeiro?.comissaoPercent || 50;
-      const valorComissao = (valorBruto * comissaoPercent) / 100;
-      const valorLiquido = valorFinal - valorComissao;
-
       await tx.lancamentoFinanceiro.create({
         data: {
-          barbeariaId,
+          barbeariaId: agendamentoOriginal.barbeariaId || barbeiro?.barbeariaId || '',
           tipo: 'ENTRADA',
           categoria: 'Serviço',
-          descricao: `${agendamentoOriginal.servico.nome} — concluído pelo Barbeiro App`,
+          descricao: `${agendamentoOriginal.servico.nome} — concluído pelo app do barbeiro`,
           valor: valorFinal,
-          formaPagamento: formaPagamento as FormaPagamento,
+          formaPagamento: (formaPagamento as FormaPagamento) || 'PIX',
           agendamentoId: updated.id,
-          barbeiroId,
+          barbeiroId: agendamentoOriginal.barbeiroId,
           servicoId: agendamentoOriginal.servicoId,
           valorComissao,
           valorLiquido,
+          percentualComissao: comissaoPercent,
+          baseComissaoAplicada: configGlobal.baseCalculoComissao,
           data: new Date(),
         },
       });
+
+      // D. Executa operações de fidelidade (credita pontos)
+      for (const op of operacoesFidelidade.pontosParaCriar) {
+        await tx.pontoFidelidade.create({ data: op });
+      }
+      
+      if (operacoesFidelidade.indicacaoParaAtualizarId) {
+        await (tx as any).indicacao.update({
+          where: { id: operacoesFidelidade.indicacaoParaAtualizarId },
+          data: { pontosAwardados: true }
+        });
+      }
 
       return {
         message: 'Agendamento concluído com sucesso',

@@ -18,6 +18,10 @@ const diasSemana = [
 export function Configuracoes() {
   const navigate = useNavigate();
   const [horarios, setHorarios] = useState<any>({});
+  const [regrasNegocio, setRegrasNegocio] = useState<{ baseCalculoComissao: string; baseCalculoPontos: string }>({
+    baseCalculoComissao: 'VALOR_LIQUIDO',
+    baseCalculoPontos: 'VALOR_LIQUIDO'
+  });
   const [carregando, setCarregando] = useState(true);
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
@@ -32,6 +36,10 @@ export function Configuracoes() {
     try {
       const res = await api.get('/configuracoes');
       setHorarios(res.data.horariosFuncionamento || {});
+      setRegrasNegocio({
+        baseCalculoComissao: res.data.baseCalculoComissao || 'VALOR_LIQUIDO',
+        baseCalculoPontos: res.data.baseCalculoPontos || 'VALOR_LIQUIDO'
+      });
     } catch (error) {
       setErro('Erro ao carregar configurações');
     } finally {
@@ -44,7 +52,9 @@ export function Configuracoes() {
     setSalvando(true);
     try {
       await api.put('/configuracoes', {
-        horariosFuncionamento: horarios
+        horariosFuncionamento: horarios,
+        baseCalculoComissao: regrasNegocio.baseCalculoComissao,
+        baseCalculoPontos: regrasNegocio.baseCalculoPontos
       });
       alert('Configurações salvas com sucesso!');
     } catch (error) {
@@ -402,6 +412,58 @@ export function Configuracoes() {
               Gerenciar Fidelidade
             </button>
           </div>
+        </div>
+
+        {/* Regras de Negócio */}
+        <div className="bg-[var(--bg-surface)] border border-[var(--border)] rounded p-6 shadow col-span-1 lg:col-span-2 mt-6">
+          <div className="flex items-center gap-2 mb-4">
+            <Settings className="text-[var(--cor-primaria)]" size={24} />
+            <h2 className="text-xl font-bold text-[var(--texto-principal)]">Regras de Negócio</h2>
+          </div>
+          <p className="text-sm text-[var(--texto-secundario)] mb-6">
+            Configure as bases de cálculo globais do sistema quando um desconto é aplicado no checkout.
+          </p>
+
+          <form onSubmit={salvar} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium mb-1 text-[var(--texto-principal)]">Base de Cálculo da Comissão</label>
+                <p className="text-xs text-[var(--texto-secundario)] mb-2">Sobre qual valor o percentual do barbeiro será calculado?</p>
+                <select 
+                  className="ds-input w-full"
+                  value={regrasNegocio.baseCalculoComissao}
+                  onChange={e => setRegrasNegocio({...regrasNegocio, baseCalculoComissao: e.target.value})}
+                >
+                  <option value="VALOR_LIQUIDO">Valor Líquido (após descontos)</option>
+                  <option value="VALOR_BRUTO">Valor Bruto (preço cheio do serviço)</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1 text-[var(--texto-principal)]">Base de Acúmulo de Pontos</label>
+                <p className="text-xs text-[var(--texto-secundario)] mb-2">Se a regra de pontos for "por real gasto", usar qual valor?</p>
+                <select 
+                  className="ds-input w-full"
+                  value={regrasNegocio.baseCalculoPontos}
+                  onChange={e => setRegrasNegocio({...regrasNegocio, baseCalculoPontos: e.target.value})}
+                >
+                  <option value="VALOR_LIQUIDO">Valor Líquido (após descontos)</option>
+                  <option value="VALOR_BRUTO">Valor Bruto (preço cheio do serviço)</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="pt-4 border-t border-[var(--border)] flex justify-end">
+              <button
+                type="submit"
+                disabled={salvando}
+                className="ds-btn ds-btn-primary flex items-center gap-2"
+              >
+                <Save size={20} />
+                {salvando ? 'Salvando...' : 'Salvar Regras de Negócio'}
+              </button>
+            </div>
+          </form>
         </div>
 
         {/* Aparência e Preferências */}

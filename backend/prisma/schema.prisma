@@ -220,6 +220,16 @@ model ClienteBarbearia {
   @@map("clientes_barbearias")
 }
 
+enum BaseCalculoComissao {
+  VALOR_BRUTO
+  VALOR_LIQUIDO
+}
+
+enum BaseCalculoPontos {
+  VALOR_BRUTO
+  VALOR_LIQUIDO
+}
+
 model PontoFidelidade {
   id            String   @id @default(uuid())
   clienteId     String
@@ -305,13 +315,15 @@ model LancamentoFinanceiro {
   formaPagamento FormaPagamento
   agendamentoId  String?
   
-  barbeiroId     String?
-  servicoId      String?
-  valorComissao  Decimal?       @db.Decimal(10, 2)
-  valorLiquido   Decimal?       @db.Decimal(10, 2)
-  
-  data           DateTime
-  createdAt      DateTime       @default(now())
+  barbeiroId           String?
+  servicoId            String?
+  valorComissao        Decimal?             @db.Decimal(10, 2)
+  valorLiquido         Decimal?             @db.Decimal(10, 2)
+  percentualComissao   Decimal?             @db.Decimal(10, 2)
+  baseComissaoAplicada BaseCalculoComissao?
+
+  data                 DateTime
+  createdAt            DateTime             @default(now())
 
   aprovacoes  AprovacaoEdicao[]
 
@@ -361,10 +373,13 @@ model VendaProduto {
 }
 
 model Configuracao {
-  id                    String   @id @default(uuid())
-  barbeariaId           String?   @unique
+  id                    String              @id @default(uuid())
+  barbeariaId           String?             @unique
   horariosFuncionamento Json?
   regrasFidelidade      Json?
+  
+  baseCalculoComissao   BaseCalculoComissao @default(VALOR_LIQUIDO)
+  baseCalculoPontos     BaseCalculoPontos   @default(VALOR_LIQUIDO)
 
   barbearia Barbearia? @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
 
