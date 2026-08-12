@@ -191,8 +191,8 @@ export function ModalConcluirServico({ aberto, onFechar, agendamento, onConfirma
 
         <div>
           <label className="text-xs font-semibold text-[var(--texto-secundario)] mb-2 block">Desconto</label>
-          <div className="flex gap-2">
-            <div className="flex gap-1" style={{ flexShrink: 0 }}>
+          <div className="flex flex-col sm:flex-row gap-2">
+            <div className="flex flex-wrap gap-1 sm:flex-nowrap" style={{ flexShrink: 0 }}>
               {[
                 { value: 'NENHUM', label: 'Nenhum' },
                 { value: 'REAIS', label: 'R$' },

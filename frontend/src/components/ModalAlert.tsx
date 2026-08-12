@@ -43,6 +43,12 @@ export function ModalAlert({
       setFechando(true);
       document.body.style.overflow = '';
       elementoAnteriorRef.current?.focus();
+      
+      const timer = setTimeout(() => {
+        setVisivel(false);
+        setFechando(false);
+      }, 250);
+      return () => clearTimeout(timer);
     }
   }, [aberto, visivel]);
 

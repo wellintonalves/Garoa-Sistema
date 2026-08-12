@@ -20,6 +20,11 @@ export function Modal({ aberto, onFechar, titulo, children, largura = 'max-w-lg'
       setFechando(false);
     } else if (visivel) {
       setFechando(true);
+      const timer = setTimeout(() => {
+        setVisivel(false);
+        setFechando(false);
+      }, 300);
+      return () => clearTimeout(timer);
     }
   }, [aberto, visivel]);
 
