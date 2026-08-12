@@ -68,6 +68,7 @@ export function ModalConcluirServico({ aberto, onFechar, agendamento, onConfirma
 
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
+  const [erroDesconto, setErroDesconto] = useState<string | null>(null);
 
   // Carregar saldo do cliente quando abre o modal
   useEffect(() => {
@@ -109,12 +110,16 @@ export function ModalConcluirServico({ aberto, onFechar, agendamento, onConfirma
     const pts = Math.min(Number(pontosUsados) || 0, maxPontos);
     const descontoPontos = pts * taxa;
 
-    let totalDesconto = descontoManualFinal + descontoPontos;
-    if (totalDesconto > valorBruto) {
-      totalDesconto = valorBruto;
-    }
+    const totalDesconto = descontoManualFinal + descontoPontos;
+    const valorLiquido = valorBruto - totalDesconto;
 
-    const valorLiquido = Math.max(0, valorBruto - totalDesconto);
+    if (totalDesconto > valorBruto) {
+      const msg = 'O desconto não pode ser maior que o valor bruto.';
+      setErroDesconto(msg);
+      setErro(msg);
+    } else {
+      setErroDesconto(null);
+    }
 
     setSimulacao({
       valorBruto,
@@ -160,12 +165,6 @@ export function ModalConcluirServico({ aberto, onFechar, agendamento, onConfirma
   return (
     <Modal aberto={aberto} onFechar={onFechar} titulo="Concluir Serviço">
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-        {erro && (
-          <div style={{ padding: '12px', background: 'var(--perigo-fundo)', border: '1px solid var(--perigo)', borderRadius: '6px', color: 'var(--perigo)', fontSize: '13px', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <WarningCircle size={16} /> {erro}
-          </div>
-        )}
-
         <div className="flex flex-col gap-1 text-sm text-[var(--text-primary)]">
           <p><strong className="text-[var(--texto-secundario)]">Serviço:</strong> {agendamento.servico.nome}</p>
           <p><strong className="text-[var(--texto-secundario)]">Cliente:</strong> {agendamento.cliente.usuario.nome}</p>
@@ -214,7 +213,8 @@ export function ModalConcluirServico({ aberto, onFechar, agendamento, onConfirma
                       setPontosUsados('');
                     }
                   }}
-                  className={`px-3 py-2 rounded-md text-xs font-medium transition-colors border ${
+                  disabled={tipo.value === 'PONTOS' && (!fidelidade || fidelidade.saldoPontos === 0)}
+                  className={`px-3 py-2 rounded-md text-xs font-medium transition-colors border disabled:opacity-50 disabled:cursor-not-allowed ${
                     tipoManual === tipo.value 
                     ? 'bg-[var(--cor-primaria)] text-[var(--texto-sobre-primaria)] border-[var(--cor-primaria)]' 
                     : 'bg-transparent text-[var(--text-primary)] border-[var(--border)] hover:bg-[var(--bg-surface2)]'
@@ -234,6 +234,14 @@ export function ModalConcluirServico({ aberto, onFechar, agendamento, onConfirma
                   placeholder="Qtd. pontos" 
                   value={pontosUsados} 
                   onChange={e => setPontosUsados(e.target.value)} 
+                  onBlur={() => {
+                    if (!pontosUsados) return;
+                    let p = Math.floor(Number(pontosUsados) || 0);
+                    if (p < 0) p = 0;
+                    const max = fidelidade?.maxPontosUtilizaveis || 0;
+                    if (p > max) p = max;
+                    setPontosUsados(String(p));
+                  }}
                   className="ds-input flex-1 min-w-0"
                 />
                 <button 
@@ -245,16 +253,26 @@ export function ModalConcluirServico({ aberto, onFechar, agendamento, onConfirma
                 </button>
               </div>
             ) : (
-              <input 
-                type="number" 
-                min="0"
-                step="any"
-                placeholder={tipoManual === 'NENHUM' ? '---' : 'Ex: 10'} 
-                value={valorDescontoManual} 
-                onChange={e => setValorDescontoManual(e.target.value)} 
-                className="ds-input flex-1 min-w-0"
-                disabled={tipoManual === 'NENHUM'}
-              />
+              <div className="flex flex-col flex-1 gap-1">
+                <input 
+                  type="number" 
+                  min="0"
+                  step="any"
+                  placeholder={tipoManual === 'NENHUM' ? '---' : 'Ex: 10'} 
+                  value={valorDescontoManual} 
+                  onChange={e => setValorDescontoManual(e.target.value)} 
+                  onBlur={() => {
+                    if (!valorDescontoManual) return;
+                    let v = Number(valorDescontoManual) || 0;
+                    if (v < 0) v = 0;
+                    if (tipoManual === 'PERCENTUAL' && v > 100) v = 100;
+                    setValorDescontoManual(String(v));
+                  }}
+                  className={`ds-input flex-1 min-w-0 ${erroDesconto ? 'border-[var(--erro)] focus:border-[var(--erro)] focus:ring-[var(--erro)]' : ''}`}
+                  disabled={tipoManual === 'NENHUM'}
+                />
+                {erroDesconto && <p className="text-xs text-[var(--erro)] mt-1">{erroDesconto}</p>}
+              </div>
             )}
           </div>
           
@@ -299,9 +317,15 @@ export function ModalConcluirServico({ aberto, onFechar, agendamento, onConfirma
           </div>
         </div>
 
+        {erro && !erroDesconto && (
+          <div style={{ padding: '12px', background: 'var(--erro-fundo)', border: '1px solid var(--erro)', borderRadius: '6px', color: 'var(--erro)', fontSize: '13px', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <WarningCircle size={16} /> {erro}
+          </div>
+        )}
+
         <button 
           onClick={handleSubmit} 
-          className="w-full mt-2 min-h-[48px] flex items-center justify-center gap-2 rounded-md font-semibold text-sm transition-opacity"
+          className="w-full min-h-[48px] flex items-center justify-center gap-2 rounded-md font-semibold text-sm transition-opacity"
           style={{ 
             background: 'var(--cor-primaria)', 
             color: 'var(--texto-sobre-primaria)',
