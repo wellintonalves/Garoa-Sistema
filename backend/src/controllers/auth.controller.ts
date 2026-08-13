@@ -7,7 +7,8 @@ export class AuthController {
   /** POST /auth/login */
   static async login(req: Request, res: Response): Promise<void> {
     try {
-      const { email, senha } = req.body;
+      const email = req.body.email?.trim().toLowerCase();
+      const senha = req.body.senha;
 
       if (!email || !senha) {
         res.status(400).json({ erro: 'Email e senha são obrigatórios' });
@@ -26,7 +27,8 @@ export class AuthController {
   /** POST /auth/register */
   static async registrar(req: Request, res: Response): Promise<void> {
     try {
-      const { nome, email, senha, papel, barbeariaId } = req.body;
+      const { nome, senha, papel, barbeariaId } = req.body;
+      const email = req.body.email?.trim().toLowerCase();
 
       if (!nome || !email || !senha) {
         res.status(400).json({ erro: 'Nome, email e senha são obrigatórios' });

@@ -27,7 +27,7 @@ export function ClienteLoginPrincipal() {
       await login(email.trim(), senha);
       navigate(location.state?.destino || '/cliente/home');
     } catch (err: any) {
-      setErro(err?.response?.data?.erro || 'Email ou senha incorretos.');
+      setErro(err?.response?.data?.erro || err.message || 'Email ou senha incorretos.');
     } finally {
       setCarregando(false);
     }
@@ -125,10 +125,15 @@ export function ClienteLoginPrincipal() {
             label="Email"
             type="email"
             value={email}
-            onChange={e => setEmail(e.target.value)}
+            onChange={e => setEmail(e.target.value.trim().toLowerCase())}
             placeholder="seu@email.com"
             required
             iconeEsquerda={<Envelope size={18} weight="regular" aria-hidden="true" />}
+            inputMode="email"
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck={false}
+            autoComplete="email"
           />
 
           <Input

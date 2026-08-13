@@ -136,10 +136,15 @@ export function AdminPrimeiroAcesso() {
             label="Email"
             type="email"
             value={email}
-            onChange={e => setEmail(e.target.value)}
+            onChange={e => setEmail(e.target.value.trim().toLowerCase())}
             placeholder="admin@email.com"
             required
             iconeEsquerda={<Mail size={16} />}
+            inputMode="email"
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck={false}
+            autoComplete="email"
           />
 
           <Input

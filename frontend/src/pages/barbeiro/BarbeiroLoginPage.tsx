@@ -41,7 +41,7 @@ export function BarbeiroLoginPage() {
         }
         setErro('');
       } else {
-        setErro(err?.response?.data?.erro || 'Email ou senha incorretos.');
+        setErro(err?.response?.data?.erro || err.message || 'Email ou senha incorretos.');
       }
     } finally {
       setCarregando(false);
@@ -49,7 +49,7 @@ export function BarbeiroLoginPage() {
   }
 
   function handleEmailChange(val: string) {
-    setEmail(val);
+    setEmail(val.trim().toLowerCase());
     if (barbearias.length > 0) {
       setBarbearias([]);
       setBarbeariaId('');
@@ -150,6 +150,11 @@ export function BarbeiroLoginPage() {
             placeholder="seu@email.com"
             required
             iconeEsquerda={<Mail size={16} />}
+            inputMode="email"
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck={false}
+            autoComplete="email"
           />
 
           <Input

@@ -29,7 +29,7 @@ export function AdminLogin() {
       loginDireto(res.data.token, res.data.usuario);
       navigate('/admin');
     } catch (err: any) {
-      setErro(err?.response?.data?.erro || 'Email ou senha incorretos.');
+      setErro(err?.response?.data?.erro || err.message || 'Email ou senha incorretos.');
     } finally {
       setCarregando(false);
     }
@@ -117,10 +117,15 @@ export function AdminLogin() {
             label="Email"
             type="email"
             value={email}
-            onChange={e => setEmail(e.target.value)}
+            onChange={e => setEmail(e.target.value.trim().toLowerCase())}
             placeholder="seu@email.com"
             required
             iconeEsquerda={<Mail size={16} />}
+            inputMode="email"
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck={false}
+            autoComplete="email"
           />
 
           <Input
