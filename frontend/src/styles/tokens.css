@@ -34,7 +34,7 @@
   --swatch-cloud-medium: #b0aea5;
   --swatch-cloud-light: #d1cfc5;
   --swatch-cloud-warm: #c3c2b7;
-  --swatch-cloud-muted: #898781;
+  --swatch-cloud-muted: #9a9891;
 
   /* Marca — terracota, identico nos dois modos */
   --swatch-clay: #d97757;
@@ -125,9 +125,9 @@
 
   --texto-principal: #ffffff;
   --texto-secundario: #c3c2b7;
-  --texto-terciario: #898781;
+  --texto-terciario: #9a9891;
   --texto-inverso: #141413;
-  --texto-placeholder: #898781;
+  --texto-placeholder: #9a9891;
   --texto-desabilitado: #5e5d59;
 
   --borda-sutil: #ffffff1a;

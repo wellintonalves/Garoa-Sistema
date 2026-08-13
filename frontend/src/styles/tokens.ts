@@ -27,7 +27,7 @@ export const tokens = {
       medium: '#b0aea5',
       light: '#d1cfc5',
       warm: '#c3c2b7',
-      muted: '#898781',
+      muted: '#9a9891',
     },
     marca: {
       clay: '#d97757',
@@ -119,9 +119,9 @@ export const tokens = {
       texto: {
         principal: '#ffffff',
         secundario: '#c3c2b7',
-        terciario: '#898781',
+        terciario: '#9a9891',
         inverso: '#141413',
-        placeholder: '#898781',
+        placeholder: '#9a9891',
         desabilitado: '#5e5d59',
         label: '#c3c2b7',
         detalhe: '0.8125rem',
