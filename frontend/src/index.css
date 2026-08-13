@@ -225,6 +225,9 @@ h1, h2, h3, h4, .titulo {
 .input,
 .ds-input {
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
   background: transparent;
   border: 1px solid var(--borda-forte);
   border-radius: 10px;
@@ -235,6 +238,17 @@ h1, h2, h3, h4, .titulo {
   outline: none;
   transition: border-color var(--dur-fast), box-shadow var(--dur-fast);
   height: 44px;
+}
+
+/* Correção para inputs de data no iOS Safari */
+.input[type="date"],
+.input[type="time"],
+.input[type="datetime-local"],
+.ds-input[type="date"],
+.ds-input[type="time"],
+.ds-input[type="datetime-local"] {
+  -webkit-appearance: none;
+  appearance: none;
 }
 .input:focus,
 .ds-input:focus {

@@ -166,7 +166,18 @@
   color: var(--texto-principal);
   outline: none;
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
   transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+/* Correção para inputs de data no iOS Safari (evita dimensionamento padrão que ignora flexbox) */
+.campo-input[type="date"],
+.campo-input[type="time"],
+.campo-input[type="datetime-local"] {
+  -webkit-appearance: none;
+  appearance: none;
 }
 
 .campo-input::placeholder {
