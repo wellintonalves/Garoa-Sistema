@@ -268,7 +268,20 @@ export function ModalConcluirServico({ aberto, onFechar, agendamento, onConfirma
                     max={fidelidade?.maxPontosUtilizaveis || 0}
                     placeholder="Qtd. pontos" 
                     value={pontosUsados} 
-                    onChange={e => setPontosUsados(e.target.value)} 
+                    onChange={e => {
+                      const val = e.target.value;
+                      if (!val) {
+                        setPontosUsados(val);
+                        return;
+                      }
+                      const max = fidelidade?.maxPontosUtilizaveis || 0;
+                      let p = Number(val);
+                      if (p > max) {
+                        setPontosUsados(String(max));
+                      } else {
+                        setPontosUsados(val);
+                      }
+                    }} 
                     onBlur={() => {
                       if (!pontosUsados) return;
                       let p = Math.floor(Number(pontosUsados) || 0);
@@ -297,7 +310,19 @@ export function ModalConcluirServico({ aberto, onFechar, agendamento, onConfirma
                   step="any"
                   placeholder={tipoManual === 'NENHUM' ? '---' : 'Ex: 10'} 
                   value={valorDescontoManual} 
-                  onChange={e => setValorDescontoManual(e.target.value)} 
+                  onChange={e => {
+                    const val = e.target.value;
+                    if (!val) {
+                      setValorDescontoManual(val);
+                      return;
+                    }
+                    let v = Number(val);
+                    if (tipoManual === 'PERCENTUAL' && v > 100) {
+                      setValorDescontoManual('100');
+                    } else {
+                      setValorDescontoManual(val);
+                    }
+                  }} 
                   onBlur={() => {
                     if (!valorDescontoManual) return;
                     let v = Number(valorDescontoManual) || 0;
