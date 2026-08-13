@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Modal } from './Modal';
 import api from '../api/client';
 import { CircleNotch, WarningCircle } from '@phosphor-icons/react';
@@ -27,6 +27,7 @@ interface ModalConcluirServicoProps {
     descontoPercentual?: number;
     descontoReais?: number;
   }) => Promise<void>;
+  fidelidadeCache?: any;
 }
 
 const FORMAS_PAGAMENTO = [
@@ -36,7 +37,7 @@ const FORMAS_PAGAMENTO = [
   { value: 'CARTAO_CREDITO', label: 'Crédito' },
 ];
 
-export function ModalConcluirServico({ aberto, onFechar, agendamento, onConfirmar }: ModalConcluirServicoProps) {
+export function ModalConcluirServico({ aberto, onFechar, agendamento, onConfirmar, fidelidadeCache }: ModalConcluirServicoProps) {
   const [formaPagamento, setFormaPagamento] = useState('PIX');
   
   // States do desconto
@@ -44,6 +45,9 @@ export function ModalConcluirServico({ aberto, onFechar, agendamento, onConfirma
   const [valorDescontoManual, setValorDescontoManual] = useState('');
   const [pontosUsados, setPontosUsados] = useState('');
   
+  const pontosUsadosRef = useRef(pontosUsados);
+  useEffect(() => { pontosUsadosRef.current = pontosUsados; }, [pontosUsados]);
+
   // State da fidelidade
   const [fidelidade, setFidelidade] = useState<{
     saldoPontos: number;
@@ -56,7 +60,7 @@ export function ModalConcluirServico({ aberto, onFechar, agendamento, onConfirma
     maxPontosUtilizaveis: number;
     limitador: 'SALDO' | 'TETO';
     tetoReais: number;
-  } | null>(null);
+  } | null>(fidelidadeCache || null);
 
   // State da simulação
   const [simulacao, setSimulacao] = useState<{
@@ -79,10 +83,16 @@ export function ModalConcluirServico({ aberto, onFechar, agendamento, onConfirma
       setPontosUsados('');
       setErro(null);
       setSimulacao(null);
-      setFidelidade(null);
+      setFidelidade(fidelidadeCache || null);
       
       api.get(`/fidelidade/clientes/${agendamento.cliente.id}/saldo?valorServico=${agendamento.valorCobrado}`)
-        .then(res => setFidelidade(res.data))
+        .then(res => {
+          setFidelidade(res.data);
+          if (pontosUsadosRef.current && Number(pontosUsadosRef.current) > res.data.maxPontosUtilizaveis) {
+            setPontosUsados(String(res.data.maxPontosUtilizaveis));
+            setErroDesconto(`O saldo foi atualizado. O máximo de pontos foi corrigido para ${res.data.maxPontosUtilizaveis}.`);
+          }
+        })
         .catch(err => console.error('Erro ao buscar saldo:', err));
     }
   }, [aberto, agendamento]);
@@ -197,60 +207,87 @@ export function ModalConcluirServico({ aberto, onFechar, agendamento, onConfirma
                 { value: 'NENHUM', label: 'Nenhum' },
                 { value: 'REAIS', label: 'R$' },
                 { value: 'PERCENTUAL', label: '%' },
-                ...(fidelidade?.resgatePontosAtivo ? [{ value: 'PONTOS', label: 'Pontos' }] : []),
-              ].map(tipo => (
-                <button
-                  key={tipo.value}
-                  type="button"
-                  onClick={() => {
-                    setTipoManual(tipo.value as any);
-                    if (tipo.value === 'NENHUM') {
-                      setValorDescontoManual('');
-                      setPontosUsados('');
-                    } else if (tipo.value === 'PONTOS') {
-                      setValorDescontoManual('');
-                    } else {
-                      setPontosUsados('');
+                { value: 'PONTOS', label: 'Pontos' },
+              ].map(tipo => {
+                const isPontos = tipo.value === 'PONTOS';
+                const isLoading = isPontos && !fidelidade && !erro;
+                const isDisabled = isPontos && (
+                  isLoading || 
+                  !!erro || 
+                  (fidelidade && (!fidelidade.resgatePontosAtivo || fidelidade.saldoPontos === 0))
+                );
+
+                return (
+                  <button
+                    key={tipo.value}
+                    type="button"
+                    onClick={() => {
+                      setTipoManual(tipo.value as any);
+                      if (tipo.value === 'NENHUM') {
+                        setValorDescontoManual('');
+                        setPontosUsados('');
+                      } else if (tipo.value === 'PONTOS') {
+                        setValorDescontoManual('');
+                      } else {
+                        setPontosUsados('');
+                      }
+                    }}
+                    disabled={!!isDisabled}
+                    title={
+                      isPontos
+                        ? isLoading 
+                          ? 'Carregando saldo...'
+                          : erro 
+                            ? 'Erro ao carregar fidelidade'
+                            : (fidelidade && !fidelidade.resgatePontosAtivo) 
+                              ? 'Fidelidade desativada'
+                              : (fidelidade && fidelidade.saldoPontos === 0) 
+                                ? 'Cliente sem saldo' 
+                                : ''
+                        : ''
                     }
-                  }}
-                  disabled={tipo.value === 'PONTOS' && (!fidelidade || fidelidade.saldoPontos === 0)}
-                  className={`px-3 py-2 rounded-md text-xs font-medium transition-colors border disabled:opacity-50 disabled:cursor-not-allowed ${
-                    tipoManual === tipo.value 
-                    ? 'bg-[var(--cor-primaria)] text-[var(--texto-sobre-primaria)] border-[var(--cor-primaria)]' 
-                    : 'bg-transparent text-[var(--text-primary)] border-[var(--border)] hover:bg-[var(--bg-surface2)]'
-                  }`}
-                >
-                  {tipo.label}
-                </button>
-              ))}
+                    className={`px-3 py-2 rounded-md text-xs font-medium transition-colors border disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 ${
+                      tipoManual === tipo.value 
+                      ? 'bg-[var(--cor-primaria)] text-[var(--texto-sobre-primaria)] border-[var(--cor-primaria)]' 
+                      : 'bg-transparent text-[var(--text-primary)] border-[var(--border)] hover:bg-[var(--bg-surface2)]'
+                    }`}
+                  >
+                    {isLoading && <CircleNotch className="animate-spin" size={14} />}
+                    {tipo.label}
+                  </button>
+                );
+              })}
             </div>
             
             {tipoManual === 'PONTOS' ? (
-              <div className="flex flex-1 gap-2">
-                <input 
-                  type="number" 
-                  min="0"
-                  max={fidelidade?.maxPontosUtilizaveis || 0}
-                  placeholder="Qtd. pontos" 
-                  value={pontosUsados} 
-                  onChange={e => setPontosUsados(e.target.value)} 
-                  onBlur={() => {
-                    if (!pontosUsados) return;
-                    let p = Math.floor(Number(pontosUsados) || 0);
-                    if (p < 0) p = 0;
-                    const max = fidelidade?.maxPontosUtilizaveis || 0;
-                    if (p > max) p = max;
-                    setPontosUsados(String(p));
-                  }}
-                  className="ds-input flex-1 min-w-0"
-                />
-                <button 
-                  onClick={() => setPontosUsados(String(fidelidade?.maxPontosUtilizaveis || 0))}
-                  className="px-3 py-2 bg-[var(--bg-surface2)] border border-[var(--border)] rounded-md text-xs font-medium text-[var(--text-primary)] hover:bg-[var(--border)] transition-colors whitespace-nowrap"
-                  type="button"
-                >
-                  Máximo
-                </button>
+              <div className="flex flex-col flex-1 gap-1">
+                <div className="flex flex-1 gap-2">
+                  <input 
+                    type="number" 
+                    min="0"
+                    max={fidelidade?.maxPontosUtilizaveis || 0}
+                    placeholder="Qtd. pontos" 
+                    value={pontosUsados} 
+                    onChange={e => setPontosUsados(e.target.value)} 
+                    onBlur={() => {
+                      if (!pontosUsados) return;
+                      let p = Math.floor(Number(pontosUsados) || 0);
+                      if (p < 0) p = 0;
+                      const max = fidelidade?.maxPontosUtilizaveis || 0;
+                      if (p > max) p = max;
+                      setPontosUsados(String(p));
+                    }}
+                    className={`ds-input flex-1 min-w-0 ${erroDesconto ? 'border-[var(--erro)] focus:border-[var(--erro)] focus:ring-[var(--erro)]' : ''}`}
+                  />
+                  <button 
+                    onClick={() => setPontosUsados(String(fidelidade?.maxPontosUtilizaveis || 0))}
+                    className="px-3 py-2 bg-[var(--bg-surface2)] border border-[var(--border)] rounded-md text-xs font-medium text-[var(--text-primary)] hover:bg-[var(--border)] transition-colors whitespace-nowrap"
+                    type="button"
+                  >
+                    Máximo
+                  </button>
+                </div>
+                {erroDesconto && <p className="text-xs text-[var(--erro)] mt-1">{erroDesconto}</p>}
               </div>
             ) : (
               <div className="flex flex-col flex-1 gap-1">

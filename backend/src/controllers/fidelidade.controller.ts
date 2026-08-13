@@ -568,24 +568,17 @@ export class FidelidadeController {
         return;
       }
 
-      // Valida se o cliente pertence à barbearia
-      const cliente = await prisma.cliente.findFirst({
-        where: { 
-          id: clienteId,
-          OR: [
-            { barbeariaId },
-            { clientesBarbearias: { some: { barbeariaId } } }
-          ]
-        }
-      });
-
-      if (!cliente) {
-        res.status(404).json({ erro: 'Cliente não encontrado nesta barbearia.' });
-        return;
-      }
-
-      // Busca saldo do cliente
-      const [pontos, resgates, config] = await Promise.all([
+      // Busca cliente, saldo e configuração em uma única ida ao banco (Batch Transaction)
+      const [cliente, pontos, resgates, config] = await prisma.$transaction([
+        prisma.cliente.findFirst({
+          where: { 
+            id: clienteId,
+            OR: [
+              { barbeariaId },
+              { clientesBarbearias: { some: { barbeariaId } } }
+            ]
+          }
+        }),
         prisma.pontoFidelidade.aggregate({
           where: { clienteId, barbeariaId },
           _sum: { pontos: true },
@@ -596,6 +589,11 @@ export class FidelidadeController {
         }),
         prisma.configuracaoFidelidade.findUnique({ where: { barbeariaId } }),
       ]);
+
+      if (!cliente) {
+        res.status(404).json({ erro: 'Cliente não encontrado nesta barbearia.' });
+        return;
+      }
 
       const totalGanho = pontos._sum.pontos || 0;
       const totalGasto = resgates._sum.pontosUsados || 0;

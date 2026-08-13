@@ -48,7 +48,7 @@ interface Agendamento {
   status: 'AGUARDANDO' | 'CONFIRMADO' | 'CONCLUIDO' | 'CANCELADO';
   valorCobrado: string;
   origem?: string;
-  cliente: { usuario: { nome: string } };
+  cliente: { id: string; usuario: { nome: string } };
   barbeiroId: string;
   barbeiro: { usuario: { nome: string }; cor: string };
   servico: { nome: string; duracaoMinutos: number; cor: string };
@@ -138,6 +138,17 @@ export function Agenda() {
   const [filtroBarbeiro, setFiltroBarbeiro] = useState('todos');
   const [dropdownAberto, setDropdownAberto] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const [fidelidadeCache, setFidelidadeCache] = useState<any>(null);
+
+  useEffect(() => {
+    if (agendamentoSelecionado && (agendamentoSelecionado.status === 'CONFIRMADO' || agendamentoSelecionado.status === 'AGUARDANDO')) {
+      setFidelidadeCache(null);
+      api.get(`/fidelidade/clientes/${agendamentoSelecionado.cliente.id}/saldo?valorServico=${agendamentoSelecionado.valorCobrado}`)
+        .then(res => setFidelidadeCache(res.data))
+        .catch(err => console.error('Erro prefetch fidelidade:', err));
+    }
+  }, [agendamentoSelecionado]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent | TouchEvent) {
@@ -982,6 +993,7 @@ export function Agenda() {
         aberto={modalConcluirAberto}
         onFechar={() => setModalConcluirAberto(false)}
         agendamento={agendamentoSelecionado as any}
+        fidelidadeCache={fidelidadeCache}
         onConfirmar={async (dados) => {
           if (!agendamentoSelecionado) return;
           await api.put(`/agendamentos/${agendamentoSelecionado.id}`, dados);

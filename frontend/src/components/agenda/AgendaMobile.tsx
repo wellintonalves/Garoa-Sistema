@@ -10,7 +10,7 @@ interface Agendamento {
   status: 'AGUARDANDO' | 'CONFIRMADO' | 'CONCLUIDO' | 'CANCELADO';
   valorCobrado: string;
   origem?: string;
-  cliente: { usuario: { nome: string } };
+  cliente: { id: string; usuario: { nome: string } };
   barbeiroId: string;
   barbeiro: { usuario: { nome: string }; cor: string };
   servico: { nome: string; duracaoMinutos: number; cor: string };

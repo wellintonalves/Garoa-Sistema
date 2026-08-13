@@ -291,7 +291,7 @@ export class ClienteService {
     });
     const resgatesAgregados = await (prisma as any).resgateRecompensa.aggregate({
       _sum: { pontosUsados: true },
-      where: { clienteId, barbeariaId },
+      where: { clienteId, barbeariaId, status: { in: ['PENDENTE', 'CONFIRMADO'] } },
     });
     const saldo = (pontosAgregados._sum.pontos || 0) - (resgatesAgregados._sum.pontosUsados || 0);
 
