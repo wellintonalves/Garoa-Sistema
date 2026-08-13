@@ -5,7 +5,7 @@ import { handleApiError } from './errorHandler';
 // Garante que a baseURL sempre tenha protocolo (https://)
 function resolveApiUrl(): string {
   const envUrl = import.meta.env.VITE_API_URL;
-  if (!envUrl) return `http://${window.location.hostname}:3001`;
+  if (!envUrl) return 'http://localhost:3001';
   // Se for caminho relativo, usa diretamente
   if (envUrl.startsWith('/')) return envUrl;
   // Se não começa com http:// ou https://, adiciona https://
