@@ -22,6 +22,7 @@ export const tokens = {
       light: '#5e5d59',
     },
     cloud: {
+      darkest: '#66655f',
       dark: '#87867f',
       medium: '#b0aea5',
       light: '#d1cfc5',
@@ -57,9 +58,9 @@ export const tokens = {
       texto: {
         principal: '#141413',
         secundario: '#5e5d59',
-        terciario: '#87867f',
+        terciario: '#66655f',
         inverso: '#faf9f5',
-        placeholder: '#87867f',
+        placeholder: '#66655f',
         desabilitado: '#b0aea5',
         label: '#5e5d59',
         detalhe: '0.8125rem',
