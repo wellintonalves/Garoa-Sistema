@@ -7,7 +7,7 @@
   },
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --host",
     "lint:cores": "node ./scripts/lint-cores.js",
     "build": "npm run lint:cores && tsc -b && vite build",
     "preview": "vite preview",
