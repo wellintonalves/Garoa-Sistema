@@ -137,6 +137,7 @@ model Usuario {
   barbearia Barbearia? @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
   barbeiro  Barbeiro?
   cliente   Cliente?
+  remarcacoesFeitas HistoricoRemarcacao[]
 
   @@unique([email, barbeariaId])
   @@map("usuarios")
@@ -162,7 +163,9 @@ model Barbeiro {
   lancamentos     LancamentoFinanceiro[]
   aprovacoes      AprovacaoEdicao[]
   bloqueiosAgenda BloqueioAgenda[]
-  avaliacoes      Avaliacao[]
+  avaliacoes         Avaliacao[]
+  remarcacoesAnteriores HistoricoRemarcacao[] @relation("BarbeiroAnteriorRel")
+  remarcacoesNovas      HistoricoRemarcacao[] @relation("BarbeiroNovoRel")
 
   @@index([barbeariaId])
   @@map("barbeiros")
@@ -298,6 +301,7 @@ model Agendamento {
 
   lancamentos LancamentoFinanceiro[]
   avaliacao   Avaliacao?
+  historicoRemarcacoes HistoricoRemarcacao[]
 
   @@index([barbeariaId, dataHora])
   @@index([clienteId])
@@ -522,4 +526,23 @@ model Avaliacao {
 
   @@index([barbeiroId])
   @@map("avaliacoes")
+}
+
+model HistoricoRemarcacao {
+  id                 String   @id @default(uuid())
+  agendamentoId      String
+  dataHoraAnterior   DateTime
+  dataHoraNova       DateTime
+  barbeiroAnteriorId String?
+  barbeiroNovoId     String?
+  usuarioAcaoId      String?
+  criadoEm           DateTime @default(now())
+
+  agendamento      Agendamento @relation(fields: [agendamentoId], references: [id], onDelete: Cascade)
+  barbeiroAnterior Barbeiro?   @relation("BarbeiroAnteriorRel", fields: [barbeiroAnteriorId], references: [id], onDelete: SetNull)
+  barbeiroNovo     Barbeiro?   @relation("BarbeiroNovoRel", fields: [barbeiroNovoId], references: [id], onDelete: SetNull)
+  usuarioAcao      Usuario?    @relation(fields: [usuarioAcaoId], references: [id], onDelete: SetNull)
+
+  @@index([agendamentoId])
+  @@map("historico_remarcacoes")
 }
