@@ -21,6 +21,9 @@ interface DadosAgendamento {
   dataHora: string;
   observacoes?: string;
   valorCobrado: number;
+  barbeariaId?: string;
+  origem?: string;
+  status?: StatusAgendamento;
 }
 
 export class AgendamentoService {
@@ -47,6 +50,13 @@ export class AgendamentoService {
         cliente: { include: { usuario: { select: { nome: true } } } },
         barbeiro: { include: { usuario: { select: { nome: true } } } },
         servico: { select: { nome: true, duracaoMinutos: true, preco: true, cor: true } },
+        historicoRemarcacoes: {
+          include: {
+            usuarioAcao: { select: { nome: true } },
+            barbeiroAnterior: { include: { usuario: { select: { nome: true } } } }
+          },
+          orderBy: { criadoEm: 'desc' }
+        }
       },
       orderBy: { dataHora: 'asc' },
     });
@@ -62,12 +72,86 @@ export class AgendamentoService {
         cliente: { include: { usuario: { select: { nome: true, email: true } } } },
         barbeiro: { include: { usuario: { select: { nome: true } } } },
         servico: true,
+        historicoRemarcacoes: {
+          include: {
+            usuarioAcao: { select: { nome: true } },
+            barbeiroAnterior: { include: { usuario: { select: { nome: true } } } }
+          },
+          orderBy: { criadoEm: 'desc' }
+        }
       },
     });
 
     if (!agendamento) throw new Error('Agendamento não encontrado');
     const [ag] = await injetarDuracaoTotalServicos([agendamento]);
     return ag;
+  }
+
+  /** Valida todas as regras de negócio de um agendamento */
+  static async validarAgendamento(
+    barbeariaId: string,
+    barbeiroId: string,
+    clienteId: string,
+    dataHora: Date,
+    duracaoMinutos: number,
+    ignorarAgendamentoId?: string
+  ) {
+    await HorariosUtil.validarDentroDoFuncionamento({
+      barbeariaId,
+      barbeiroId,
+      dataHora,
+      duracaoMinutos
+    });
+
+    await HorariosUtil.validarConflitoCliente({
+      clienteId,
+      dataHora,
+      duracaoMinutos,
+      ignorarAgendamentoId
+    });
+
+    const dataStr = diaBrasiliaStr(dataHora);
+    const dataInicioDia = inicioDiaBrasilia(dataStr);
+    const dataFimDia = fimDiaBrasilia(dataStr);
+
+    let agendamentosDia = await prisma.agendamento.findMany({
+      where: {
+        barbeiroId,
+        status: { notIn: ['CANCELADO'] },
+        dataHora: { gte: dataInicioDia, lte: dataFimDia },
+      },
+      include: { servico: true }
+    });
+
+    agendamentosDia = await injetarDuracaoTotalServicos(agendamentosDia);
+
+    const conflitoAgendamento = agendamentosDia.some(ag => {
+      if (ignorarAgendamentoId && ag.id === ignorarAgendamentoId) return false;
+      const agInicioM = new Date(ag.dataHora).getTime();
+      const agFimM = agInicioM + (((ag as any).duracaoTotal || ag.servico?.duracaoMinutos || 0) * 60000);
+      
+      const reqInicioM = dataHora.getTime();
+      const reqFimM = reqInicioM + (duracaoMinutos * 60000);
+      
+      return reqInicioM < agFimM && reqFimM > agInicioM;
+    });
+
+    if (conflitoAgendamento) {
+      throw new Error('Horário já ocupado para este barbeiro');
+    }
+
+    const dataFim = new Date(dataHora.getTime() + duracaoMinutos * 60000);
+    const conflitoBloqueio = await prisma.bloqueioAgenda.findFirst({
+      where: {
+        barbeiroId,
+        dataInicio: { lt: dataFim },
+        dataFim: { gt: dataHora }
+      }
+    });
+
+    if (conflitoBloqueio) {
+      throw new Error('Horário indisponível (bloqueado pelo barbeiro)');
+    }
   }
 
   /** Cria um novo agendamento */
@@ -89,67 +173,21 @@ export class AgendamentoService {
       : dados.valorCobrado;
 
     const dataInicio = toBrasiliaDate(dados.dataHora);
-    const dataFim = new Date(dataInicio.getTime() + duracaoTotal * 60000);
 
     const barbeiro = await prisma.barbeiro.findUnique({ where: { id: dados.barbeiroId }, include: { barbearia: true } });
     if (!barbeiro) throw new Error('Barbeiro não encontrado');
 
-    await HorariosUtil.validarDentroDoFuncionamento({
-      barbeariaId: barbeiro.barbeariaId,
-      dataHora: dataInicio,
-      duracaoMinutos: duracaoTotal
-    });
-
-    await HorariosUtil.validarConflitoCliente({
-      clienteId: dados.clienteId,
-      dataHora: dataInicio,
-      duracaoMinutos: duracaoTotal
-    });
-
-    const dataStr = dados.dataHora.split('T')[0] || dataInicio.toISOString().split('T')[0];
-    const dataInicioDia = inicioDiaBrasilia(dataStr);
-    const dataFimDia = fimDiaBrasilia(dataStr);
-
-    let agendamentosDia = await prisma.agendamento.findMany({
-      where: {
-        barbeiroId: dados.barbeiroId,
-        status: { notIn: ['CANCELADO'] },
-        dataHora: { gte: dataInicioDia, lte: dataFimDia },
-      },
-      include: { servico: true }
-    });
-
-    agendamentosDia = await injetarDuracaoTotalServicos(agendamentosDia);
-
-    const conflitoAgendamento = agendamentosDia.some(ag => {
-      const agDate = new Date(ag.dataHora);
-      const agInicioM = agDate.getUTCHours() * 60 + agDate.getUTCMinutes();
-      const agFimM = agInicioM + ((ag as any).duracaoTotal || ag.servico?.duracaoMinutos || 0);
-      
-      const reqInicioM = dataInicio.getUTCHours() * 60 + dataInicio.getUTCMinutes();
-      const reqFimM = reqInicioM + duracaoTotal;
-      
-      return reqInicioM < agFimM && reqFimM > agInicioM;
-    });
-
-    if (conflitoAgendamento) {
-      throw new Error('Horário já ocupado para este barbeiro');
-    }
-
-    const conflitoBloqueio = await prisma.bloqueioAgenda.findFirst({
-      where: {
-        barbeiroId: dados.barbeiroId,
-        dataInicio: { lt: dataFim },
-        dataFim: { gt: dataInicio }
-      }
-    });
-
-    if (conflitoBloqueio) {
-      throw new Error('Horário indisponível (bloqueado pelo barbeiro)');
-    }
+    await this.validarAgendamento(
+      barbeiro.barbeariaId!,
+      dados.barbeiroId,
+      dados.clienteId,
+      dataInicio,
+      duracaoTotal
+    );
 
     return prisma.agendamento.create({
       data: {
+        barbeariaId: dados.barbeariaId || barbeiro.barbeariaId,
         clienteId: dados.clienteId,
         barbeiroId: dados.barbeiroId,
         servicoId: servico.id,
@@ -157,6 +195,8 @@ export class AgendamentoService {
         dataHora: dataInicio,
         observacoes: dados.observacoes,
         valorCobrado: valorTotal,
+        origem: dados.origem || 'ONLINE',
+        status: dados.status || 'AGUARDANDO',
       } as any,
       include: {
         cliente: { include: { usuario: { select: { nome: true } } } },
@@ -174,7 +214,8 @@ export class AgendamentoService {
         status: StatusAgendamento;
         formaPagamento?: FormaPagamento;
       }
-    >
+    >,
+    usuarioAcaoId?: string
   ) {
     const { formaPagamento, tipoDesconto, pontosUsados, descontoPercentual, descontoReais, ...dadosAgendamento } = dados as any;
 
@@ -195,7 +236,7 @@ export class AgendamentoService {
 
     const statusOriginal = agendamentoOriginal.status;
 
-    if (dadosAgendamento.dataHora || dadosAgendamento.servicoId) {
+    if (dadosAgendamento.dataHora || dadosAgendamento.servicoId || dadosAgendamento.barbeiroId) {
       const novaDataHora = dadosAgendamento.dataHora
         ? toBrasiliaDate(dadosAgendamento.dataHora)
         : agendamentoOriginal.dataHora;
@@ -205,13 +246,17 @@ export class AgendamentoService {
         const novoServico = await prisma.servico.findUnique({ where: { id: dadosAgendamento.servicoId } });
         if (novoServico) novaDuracao = novoServico.duracaoMinutos;
       }
+      
+      const novoBarbeiroId = dadosAgendamento.barbeiroId || agendamentoOriginal.barbeiroId;
 
-      await HorariosUtil.validarConflitoCliente({
-        clienteId: agendamentoOriginal.clienteId,
-        dataHora: novaDataHora,
-        duracaoMinutos: novaDuracao,
-        ignorarAgendamentoId: id,
-      });
+      await this.validarAgendamento(
+        agendamentoOriginal.barbeariaId || '',
+        novoBarbeiroId,
+        agendamentoOriginal.clienteId,
+        novaDataHora,
+        novaDuracao,
+        id
+      );
     }
 
     // Limpa propriedades extras que não pertencem ao modelo Agendamento para o update
@@ -375,17 +420,44 @@ export class AgendamentoService {
 
     } else {
       // Se não está concluindo (apenas reagendando, etc), apenas update simples
-      resultadoFinal = await prisma.agendamento.update({
-        where: { id },
-        data: {
-          ...dadosAgendamento,
-          dataHora: dadosAgendamento.dataHora ? toBrasiliaDate(dadosAgendamento.dataHora) : undefined,
-        } as any,
-        include: {
-          cliente: { include: { usuario: { select: { nome: true } } } },
-          barbeiro: { include: { usuario: { select: { nome: true } } } },
-          servico: { select: { nome: true, duracaoMinutos: true, cor: true, preco: true } },
-        },
+      const mudouDataBarbeiroServico = 
+        (dadosAgendamento.dataHora && toBrasiliaDate(dadosAgendamento.dataHora).getTime() !== agendamentoOriginal.dataHora.getTime()) || 
+        (dadosAgendamento.barbeiroId && dadosAgendamento.barbeiroId !== agendamentoOriginal.barbeiroId) ||
+        (dadosAgendamento.servicoId && dadosAgendamento.servicoId !== agendamentoOriginal.servicoId);
+      
+      const payloadUpdate = {
+        ...dadosAgendamento,
+        dataHora: dadosAgendamento.dataHora ? toBrasiliaDate(dadosAgendamento.dataHora) : undefined,
+      };
+
+      if (mudouDataBarbeiroServico && !payloadUpdate.status) {
+        payloadUpdate.status = 'AGUARDANDO';
+      }
+
+      resultadoFinal = await prisma.$transaction(async (tx) => {
+        const agUpdated = await tx.agendamento.update({
+          where: { id },
+          data: payloadUpdate as any,
+          include: {
+            cliente: { include: { usuario: { select: { nome: true } } } },
+            barbeiro: { include: { usuario: { select: { nome: true } } } },
+            servico: { select: { nome: true, duracaoMinutos: true, cor: true, preco: true } },
+          },
+        });
+
+        if (mudouDataBarbeiroServico && usuarioAcaoId) {
+          await tx.historicoRemarcacao.create({
+            data: {
+              agendamentoId: id,
+              dataHoraAnterior: agendamentoOriginal.dataHora,
+              dataHoraNova: payloadUpdate.dataHora || agendamentoOriginal.dataHora,
+              barbeiroAnteriorId: agendamentoOriginal.barbeiroId,
+              barbeiroNovoId: dadosAgendamento.barbeiroId || agendamentoOriginal.barbeiroId,
+              usuarioAcaoId: usuarioAcaoId
+            }
+          });
+        }
+        return agUpdated;
       });
     }
 

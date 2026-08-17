@@ -64,7 +64,7 @@ export class AgendamentoController {
   /** PUT /agendamentos/:id */
   static async atualizar(req: AuthRequest, res: Response): Promise<void> {
     try {
-      const agendamento = await AgendamentoService.atualizar(req.params.id, req.body);
+      const agendamento = await AgendamentoService.atualizar(req.params.id, req.body, req.usuario?.id);
       res.json(agendamento);
     } catch (error: any) {
       const msg = error instanceof Error ? error.message : 'Erro ao atualizar agendamento';

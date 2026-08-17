@@ -89,11 +89,8 @@ export class HorariosUtil {
     dataHora: Date;
     duracaoMinutos: number;
   }): Promise<void> {
-    // toBrasiliaDate converts to UTC date that visually matches Brasilia time.
-    const ano = params.dataHora.getUTCFullYear();
-    const mes = String(params.dataHora.getUTCMonth() + 1).padStart(2, '0');
-    const dia = String(params.dataHora.getUTCDate()).padStart(2, '0');
-    const dataSimples = `${ano}-${mes}-${dia}`;
+    // Usa diaBrasiliaStr para garantir a data local correta
+    const dataSimples = diaBrasiliaStr(params.dataHora);
 
     const configDia = await this.getConfigDia(params.barbeariaId, dataSimples, params.barbeiroId);
     if (configDia.fechado) {
@@ -156,13 +153,13 @@ export class HorariosUtil {
 
     agendamentosCliente = await injetarDuracaoTotalServicos(agendamentosCliente);
 
-    const reqInicioM = params.dataHora.getUTCHours() * 60 + params.dataHora.getUTCMinutes();
-    const reqFimM = reqInicioM + Number(params.duracaoMinutos);
+    const reqInicioM = params.dataHora.getTime();
+    const reqFimM = reqInicioM + (Number(params.duracaoMinutos) * 60000);
 
     for (const ag of agendamentosCliente) {
       const agDate = new Date(ag.dataHora);
-      const agInicioM = agDate.getUTCHours() * 60 + agDate.getUTCMinutes();
-      const agFimM = agInicioM + (ag.servico?.duracaoMinutos || 0);
+      const agInicioM = agDate.getTime();
+      const agFimM = agInicioM + ((ag.servico?.duracaoMinutos || 0) * 60000);
       
       const conflita = (reqInicioM < agFimM) && (agInicioM < reqFimM);
       

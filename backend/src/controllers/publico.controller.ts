@@ -243,24 +243,18 @@ export class PublicoController {
       // Converte para horário de Brasília
       const dataHoraBrasilia = toBrasiliaDate(dataHora);
 
-      await HorariosUtil.validarConflitoCliente({
+      const { AgendamentoService } = require('../services/agendamento.service');
+      const agendamento = await AgendamentoService.criar({
+        barbeariaId: servico.barbeariaId,
         clienteId: cliente.id,
-        dataHora: dataHoraBrasilia,
-        duracaoMinutos: servico.duracaoMinutos
-      });
-
-      const agendamento = await prisma.agendamento.create({
-        data: {
-          clienteId: cliente.id,
-          barbeariaId: servico.barbeariaId,
-          barbeiroId: barbeiroFinalId,
-          servicoId: servico.id,
-          dataHora: dataHoraBrasilia,
-          observacoes,
-          valorCobrado: servico.preco,
-          origem: 'ONLINE',
-          status: 'CONFIRMADO', // Public appointments auto-confirmed
-        } as any
+        barbeiroId: barbeiroFinalId,
+        servicoId: servico.id,
+        servicosIds: [servico.id],
+        dataHora: dataHoraBrasilia.toISOString(),
+        valorCobrado: 0, // Recalculado
+        observacoes,
+        origem: 'ONLINE',
+        status: 'CONFIRMADO' as import('@prisma/client').StatusAgendamento,
       });
 
       res.status(201).json(agendamento);
