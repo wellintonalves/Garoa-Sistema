@@ -19,6 +19,9 @@ ESTE PROJETO NAO USA PRISMA MIGRATE. Nao existe pasta prisma/migrations. O schem
 - NUNCA rodar prisma migrate dev ou prisma migrate deploy - nao ha migrations, esses comandos nao fazem nada util
 - Usar npx prisma db push seguido de npx prisma generate
 - db push contra banco COM DADOS pode dropar colunas e tabelas. Em producao: rodar --dry-run primeiro, mostrar a saida ao Wellinton, e NUNCA usar --accept-data-loss
+- 1) NUNCA use --accept-data-loss. Em nenhum banco, nem no de teste
+- 2) Se o db push falhar dizendo que precisa dessa flag, PARE e me mostre o que ele quer destruir. Eu decido
+- 3) Antes de qualquer comando do Prisma, imprima o host e o nome do banco e confirme que e o de desenvolvimento
 - NUNCA rodar prisma migrate reset ou db push --force-reset
 - Se qualquer comando pedir confirmacao para resetar ou recriar o banco: CANCELAR e perguntar ao Wellinton
 
