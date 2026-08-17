@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import api from '../api/client';
 import { QRCodeSVG } from 'qrcode.react';
 import { SeletorTema } from '../components/SeletorTema';
+import { Modal } from '../components/Modal';
+import { WarningCircle, ArrowRight } from '@phosphor-icons/react';
 
 const diasSemana = [
   { key: 'domingo', label: 'Domingo' },
@@ -26,7 +28,8 @@ export function Configuracoes() {
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
 
-
+  const [conflitos, setConflitos] = useState<any[]>([]);
+  const [mostrarModalConflitos, setMostrarModalConflitos] = useState(false);
 
   useEffect(() => {
     carregarConfiguracao();
@@ -51,12 +54,17 @@ export function Configuracoes() {
     e.preventDefault();
     setSalvando(true);
     try {
-      await api.put('/configuracoes', {
+      const res = await api.put('/configuracoes', {
         horariosFuncionamento: horarios,
         baseCalculoComissao: regrasNegocio.baseCalculoComissao,
         baseCalculoPontos: regrasNegocio.baseCalculoPontos
       });
-      alert('Configurações salvas com sucesso!');
+      if (res.data.conflitosGerados && res.data.conflitosGerados.length > 0) {
+        setConflitos(res.data.conflitosGerados);
+        setMostrarModalConflitos(true);
+      } else {
+        alert('Configurações salvas com sucesso!');
+      }
     } catch (error) {
       alert('Erro ao salvar configurações');
     } finally {
@@ -478,6 +486,72 @@ export function Configuracoes() {
           <SeletorTema />
         </div>
       </div>
+
+      <Modal
+        aberto={mostrarModalConflitos}
+        onFechar={() => setMostrarModalConflitos(false)}
+        titulo="Atenção: Conflitos na Agenda"
+        largura="max-w-2xl"
+      >
+        <div className="space-y-4">
+          <div className="flex items-start gap-3 p-4 rounded border" style={{ backgroundColor: 'rgba(var(--cor-erro-rgb), 0.1)', borderColor: 'var(--cor-erro)', color: 'var(--cor-erro)' }}>
+            <WarningCircle size={24} className="mt-0.5 shrink-0" />
+            <div>
+              <p className="font-bold mb-1">O horário de funcionamento foi alterado com sucesso, porém {conflitos.length} agendamento(s) futuro(s) ficaram fora do expediente.</p>
+              <p className="text-sm opacity-90">Eles não foram apagados. Por favor, verifique a lista abaixo e reagende-os com os clientes.</p>
+            </div>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm whitespace-nowrap">
+              <thead className="bg-[var(--superficie-2)] text-[var(--texto-secundario)]">
+                <tr>
+                  <th className="p-3 font-medium">Data / Hora</th>
+                  <th className="p-3 font-medium">Cliente</th>
+                  <th className="p-3 font-medium">Barbeiro</th>
+                  <th className="p-3 font-medium"></th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[var(--border)] bg-[var(--superficie)]">
+                {conflitos.map((c, idx) => {
+                  const dataObj = new Date(c.dataHora);
+                  const dhFormatada = dataObj.toLocaleDateString('pt-BR') + ' às ' + dataObj.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                  return (
+                    <tr key={idx}>
+                      <td className="p-3 text-[var(--texto-principal)]">{dhFormatada}</td>
+                      <td className="p-3 text-[var(--texto-principal)]">{c.cliente || 'Sem nome'}</td>
+                      <td className="p-3 text-[var(--texto-principal)]">{c.barbeiro || 'Sem preferência'}</td>
+                      <td className="p-3 text-right">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setMostrarModalConflitos(false);
+                            const dataIso = dataObj.toISOString().split('T')[0];
+                            navigate(`/admin/agenda?data=${dataIso}`);
+                          }}
+                          className="inline-flex items-center gap-1 text-[var(--cor-primaria)] hover:underline font-medium"
+                        >
+                          Tratar
+                          <ArrowRight size={14} />
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="flex justify-end pt-4">
+            <button
+              onClick={() => setMostrarModalConflitos(false)}
+              className="ds-btn ds-btn-primary"
+            >
+              Ciente
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }
