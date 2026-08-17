@@ -560,85 +560,19 @@ export class ClienteAppService {
       throw new Error('Serviço não informado');
     }
 
-    const servicos = await prisma.servico.findMany({
-      where: { id: { in: dados.servicosIds } }
-    });
-    
-    if (servicos.length !== dados.servicosIds.length) {
-      throw new Error('Um ou mais serviços não encontrados');
-    }
+    const { AgendamentoService } = require('./agendamento.service');
 
-    const duracaoTotal = servicos.reduce((acc, s) => acc + s.duracaoMinutos, 0);
-    const precoTotal = servicos.reduce((acc, s) => acc + Number(s.preco), 0);
-    // Para simplificar, o banco de dados armazena apenas UM servicoId na tabela Agendamento (por enquanto).
-    // Usaremos o primeiro servico da lista para a chave estrangeira (que é obrigatória)
-    const servicoPrincipalId = dados.servicosIds[0];
-
-    const dataHora = toBrasiliaDate(`${dados.data}T${dados.hora}:00`);
-
-    await HorariosUtil.validarDentroDoFuncionamento({
+    return AgendamentoService.criar({
       barbeariaId,
-      barbeiroId: dados.barbeiroId,
-      dataHora,
-      duracaoMinutos: duracaoTotal
-    });
-
-    await HorariosUtil.validarConflitoCliente({
       clienteId,
-      dataHora,
-      duracaoMinutos: duracaoTotal
+      barbeiroId: dados.barbeiroId,
+      servicoId: dados.servicosIds[0],
+      servicosIds: dados.servicosIds,
+      dataHora: `${dados.data}T${dados.hora}:00`,
+      valorCobrado: 0, 
+      observacoes: dados.observacoes,
+      origem: 'APP_CLIENTE',
     });
-
-    const dataInicioDia = inicioDiaBrasilia(dados.data);
-    const dataFimDia = fimDiaBrasilia(dados.data);
-
-    let agendamentosDia = await prisma.agendamento.findMany({
-      where: {
-        barbeiroId: dados.barbeiroId,
-        status: { notIn: ['CANCELADO'] },
-        dataHora: { gte: dataInicioDia, lte: dataFimDia },
-      },
-      include: { servico: true }
-    });
-
-    agendamentosDia = await injetarDuracaoTotalServicos(agendamentosDia);
-
-    const reqInicioM = dataHora.getUTCHours() * 60 + dataHora.getUTCMinutes();
-    const reqFimM = reqInicioM + duracaoTotal;
-
-    const conflito = agendamentosDia.some(ag => {
-      const agDate = new Date(ag.dataHora);
-      const agInicioM = agDate.getUTCHours() * 60 + agDate.getUTCMinutes();
-      const agFimM = agInicioM + (ag.servico?.duracaoMinutos || 0);
-      return reqInicioM < agFimM && reqFimM > agInicioM;
-    });
-
-    if (conflito) throw new Error('Horário já ocupado para este barbeiro');
-
-    const conflitoBloqueio = await prisma.bloqueioAgenda.findFirst({
-      where: {
-        barbeiroId: dados.barbeiroId,
-        dataInicio: { lt: new Date(dataHora.getTime() + duracaoTotal * 60000) },
-        dataFim: { gt: dataHora }
-      }
-    });
-
-    if (conflitoBloqueio) throw new Error('Horário indisponível (bloqueado pelo barbeiro)');
-
-    const agendamento = await prisma.agendamento.create({
-      data: {
-        barbeariaId,
-        clienteId,
-        barbeiroId: dados.barbeiroId,
-        servicoId: servicoPrincipalId,
-        dataHora,
-        valorCobrado: precoTotal,
-        origem: 'APP_CLIENTE',
-        observacoes: dados.observacoes,
-      },
-    });
-
-    return agendamento;
   }
 
   /** Fidelidade do cliente em uma barbearia */

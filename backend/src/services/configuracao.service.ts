@@ -77,9 +77,52 @@ export class ConfiguracaoService {
   /** Atualiza a configuração. Passa o payload completo de atualização. */
   static async atualizar(dados: any, barbeariaId?: string | null) {
     const configAtual = await this.obter(barbeariaId);
-    return await prisma.configuracao.update({
+    const updated = await prisma.configuracao.update({
       where: { id: configAtual.id },
       data: dados,
     });
+
+    let conflitosGerados: any[] = [];
+    if (dados.horariosFuncionamento) {
+      const hoje = new Date();
+      const agendamentosFuturos = await prisma.agendamento.findMany({
+        where: {
+          barbeariaId: updated.barbeariaId,
+          status: { in: ['AGUARDANDO', 'CONFIRMADO'] },
+          dataHora: { gte: hoje },
+        },
+        include: {
+          cliente: { include: { usuario: { select: { nome: true } } } },
+          barbeiro: { include: { usuario: { select: { nome: true } } } },
+          servico: { select: { nome: true, duracaoMinutos: true } },
+        }
+      });
+
+      const { HorariosUtil, injetarDuracaoTotalServicos } = require('./horarios.util');
+      const agendamentosTratados = await injetarDuracaoTotalServicos(agendamentosFuturos);
+
+      for (const ag of agendamentosTratados) {
+        try {
+          await HorariosUtil.validarDentroDoFuncionamento({
+            barbeariaId: ag.barbeariaId,
+            barbeiroId: ag.barbeiroId,
+            dataHora: ag.dataHora,
+            duracaoMinutos: (ag as any).duracaoTotal || ag.servico?.duracaoMinutos || 0
+          });
+        } catch (error: any) {
+          conflitosGerados.push({
+            id: ag.id,
+            dataHora: ag.dataHora,
+            cliente: ag.cliente?.usuario?.nome,
+            barbeiro: ag.barbeiro?.usuario?.nome,
+            servico: ag.servico?.nome,
+            status: ag.status,
+            motivo: error.message
+          });
+        }
+      }
+    }
+
+    return { ...updated, conflitosGerados };
   }
 }
