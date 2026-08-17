@@ -12,8 +12,9 @@ interface Agendamento {
   origem?: string;
   cliente: { id: string; usuario: { nome: string } };
   barbeiroId: string;
-  barbeiro: { usuario: { nome: string }; cor: string };
-  servico: { nome: string; duracaoMinutos: number; cor: string };
+  barbeiro: { id: string; usuario: { nome: string }; cor: string };
+  servico: { id: string; nome: string; duracaoMinutos: number; cor: string };
+  historicoRemarcacoes?: any[];
 }
 
 interface Bloqueio {
@@ -44,6 +45,7 @@ interface AgendaMobileProps {
   removerBloqueio: (id: string) => void;
   modo: 'grade' | 'lista';
   setModo: (modo: 'grade' | 'lista') => void;
+  configuracao: any;
 }
 
 export function AgendaMobile({
@@ -57,7 +59,8 @@ export function AgendaMobile({
   setAgendamentoSelecionado,
   removerBloqueio,
   modo,
-  setModo
+  setModo,
+  configuracao
 }: AgendaMobileProps) {
   const barbeirosValidos = barbeiros.filter(b => b.ativo !== false);
 
@@ -104,6 +107,7 @@ export function AgendaMobile({
           setAgendamentoSelecionado={setAgendamentoSelecionado}
           removerBloqueio={removerBloqueio}
           abrirModal={abrirModal}
+          configuracao={configuracao}
         />
       ) : (
         <AgendaMobileList 
@@ -115,6 +119,7 @@ export function AgendaMobile({
           setAgendamentoSelecionado={setAgendamentoSelecionado}
           abrirModal={abrirModal}
           getColor={getColor}
+          configuracao={configuracao}
         />
       )}
     </div>

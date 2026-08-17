@@ -10,8 +10,9 @@ interface Agendamento {
   origem?: string;
   cliente: { id: string; usuario: { nome: string } };
   barbeiroId: string;
-  barbeiro: { usuario: { nome: string }; cor: string };
-  servico: { nome: string; duracaoMinutos: number; cor: string };
+  barbeiro: { id: string; usuario: { nome: string }; cor: string };
+  servico: { id: string; nome: string; duracaoMinutos: number; cor: string };
+  historicoRemarcacoes?: any[];
 }
 
 interface Bloqueio {
@@ -32,6 +33,7 @@ interface AgendaMobileGridProps {
   setAgendamentoSelecionado: (ag: Agendamento) => void;
   removerBloqueio: (id: string) => void;
   abrirModal: (dataHora: string, barbeiroId: string) => void;
+  configuracao: any;
 }
 
 const statusStyles: Record<string, { bg: string; border: string; color: string }> = {
@@ -70,13 +72,31 @@ export function AgendaMobileGrid({
   horarios,
   setAgendamentoSelecionado,
   removerBloqueio,
-  abrirModal
+  abrirModal,
+  configuracao
 }: AgendaMobileGridProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const agora = new Date();
   const [overflowModal, setOverflowModal] = useState<{aberto: boolean; eventos: EventoBase[]}>({ aberto: false, eventos: [] });
   const diaISO = getDataBrasilia(diaMobile);
   const isHoje = diaMobile.toDateString() === agora.toDateString();
+
+  const isForaExpediente = (ag: Agendamento, configDia: any) => {
+    if (!configDia || configDia.fechado) return true;
+    if (!configDia.abertura || !configDia.fechamento) return true;
+    const [aH, aM] = configDia.abertura.split(':').map(Number);
+    const [fH, fM] = configDia.fechamento.split(':').map(Number);
+    const aberturaM = aH * 60 + aM;
+    const fechamentoM = fH * 60 + fM;
+    const hmInicio = getHoraMinutoBrasilia(new Date(ag.dataHora));
+    const inicioM = hmInicio.hora * 60 + hmInicio.minuto;
+    const fimM = inicioM + (ag.servico?.duracaoMinutos || 0);
+    return inicioM < aberturaM || fimM > fechamentoM;
+  };
+
+  const CHAVES_DIA = ['domingo', 'segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sabado'];
+  const diaSemana = CHAVES_DIA[diaMobile.getDay()];
+  const configDia = (configuracao && configuracao !== 'vazio' && configuracao !== 'erro') ? configuracao[diaSemana] || { fechado: true } : { fechado: false, abertura: '08:00', fechamento: '20:00' };
 
   useEffect(() => {
     if (containerRef.current) {
@@ -123,7 +143,8 @@ export function AgendaMobileGrid({
               const hm = getHoraMinutoBrasilia(new Date(ag.dataHora));
               const iniMin = hm.hora * 60 + hm.minuto;
               const dur = ag.servico.duracaoMinutos || 30;
-              evs.push({ id: ag.id, inicioMinutos: iniMin, fimMinutos: iniMin + dur, tipo: 'AGENDAMENTO', original: ag });
+              const foraExp = isForaExpediente(ag, configDia);
+              evs.push({ id: ag.id, inicioMinutos: iniMin, fimMinutos: iniMin + dur, tipo: 'AGENDAMENTO', original: ag, foraExpediente: foraExp });
             });
             bloqueios.filter(bl => getDataBrasilia(new Date(bl.dataInicio)) === diaISO && bl.barbeiroId === barbeiroSelecionado).forEach(bl => {
               const hmIni = getHoraMinutoBrasilia(new Date(bl.dataInicio));
@@ -174,7 +195,10 @@ export function AgendaMobileGrid({
           style={{ position: 'absolute', top: `${topPx + 2}px`, left: `${leftOffset}%`, width: `calc(${laneWidth}% - 4px)`, height: `${heightPx - 4}px`, padding: isCompact ? '2px 4px' : '6px 8px', background: st.bg, borderLeft: `3px solid ${st.color}`, color: 'var(--text-primary)', opacity: ag.status === 'CONCLUIDO' ? 0.7 : 1, fontFamily: 'var(--fonte-interface)', fontSize: '0.8125rem', borderRadius: '0 4px 4px 0', lineHeight: 1.2, zIndex: 20, pointerEvents: 'auto', display: 'flex', flexDirection: isCompact ? 'row' : 'column', gap: isCompact ? '4px' : '0', alignItems: isCompact ? 'center' : 'flex-start', boxShadow: '0 1px 2px rgba(0,0,0,0.1)' }}>
           <div className={`flex justify-between items-center overflow-hidden w-full ${isCompact ? '' : 'mb-1.5'}`}>
             <p className="truncate pr-1 shrink-0" style={{ fontWeight: 600, fontSize: isCompact ? '11px' : '13px' }}>{clientName}</p>
-            {(!isCompact && ag.origem === 'ONLINE') && <span className="bg-[var(--cor-primaria)] text-[var(--texto-sobre-primaria)] px-1 rounded text-[8px] font-bold shrink-0">WEB</span>}
+            <div className="flex items-center gap-1 shrink-0">
+              {ev.foraExpediente && <span className="text-[var(--cor-erro)] bg-[var(--perigo-fundo)] px-1 rounded text-[10px] font-bold" title="Fora do Expediente">!</span>}
+              {(!isCompact && ag.origem === 'ONLINE') && <span className="bg-[var(--cor-primaria)] text-[var(--texto-sobre-primaria)] px-1 rounded text-[8px] font-bold">WEB</span>}
+            </div>
           </div>
           <div className="overflow-hidden w-full">
             <p className="truncate" style={{ fontFamily: 'var(--fonte-interface)', fontSize: isCompact ? '11px' : '0.8125rem', color: isCompact ? 'var(--texto-secundario)' : 'inherit' }}>

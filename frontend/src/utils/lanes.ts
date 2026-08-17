@@ -4,6 +4,7 @@ export interface EventoBase {
   fimMinutos: number;
   tipo: 'AGENDAMENTO' | 'BLOQUEIO';
   original: any;
+  foraExpediente?: boolean;
 }
 
 export interface EventoComLane extends EventoBase {

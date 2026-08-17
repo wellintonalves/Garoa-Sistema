@@ -50,8 +50,9 @@ interface Agendamento {
   origem?: string;
   cliente: { id: string; usuario: { nome: string } };
   barbeiroId: string;
-  barbeiro: { usuario: { nome: string }; cor: string };
-  servico: { nome: string; duracaoMinutos: number; cor: string };
+  barbeiro: { id: string; usuario: { nome: string }; cor: string };
+  servico: { id: string; nome: string; duracaoMinutos: number; cor: string };
+  historicoRemarcacoes?: any[];
 }
 
 interface Barbeiro { id: string; usuario: { nome: string }; cor: string; ativo?: boolean }
@@ -138,6 +139,9 @@ export function Agenda() {
   const [filtroBarbeiro, setFiltroBarbeiro] = useState('todos');
   const [dropdownAberto, setDropdownAberto] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const [modalRemarcarAberto, setModalRemarcarAberto] = useState(false);
+  const [formRemarcar, setFormRemarcar] = useState({ barbeiroId: '', servicoId: '', dataHora: '' });
 
   const [fidelidadeCache, setFidelidadeCache] = useState<any>(null);
 
@@ -234,6 +238,26 @@ export function Agenda() {
       setModalAberto(true);
     } catch (err) {
       console.error('Erro ao carregar dados:', err);
+    }
+  }
+
+  async function remarcarAgendamento() {
+    if (salvando) return;
+    if (!agendamentoSelecionado || !formRemarcar.barbeiroId || !formRemarcar.servicoId || !formRemarcar.dataHora) {
+      setErroSalvar('Preencha todos os campos para remarcar.');
+      return;
+    }
+    setSalvando(true);
+    setErroSalvar(null);
+    try {
+      await api.put(`/agendamentos/${agendamentoSelecionado.id}`, formRemarcar);
+      setModalRemarcarAberto(false);
+      setAgendamentoSelecionado(null);
+      carregar();
+    } catch (err: any) {
+      setErroSalvar(err.response?.data?.erro || 'Erro ao remarcar agendamento');
+    } finally {
+      setSalvando(false);
     }
   }
 
@@ -347,11 +371,35 @@ export function Agenda() {
     return evs;
   };
 
+  const isForaExpediente = (ag: Agendamento, configDia: any) => {
+    if (!configDia || configDia.fechado) return true;
+    if (!configDia.abertura || !configDia.fechamento) return true;
+    const [aH, aM] = configDia.abertura.split(':').map(Number);
+    const [fH, fM] = configDia.fechamento.split(':').map(Number);
+    const aberturaM = aH * 60 + aM;
+    const fechamentoM = fH * 60 + fM;
+    const hmInicio = getHoraMinutoBrasilia(new Date(ag.dataHora));
+    const inicioM = hmInicio.hora * 60 + hmInicio.minuto;
+    const fimM = inicioM + (ag.servico?.duracaoMinutos || 0);
+    return inicioM < aberturaM || fimM > fechamentoM;
+  };
+
   const getEventosColuna = (dia: Date, barbeiroId?: string): EventoBase[] => {
     const diaISO = dataBrasilia(dia);
     const ags = agendamentos.filter(ag => getDataBrasilia(new Date(ag.dataHora)) === diaISO && (!barbeiroId || ag.barbeiroId === barbeiroId) && ag.status !== 'CANCELADO');
     const bls = bloqueios.filter(bl => getDataBrasilia(new Date(bl.dataInicio)) === diaISO && (!barbeiroId || bl.barbeiroId === barbeiroId));
-    return mapearParaEventos(ags, bls);
+    
+    const CHAVES_DIA = ['domingo', 'segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sabado'];
+    const diaSemana = CHAVES_DIA[dia.getDay()];
+    const configDia = (configuracao && configuracao !== 'vazio' && configuracao !== 'erro') ? configuracao[diaSemana] || { fechado: true } : { fechado: false, abertura: '08:00', fechamento: '20:00' };
+
+    const eventos = mapearParaEventos(ags, bls);
+    return eventos.map(ev => {
+      if (ev.tipo === 'AGENDAMENTO') {
+        ev.foraExpediente = isForaExpediente(ev.original as Agendamento, configDia);
+      }
+      return ev;
+    });
   };
 
   const renderEventosColuna = (eventosBase: EventoBase[], minOfDay: number, maxLanes: number = 3) => {
@@ -396,7 +444,10 @@ export function Agenda() {
           style={{ position: 'absolute', top: `${topPx + 2}px`, left: `${leftOffset}%`, width: `calc(${laneWidth}% - 4px)`, height: `${heightPx - 4}px`, padding: isCompact ? '2px 4px' : '6px 8px', background: st.bg, borderLeft: `3px solid ${st.color}`, color: 'var(--text-primary)', opacity: ag.status === 'CONCLUIDO' ? 0.7 : 1, fontFamily: 'var(--fonte-interface)', fontSize: '0.8125rem', borderRadius: '0 4px 4px 0', lineHeight: 1.2, zIndex: 20, pointerEvents: 'auto', display: 'flex', flexDirection: isCompact ? 'row' : 'column', gap: isCompact ? '4px' : '0', alignItems: isCompact ? 'center' : 'flex-start', boxShadow: '0 1px 2px rgba(0,0,0,0.1)' }}>
           <div className={`flex justify-between items-center overflow-hidden w-full ${isCompact ? '' : 'mb-1.5'}`}>
             <p className="truncate pr-1 shrink-0" style={{ fontWeight: 600, fontSize: isCompact ? '11px' : '13px' }}>{clientName}</p>
-            {(!isCompact && ag.origem === 'ONLINE') && <span className="bg-[var(--cor-primaria)] text-[var(--texto-sobre-primaria)] px-1 rounded text-[8px] font-bold shrink-0">WEB</span>}
+            <div className="flex items-center gap-1 shrink-0">
+              {ev.foraExpediente && <span className="text-[var(--cor-erro)] bg-[var(--perigo-fundo)] px-1 rounded text-[10px] font-bold" title="Fora do Expediente">!</span>}
+              {(!isCompact && ag.origem === 'ONLINE') && <span className="bg-[var(--cor-primaria)] text-[var(--texto-sobre-primaria)] px-1 rounded text-[8px] font-bold">WEB</span>}
+            </div>
           </div>
           <div className="overflow-hidden w-full">
             <p className="truncate" style={{ fontFamily: 'var(--fonte-interface)', fontSize: isCompact ? '11px' : '0.8125rem', color: isCompact ? 'var(--texto-secundario)' : 'inherit' }}>
@@ -634,12 +685,12 @@ export function Agenda() {
 
         let min = 24 * 60;
         let max = 0;
-        let todosFechados = true;
+        let temHorarioExpediente = false;
         
         for (const d of diasExibidos) {
           const c = getConfigDia(d);
           if (c.fechado === false && c.abertura && c.fechamento && /^\d{2}:\d{2}$/.test(c.abertura) && /^\d{2}:\d{2}$/.test(c.fechamento)) {
-            todosFechados = false;
+            temHorarioExpediente = true;
             const [ah, am] = c.abertura.split(':').map(Number);
             const [fh, fm] = c.fechamento.split(':').map(Number);
             if (!isNaN(ah) && !isNaN(am) && ah * 60 + am < min) min = ah * 60 + am;
@@ -647,13 +698,33 @@ export function Agenda() {
           }
         }
 
-        if (todosFechados) {
+        const diasExibidosSet = new Set(diasExibidos.map(d => getDataBrasilia(d)));
+        let temAgendamento = false;
+
+        for (const ag of agendamentos) {
+          if (ag.status === 'CANCELADO') continue;
+          if (filtroBarbeiro !== 'todos' && ag.barbeiroId !== filtroBarbeiro) continue;
+          const agDate = new Date(ag.dataHora);
+          if (!diasExibidosSet.has(getDataBrasilia(agDate))) continue;
+          
+          temAgendamento = true;
+          const hm = getHoraMinutoBrasilia(agDate);
+          const inicioM = hm.hora * 60 + hm.minuto;
+          const fimM = inicioM + (ag.servico?.duracaoMinutos || 0);
+          if (inicioM < min) min = inicioM;
+          if (fimM > max) max = fimM;
+        }
+
+        if (!temHorarioExpediente && !temAgendamento) {
           return (
             <div style={{ padding: '32px', textAlign: 'center' }}>
               <p className="font-interface font-medium text-[var(--texto-secundario)]">Barbearia fechada neste(s) dia(s)</p>
             </div>
           );
         }
+
+        min = Math.floor(min / 30) * 30;
+        max = Math.ceil(max / 30) * 30;
 
         const horariosExibidos: string[] = [];
         for (let m = min; m < max; m += 30) {
@@ -673,6 +744,7 @@ export function Agenda() {
             removerBloqueio={removerBloqueio}
             modo={modoMobile}
             setModo={setModoMobile}
+            configuracao={configuracao}
           />
         ) : (
           <div className="flex-1" style={{ display: 'flex', flexDirection: 'column', minHeight: 0 }}>
@@ -821,6 +893,43 @@ export function Agenda() {
         </div>
       </Modal>
 
+      {/* Modal para Remarcar */}
+      <Modal aberto={modalRemarcarAberto} onFechar={() => setModalRemarcarAberto(false)} titulo="Remarcar Agendamento">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          {erroSalvar && (
+            <div style={{ padding: '12px', background: 'var(--perigo-fundo)', border: '1px solid var(--error-text)', borderRadius: '6px', color: 'var(--error-text)', fontFamily: 'var(--fonte-interface)', fontSize: '13px', fontWeight: 500 }}>
+              {erroSalvar}
+            </div>
+          )}
+          <div>
+            <label className="input-label">Barbeiro</label>
+            <select value={formRemarcar.barbeiroId} onChange={(e) => { setFormRemarcar({ ...formRemarcar, barbeiroId: e.target.value }); setErroSalvar(null); }} className="ds-select">
+              <option value="">Selecione...</option>
+              {barbeiros.filter(b => b.ativo !== false).map((b) => <option key={b.id} value={b.id}>{b.usuario.nome}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="input-label">Serviço</label>
+            <select value={formRemarcar.servicoId} onChange={(e) => { setFormRemarcar({ ...formRemarcar, servicoId: e.target.value }); setErroSalvar(null); }} className="ds-select">
+              <option value="">Selecione...</option>
+              {servicos.map((s) => <option key={s.id} value={s.id}>{s.nome} — R$ {Number(s.preco).toFixed(2)}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="input-label">Data e Horário</label>
+            <input type="datetime-local" value={formRemarcar.dataHora} onChange={(e) => { setFormRemarcar({ ...formRemarcar, dataHora: e.target.value }); setErroSalvar(null); }} className="ds-input" />
+          </div>
+          <button 
+            onClick={remarcarAgendamento} 
+            className="btn-primary w-full justify-center"
+            disabled={salvando}
+            style={{ opacity: salvando ? 0.7 : 1, cursor: salvando ? 'not-allowed' : 'pointer' }}
+          >
+            {salvando ? 'Salvando...' : 'Confirmar Remarcação'}
+          </button>
+        </div>
+      </Modal>
+
       {/* Modal de Overflow */}
       <Modal aberto={overflowModal.aberto} onFechar={() => setOverflowModal({ aberto: false, eventos: [] })} titulo="Agendamentos">
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -910,6 +1019,19 @@ export function Agenda() {
               <p><strong style={{ color: 'var(--texto-secundario)' }}>Status Atual:</strong> {statusLabels[agendamentoSelecionado.status] || agendamentoSelecionado.status}</p>
             </div>
 
+            {agendamentoSelecionado.historicoRemarcacoes && agendamentoSelecionado.historicoRemarcacoes.length > 0 && (
+              <div style={{ padding: '8px 12px', background: 'var(--bg-surface2)', borderRadius: '6px', fontSize: '12px', color: 'var(--texto-secundario)' }}>
+                <p style={{ fontWeight: 600, color: 'var(--text-primary)', marginBottom: '4px' }}>Histórico de Remarcações</p>
+                {agendamentoSelecionado.historicoRemarcacoes.map((hist: any, idx: number) => (
+                  <div key={hist.id} style={{ marginBottom: idx < agendamentoSelecionado.historicoRemarcacoes!.length - 1 ? '8px' : '0' }}>
+                    • Remarcado de {new Date(hist.dataHoraAnterior).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })} 
+                    {hist.barbeiroAnteriorId !== hist.barbeiroNovoId ? ` (${hist.barbeiroAnterior?.usuario?.nome})` : ''} 
+                    <br/><span style={{ opacity: 0.7, marginLeft: '8px' }}>por {hist.usuarioAcao?.nome || 'Sistema'} em {new Date(hist.criadoEm).toLocaleDateString('pt-BR')}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+
             <div className="flex flex-col gap-2">
               {agendamentoSelecionado.status === 'AGUARDANDO' && (
                 <>
@@ -928,6 +1050,22 @@ export function Agenda() {
                     style={{ background: 'var(--sucesso-fundo)', color: 'var(--sucesso)', opacity: alterandoStatus !== null ? 0.7 : 1 }}
                   >
                     {alterandoStatus === 'CONCLUIDO' ? 'Carregando...' : 'Concluir Agendamento'}
+                  </button>
+                  <button 
+                    onClick={() => {
+                      setFormRemarcar({
+                        barbeiroId: agendamentoSelecionado.barbeiro.id,
+                        servicoId: agendamentoSelecionado.servico.id,
+                        dataHora: new Date(new Date(agendamentoSelecionado.dataHora).getTime() - (new Date().getTimezoneOffset() * 60000)).toISOString().slice(0, 16)
+                      });
+                      setModalRemarcarAberto(true);
+                      setAgendamentoSelecionado(null);
+                    }} 
+                    className="btn-secondary w-full justify-center"
+                    disabled={alterandoStatus !== null}
+                    style={{ background: 'var(--bg-surface2)', color: 'var(--text-primary)', border: '1px solid var(--border)' }}
+                  >
+                    Remarcar Agendamento
                   </button>
                   <button 
                     onClick={() => setCancelarAlertAberto(true)} 
@@ -949,6 +1087,22 @@ export function Agenda() {
                     style={{ background: 'var(--sucesso-fundo)', color: 'var(--sucesso)', opacity: alterandoStatus !== null ? 0.7 : 1 }}
                   >
                     {alterandoStatus === 'CONCLUIDO' ? 'Carregando...' : 'Concluir Agendamento'}
+                  </button>
+                  <button 
+                    onClick={() => {
+                      setFormRemarcar({
+                        barbeiroId: agendamentoSelecionado.barbeiro.id,
+                        servicoId: agendamentoSelecionado.servico.id,
+                        dataHora: new Date(new Date(agendamentoSelecionado.dataHora).getTime() - (new Date().getTimezoneOffset() * 60000)).toISOString().slice(0, 16)
+                      });
+                      setModalRemarcarAberto(true);
+                      setAgendamentoSelecionado(null);
+                    }} 
+                    className="btn-secondary w-full justify-center"
+                    disabled={alterandoStatus !== null}
+                    style={{ background: 'var(--bg-surface2)', color: 'var(--text-primary)', border: '1px solid var(--border)' }}
+                  >
+                    Remarcar Agendamento
                   </button>
                   <button 
                     onClick={() => setCancelarAlertAberto(true)} 

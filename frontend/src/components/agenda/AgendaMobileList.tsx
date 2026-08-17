@@ -8,8 +8,9 @@ interface Agendamento {
   origem?: string;
   cliente: { id: string; usuario: { nome: string } };
   barbeiroId: string;
-  barbeiro: { usuario: { nome: string }; cor: string };
-  servico: { nome: string; duracaoMinutos: number; cor: string };
+  barbeiro: { id: string; usuario: { nome: string }; cor: string };
+  servico: { id: string; nome: string; duracaoMinutos: number; cor: string };
+  historicoRemarcacoes?: any[];
 }
 
 interface Bloqueio {
@@ -37,6 +38,7 @@ interface AgendaMobileListProps {
   setAgendamentoSelecionado: (ag: Agendamento) => void;
   abrirModal: (dataHora?: string) => void;
   getColor: (id: string) => string;
+  configuracao: any;
 }
 
 const statusLabels: Record<string, string> = {
@@ -88,9 +90,27 @@ export function AgendaMobileList({
   horarios,
   setAgendamentoSelecionado,
   abrirModal,
-  getColor
+  getColor,
+  configuracao
 }: AgendaMobileListProps) {
   const diaISO = getDataBrasilia(diaMobile);
+
+  const isForaExpediente = (ag: Agendamento, configDia: any) => {
+    if (!configDia || configDia.fechado) return true;
+    if (!configDia.abertura || !configDia.fechamento) return true;
+    const [aH, aM] = configDia.abertura.split(':').map(Number);
+    const [fH, fM] = configDia.fechamento.split(':').map(Number);
+    const aberturaM = aH * 60 + aM;
+    const fechamentoM = fH * 60 + fM;
+    const hmInicio = getHoraMinutoBrasilia(new Date(ag.dataHora));
+    const inicioM = hmInicio.hora * 60 + hmInicio.minuto;
+    const fimM = inicioM + (ag.servico?.duracaoMinutos || 0);
+    return inicioM < aberturaM || fimM > fechamentoM;
+  };
+
+  const CHAVES_DIA = ['domingo', 'segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sabado'];
+  const diaSemana = CHAVES_DIA[diaMobile.getDay()];
+  const configDia = (configuracao && configuracao !== 'vazio' && configuracao !== 'erro') ? configuracao[diaSemana] || { fechado: true } : { fechado: false, abertura: '08:00', fechamento: '20:00' };
 
   const agsDoDia = agendamentos.filter(ag => getDataBrasilia(new Date(ag.dataHora)) === diaISO && ag.status !== 'CANCELADO');
   
@@ -160,11 +180,14 @@ export function AgendaMobileList({
                     {ag.cliente.usuario.nome}
                   </span>
                 </div>
-                <div 
-                  className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider"
-                  style={{ background: st.bg, color: st.color }}
-                >
-                  {statusLabels[ag.status] || ag.status}
+                <div className="flex items-center gap-2">
+                  {isForaExpediente(ag, configDia) && <span className="text-[var(--cor-erro)] bg-[var(--perigo-fundo)] px-1.5 py-0.5 rounded text-[10px] font-bold" title="Fora do Expediente">!</span>}
+                  <div 
+                    className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider"
+                    style={{ background: st.bg, color: st.color }}
+                  >
+                    {statusLabels[ag.status] || ag.status}
+                  </div>
                 </div>
               </div>
               <div className="flex items-center text-[13px] text-[var(--texto-secundario)]" style={{ fontFamily: 'var(--fonte-interface)' }}>
