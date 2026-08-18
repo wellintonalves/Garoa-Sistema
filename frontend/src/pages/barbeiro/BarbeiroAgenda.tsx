@@ -172,10 +172,10 @@ export function BarbeiroAgenda() {
           )}
 
           <div style={{ position: 'relative' }}>
-            {isHoje && (
+            {isHoje && horarios.length > 0 && (
               <div style={{
                 position: 'absolute', left: '60px', right: 0,
-                top: `${((hoje.getHours() - 8) * 60 + hoje.getMinutes()) * (48 / 30)}px`,
+                top: `${((hoje.getHours() * 60 + hoje.getMinutes()) - (parseInt(horarios[0].split(':')[0], 10) * 60 + parseInt(horarios[0].split(':')[1], 10))) * (49 / 30)}px`,
                 borderTop: '2px solid var(--cor-primaria)', zIndex: 40, pointerEvents: 'none'
               }}>
                 <div style={{ position: 'absolute', left: '-4px', top: '-5px', width: '8px', height: '8px', borderRadius: '50%', background: 'var(--cor-primaria)' }} />

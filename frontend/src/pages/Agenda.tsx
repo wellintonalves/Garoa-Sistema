@@ -141,7 +141,7 @@ export function Agenda() {
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const [modalRemarcarAberto, setModalRemarcarAberto] = useState(false);
-  const [formRemarcar, setFormRemarcar] = useState({ barbeiroId: '', servicoId: '', dataHora: '' });
+  const [formRemarcar, setFormRemarcar] = useState({ id: '', barbeiroId: '', servicoId: '', dataHora: '' });
 
   const [fidelidadeCache, setFidelidadeCache] = useState<any>(null);
 
@@ -243,14 +243,15 @@ export function Agenda() {
 
   async function remarcarAgendamento() {
     if (salvando) return;
-    if (!agendamentoSelecionado || !formRemarcar.barbeiroId || !formRemarcar.servicoId || !formRemarcar.dataHora) {
+    if (!formRemarcar.id || !formRemarcar.barbeiroId || !formRemarcar.servicoId || !formRemarcar.dataHora) {
       setErroSalvar('Preencha todos os campos para remarcar.');
       return;
     }
     setSalvando(true);
     setErroSalvar(null);
     try {
-      await api.put(`/agendamentos/${agendamentoSelecionado.id}`, formRemarcar);
+      const servico = servicos.find((s) => s.id === formRemarcar.servicoId);
+      await api.put(`/agendamentos/${formRemarcar.id}`, { ...formRemarcar, valorCobrado: servico ? Number(servico.preco) : undefined });
       setModalRemarcarAberto(false);
       setAgendamentoSelecionado(null);
       carregar();
@@ -358,7 +359,7 @@ export function Agenda() {
       const d = new Date(ag.dataHora);
       const hm = getHoraMinutoBrasilia(d);
       const iniMin = hm.hora * 60 + hm.minuto;
-      const dur = ag.servico.duracaoMinutos || 30;
+      const dur = Math.max(10, ag.servico?.duracaoMinutos || 30);
       evs.push({ id: ag.id, inicioMinutos: iniMin, fimMinutos: iniMin + dur, tipo: 'AGENDAMENTO', original: ag });
     });
     bls.forEach(bl => {
@@ -407,15 +408,15 @@ export function Agenda() {
     return lanes.map(ev => {
       const laneWidth = 100 / ev.totalLanes;
       const leftOffset = ev.lane * laneWidth;
-      const topPx = (ev.inicioMinutos - minOfDay) * (48 / 30);
-      const heightPx = (ev.fimMinutos - ev.inicioMinutos) * (48 / 30);
+      const topPx = (ev.inicioMinutos - minOfDay) * (49 / 30);
+      const heightPx = (ev.fimMinutos - ev.inicioMinutos) * (49 / 30);
       
       if (ev.isOverflow) {
         if (ev.overflowCount === undefined) return null;
         return (
           <div key={`overflow-${ev.id}`}
             onClick={(e) => { e.stopPropagation(); setOverflowModal({ aberto: true, eventos: ev.grupoCluster || [] }); }}
-            style={{ position: 'absolute', top: `${topPx + 2}px`, left: `${leftOffset}%`, width: `${laneWidth}%`, height: `${heightPx - 4}px`, background: 'var(--bg-surface2)', border: '1px solid var(--border)', zIndex: 30, pointerEvents: 'auto', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--texto-secundario)', fontWeight: 600, fontSize: '0.8125rem' }}>
+            style={{ position: 'absolute', top: `${topPx}px`, left: `${leftOffset}%`, width: `${laneWidth}%`, height: `${heightPx}px`, background: 'var(--bg-surface2)', border: '1px solid var(--border)', zIndex: 30, pointerEvents: 'auto', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--texto-secundario)', fontWeight: 600, fontSize: '0.8125rem' }}>
             +{ev.overflowCount}
           </div>
         );
@@ -425,7 +426,7 @@ export function Agenda() {
         const bl = ev.original as Bloqueio;
         return (
           <div key={bl.id} className="truncate cursor-pointer flex flex-col" onClick={() => removerBloqueio(bl.id)} title="Clique para remover bloqueio"
-            style={{ position: 'absolute', top: `${topPx + 2}px`, left: `${leftOffset}%`, width: `calc(${laneWidth}% - 4px)`, height: `${heightPx - 4}px`, padding: '4px 8px', background: 'repeating-linear-gradient(45deg, var(--bg-surface2), var(--bg-surface2) 10px, transparent 10px, transparent 20px)', borderLeft: `3px solid var(--texto-secundario)`, color: 'var(--texto-secundario)', fontFamily: 'var(--fonte-interface)', fontSize: '0.8125rem', borderRadius: '0 4px 4px 0', lineHeight: 1.2, zIndex: 20, pointerEvents: 'auto' }}>
+            style={{ position: 'absolute', top: `${topPx}px`, left: `${leftOffset}%`, width: `calc(${laneWidth}% - 4px)`, height: `${heightPx}px`, padding: '4px 8px', background: 'repeating-linear-gradient(45deg, var(--bg-surface2), var(--bg-surface2) 10px, transparent 10px, transparent 20px)', borderLeft: `3px solid var(--texto-secundario)`, color: 'var(--texto-secundario)', fontFamily: 'var(--fonte-interface)', fontSize: '0.8125rem', borderRadius: '0 4px 4px 0', lineHeight: 1.2, zIndex: 20, pointerEvents: 'auto' }}>
             <p className="truncate pr-1" style={{ fontWeight: 600, marginBottom: '2px' }}>{bl?.barbeiro?.usuario?.nome || 'Bloqueado'}</p>
             <p className="truncate" style={{ fontSize: '0.8125rem' }}>Bloqueado</p>
           </div>
@@ -441,7 +442,7 @@ export function Agenda() {
 
       return (
         <div key={ag.id} className="cursor-pointer overflow-hidden" onClick={() => setAgendamentoSelecionado(ag)} title={title}
-          style={{ position: 'absolute', top: `${topPx + 2}px`, left: `${leftOffset}%`, width: `calc(${laneWidth}% - 4px)`, height: `${heightPx - 4}px`, padding: isCompact ? '2px 4px' : '6px 8px', background: st.bg, borderLeft: `3px solid ${st.color}`, color: 'var(--text-primary)', opacity: ag.status === 'CONCLUIDO' ? 0.7 : 1, fontFamily: 'var(--fonte-interface)', fontSize: '0.8125rem', borderRadius: '0 4px 4px 0', lineHeight: 1.2, zIndex: 20, pointerEvents: 'auto', display: 'flex', flexDirection: isCompact ? 'row' : 'column', gap: isCompact ? '4px' : '0', alignItems: isCompact ? 'center' : 'flex-start', boxShadow: '0 1px 2px rgba(0,0,0,0.1)' }}>
+          style={{ position: 'absolute', top: `${topPx}px`, left: `${leftOffset}%`, width: `calc(${laneWidth}% - 4px)`, height: `${heightPx}px`, padding: isCompact ? '2px 4px' : '6px 8px', background: st.bg, borderLeft: `3px solid ${st.color}`, color: 'var(--text-primary)', opacity: ag.status === 'CONCLUIDO' ? 0.7 : 1, fontFamily: 'var(--fonte-interface)', fontSize: '0.8125rem', borderRadius: '0 4px 4px 0', lineHeight: 1.2, zIndex: 20, pointerEvents: 'auto', display: 'flex', flexDirection: isCompact ? 'row' : 'column', gap: isCompact ? '4px' : '0', alignItems: isCompact ? 'center' : 'flex-start', boxShadow: '0 1px 2px rgba(0,0,0,0.1)' }}>
           <div className={`flex justify-between items-center overflow-hidden w-full ${isCompact ? '' : 'mb-1.5'}`}>
             <p className="truncate pr-1 shrink-0" style={{ fontWeight: 600, fontSize: isCompact ? '11px' : '13px' }}>{clientName}</p>
             <div className="flex items-center gap-1 shrink-0">
@@ -776,7 +777,7 @@ export function Agenda() {
                   {viewMode === 'day' && diaMobile.toDateString() === agora.toDateString() && (
                     <div style={{
                       position: 'absolute', left: '60px', right: 0,
-                      top: `${((agora.getHours() * 60 + agora.getMinutes()) - min) * (48 / 30)}px`,
+                      top: `${((agora.getHours() * 60 + agora.getMinutes()) - min) * (49 / 30)}px`,
                       borderTop: '2px solid var(--cor-primaria)', zIndex: 40, pointerEvents: 'none'
                     }}>
                       <div style={{ position: 'absolute', left: '-4px', top: '-5px', width: '8px', height: '8px', borderRadius: '50%', background: 'var(--cor-primaria)' }} />
@@ -1021,14 +1022,40 @@ export function Agenda() {
 
             {agendamentoSelecionado.historicoRemarcacoes && agendamentoSelecionado.historicoRemarcacoes.length > 0 && (
               <div style={{ padding: '8px 12px', background: 'var(--bg-surface2)', borderRadius: '6px', fontSize: '12px', color: 'var(--texto-secundario)' }}>
-                <p style={{ fontWeight: 600, color: 'var(--text-primary)', marginBottom: '4px' }}>Histórico de Remarcações</p>
-                {agendamentoSelecionado.historicoRemarcacoes.map((hist: any, idx: number) => (
-                  <div key={hist.id} style={{ marginBottom: idx < agendamentoSelecionado.historicoRemarcacoes!.length - 1 ? '8px' : '0' }}>
-                    • Remarcado de {new Date(hist.dataHoraAnterior).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })} 
-                    {hist.barbeiroAnteriorId !== hist.barbeiroNovoId ? ` (${hist.barbeiroAnterior?.usuario?.nome})` : ''} 
-                    <br/><span style={{ opacity: 0.7, marginLeft: '8px' }}>por {hist.usuarioAcao?.nome || 'Sistema'} em {new Date(hist.criadoEm).toLocaleDateString('pt-BR')}</span>
-                  </div>
-                ))}
+                {agendamentoSelecionado.historicoRemarcacoes.map((hist: any, idx: number) => {
+                  const dataAnteriorMs = new Date(hist.dataHoraAnterior).getTime();
+                  const dataNovaMs = new Date(hist.dataHoraNova).getTime();
+                  // Aceita margem de erro de segundos (se os segundos foram zerados)
+                  const mudouData = Math.abs(dataAnteriorMs - dataNovaMs) > 60000;
+                  const mudouBarbeiro = hist.barbeiroAnteriorId && hist.barbeiroNovoId && hist.barbeiroAnteriorId !== hist.barbeiroNovoId;
+                  const mudouServico = hist.servicoAnteriorId && hist.servicoNovoId && hist.servicoAnteriorId !== hist.servicoNovoId;
+
+                  let mensagem = '';
+                  if (mudouData) {
+                    mensagem += `Remarcado de ${new Date(hist.dataHoraAnterior).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })} para ${new Date(hist.dataHoraNova).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}`;
+                  }
+                  
+                  if (mudouBarbeiro) {
+                    const msgBarbeiro = `Barbeiro alterado de ${hist.barbeiroAnterior?.usuario?.nome || 'Desconhecido'} para ${hist.barbeiroNovo?.usuario?.nome || 'Desconhecido'}`;
+                    mensagem += mensagem ? ` • ${msgBarbeiro}` : msgBarbeiro;
+                  }
+                  
+                  if (mudouServico) {
+                    const msgServico = `Serviço alterado de ${hist.servicoAnterior?.nome || 'Desconhecido'} para ${hist.servicoNovo?.nome || 'Desconhecido'}`;
+                    mensagem += mensagem ? ` • ${msgServico}` : msgServico;
+                  }
+                  
+                  if (!mensagem) {
+                    mensagem = 'Remarcado (alteração em dados secundários)';
+                  }
+
+                  return (
+                    <div key={hist.id} style={{ marginBottom: idx < agendamentoSelecionado.historicoRemarcacoes!.length - 1 ? '8px' : '0' }}>
+                      • {mensagem}
+                      <br/><span style={{ opacity: 0.7, marginLeft: '8px' }}>por {hist.usuarioAcao?.nome || 'Sistema'} em {new Date(hist.criadoEm).toLocaleDateString('pt-BR')}</span>
+                    </div>
+                  );
+                })}
               </div>
             )}
 
@@ -1054,6 +1081,7 @@ export function Agenda() {
                   <button 
                     onClick={() => {
                       setFormRemarcar({
+                        id: agendamentoSelecionado.id,
                         barbeiroId: agendamentoSelecionado.barbeiro.id,
                         servicoId: agendamentoSelecionado.servico.id,
                         dataHora: new Date(new Date(agendamentoSelecionado.dataHora).getTime() - (new Date().getTimezoneOffset() * 60000)).toISOString().slice(0, 16)
@@ -1091,6 +1119,7 @@ export function Agenda() {
                   <button 
                     onClick={() => {
                       setFormRemarcar({
+                        id: agendamentoSelecionado.id,
                         barbeiroId: agendamentoSelecionado.barbeiro.id,
                         servicoId: agendamentoSelecionado.servico.id,
                         dataHora: new Date(new Date(agendamentoSelecionado.dataHora).getTime() - (new Date().getTimezoneOffset() * 60000)).toISOString().slice(0, 16)
