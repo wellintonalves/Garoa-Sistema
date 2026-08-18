@@ -8,6 +8,7 @@ import {
   getHoraMinutoBrasilia,
   criarDataHoraBrasilia,
   formatarHorario,
+  diaBrasiliaStr,
 } from '../lib/timezone';
 import { prepararOperacoesFidelidade, creditarPontosPorAgendamento } from './fidelidade.engine';
 import { HorariosUtil, injetarDuracaoTotalServicos } from './horarios.util';
@@ -53,7 +54,10 @@ export class AgendamentoService {
         historicoRemarcacoes: {
           include: {
             usuarioAcao: { select: { nome: true } },
-            barbeiroAnterior: { include: { usuario: { select: { nome: true } } } }
+            barbeiroAnterior: { include: { usuario: { select: { nome: true } } } },
+            barbeiroNovo: { include: { usuario: { select: { nome: true } } } },
+            servicoAnterior: { select: { nome: true } },
+            servicoNovo: { select: { nome: true } }
           },
           orderBy: { criadoEm: 'desc' }
         }
@@ -75,7 +79,10 @@ export class AgendamentoService {
         historicoRemarcacoes: {
           include: {
             usuarioAcao: { select: { nome: true } },
-            barbeiroAnterior: { include: { usuario: { select: { nome: true } } } }
+            barbeiroAnterior: { include: { usuario: { select: { nome: true } } } },
+            barbeiroNovo: { include: { usuario: { select: { nome: true } } } },
+            servicoAnterior: { select: { nome: true } },
+            servicoNovo: { select: { nome: true } }
           },
           orderBy: { criadoEm: 'desc' }
         }
@@ -430,6 +437,10 @@ export class AgendamentoService {
         dataHora: dadosAgendamento.dataHora ? toBrasiliaDate(dadosAgendamento.dataHora) : undefined,
       };
 
+      if (dadosAgendamento.servicoId && dadosAgendamento.servicoId !== agendamentoOriginal.servicoId && !dadosAgendamento.servicosIds) {
+        (payloadUpdate as any).servicosIds = [dadosAgendamento.servicoId];
+      }
+
       if (mudouDataBarbeiroServico && !payloadUpdate.status) {
         payloadUpdate.status = 'AGUARDANDO';
       }
@@ -453,6 +464,8 @@ export class AgendamentoService {
               dataHoraNova: payloadUpdate.dataHora || agendamentoOriginal.dataHora,
               barbeiroAnteriorId: agendamentoOriginal.barbeiroId,
               barbeiroNovoId: dadosAgendamento.barbeiroId || agendamentoOriginal.barbeiroId,
+              servicoAnteriorId: agendamentoOriginal.servicoId,
+              servicoNovoId: dadosAgendamento.servicoId || agendamentoOriginal.servicoId,
               usuarioAcaoId: usuarioAcaoId
             }
           });
