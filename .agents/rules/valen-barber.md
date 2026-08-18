@@ -131,3 +131,5 @@ Durante o desenvolvimento local:
 - NUNCA testar contra o banco de producao. Se o teste exigir dados reais, pedir autorizacao ao Wellinton
 - Antes de dizer que terminou, rodar o BUILD COMPILADO e executar o dist, nao apenas npm run dev. Varios erros so aparecem no build, e o Railway roda build
 - Ao entregar, informar as credenciais geradas pelo seed e o roteiro de teste manual passo a passo
+
+- NUNCA escreva ou crie arquivos chamados .env ou .env.local para fazer testes experimentais de variaveis de ambiente. O risco de sobrescrever o arquivo de configuracao real do usuario e altissimo. Se precisar criar um arquivo de ambiente para testes de codigo local, use sempre um nome descartavel como .env.teste.
