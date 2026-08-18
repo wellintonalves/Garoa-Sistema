@@ -1,4 +1,5 @@
 // Configuração do Express
+import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import compression from 'compression';
@@ -7,6 +8,17 @@ import routes from './routes';
 import { errorMiddleware } from './middlewares/error.middleware';
 
 const app = express();
+
+// Logger simples de requisições
+app.use((req, res, next) => {
+  const start = Date.now();
+  res.on('finish', () => {
+    const duration = Date.now() - start;
+    console.log(`[${req.method}] ${req.originalUrl} - ${res.statusCode} (${duration}ms)`);
+  });
+  next();
+});
+
 app.set('trust proxy', 1);
 app.use(helmet());
 app.use(helmet.hsts({ maxAge: 15552000 }));
@@ -23,6 +35,8 @@ const allowedOrigins = [
   'http://localhost:5173',
   ...extras
 ];
+
+console.log('🌍 CORS configurado para as origens:', allowedOrigins);
 
 app.use(cors({
   origin: allowedOrigins,

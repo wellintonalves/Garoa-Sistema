@@ -1,7 +1,4 @@
 // Entry point do servidor
-import dotenv from 'dotenv';
-dotenv.config();
-
 import app from './app';
 import { prisma } from './lib/prisma';
 import { copiarBanco } from './lib/dbSync';
