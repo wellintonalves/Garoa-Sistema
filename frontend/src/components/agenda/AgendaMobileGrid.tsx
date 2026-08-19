@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { calcularLanes, EventoBase } from '../../utils/lanes';
 import { Modal } from '../Modal';
+import { ESCALA_HORA_PX, Z_INDEX } from '../../utils/constantes';
 
 interface Agendamento {
   id: string;
@@ -120,14 +121,14 @@ export function AgendaMobileGrid({
     <div ref={containerRef} style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: '8px', overflowY: 'auto', overflowX: 'hidden', width: '100%', position: 'relative', maxHeight: '600px' }}>
       <div style={{ position: 'relative' }}>
         {isHoje && horarios.length > 0 && (
-          <div style={{ position: 'absolute', left: '60px', right: 0, top: `${((agora.getHours() * 60 + agora.getMinutes()) - (parseInt(horarios[0].split(':')[0], 10) * 60 + parseInt(horarios[0].split(':')[1], 10))) * (49 / 30)}px`, borderTop: '2px solid var(--cor-primaria)', zIndex: 40, pointerEvents: 'none' }}>
+          <div style={{ position: 'absolute', left: '60px', right: 0, top: `${((agora.getHours() * 60 + agora.getMinutes()) - (parseInt(horarios[0].split(':')[0], 10) * 60 + parseInt(horarios[0].split(':')[1], 10))) * ESCALA_HORA_PX}px`, borderTop: '2px solid var(--cor-primaria)', zIndex: Z_INDEX.LINHA_TEMPO_ATUAL, pointerEvents: 'none' }}>
             <div style={{ position: 'absolute', left: '-4px', top: '-5px', width: '8px', height: '8px', borderRadius: '50%', background: 'var(--cor-primaria)' }} />
           </div>
         )}
 
         {horarios.map((horario) => (
           <div key={horario} style={{ display: 'grid', gridTemplateColumns: `60px 1fr`, borderBottom: '1px solid var(--border)' }}>
-            <div className="text-right pr-3 pt-3" style={{ padding: '8px', fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--text-disabled)', letterSpacing: '0.04em', height: '48px', position: 'sticky', left: 0, background: 'var(--bg-surface)', zIndex: 30, borderRight: '1px solid var(--border)' }}>
+            <div className="text-right pr-3 pt-3" style={{ padding: '8px', fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--text-disabled)', letterSpacing: '0.04em', height: '48px', position: 'sticky', left: 0, background: 'var(--bg-surface)', zIndex: Z_INDEX.BLOQUEIO_AGENDA, borderRight: '1px solid var(--border)' }}>
               {horario}
             </div>
             <div style={{ position: 'relative', height: '48px', cursor: 'pointer' }} onClick={() => abrirModal(`${diaISO}T${horario}:00`, barbeiroSelecionado)} />
@@ -166,7 +167,7 @@ export function AgendaMobileGrid({
                 if (ev.overflowCount === undefined) return null;
                 return (
                   <div key={`overflow-${ev.id}`} onClick={(e) => { e.stopPropagation(); setOverflowModal({ aberto: true, eventos: ev.grupoCluster || [] }); }}
-                    style={{ position: 'absolute', top: `${topPx}px`, left: `${leftOffset}%`, width: `${laneWidth}%`, height: `${heightPx}px`, background: 'var(--bg-surface2)', border: '1px solid var(--border)', zIndex: 30, pointerEvents: 'auto', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--texto-secundario)', fontWeight: 600, fontSize: '0.8125rem' }}>
+                    style={{ position: 'absolute', top: `${topPx}px`, left: `${leftOffset}%`, width: `${laneWidth}%`, height: `${heightPx}px`, background: 'var(--bg-surface2)', border: '1px solid var(--border)', zIndex: Z_INDEX.BLOQUEIO_AGENDA, pointerEvents: 'auto', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--texto-secundario)', fontWeight: 600, fontSize: '0.8125rem' }}>
                     +{ev.overflowCount}
                   </div>
                 );
@@ -176,7 +177,7 @@ export function AgendaMobileGrid({
                 const bl = ev.original as Bloqueio;
                 return (
                   <div key={bl.id} className="truncate cursor-pointer flex flex-col" onClick={() => removerBloqueio(bl.id)} title="Clique para remover bloqueio"
-                    style={{ position: 'absolute', top: `${topPx}px`, left: `${leftOffset}%`, width: `calc(${laneWidth}% - 4px)`, height: `${heightPx}px`, padding: '4px 8px', background: 'repeating-linear-gradient(45deg, var(--bg-surface2), var(--bg-surface2) 10px, transparent 10px, transparent 20px)', borderLeft: `3px solid var(--texto-secundario)`, color: 'var(--texto-secundario)', fontFamily: 'var(--fonte-interface)', fontSize: '0.8125rem', borderRadius: '0 4px 4px 0', lineHeight: 1.2, zIndex: 20, pointerEvents: 'auto' }}>
+                    style={{ position: 'absolute', top: `${topPx}px`, left: `${leftOffset}%`, width: `calc(${laneWidth}% - 4px)`, height: `${heightPx}px`, padding: '4px 8px', background: 'repeating-linear-gradient(45deg, var(--bg-surface2), var(--bg-surface2) 10px, transparent 10px, transparent 20px)', borderLeft: `3px solid var(--texto-secundario)`, color: 'var(--texto-secundario)', fontFamily: 'var(--fonte-interface)', fontSize: '0.8125rem', borderRadius: '0 4px 4px 0', lineHeight: 1.2, zIndex: Z_INDEX.EVENTO_AGENDA, pointerEvents: 'auto' }}>
                     <p className="truncate pr-1" style={{ fontWeight: 600, marginBottom: '2px' }}>Bloqueado</p>
                     {bl.motivo && <p className="truncate" style={{ fontSize: '0.8125rem' }}>{bl.motivo}</p>}
                   </div>
@@ -192,7 +193,7 @@ export function AgendaMobileGrid({
 
       return (
         <div key={ag.id} className="cursor-pointer overflow-hidden" onClick={() => setAgendamentoSelecionado(ag)} title={title}
-          style={{ position: 'absolute', top: `${topPx}px`, left: `${leftOffset}%`, width: `calc(${laneWidth}% - 4px)`, height: `${heightPx}px`, padding: isCompact ? '2px 4px' : '6px 8px', background: st.bg, borderLeft: `3px solid ${st.color}`, color: 'var(--text-primary)', opacity: ag.status === 'CONCLUIDO' ? 0.7 : 1, fontFamily: 'var(--fonte-interface)', fontSize: '0.8125rem', borderRadius: '0 4px 4px 0', lineHeight: 1.2, zIndex: 20, pointerEvents: 'auto', display: 'flex', flexDirection: isCompact ? 'row' : 'column', gap: isCompact ? '4px' : '0', alignItems: isCompact ? 'center' : 'flex-start', boxShadow: '0 1px 2px rgba(0,0,0,0.1)' }}>
+          style={{ position: 'absolute', top: `${topPx}px`, left: `${leftOffset}%`, width: `calc(${laneWidth}% - 4px)`, height: `${heightPx}px`, padding: isCompact ? '2px 4px' : '6px 8px', background: st.bg, borderLeft: `3px solid ${st.color}`, color: 'var(--text-primary)', opacity: ag.status === 'CONCLUIDO' ? 0.7 : 1, fontFamily: 'var(--fonte-interface)', fontSize: '0.8125rem', borderRadius: '0 4px 4px 0', lineHeight: 1.2, zIndex: Z_INDEX.EVENTO_AGENDA, pointerEvents: 'auto', display: 'flex', flexDirection: isCompact ? 'row' : 'column', gap: isCompact ? '4px' : '0', alignItems: isCompact ? 'center' : 'flex-start', boxShadow: '0 1px 2px rgba(0,0,0,0.1)' }}>
           <div className={`flex justify-between items-center overflow-hidden w-full ${isCompact ? '' : 'mb-1.5'}`}>
             <p className="truncate pr-1 shrink-0" style={{ fontWeight: 600, fontSize: isCompact ? '11px' : '13px' }}>{clientName}</p>
             <div className="flex items-center gap-1 shrink-0">

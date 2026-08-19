@@ -23,7 +23,7 @@ export async function injetarDuracaoTotalServicos(agendamentos: any[]) {
   
   const servicos = await prisma.servico.findMany({
     where: { id: { in: Array.from(servicosIdsSet) } },
-    select: { id: true, duracaoMinutos: true, nome: true }
+    select: { id: true, duracaoMinutos: true, nome: true, preco: true }
   });
   const mapa = Object.fromEntries(servicos.map((s: any) => [s.id, s]));
   
@@ -31,14 +31,19 @@ export async function injetarDuracaoTotalServicos(agendamentos: any[]) {
     if (ag.servico) {
       let duracaoTotal = 0;
       let nomeFinal = ag.servico.nome;
+      let servicosAdicionais: any[] = [];
+      
       if (ag.servicosIds && ag.servicosIds.length > 0) {
         duracaoTotal = ag.servicosIds.reduce((sum: number, id: string) => sum + (mapa[id]?.duracaoMinutos || 0), 0);
-        nomeFinal = ag.servicosIds.map((id: string) => mapa[id]?.nome).filter(Boolean).join('/');
+        nomeFinal = ag.servicosIds.map((id: string) => mapa[id]?.nome).filter(Boolean).join(' + ');
+        servicosAdicionais = ag.servicosIds.map((id: string) => mapa[id]).filter(Boolean);
       } else {
         duracaoTotal = ag.servico.duracaoMinutos || 0;
+        servicosAdicionais = [mapa[ag.servicoId] || ag.servico];
       }
       ag.servico.duracaoMinutos = duracaoTotal;
       ag.servico.nome = nomeFinal;
+      ag.servicosAdicionais = servicosAdicionais;
     }
   }
   return agendamentos;

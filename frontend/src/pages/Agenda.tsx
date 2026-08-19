@@ -12,6 +12,7 @@ import api from '../api/client';
 import { PALETA_CORES_BARBEIROS } from '../styles/tokens';
 import { formatarNomeServico } from '../utils/formato';
 import { calcularLanes, EventoBase } from '../utils/lanes';
+import { ESCALA_HORA_PX, Z_INDEX } from '../utils/constantes';
 
 /** Extrai hora e minuto de um Date no fuso de Brasília */
 function getHoraMinutoBrasilia(date: Date): { hora: number; minuto: number } {
@@ -52,6 +53,7 @@ interface Agendamento {
   barbeiroId: string;
   barbeiro: { id: string; usuario: { nome: string }; cor: string };
   servico: { id: string; nome: string; duracaoMinutos: number; cor: string };
+  servicosAdicionais?: { id: string; nome: string; preco: string; duracaoMinutos: number }[];
   historicoRemarcacoes?: any[];
 }
 
@@ -408,15 +410,15 @@ export function Agenda() {
     return lanes.map(ev => {
       const laneWidth = 100 / ev.totalLanes;
       const leftOffset = ev.lane * laneWidth;
-      const topPx = (ev.inicioMinutos - minOfDay) * (49 / 30);
-      const heightPx = (ev.fimMinutos - ev.inicioMinutos) * (49 / 30);
+      const topPx = (ev.inicioMinutos - minOfDay) * ESCALA_HORA_PX;
+      const heightPx = (ev.fimMinutos - ev.inicioMinutos) * ESCALA_HORA_PX;
       
       if (ev.isOverflow) {
         if (ev.overflowCount === undefined) return null;
         return (
           <div key={`overflow-${ev.id}`}
             onClick={(e) => { e.stopPropagation(); setOverflowModal({ aberto: true, eventos: ev.grupoCluster || [] }); }}
-            style={{ position: 'absolute', top: `${topPx}px`, left: `${leftOffset}%`, width: `${laneWidth}%`, height: `${heightPx}px`, background: 'var(--bg-surface2)', border: '1px solid var(--border)', zIndex: 30, pointerEvents: 'auto', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--texto-secundario)', fontWeight: 600, fontSize: '0.8125rem' }}>
+            style={{ position: 'absolute', top: `${topPx}px`, left: `${leftOffset}%`, width: `${laneWidth}%`, height: `${heightPx}px`, background: 'var(--bg-surface2)', border: '1px solid var(--border)', zIndex: Z_INDEX.BLOQUEIO_AGENDA, pointerEvents: 'auto', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--texto-secundario)', fontWeight: 600, fontSize: '0.8125rem' }}>
             +{ev.overflowCount}
           </div>
         );
@@ -426,7 +428,7 @@ export function Agenda() {
         const bl = ev.original as Bloqueio;
         return (
           <div key={bl.id} className="truncate cursor-pointer flex flex-col" onClick={() => removerBloqueio(bl.id)} title="Clique para remover bloqueio"
-            style={{ position: 'absolute', top: `${topPx}px`, left: `${leftOffset}%`, width: `calc(${laneWidth}% - 4px)`, height: `${heightPx}px`, padding: '4px 8px', background: 'repeating-linear-gradient(45deg, var(--bg-surface2), var(--bg-surface2) 10px, transparent 10px, transparent 20px)', borderLeft: `3px solid var(--texto-secundario)`, color: 'var(--texto-secundario)', fontFamily: 'var(--fonte-interface)', fontSize: '0.8125rem', borderRadius: '0 4px 4px 0', lineHeight: 1.2, zIndex: 20, pointerEvents: 'auto' }}>
+            style={{ position: 'absolute', top: `${topPx}px`, left: `${leftOffset}%`, width: `calc(${laneWidth}% - 4px)`, height: `${heightPx}px`, padding: '4px 8px', background: 'repeating-linear-gradient(45deg, var(--bg-surface2), var(--bg-surface2) 10px, transparent 10px, transparent 20px)', borderLeft: `3px solid var(--texto-secundario)`, color: 'var(--texto-secundario)', fontFamily: 'var(--fonte-interface)', fontSize: '0.8125rem', borderRadius: '0 4px 4px 0', lineHeight: 1.2, zIndex: Z_INDEX.EVENTO_AGENDA, pointerEvents: 'auto' }}>
             <p className="truncate pr-1" style={{ fontWeight: 600, marginBottom: '2px' }}>{bl?.barbeiro?.usuario?.nome || 'Bloqueado'}</p>
             <p className="truncate" style={{ fontSize: '0.8125rem' }}>Bloqueado</p>
           </div>
@@ -442,7 +444,7 @@ export function Agenda() {
 
       return (
         <div key={ag.id} className="cursor-pointer overflow-hidden" onClick={() => setAgendamentoSelecionado(ag)} title={title}
-          style={{ position: 'absolute', top: `${topPx}px`, left: `${leftOffset}%`, width: `calc(${laneWidth}% - 4px)`, height: `${heightPx}px`, padding: isCompact ? '2px 4px' : '6px 8px', background: st.bg, borderLeft: `3px solid ${st.color}`, color: 'var(--text-primary)', opacity: ag.status === 'CONCLUIDO' ? 0.7 : 1, fontFamily: 'var(--fonte-interface)', fontSize: '0.8125rem', borderRadius: '0 4px 4px 0', lineHeight: 1.2, zIndex: 20, pointerEvents: 'auto', display: 'flex', flexDirection: isCompact ? 'row' : 'column', gap: isCompact ? '4px' : '0', alignItems: isCompact ? 'center' : 'flex-start', boxShadow: '0 1px 2px rgba(0,0,0,0.1)' }}>
+          style={{ position: 'absolute', top: `${topPx}px`, left: `${leftOffset}%`, width: `calc(${laneWidth}% - 4px)`, height: `${heightPx}px`, padding: isCompact ? '2px 4px' : '6px 8px', background: st.bg, borderLeft: `3px solid ${st.color}`, color: 'var(--text-primary)', opacity: ag.status === 'CONCLUIDO' ? 0.7 : 1, fontFamily: 'var(--fonte-interface)', fontSize: '0.8125rem', borderRadius: '0 4px 4px 0', lineHeight: 1.2, zIndex: Z_INDEX.EVENTO_AGENDA, pointerEvents: 'auto', display: 'flex', flexDirection: isCompact ? 'row' : 'column', gap: isCompact ? '4px' : '0', alignItems: isCompact ? 'center' : 'flex-start', boxShadow: '0 1px 2px rgba(0,0,0,0.1)' }}>
           <div className={`flex justify-between items-center overflow-hidden w-full ${isCompact ? '' : 'mb-1.5'}`}>
             <p className="truncate pr-1 shrink-0" style={{ fontWeight: 600, fontSize: isCompact ? '11px' : '13px' }}>{clientName}</p>
             <div className="flex items-center gap-1 shrink-0">
@@ -585,7 +587,7 @@ export function Agenda() {
               background: 'var(--bg-surface)',
               border: '1px solid var(--border)',
               borderRadius: '4px',
-              zIndex: 50,
+              zIndex: Z_INDEX.MENU_SUSPENSO,
               display: 'flex',
               flexDirection: 'column',
               boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
@@ -594,6 +596,7 @@ export function Agenda() {
             }}
           >
             <button
+              key="todos"
               onClick={() => { setFiltroBarbeiro('todos'); setDropdownAberto(false); }}
               style={{
                 display: 'flex',
@@ -609,11 +612,13 @@ export function Agenda() {
                 fontSize: '14px',
                 textAlign: 'left',
                 minHeight: '44px',
+                width: '100%',
               }}
               className="hover:bg-[var(--superficie-2)] border-[var(--borda)] transition-colors"
             >
               <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: 'var(--amber)' }} />
-              Todos os barbeiros
+              <span style={{ flex: 1 }}>Todos os barbeiros</span>
+              {filtroBarbeiro === 'todos' && <span style={{ fontSize: '12px', color: 'var(--cor-primaria)' }}>✓</span>}
             </button>
 
             {barbeirosValidos.map((b) => {
@@ -753,7 +758,7 @@ export function Agenda() {
             <div style={{ minWidth: isMobile ? '100%' : '700px' }}>
               <>
                 {/* Cabeçalho das colunas */}
-                <div style={{ display: 'grid', gridTemplateColumns: `60px repeat(${Math.max(cols, 1)}, 1fr)`, borderBottom: '1px solid var(--border)', position: 'sticky', top: 0, zIndex: 50, background: 'var(--bg-surface)' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: `60px repeat(${Math.max(cols, 1)}, 1fr)`, borderBottom: '1px solid var(--border)', position: 'sticky', top: 0, zIndex: Z_INDEX.CABECALHO_FIXO, background: 'var(--bg-surface)' }}>
                   <div style={{ padding: '8px' }} />
                   {viewMode === 'day' ? barbeirosExibidos.map((b) => (
                     <div key={b.id} className="text-center" style={{ padding: '12px', borderLeft: '1px solid var(--border)' }}>
@@ -777,8 +782,8 @@ export function Agenda() {
                   {viewMode === 'day' && diaMobile.toDateString() === agora.toDateString() && (
                     <div style={{
                       position: 'absolute', left: '60px', right: 0,
-                      top: `${((agora.getHours() * 60 + agora.getMinutes()) - min) * (49 / 30)}px`,
-                      borderTop: '2px solid var(--cor-primaria)', zIndex: 40, pointerEvents: 'none'
+                      top: `${((agora.getHours() * 60 + agora.getMinutes()) - min) * ESCALA_HORA_PX}px`,
+                      borderTop: '2px solid var(--cor-primaria)', zIndex: Z_INDEX.LINHA_TEMPO_ATUAL, pointerEvents: 'none'
                     }}>
                       <div style={{ position: 'absolute', left: '-4px', top: '-5px', width: '8px', height: '8px', borderRadius: '50%', background: 'var(--cor-primaria)' }} />
                     </div>
@@ -1014,7 +1019,25 @@ export function Agenda() {
             
             <div className="flex flex-col gap-2 mb-2" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '14px', color: 'var(--text-primary)' }}>
               <p><strong style={{ color: 'var(--texto-secundario)' }}>Cliente:</strong> {agendamentoSelecionado.cliente.usuario.nome}</p>
-              <p><strong style={{ color: 'var(--texto-secundario)' }}>Serviço:</strong> {formatarNomeServico(agendamentoSelecionado)} ({agendamentoSelecionado.servico.duracaoMinutos} min)</p>
+              <div>
+                <strong style={{ color: 'var(--texto-secundario)' }}>Serviços:</strong>
+                {agendamentoSelecionado.servicosAdicionais && agendamentoSelecionado.servicosAdicionais.length > 0 ? (
+                  <div className="ml-2 mt-1 flex flex-col gap-1">
+                    {agendamentoSelecionado.servicosAdicionais.map((s, idx) => (
+                      <div key={idx} className="flex justify-between items-center bg-[var(--bg-surface2)] px-2 py-1 rounded">
+                        <span className="font-medium text-[13px]">{s.nome}</span>
+                        <span className="text-[12px] text-[var(--texto-secundario)] tabular-nums">{s.duracaoMinutos} min · R$ {Number(s.preco).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                      </div>
+                    ))}
+                    <div className="flex justify-between items-center px-2 py-1 border-t border-[var(--border)] mt-1 font-bold">
+                      <span className="text-[13px]">Total:</span>
+                      <span className="text-[13px] tabular-nums">{agendamentoSelecionado.servico.duracaoMinutos} min · R$ {Number(agendamentoSelecionado.valorCobrado).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                    </div>
+                  </div>
+                ) : (
+                  <span className="ml-1">{formatarNomeServico(agendamentoSelecionado)} ({agendamentoSelecionado.servico.duracaoMinutos} min)</span>
+                )}
+              </div>
               <p><strong style={{ color: 'var(--texto-secundario)' }}>Barbeiro:</strong> {agendamentoSelecionado.barbeiro.usuario.nome}</p>
               <p><strong style={{ color: 'var(--texto-secundario)' }}>Data/Hora:</strong> {new Date(agendamentoSelecionado.dataHora).toLocaleString('pt-BR')}</p>
               <p><strong style={{ color: 'var(--texto-secundario)' }}>Status Atual:</strong> {statusLabels[agendamentoSelecionado.status] || agendamentoSelecionado.status}</p>

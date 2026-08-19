@@ -11,7 +11,9 @@ interface ModalConcluirServicoProps {
     valorCobrado: string;
     servico: {
       nome: string;
+      duracaoMinutos: number;
     };
+    servicosAdicionais?: { id: string; nome: string; preco: string; duracaoMinutos: number }[];
     cliente: {
       id: string;
       usuario: {
@@ -176,7 +178,25 @@ export function ModalConcluirServico({ aberto, onFechar, agendamento, onConfirma
     <Modal aberto={aberto} onFechar={onFechar} titulo="Concluir Serviço">
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
         <div className="flex flex-col gap-1 text-sm text-[var(--text-primary)]">
-          <p><strong className="text-[var(--texto-secundario)]">Serviço:</strong> {agendamento.servico.nome}</p>
+          <div>
+            <strong className="text-[var(--texto-secundario)]">Serviços:</strong>
+            {agendamento.servicosAdicionais && agendamento.servicosAdicionais.length > 0 ? (
+              <div className="ml-2 mt-1 flex flex-col gap-1">
+                {agendamento.servicosAdicionais.map((s, idx) => (
+                  <div key={idx} className="flex justify-between items-center bg-[var(--bg-surface2)] px-2 py-1 rounded">
+                    <span className="font-medium text-[13px]">{s.nome}</span>
+                    <span className="text-[12px] text-[var(--texto-secundario)] tabular-nums">{s.duracaoMinutos} min · R$ {Number(s.preco).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                  </div>
+                ))}
+                <div className="flex justify-between items-center px-2 py-1 border-t border-[var(--border)] mt-1 font-bold">
+                  <span className="text-[13px]">Total:</span>
+                  <span className="text-[13px] tabular-nums">{agendamento.servico.duracaoMinutos} min · R$ {Number(agendamento.valorCobrado).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                </div>
+              </div>
+            ) : (
+              <span className="ml-1">{agendamento.servico.nome} ({agendamento.servico.duracaoMinutos} min)</span>
+            )}
+          </div>
           <p><strong className="text-[var(--texto-secundario)]">Cliente:</strong> {agendamento.cliente.usuario.nome}</p>
         </div>
 

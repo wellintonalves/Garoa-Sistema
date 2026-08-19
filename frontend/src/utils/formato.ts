@@ -29,7 +29,16 @@ export function calcularDelta(atual: number, anterior: number): number | null {
   return ((atual - anterior) / anterior) * 100;
 }
 
-export function formatarNomeServico(ag: any): string {
+export function formatarNomeServico(ag: any, isMobile: boolean = false): string {
+  if (ag?.servicosAdicionais && ag.servicosAdicionais.length > 0) {
+    if (ag.servicosAdicionais.length === 1) {
+      return ag.servicosAdicionais[0].nome;
+    }
+    if (isMobile || ag.servicosAdicionais.length > 2) {
+      return `${ag.servicosAdicionais[0].nome} +${ag.servicosAdicionais.length - 1}`;
+    }
+    return ag.servicosAdicionais.map((s: any) => s.nome).join(' + ');
+  }
   if (ag?.itens && ag.itens.length > 0) {
     return ag.itens.map((i: any) => i.servico?.nome).filter(Boolean).join(' + ');
   }

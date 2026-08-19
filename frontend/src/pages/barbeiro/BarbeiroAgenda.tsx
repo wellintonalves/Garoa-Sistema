@@ -4,12 +4,14 @@ import barbeiroApi from '../../api/barbeiroApi';
 import { hojeBrasilia } from '../../utils/datas';
 import { Modal } from '../../components/Modal';
 import { formatarNomeServico } from '../../utils/formato';
+import { ESCALA_HORA_PX, Z_INDEX } from '../../utils/constantes';
 
 interface AgendamentoAgenda {
   id: string;
   dataHora: string;
   status: string;
   servico: { nome: string; duracaoMinutos: number };
+  servicosAdicionais?: { id: string; nome: string; preco: string; duracaoMinutos: number }[];
   cliente: { usuario: { nome: string } };
   valorCobrado: string;
 }
@@ -175,8 +177,8 @@ export function BarbeiroAgenda() {
             {isHoje && horarios.length > 0 && (
               <div style={{
                 position: 'absolute', left: '60px', right: 0,
-                top: `${((hoje.getHours() * 60 + hoje.getMinutes()) - (parseInt(horarios[0].split(':')[0], 10) * 60 + parseInt(horarios[0].split(':')[1], 10))) * (49 / 30)}px`,
-                borderTop: '2px solid var(--cor-primaria)', zIndex: 40, pointerEvents: 'none'
+                top: `${((hoje.getHours() * 60 + hoje.getMinutes()) - (parseInt(horarios[0].split(':')[0], 10) * 60 + parseInt(horarios[0].split(':')[1], 10))) * ESCALA_HORA_PX}px`,
+                borderTop: '2px solid var(--cor-primaria)', zIndex: Z_INDEX.LINHA_TEMPO_ATUAL, pointerEvents: 'none'
               }}>
                 <div style={{ position: 'absolute', left: '-4px', top: '-5px', width: '8px', height: '8px', borderRadius: '50%', background: 'var(--cor-primaria)' }} />
               </div>
@@ -206,7 +208,7 @@ export function BarbeiroAgenda() {
                         style={{
                           padding: '4px 8px', background: 'repeating-linear-gradient(45deg, var(--bg-surface2), var(--bg-surface2) 10px, transparent 10px, transparent 20px)',
                           borderLeft: `3px solid var(--texto-secundario)`, color: 'var(--texto-secundario)', fontFamily: 'var(--fonte-interface)', fontSize: '11px',
-                          borderRadius: '0 4px 4px 0', position: 'absolute', top: '2px', left: '2px', right: '2px', height: '44px', zIndex: 5 + idx
+                          borderRadius: '0 4px 4px 0', position: 'absolute', top: '2px', left: '2px', right: '2px', height: '44px', zIndex: Z_INDEX.BLOQUEIO_AGENDA + idx
                         }}>
                         <p className="truncate" style={{ fontWeight: 600 }}>Bloqueado: {bl.motivo || 'Indisponível'}</p>
                       </div>
@@ -214,21 +216,21 @@ export function BarbeiroAgenda() {
                     {ags.map((ag, idx) => {
                       const st = statusStyles[ag.status] || statusStyles['AGUARDANDO'];
                       const isConcluido = ag.status === 'CONCLUIDO';
-                      const heightPx = Math.max(44, ((ag.servico.duracaoMinutos || 30) / 30) * 49 - 5);
+                      const heightPx = Math.max(44, ((ag.servico.duracaoMinutos || 30) / 30) * (ESCALA_HORA_PX * 30) - 5);
                       
                       return (
                         <div key={ag.id} className="cursor-pointer flex flex-col overflow-hidden shadow-sm"
                           style={{
                             padding: '6px 8px', background: st.bg, borderLeft: `3px solid ${st.border}`, color: 'var(--text-primary)', opacity: isConcluido ? 0.7 : 1,
                             fontFamily: 'var(--fonte-interface)', fontSize: '11px', position: 'absolute', top: '2px', left: `${2 + (idx * 10)}px`, right: '2px',
-                            height: `${heightPx}px`, zIndex: 10 + idx, borderRadius: '0 4px 4px 0', lineHeight: 1.2
+                            height: `${heightPx}px`, zIndex: Z_INDEX.EVENTO_AGENDA + idx, borderRadius: '0 4px 4px 0', lineHeight: 1.2
                           }}>
                           <div className="flex justify-between items-start mb-1.5">
                             <p className="truncate pr-1" style={{ fontWeight: 600 }}>{ag.cliente.usuario.nome}</p>
                           </div>
                           <div>
                             <p className="truncate" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px' }}>
-                              {formatarNomeServico(ag)} ({ag.servico.duracaoMinutos} min)
+                              {formatarNomeServico(ag, true)} ({ag.servico.duracaoMinutos} min)
                             </p>
                           </div>
                         </div>

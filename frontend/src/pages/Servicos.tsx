@@ -8,16 +8,16 @@ import { CORES_CATEGORIA_SERVICO } from '../styles/tokens';
 
 interface Servico {
   id: string; nome: string; descricao: string | null;
-  preco: string; duracaoMinutos: number; comissaoPercent: number; cor: string; ativo: boolean;
+  preco: string; duracaoMinutos: number; cor: string; ativo: boolean;
 }
 
 export function Servicos() {
   const [servicos, setServicos] = useState<Servico[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [editandoId, setEditandoId] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState({ nome: '', preco: '', duracaoMinutos: '', comissaoPercent: '' });
+  const [editForm, setEditForm] = useState({ nome: '', preco: '', duracaoMinutos: '' });
   const [modalAberto, setModalAberto] = useState(false);
-  const [form, setForm] = useState({ nome: '', descricao: '', preco: '', duracaoMinutos: '', comissaoPercent: '50', cor: 'var(--sucesso)' });
+  const [form, setForm] = useState({ nome: '', descricao: '', preco: '', duracaoMinutos: '', cor: 'var(--sucesso)' });
 
   const coresSugeridas = [
     { cor: 'var(--sucesso)', nome: 'Verde (Cortes)' },
@@ -34,7 +34,7 @@ export function Servicos() {
 
   function iniciarEdicao(s: Servico) {
     setEditandoId(s.id);
-    setEditForm({ nome: s.nome, preco: String(Number(s.preco)), duracaoMinutos: String(s.duracaoMinutos), comissaoPercent: String(s.comissaoPercent) });
+    setEditForm({ nome: s.nome, preco: String(Number(s.preco)), duracaoMinutos: String(s.duracaoMinutos) });
   }
 
   async function salvarEdicao(id: string) {
@@ -42,8 +42,7 @@ export function Servicos() {
       await api.put(`/servicos/${id}`, { 
         nome: editForm.nome,
         preco: Number(editForm.preco), 
-        duracaoMinutos: Number(editForm.duracaoMinutos),
-        comissaoPercent: Number(editForm.comissaoPercent)
+        duracaoMinutos: Number(editForm.duracaoMinutos)
       });
       setEditandoId(null); carregar();
     } catch (e) { console.error(e); }
@@ -51,8 +50,8 @@ export function Servicos() {
 
   async function criarServico() {
     try {
-      await api.post('/servicos', { nome: form.nome, descricao: form.descricao || undefined, preco: Number(form.preco), duracaoMinutos: Number(form.duracaoMinutos), comissaoPercent: Number(form.comissaoPercent), cor: form.cor });
-      setModalAberto(false); setForm({ nome: '', descricao: '', preco: '', duracaoMinutos: '', comissaoPercent: '50', cor: 'var(--sucesso)' }); carregar();
+      await api.post('/servicos', { nome: form.nome, descricao: form.descricao || undefined, preco: Number(form.preco), duracaoMinutos: Number(form.duracaoMinutos), cor: form.cor });
+      setModalAberto(false); setForm({ nome: '', descricao: '', preco: '', duracaoMinutos: '', cor: 'var(--sucesso)' }); carregar();
     } catch (e) { console.error(e); }
   }
 
@@ -83,7 +82,6 @@ export function Servicos() {
             <th>Serviço</th>
             <th>Preço</th>
             <th>Duração</th>
-            <th>Comissão</th>
             <th style={{ textAlign: 'right' }}>Ações</th>
           </tr></thead>
           <tbody>
@@ -115,16 +113,6 @@ export function Servicos() {
                     <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--texto-secundario)', letterSpacing: '0.04em' }}>
                       {s.duracaoMinutos} min
                     </span>
-                  )}
-                </td>
-                <td style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--texto-secundario)' }}>
-                  {editandoId === s.id ? (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <input type="number" value={editForm.comissaoPercent} onChange={e => setEditForm({...editForm, comissaoPercent: e.target.value})} className="ds-input" style={{ width: '60px', minHeight: '32px', padding: '6px 8px' }} />
-                      <span>%</span>
-                    </div>
-                  ) : (
-                    `${s.comissaoPercent}%`
                   )}
                 </td>
                 <td style={{ textAlign: 'right' }}>
