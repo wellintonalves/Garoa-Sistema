@@ -12,7 +12,8 @@
     "seed": "tsx prisma/seed.ts",
     "seed:descontos": "tsx prisma/seed-testes-desconto.ts",
     "fix:admin": "tsx fix_admin_barbearia.ts",
-    "backup:force": "tsx scripts/force_backup.ts"
+    "backup:force": "tsx scripts/force_backup.ts",
+    "test:fechamento": "tsx scripts/testes_fechamento.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.8.0",

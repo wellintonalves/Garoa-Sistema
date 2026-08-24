@@ -46,14 +46,24 @@ export class AgendamentoController {
   /** POST /agendamentos */
   static async criar(req: AuthRequest, res: Response): Promise<void> {
     try {
-      const { clienteId, barbeiroId, servicoId, dataHora, valorCobrado } = req.body;
+      const { clienteId, barbeiroId, servicoId, servicosIds, dataHora, observacoes } = req.body;
 
-      if (!clienteId || !barbeiroId || !servicoId || !dataHora || valorCobrado === undefined) {
-        res.status(400).json({ erro: 'Todos os campos obrigatórios devem ser preenchidos' });
+      if (!clienteId || !barbeiroId || !servicoId || !dataHora) {
+        res.status(400).json({ erro: 'Dados obrigatórios ausentes.' });
         return;
       }
 
-      const agendamento = await AgendamentoService.criar(req.body);
+      const agendamento = await AgendamentoService.criar({
+        barbeariaId: req.usuario!.barbeariaId!,
+        clienteId,
+        barbeiroId,
+        servicoId,
+        servicosIds,
+        dataHora,
+        observacoes,
+        origem: 'SISTEMA',
+        status: 'AGUARDANDO',
+      });
       res.status(201).json(agendamento);
     } catch (error) {
       const msg = error instanceof Error ? error.message : 'Erro ao criar agendamento';
@@ -61,9 +71,14 @@ export class AgendamentoController {
     }
   }
 
-  /** PUT /agendamentos/:id */
   static async atualizar(req: AuthRequest, res: Response): Promise<void> {
     try {
+      // Confiança zero no navegador: valores monetários nunca podem vir da requisição
+      delete req.body.valorCobrado;
+      delete req.body.valorBruto;
+      delete req.body.valorLiquido;
+      delete req.body.valorDesconto;
+
       const agendamento = await AgendamentoService.atualizar(req.params.id, req.body, req.usuario?.id);
       res.json(agendamento);
     } catch (error: any) {

@@ -8,9 +8,12 @@ interface ModalConcluirServicoProps {
   onFechar: () => void;
   agendamento: {
     id: string;
+    valorBruto?: string | number;
     valorCobrado: string;
+    dataHora?: string;
     servico: {
       nome: string;
+      preco: string | number;
       duracaoMinutos: number;
     };
     servicosAdicionais?: { id: string; nome: string; preco: string; duracaoMinutos: number }[];
@@ -105,7 +108,10 @@ export function ModalConcluirServico({ aberto, onFechar, agendamento, onConfirma
 
     setErro(null);
 
-    const valorBruto = Number(agendamento.valorCobrado || 0);
+    const valorBruto = Number(agendamento.valorBruto) > 0 
+      ? Number(agendamento.valorBruto) 
+      : Number(agendamento.servico.preco) + (agendamento.servicosAdicionais?.reduce((acc, s) => acc + Number(s.preco), 0) || 0);
+      
     const taxa = fidelidade ? Number((fidelidade as any).taxaConversaoPontos || fidelidade.valorPorPonto) : 1;
     
     // 1. Desconto Manual
@@ -182,6 +188,12 @@ export function ModalConcluirServico({ aberto, onFechar, agendamento, onConfirma
             <strong className="text-[var(--texto-secundario)]">Serviços:</strong>
             {agendamento.servicosAdicionais && agendamento.servicosAdicionais.length > 0 ? (
               <div className="ml-2 mt-1 flex flex-col gap-1">
+                {/* Serviço principal */}
+                <div className="flex justify-between items-center bg-[var(--bg-surface2)] px-2 py-1 rounded">
+                  <span className="font-medium text-[13px]">{agendamento.servico.nome}</span>
+                  <span className="text-[12px] text-[var(--texto-secundario)] tabular-nums">{agendamento.servico.duracaoMinutos} min · R$ {Number(agendamento.servico.preco).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                </div>
+                {/* Serviços adicionais */}
                 {agendamento.servicosAdicionais.map((s, idx) => (
                   <div key={idx} className="flex justify-between items-center bg-[var(--bg-surface2)] px-2 py-1 rounded">
                     <span className="font-medium text-[13px]">{s.nome}</span>
@@ -190,14 +202,31 @@ export function ModalConcluirServico({ aberto, onFechar, agendamento, onConfirma
                 ))}
                 <div className="flex justify-between items-center px-2 py-1 border-t border-[var(--border)] mt-1 font-bold">
                   <span className="text-[13px]">Total:</span>
-                  <span className="text-[13px] tabular-nums">{agendamento.servico.duracaoMinutos} min · R$ {Number(agendamento.valorCobrado).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                  <span className="text-[13px] tabular-nums">
+                    {agendamento.servico.duracaoMinutos + agendamento.servicosAdicionais.reduce((acc, s) => acc + s.duracaoMinutos, 0)} min · R$ {
+                      (Number(agendamento.servico.preco) + agendamento.servicosAdicionais.reduce((acc, s) => acc + Number(s.preco), 0)).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                    }
+                  </span>
                 </div>
               </div>
             ) : (
-              <span className="ml-1">{agendamento.servico.nome} ({agendamento.servico.duracaoMinutos} min)</span>
+              <span className="ml-1">{agendamento.servico.nome} ({agendamento.servico.duracaoMinutos} min) - R$ {Number(agendamento.servico.preco).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+            )}
+            
+            {Number(agendamento.valorBruto) > 0 && Number(agendamento.valorBruto) !== (Number(agendamento.servico.preco) + (agendamento.servicosAdicionais?.reduce((acc, s) => acc + Number(s.preco), 0) || 0)) && (
+              <div className="mt-2 p-2 bg-[var(--erro-fundo)] text-[var(--perigo)] text-xs rounded border border-[var(--erro)]">
+                <strong>Atenção:</strong> Os preços atuais dos serviços somam R$ {(Number(agendamento.servico.preco) + (agendamento.servicosAdicionais?.reduce((acc, s) => acc + Number(s.preco), 0) || 0)).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}, mas o valor do atendimento foi travado na data da marcação em <strong>R$ {Number(agendamento.valorBruto).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>. Este é o valor que será cobrado.
+              </div>
             )}
           </div>
           <p><strong className="text-[var(--texto-secundario)]">Cliente:</strong> {agendamento.cliente.usuario.nome}</p>
+          
+          {agendamento.dataHora && new Date(agendamento.dataHora) > new Date() && (
+            <div className="p-2 bg-[var(--erro-fundo)] text-[var(--perigo)] text-xs rounded border border-[var(--erro)] flex items-center gap-2">
+              <WarningCircle size={16} />
+              Você não pode concluir um atendimento do futuro.
+            </div>
+          )}
         </div>
 
         <div>
@@ -375,8 +404,8 @@ export function ModalConcluirServico({ aberto, onFechar, agendamento, onConfirma
         <div className="bg-[var(--bg-surface2)] p-4 rounded-lg mt-2 font-mono text-sm border border-[var(--border)] relative overflow-hidden">
           
           <div className="flex justify-between text-[var(--text-primary)] mb-1">
-            <span>Valor bruto:</span>
-            <span className="tabular-nums">R$ {simulacao ? simulacao.valorBruto.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : Number(agendamento.valorCobrado).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+            <span>Subtotal (Bruto):</span>
+            <span className="tabular-nums">R$ {simulacao ? simulacao.valorBruto.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0,00'}</span>
           </div>
           
           {simulacao && simulacao.descontoManual > 0 && (
@@ -395,7 +424,7 @@ export function ModalConcluirServico({ aberto, onFechar, agendamento, onConfirma
           
           <div className="flex justify-between font-bold text-lg text-[var(--text-primary)] mt-2 pt-2 border-t border-[var(--border)]">
             <span>Total a cobrar:</span>
-            <span className="tabular-nums">R$ {simulacao ? simulacao.valorLiquido.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : Number(agendamento.valorCobrado).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+            <span className="tabular-nums">R$ {simulacao ? simulacao.valorLiquido.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0,00'}</span>
           </div>
         </div>
 
@@ -411,8 +440,8 @@ export function ModalConcluirServico({ aberto, onFechar, agendamento, onConfirma
           style={{ 
             background: 'var(--cor-primaria)', 
             color: 'var(--texto-sobre-primaria)',
-            opacity: (salvando || erro) ? 0.6 : 1,
-            pointerEvents: (salvando || erro) ? 'none' : 'auto'
+            opacity: (salvando || erro || (agendamento.dataHora && new Date(agendamento.dataHora) > new Date())) ? 0.6 : 1,
+            pointerEvents: (salvando || erro || (agendamento.dataHora && new Date(agendamento.dataHora) > new Date())) ? 'none' : 'auto'
           }}
         >
           {salvando ? (

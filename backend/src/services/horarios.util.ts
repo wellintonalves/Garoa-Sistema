@@ -11,13 +11,11 @@ import {
 export async function injetarDuracaoTotalServicos(agendamentos: any[]) {
   if (!agendamentos || agendamentos.length === 0) return agendamentos;
   const { prisma } = require('../lib/prisma');
+  const { obterIdsServicosAgendamento } = require('../utils/agendamento.util');
   const servicosIdsSet = new Set<string>();
   for (const ag of agendamentos) {
-    if (ag.servicosIds && ag.servicosIds.length > 0) {
-      ag.servicosIds.forEach((id: string) => servicosIdsSet.add(id));
-    } else if (ag.servicoId) {
-      servicosIdsSet.add(ag.servicoId);
-    }
+    const ids = obterIdsServicosAgendamento(ag);
+    ids.forEach((id: string) => servicosIdsSet.add(id));
   }
   if (servicosIdsSet.size === 0) return agendamentos;
   
@@ -32,11 +30,12 @@ export async function injetarDuracaoTotalServicos(agendamentos: any[]) {
       let duracaoTotal = 0;
       let nomeFinal = ag.servico.nome;
       let servicosAdicionais: any[] = [];
+      const idsServicos = obterIdsServicosAgendamento(ag);
       
-      if (ag.servicosIds && ag.servicosIds.length > 0) {
-        duracaoTotal = ag.servicosIds.reduce((sum: number, id: string) => sum + (mapa[id]?.duracaoMinutos || 0), 0);
-        nomeFinal = ag.servicosIds.map((id: string) => mapa[id]?.nome).filter(Boolean).join(' + ');
-        servicosAdicionais = ag.servicosIds.map((id: string) => mapa[id]).filter(Boolean);
+      if (idsServicos.length > 0 && !(idsServicos.length === 1 && idsServicos[0] === ag.servicoId)) {
+        duracaoTotal = idsServicos.reduce((sum: number, id: string) => sum + (mapa[id]?.duracaoMinutos || 0), 0);
+        nomeFinal = idsServicos.map((id: string) => mapa[id]?.nome).filter(Boolean).join(' + ');
+        servicosAdicionais = idsServicos.map((id: string) => mapa[id]).filter(Boolean);
       } else {
         duracaoTotal = ag.servico.duracaoMinutos || 0;
         servicosAdicionais = [mapa[ag.servicoId] || ag.servico];

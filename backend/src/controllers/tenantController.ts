@@ -264,23 +264,15 @@ export class TenantController {
       if (!servico) { res.status(404).json({ erro: 'Serviço não encontrado' }); return; }
 
       const dataHora = new Date(`${data}T${hora}:00`);
-
-      await HorariosUtil.validarConflitoCliente({
+      const { AgendamentoService } = await import('../services/agendamento.service');
+      const agendamento = await AgendamentoService.criar({
+        barbeariaId: barbearia.id,
         clienteId: finalClienteId,
-        dataHora,
-        duracaoMinutos: servico.duracaoMinutos
-      });
-
-      const agendamento = await prisma.agendamento.create({
-        data: {
-          barbeariaId: barbearia.id,
-          clienteId: finalClienteId,
-          barbeiroId,
-          servicoId,
-          dataHora,
-          valorCobrado: servico.preco,
-          origem: 'APP_CLIENTE'
-        }
+        barbeiroId,
+        servicoId,
+        servicosIds: [servicoId],
+        dataHora: dataHora.toISOString(),
+        origem: 'APP_CLIENTE'
       });
 
       res.status(201).json(agendamento);

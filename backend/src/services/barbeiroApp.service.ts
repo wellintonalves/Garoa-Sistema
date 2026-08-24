@@ -8,6 +8,7 @@ import { diaBrasiliaStr, inicioDiaBrasilia, fimDiaBrasilia } from '../lib/timezo
 import { prepararOperacoesFidelidade, creditarPontosPorAgendamento } from './fidelidade.engine';
 import { FormaPagamento } from '@prisma/client';
 import { DescontoService, TipoDesconto } from './desconto.service';
+import { obterIdsServicosAgendamento } from '../utils/agendamento.util';
 
 interface RespostaAuthBarbeiro {
   token: string;
@@ -182,7 +183,6 @@ export class BarbeiroAppService {
     barbeiroId: string,
     barbeariaId: string,
     formaPagamento: string,
-    valorCobrado?: number, // Este valorCobrado pode vir do frontend do barbeiro (ainda não atualizado, então aceitamos mas recalculamos se tiver pontos ou descontos)
     pontosUsados?: number,
     descontoPercentual?: number,
     descontoReais?: number
@@ -245,10 +245,21 @@ export class BarbeiroAppService {
     const totalGasto = agregacaoResgates._sum.pontosUsados || 0;
     const saldoPontos = totalGanho - totalGasto;
 
-    // 3. Calcular descontos usando DescontoService
-    let valorBruto = Number(agendamentoOriginal.servico.preco);
-    if (valorCobrado !== undefined && !descontoPercentual && !descontoReais && !pontosUsados) {
-      valorBruto = valorCobrado;
+    let precosServicosAtuais: number[] = [];
+    const idsServicos = obterIdsServicosAgendamento(agendamentoOriginal);
+    
+    let valorBruto = Number(agendamentoOriginal.valorBruto || 0);
+    if (valorBruto === 0) {
+      console.warn(`[Fechamento] ALERT: Agendamento ${agendamentoId} está com valorBruto=0. Efetuando recálculo seguro.`);
+      const servicos = await prisma.servico.findMany({
+        where: { id: { in: idsServicos } }
+      });
+      precosServicosAtuais = servicos.map(s => Number(s.preco));
+      valorBruto = precosServicosAtuais.reduce((acc, preco) => acc + preco, 0);
+      
+      if (valorBruto === 0 && servicos.some(s => Number(s.preco) > 0)) {
+        throw new Error('O valor calculado dos serviços é 0, mas os serviços não são gratuitos.');
+      }
     }
     
     let tipoDesconto: TipoDesconto = 'NENHUM';
@@ -256,28 +267,39 @@ export class BarbeiroAppService {
     else if (descontoReais && descontoReais > 0) tipoDesconto = 'REAIS';
     else if (descontoPercentual && descontoPercentual > 0) tipoDesconto = 'PERCENTUAL';
 
-    const resultadoDesconto = DescontoService.calcularDesconto({
-      valorBruto,
-      tipo: tipoDesconto,
-      valorReais: descontoReais ? Number(descontoReais) : 0,
-      percentual: descontoPercentual ? Number(descontoPercentual) : 0,
-      pontos: pontosUsados ? Number(pontosUsados) : 0,
+    const { calcularFechamento } = await import('../utils/financeiro.util');
+    const comissaoPercent = barbeiro?.comissaoPercent || 50;
+
+    const resultadoFechamento = calcularFechamento({
+      valorBrutoOriginal: valorBruto,
+      precosServicosAtuais,
+      tipoDesconto,
+      valorDescontoReais: descontoReais ? Number(descontoReais) : 0,
+      valorDescontoPercentual: descontoPercentual ? Number(descontoPercentual) : 0,
+      pontosUsados: pontosUsados ? Number(pontosUsados) : 0,
       saldoPontos,
-      config: {
+      configFidelidade: {
         resgatePontosAtivo: configFidelidade.resgatePontosAtivo ?? false,
         valorPorPonto: Number(configFidelidade.valorPorPonto),
         percentualMaxPontos: Number(configFidelidade.percentualMaxPontos),
         descontoMaxReais: Number(configFidelidade.descontoMaxReais),
         descontoMaxPercentual: Number(configFidelidade.descontoMaxPercentual),
-        permitirCombinarDescontos: configFidelidade.permitirCombinarDescontos ?? false
-      }
+        permitirCombinarDescontos: configFidelidade.permitirCombinarDescontos ?? false,
+        pontosPorReal: Number(configFidelidade.pontosPorReal || 0),
+        pontosPorVisita: Number(configFidelidade.pontosPorVisita || 0)
+      },
+      configGlobal: {
+        baseCalculoComissao: configGlobal.baseCalculoComissao,
+        baseCalculoPontos: configGlobal.baseCalculoPontos
+      },
+      percentualComissao: comissaoPercent
     });
 
-    const valorFinal = resultadoDesconto.valorLiquido;
-    const pontosAUsar = resultadoDesconto.pontosUtilizados;
+    const valorFinal = resultadoFechamento.valorLiquido;
+    const pontosAUsar = resultadoFechamento.pontosUtilizados;
 
     // 4. Preparar pontos de acúmulo de fidelidade da visita
-    const baseParaPontos = configGlobal.baseCalculoPontos === 'VALOR_BRUTO' ? valorBruto : valorFinal;
+    const baseParaPontos = configGlobal.baseCalculoPontos === 'VALOR_BRUTO' ? resultadoFechamento.valorBruto : valorFinal;
     const operacoesFidelidade = await prepararOperacoesFidelidade(
       agendamentoOriginal.id,
       agendamentoOriginal.clienteId,
@@ -286,10 +308,8 @@ export class BarbeiroAppService {
       baseParaPontos
     );
 
-    // 5. Preparar valores de Comissão
-    const comissaoPercent = barbeiro?.comissaoPercent || 50;
-    const baseComissao = configGlobal.baseCalculoComissao === 'VALOR_BRUTO' ? valorBruto : valorFinal;
-    const valorComissao = (baseComissao * comissaoPercent) / 100;
+    // 5. Preparar valores de Comissão (já calculados pela função pura)
+    const valorComissao = resultadoFechamento.valorComissao;
     const valorLiquido = valorFinal - valorComissao;
 
     // Usar $transaction
@@ -303,11 +323,11 @@ export class BarbeiroAppService {
           tipoDesconto,
           descontoPercentualAplic: descontoPercentual ? Number(descontoPercentual) : null,
           descontoManual: descontoReais ? Number(descontoReais) : 0,
-          descontoPontos: Number(resultadoDesconto.descontoPontos),
+          descontoPontos: Number(resultadoFechamento.descontoPontos),
           pontosUtilizados: pontosAUsar,
-          valorBruto: Number(resultadoDesconto.valorBruto),
-          valorDesconto: Number(resultadoDesconto.valorDesconto),
-          valorLiquido: Number(resultadoDesconto.valorLiquido),
+          valorBruto: Number(resultadoFechamento.valorBruto),
+          valorDesconto: Number(resultadoFechamento.valorDesconto),
+          valorLiquido: Number(resultadoFechamento.valorLiquido),
         } as any,
       });
 
