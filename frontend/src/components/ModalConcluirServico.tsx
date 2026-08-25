@@ -68,13 +68,15 @@ export function ModalConcluirServico({ aberto, onFechar, agendamento, onConfirma
     tetoReais: number;
   } | null>(fidelidadeCache || null);
 
-  // State da simulação
+  // States da simulação
   const [simulacao, setSimulacao] = useState<{
     valorBruto: number;
     descontoManual: number;
     descontoPontos: number;
     valorLiquido: number;
   } | null>(null);
+  const [carregandoSimulacao, setCarregandoSimulacao] = useState(false);
+  const [erroSimulacao, setErroSimulacao] = useState<string | null>(null);
 
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
@@ -90,6 +92,8 @@ export function ModalConcluirServico({ aberto, onFechar, agendamento, onConfirma
       setPontosUsados('');
       setErro(null);
       setSimulacao(null);
+      setErroSimulacao(null);
+      setCarregandoSimulacao(false);
       setFidelidade(fidelidadeCache || null);
       
       api.get(`/fidelidade/clientes/${agendamento.cliente.id}/saldo?valorServico=${agendamento.valorCobrado}`)
@@ -104,54 +108,6 @@ export function ModalConcluirServico({ aberto, onFechar, agendamento, onConfirma
     }
   }, [aberto, agendamento]);
 
-  // Simulação instantânea no frontend
-  useEffect(() => {
-    if (!aberto || !agendamento) return;
-
-    setErro(null);
-
-    const valorBruto = Number(agendamento.valorBruto) || 0;
-    
-    if (!valorBruto) {
-      // Se não tem valor bruto, a tela não calcula. Aguarda a API/script corrigir.
-      return;
-    }
-
-    const taxa = fidelidade ? Number((fidelidade as any).taxaConversaoPontos || fidelidade.valorPorPonto) : 1;
-    
-    // 1. Desconto Manual
-    let descontoManualFinal = 0;
-    if (tipoManual === 'REAIS') {
-      descontoManualFinal = Number(valorDescontoManual) || 0;
-    } else if (tipoManual === 'PERCENTUAL') {
-      const perc = Number(valorDescontoManual) || 0;
-      descontoManualFinal = valorBruto * (perc / 100);
-    }
-    
-    // 2. Desconto Fidelidade
-    const maxPontos = fidelidade ? Number(fidelidade.maxPontosUtilizaveis) : 0;
-    const pts = Math.min(Number(pontosUsados) || 0, maxPontos);
-    const descontoPontos = pts * taxa;
-
-    const totalDesconto = descontoManualFinal + descontoPontos;
-    const valorLiquido = valorBruto - totalDesconto;
-
-    if (totalDesconto > valorBruto) {
-      const msg = 'O desconto não pode ser maior que o valor bruto.';
-      setErroDesconto(msg);
-      setErro(msg);
-    } else {
-      setErroDesconto(null);
-    }
-
-    setSimulacao({
-      valorBruto,
-      descontoManual: descontoManualFinal,
-      descontoPontos,
-      valorLiquido,
-    });
-  }, [tipoManual, valorDescontoManual, pontosUsados, aberto, agendamento, fidelidade]);
-
   const obterTipoGeral = (): 'NENHUM' | 'REAIS' | 'PERCENTUAL' | 'PONTOS' | 'COMBINADO' => {
     const temManual = tipoManual !== 'NENHUM' && Number(valorDescontoManual) > 0;
     const temPontos = Number(pontosUsados) > 0;
@@ -160,6 +116,53 @@ export function ModalConcluirServico({ aberto, onFechar, agendamento, onConfirma
     if (temManual) return tipoManual;
     return 'NENHUM';
   };
+
+  // Simulação via servidor
+  useEffect(() => {
+    if (!aberto || !agendamento) return;
+
+    setErroSimulacao(null);
+    setCarregandoSimulacao(true);
+
+    const timeout = setTimeout(async () => {
+      try {
+        const payload = {
+          tipoDesconto: obterTipoGeral(),
+          descontoReais: tipoManual === 'REAIS' ? Number(valorDescontoManual) : 0,
+          descontoPercentual: tipoManual === 'PERCENTUAL' ? Number(valorDescontoManual) : 0,
+          pontosUsados: Number(pontosUsados) || 0,
+        };
+
+        const res = await api.post(`/agendamentos/${agendamento.id}/simular-desconto`, payload);
+        
+        setSimulacao({
+          valorBruto: res.data.valorBruto,
+          descontoManual: res.data.descontoManual,
+          descontoPontos: res.data.descontoPontos,
+          valorLiquido: res.data.valorLiquido,
+        });
+
+        if (fidelidade && res.data.maxPontosUtilizaveis !== undefined) {
+           setFidelidade(prev => prev ? { ...prev, maxPontosUtilizaveis: res.data.maxPontosUtilizaveis } : prev);
+        }
+
+        setErroDesconto(null);
+        setErro(null);
+
+        if (res.data.valorDesconto > res.data.valorBruto) {
+           setErroDesconto('O desconto não pode ser maior que o valor bruto.');
+        }
+
+      } catch (err: any) {
+        setErroSimulacao('Não foi possível calcular o valor. Tente novamente.');
+        setSimulacao(null);
+      } finally {
+        setCarregandoSimulacao(false);
+      }
+    }, 300);
+
+    return () => clearTimeout(timeout);
+  }, [tipoManual, valorDescontoManual, pontosUsados, aberto, agendamento]);
 
   const handleSubmit = async () => {
     if (erro || !simulacao || !agendamento) return;
@@ -410,17 +413,17 @@ export function ModalConcluirServico({ aberto, onFechar, agendamento, onConfirma
           
           <div className="flex justify-between text-[var(--text-primary)] mb-1">
             <span>Subtotal (Bruto):</span>
-            <span className="tabular-nums">{simulacao ? `R$ ${simulacao.valorBruto.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '---'}</span>
+            <span className="tabular-nums">{simulacao && !carregandoSimulacao && !erroSimulacao ? `R$ ${simulacao.valorBruto.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '----'}</span>
           </div>
           
-          {simulacao && simulacao.descontoManual > 0 && (
+          {simulacao && !carregandoSimulacao && !erroSimulacao && simulacao.descontoManual > 0 && (
             <div className="flex justify-between text-[var(--perigo)] mb-1">
               <span>Desconto manual:</span>
               <span className="tabular-nums">- R$ {simulacao.descontoManual.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
             </div>
           )}
           
-          {simulacao && simulacao.descontoPontos > 0 && (
+          {simulacao && !carregandoSimulacao && !erroSimulacao && simulacao.descontoPontos > 0 && (
             <div className="flex justify-between text-[var(--perigo)] mb-1">
               <span>Desconto com pontos:</span>
               <span className="tabular-nums">- R$ {simulacao.descontoPontos.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
@@ -429,24 +432,31 @@ export function ModalConcluirServico({ aberto, onFechar, agendamento, onConfirma
           
           <div className="flex justify-between font-bold text-lg text-[var(--text-primary)] mt-2 pt-2 border-t border-[var(--border)]">
             <span>Total a cobrar:</span>
-            <span className="tabular-nums">{simulacao ? `R$ ${simulacao.valorLiquido.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '---'}</span>
+            <span className="tabular-nums">{simulacao && !carregandoSimulacao && !erroSimulacao ? `R$ ${simulacao.valorLiquido.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '----'}</span>
           </div>
         </div>
 
-        {erro && !erroDesconto && (
-          <div style={{ padding: '12px', background: 'var(--erro-fundo)', border: '1px solid var(--erro)', borderRadius: '6px', color: 'var(--erro)', fontSize: '13px', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '8px' }}>
+        {erroSimulacao && (
+          <div style={{ padding: '12px', background: 'var(--erro-fundo)', border: '1px solid var(--erro)', borderRadius: '6px', color: 'var(--erro)', fontSize: '13px', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px' }}>
+            <WarningCircle size={16} /> {erroSimulacao}
+          </div>
+        )}
+
+        {erro && !erroDesconto && !erroSimulacao && (
+          <div style={{ padding: '12px', background: 'var(--erro-fundo)', border: '1px solid var(--erro)', borderRadius: '6px', color: 'var(--erro)', fontSize: '13px', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px' }}>
             <WarningCircle size={16} /> {erro}
           </div>
         )}
 
         <button 
           onClick={handleSubmit} 
-          className="w-full min-h-[48px] flex items-center justify-center gap-2 rounded-md font-semibold text-sm transition-opacity"
+          disabled={salvando || erro !== null || erroSimulacao !== null || !simulacao || carregandoSimulacao}
+          className="w-full min-h-[48px] flex items-center justify-center gap-2 rounded-md font-semibold text-sm transition-opacity mt-4"
           style={{ 
             background: 'var(--cor-primaria)', 
             color: 'var(--texto-sobre-primaria)',
-            opacity: (salvando || erro) ? 0.6 : 1,
-            pointerEvents: (salvando || erro) ? 'none' : 'auto'
+            opacity: (salvando || erro !== null || erroSimulacao !== null || !simulacao || carregandoSimulacao) ? 0.6 : 1,
+            pointerEvents: (salvando || erro !== null || erroSimulacao !== null || !simulacao || carregandoSimulacao) ? 'none' : 'auto'
           }}
         >
           {salvando ? (
