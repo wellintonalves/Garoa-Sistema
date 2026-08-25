@@ -117,50 +117,51 @@ export function ModalConcluirServico({ aberto, onFechar, agendamento, onConfirma
     return 'NENHUM';
   };
 
-  // Simulação via servidor
-  useEffect(() => {
+  const buscarSimulacao = async () => {
     if (!aberto || !agendamento) return;
 
     setErroSimulacao(null);
     setCarregandoSimulacao(true);
 
-    const timeout = setTimeout(async () => {
-      try {
-        const payload = {
-          tipoDesconto: obterTipoGeral(),
-          descontoReais: tipoManual === 'REAIS' ? Number(valorDescontoManual) : 0,
-          descontoPercentual: tipoManual === 'PERCENTUAL' ? Number(valorDescontoManual) : 0,
-          pontosUsados: Number(pontosUsados) || 0,
-        };
+    try {
+      const payload = {
+        tipoDesconto: obterTipoGeral(),
+        descontoReais: tipoManual === 'REAIS' ? Number(valorDescontoManual) : 0,
+        descontoPercentual: tipoManual === 'PERCENTUAL' ? Number(valorDescontoManual) : 0,
+        pontosUsados: Number(pontosUsados) || 0,
+      };
 
-        const res = await api.post(`/agendamentos/${agendamento.id}/simular-desconto`, payload);
-        
-        setSimulacao({
-          valorBruto: res.data.valorBruto,
-          descontoManual: res.data.descontoManual,
-          descontoPontos: res.data.descontoPontos,
-          valorLiquido: res.data.valorLiquido,
-        });
+      const res = await api.post(`/agendamentos/${agendamento.id}/simular-desconto`, payload);
+      
+      setSimulacao({
+        valorBruto: res.data.valorBruto,
+        descontoManual: res.data.descontoManual,
+        descontoPontos: res.data.descontoPontos,
+        valorLiquido: res.data.valorLiquido,
+      });
 
-        if (fidelidade && res.data.maxPontosUtilizaveis !== undefined) {
-           setFidelidade(prev => prev ? { ...prev, maxPontosUtilizaveis: res.data.maxPontosUtilizaveis } : prev);
-        }
-
-        setErroDesconto(null);
-        setErro(null);
-
-        if (res.data.valorDesconto > res.data.valorBruto) {
-           setErroDesconto('O desconto não pode ser maior que o valor bruto.');
-        }
-
-      } catch (err: any) {
-        setErroSimulacao('Não foi possível calcular o valor. Tente novamente.');
-        setSimulacao(null);
-      } finally {
-        setCarregandoSimulacao(false);
+      if (fidelidade && res.data.maxPontosUtilizaveis !== undefined) {
+         setFidelidade(prev => prev ? { ...prev, maxPontosUtilizaveis: res.data.maxPontosUtilizaveis } : prev);
       }
-    }, 300);
 
+      setErroDesconto(null);
+      setErro(null);
+
+      if (res.data.valorDesconto > res.data.valorBruto) {
+         setErroDesconto('O desconto não pode ser maior que o valor bruto.');
+      }
+
+    } catch (err: any) {
+      setErroSimulacao('Não foi possível calcular o valor. Tente novamente.');
+      setSimulacao(null);
+    } finally {
+      setCarregandoSimulacao(false);
+    }
+  };
+
+  // Simulação via servidor
+  useEffect(() => {
+    const timeout = setTimeout(buscarSimulacao, 300);
     return () => clearTimeout(timeout);
   }, [tipoManual, valorDescontoManual, pontosUsados, aberto, agendamento]);
 
@@ -224,9 +225,9 @@ export function ModalConcluirServico({ aberto, onFechar, agendamento, onConfirma
                 <div className="flex justify-between items-center px-2 py-1 border-t border-[var(--border)] mt-1 font-bold">
                   <span className="text-[13px]">Total (Bruto):</span>
                   <span className="text-[13px] tabular-nums">
-                    {agendamento.servicosAdicionais.reduce((acc, s) => acc + s.duracaoMinutos, 0)} min · R$ {
-                      Number(agendamento.valorBruto || agendamento.valorCobrado).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-                    }
+                    {agendamento.servicosAdicionais.reduce((acc, s) => acc + s.duracaoMinutos, 0)} min · {simulacao && !carregandoSimulacao && !erroSimulacao
+                      ? `R$ ${simulacao.valorBruto.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                      : '----'}
                   </span>
                 </div>
               </div>
@@ -437,8 +438,21 @@ export function ModalConcluirServico({ aberto, onFechar, agendamento, onConfirma
         </div>
 
         {erroSimulacao && (
-          <div style={{ padding: '12px', background: 'var(--erro-fundo)', border: '1px solid var(--erro)', borderRadius: '6px', color: 'var(--erro)', fontSize: '13px', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px' }}>
-            <WarningCircle size={16} /> {erroSimulacao}
+          <div style={{ padding: '12px', background: 'var(--erro-fundo)', border: '1px solid var(--erro)', borderRadius: '6px', color: 'var(--erro)', fontSize: '13px', fontWeight: 500, display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '8px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <WarningCircle size={16} /> {erroSimulacao}
+            </div>
+            <button
+              onClick={buscarSimulacao}
+              className="w-full flex items-center justify-center rounded-md font-semibold text-sm transition-opacity"
+              style={{
+                minHeight: '44px',
+                background: 'var(--cor-primaria)',
+                color: 'var(--texto-sobre-primaria)'
+              }}
+            >
+              Tentar novamente
+            </button>
           </div>
         )}
 
