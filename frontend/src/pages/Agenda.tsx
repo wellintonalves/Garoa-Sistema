@@ -48,6 +48,10 @@ interface Agendamento {
   dataHora: string;
   status: 'AGUARDANDO' | 'CONFIRMADO' | 'CONCLUIDO' | 'CANCELADO';
   valorCobrado: string;
+  valorBruto?: string;
+  descontoReais?: number;
+  descontoPercentual?: number;
+  pontosUsados?: number;
   origem?: string;
   cliente: { id: string; usuario: { nome: string } };
   barbeiroId: string;
@@ -1021,22 +1025,51 @@ export function Agenda() {
               <p><strong style={{ color: 'var(--texto-secundario)' }}>Cliente:</strong> {agendamentoSelecionado.cliente.usuario.nome}</p>
               <div>
                 <strong style={{ color: 'var(--texto-secundario)' }}>Serviços:</strong>
-                {agendamentoSelecionado.servicosAdicionais && agendamentoSelecionado.servicosAdicionais.length > 0 ? (
-                  <div className="ml-2 mt-1 flex flex-col gap-1">
-                    {agendamentoSelecionado.servicosAdicionais.map((s, idx) => (
-                      <div key={idx} className="flex justify-between items-center bg-[var(--bg-surface2)] px-2 py-1 rounded">
-                        <span className="font-medium text-[13px]">{s.nome}</span>
-                        <span className="text-[12px] text-[var(--texto-secundario)] tabular-nums">{s.duracaoMinutos} min · R$ {Number(s.preco).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                      </div>
-                    ))}
-                    <div className="flex justify-between items-center px-2 py-1 border-t border-[var(--border)] mt-1 font-bold">
-                      <span className="text-[13px]">Total:</span>
-                      <span className="text-[13px] tabular-nums">{agendamentoSelecionado.servico.duracaoMinutos} min · R$ {Number(agendamentoSelecionado.valorCobrado).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                {(() => {
+                  const listaServicos = agendamentoSelecionado.servicosAdicionais?.length
+                    ? agendamentoSelecionado.servicosAdicionais
+                    : [agendamentoSelecionado.servico];
+                  const duracaoTotal = listaServicos.reduce((acc, s) => acc + s.duracaoMinutos, 0);
+                  const valorBruto = Number(agendamentoSelecionado.valorBruto) || Number(agendamentoSelecionado.valorCobrado);
+                  const valorCobrado = Number(agendamentoSelecionado.valorCobrado);
+                  const temDesconto = valorBruto > valorCobrado;
+                  const valorDesconto = valorBruto - valorCobrado;
+                  
+                  return (
+                    <div className="ml-2 mt-1 flex flex-col gap-1">
+                      {listaServicos.map((s, idx) => (
+                        <div key={idx} className="flex justify-between items-center bg-[var(--bg-surface2)] px-2 py-1 rounded">
+                          <span className="font-medium text-[13px]">{s.nome}</span>
+                          <span className="text-[12px] text-[var(--texto-secundario)] tabular-nums">{s.duracaoMinutos} min</span>
+                        </div>
+                      ))}
+
+                      {temDesconto ? (
+                        <>
+                          <div className="flex justify-between items-center px-2 py-1 border-t border-[var(--border)] mt-1 font-bold">
+                            <span className="text-[13px] font-normal text-[var(--texto-secundario)]">Subtotal:</span>
+                            <span className="text-[13px] tabular-nums font-normal text-[var(--texto-secundario)]">{duracaoTotal} min · R$ {valorBruto.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                          </div>
+                          <div className="flex justify-between items-center px-2 py-0">
+                            <span className="text-[13px] font-normal text-[var(--perigo)]">
+                              Desconto{agendamentoSelecionado.descontoPercentual ? ` (${agendamentoSelecionado.descontoPercentual}%)` : (agendamentoSelecionado.pontosUsados ? ' (Pontos)' : '')}:
+                            </span>
+                            <span className="text-[13px] tabular-nums font-normal text-[var(--perigo)]">− R$ {valorDesconto.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                          </div>
+                          <div className="flex justify-between items-center px-2 py-1 font-bold">
+                            <span className="text-[14px]">Total:</span>
+                            <span className="text-[14px] tabular-nums">R$ {valorCobrado.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="flex justify-between items-center px-2 py-1 border-t border-[var(--border)] mt-1 font-bold">
+                          <span className="text-[14px]">Total:</span>
+                          <span className="text-[14px] tabular-nums">{duracaoTotal} min · R$ {valorCobrado.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                        </div>
+                      )}
                     </div>
-                  </div>
-                ) : (
-                  <span className="ml-1">{formatarNomeServico(agendamentoSelecionado)} ({agendamentoSelecionado.servico.duracaoMinutos} min)</span>
-                )}
+                  );
+                })()}
               </div>
               <p><strong style={{ color: 'var(--texto-secundario)' }}>Barbeiro:</strong> {agendamentoSelecionado.barbeiro.usuario.nome}</p>
               <p><strong style={{ color: 'var(--texto-secundario)' }}>Data/Hora:</strong> {new Date(agendamentoSelecionado.dataHora).toLocaleString('pt-BR')}</p>

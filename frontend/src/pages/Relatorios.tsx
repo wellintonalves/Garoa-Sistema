@@ -130,8 +130,8 @@ export function Relatorios() {
     setLancamentoEditando(l);
     setServicosAdicionais([]);
     setValoresEdit({
-      valor: String(l.valor),
-      comissao: String(l.valorComissao || ''),
+      valor: Number(l.valor).toFixed(2),
+      comissao: l.valorComissao ? Number(l.valorComissao).toFixed(2) : '',
       formaPagamento: l.formaPagamento,
       servicoId: l.servicoId || '',
     });
@@ -420,7 +420,7 @@ export function Relatorios() {
                   onChange={e => setValoresEdit({...valoresEdit, servicoId: e.target.value})}
                 >
                   <option value="">Selecione (ou deixe em branco)</option>
-                  {servicos.map(s => <option key={s.id} value={s.id}>{s.nome} - R$ {Number(s.preco).toFixed(2)}</option>)}
+                  {servicos.map(s => <option key={s.id} value={s.id}>{s.nome} - {fmt(s.preco)}</option>)}
                 </select>
               </div>
 
