@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Modal } from './Modal';
+import { ModalAlert } from './ModalAlert';
 import api from '../api/client';
 import { CircleNotch, WarningCircle } from '@phosphor-icons/react';
 
@@ -78,6 +79,7 @@ export function ModalConcluirServico({ aberto, onFechar, agendamento, onConfirma
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const [erroDesconto, setErroDesconto] = useState<string | null>(null);
+  const [confirmarMsg, setConfirmarMsg] = useState<string | null>(null);
 
   // Carregar saldo do cliente quando abre o modal
   useEffect(() => {
@@ -108,10 +110,13 @@ export function ModalConcluirServico({ aberto, onFechar, agendamento, onConfirma
 
     setErro(null);
 
-    const valorBruto = Number(agendamento.valorBruto) > 0 
-      ? Number(agendamento.valorBruto) 
-      : Number(agendamento.servico.preco) + (agendamento.servicosAdicionais?.reduce((acc, s) => acc + Number(s.preco), 0) || 0);
-      
+    const valorBruto = Number(agendamento.valorBruto) || 0;
+    
+    if (!valorBruto) {
+      // Se não tem valor bruto, a tela não calcula. Aguarda a API/script corrigir.
+      return;
+    }
+
     const taxa = fidelidade ? Number((fidelidade as any).taxaConversaoPontos || fidelidade.valorPorPonto) : 1;
     
     // 1. Desconto Manual
@@ -157,9 +162,27 @@ export function ModalConcluirServico({ aberto, onFechar, agendamento, onConfirma
   };
 
   const handleSubmit = async () => {
-    if (erro || !simulacao) return;
+    if (erro || !simulacao || !agendamento) return;
+
+    if (agendamento.dataHora && new Date(agendamento.dataHora) > new Date()) {
+      const d = new Date(agendamento.dataHora);
+      const diaSemana = new Intl.DateTimeFormat('pt-BR', { weekday: 'long' }).format(d);
+      const diaStr = d.getDate().toString().padStart(2, '0');
+      const mesStr = (d.getMonth() + 1).toString().padStart(2, '0');
+      const horaStr = d.getHours().toString().padStart(2, '0');
+      const minStr = d.getMinutes().toString().padStart(2, '0');
+      const msg = `Este atendimento está marcado para ${diaSemana}, ${diaStr}/${mesStr} às ${horaStr}:${minStr}. O valor vai entrar no caixa de hoje.`;
+      setConfirmarMsg(msg);
+      return;
+    }
+    
+    await realizarFechamento();
+  };
+
+  const realizarFechamento = async () => {
     setSalvando(true);
     setErro(null);
+    setConfirmarMsg(null);
     try {
       const tipo = obterTipoGeral();
       await onConfirmar({
@@ -181,6 +204,7 @@ export function ModalConcluirServico({ aberto, onFechar, agendamento, onConfirma
   if (!agendamento) return null;
 
   return (
+    <>
     <Modal aberto={aberto} onFechar={onFechar} titulo="Concluir Serviço">
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
         <div className="flex flex-col gap-1 text-sm text-[var(--text-primary)]">
@@ -188,45 +212,26 @@ export function ModalConcluirServico({ aberto, onFechar, agendamento, onConfirma
             <strong className="text-[var(--texto-secundario)]">Serviços:</strong>
             {agendamento.servicosAdicionais && agendamento.servicosAdicionais.length > 0 ? (
               <div className="ml-2 mt-1 flex flex-col gap-1">
-                {/* Serviço principal */}
-                <div className="flex justify-between items-center bg-[var(--bg-surface2)] px-2 py-1 rounded">
-                  <span className="font-medium text-[13px]">{agendamento.servico.nome}</span>
-                  <span className="text-[12px] text-[var(--texto-secundario)] tabular-nums">{agendamento.servico.duracaoMinutos} min · R$ {Number(agendamento.servico.preco).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                </div>
-                {/* Serviços adicionais */}
                 {agendamento.servicosAdicionais.map((s, idx) => (
                   <div key={idx} className="flex justify-between items-center bg-[var(--bg-surface2)] px-2 py-1 rounded">
                     <span className="font-medium text-[13px]">{s.nome}</span>
-                    <span className="text-[12px] text-[var(--texto-secundario)] tabular-nums">{s.duracaoMinutos} min · R$ {Number(s.preco).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                    <span className="text-[12px] text-[var(--texto-secundario)] tabular-nums">{s.duracaoMinutos} min</span>
                   </div>
                 ))}
                 <div className="flex justify-between items-center px-2 py-1 border-t border-[var(--border)] mt-1 font-bold">
-                  <span className="text-[13px]">Total:</span>
+                  <span className="text-[13px]">Total (Bruto):</span>
                   <span className="text-[13px] tabular-nums">
-                    {agendamento.servico.duracaoMinutos + agendamento.servicosAdicionais.reduce((acc, s) => acc + s.duracaoMinutos, 0)} min · R$ {
-                      (Number(agendamento.servico.preco) + agendamento.servicosAdicionais.reduce((acc, s) => acc + Number(s.preco), 0)).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                    {agendamento.servicosAdicionais.reduce((acc, s) => acc + s.duracaoMinutos, 0)} min · R$ {
+                      Number(agendamento.valorBruto || agendamento.valorCobrado).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
                     }
                   </span>
                 </div>
               </div>
             ) : (
-              <span className="ml-1">{agendamento.servico.nome} ({agendamento.servico.duracaoMinutos} min) - R$ {Number(agendamento.servico.preco).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-            )}
-            
-            {Number(agendamento.valorBruto) > 0 && Number(agendamento.valorBruto) !== (Number(agendamento.servico.preco) + (agendamento.servicosAdicionais?.reduce((acc, s) => acc + Number(s.preco), 0) || 0)) && (
-              <div className="mt-2 p-2 bg-[var(--erro-fundo)] text-[var(--perigo)] text-xs rounded border border-[var(--erro)]">
-                <strong>Atenção:</strong> Os preços atuais dos serviços somam R$ {(Number(agendamento.servico.preco) + (agendamento.servicosAdicionais?.reduce((acc, s) => acc + Number(s.preco), 0) || 0)).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}, mas o valor do atendimento foi travado na data da marcação em <strong>R$ {Number(agendamento.valorBruto).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>. Este é o valor que será cobrado.
-              </div>
+              <span className="ml-1">Serviço não encontrado</span>
             )}
           </div>
           <p><strong className="text-[var(--texto-secundario)]">Cliente:</strong> {agendamento.cliente.usuario.nome}</p>
-          
-          {agendamento.dataHora && new Date(agendamento.dataHora) > new Date() && (
-            <div className="p-2 bg-[var(--erro-fundo)] text-[var(--perigo)] text-xs rounded border border-[var(--erro)] flex items-center gap-2">
-              <WarningCircle size={16} />
-              Você não pode concluir um atendimento do futuro.
-            </div>
-          )}
         </div>
 
         <div>
@@ -405,7 +410,7 @@ export function ModalConcluirServico({ aberto, onFechar, agendamento, onConfirma
           
           <div className="flex justify-between text-[var(--text-primary)] mb-1">
             <span>Subtotal (Bruto):</span>
-            <span className="tabular-nums">R$ {simulacao ? simulacao.valorBruto.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0,00'}</span>
+            <span className="tabular-nums">{simulacao ? `R$ ${simulacao.valorBruto.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '---'}</span>
           </div>
           
           {simulacao && simulacao.descontoManual > 0 && (
@@ -424,7 +429,7 @@ export function ModalConcluirServico({ aberto, onFechar, agendamento, onConfirma
           
           <div className="flex justify-between font-bold text-lg text-[var(--text-primary)] mt-2 pt-2 border-t border-[var(--border)]">
             <span>Total a cobrar:</span>
-            <span className="tabular-nums">R$ {simulacao ? simulacao.valorLiquido.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0,00'}</span>
+            <span className="tabular-nums">{simulacao ? `R$ ${simulacao.valorLiquido.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '---'}</span>
           </div>
         </div>
 
@@ -440,8 +445,8 @@ export function ModalConcluirServico({ aberto, onFechar, agendamento, onConfirma
           style={{ 
             background: 'var(--cor-primaria)', 
             color: 'var(--texto-sobre-primaria)',
-            opacity: (salvando || erro || (agendamento.dataHora && new Date(agendamento.dataHora) > new Date())) ? 0.6 : 1,
-            pointerEvents: (salvando || erro || (agendamento.dataHora && new Date(agendamento.dataHora) > new Date())) ? 'none' : 'auto'
+            opacity: (salvando || erro) ? 0.6 : 1,
+            pointerEvents: (salvando || erro) ? 'none' : 'auto'
           }}
         >
           {salvando ? (
@@ -455,5 +460,17 @@ export function ModalConcluirServico({ aberto, onFechar, agendamento, onConfirma
         </button>
       </div>
     </Modal>
+    <ModalAlert 
+      aberto={confirmarMsg !== null} 
+      onFechar={() => setConfirmarMsg(null)}
+      onConfirmar={realizarFechamento}
+      titulo="Confirmar fechamento antecipado"
+      mensagem={confirmarMsg || ''}
+      tipo="aviso"
+      isConfirm={true}
+      textoBotao="Fechar a conta agora"
+      textoCancelar="Voltar"
+    />
+    </>
   );
 }
