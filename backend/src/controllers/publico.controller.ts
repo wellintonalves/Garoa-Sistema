@@ -284,14 +284,35 @@ export class PublicoController {
       }
 
       // Historico de visitas concluidas
-      const historico = await prisma.agendamento.findMany({
+      const historicoAgendamentos = await prisma.agendamento.findMany({
         where: { 
           clienteId: cliente.id,
           status: 'CONCLUIDO'
         },
         include: { servico: true, barbeiro: { include: { usuario: true } } },
-        orderBy: { dataHora: 'desc' }
       });
+
+      const historicoLancamentos = await prisma.lancamentoFinanceiro.findMany({
+        where: {
+          clienteId: cliente.id,
+          agendamentoId: null,
+          tipo: 'ENTRADA'
+        },
+        include: { servico: true, barbeiro: { include: { usuario: true } } }
+      });
+
+      const historico = [
+        ...historicoAgendamentos.map(h => ({
+          dataHora: h.dataHora,
+          servico: h.servico?.nome || 'Serviço',
+          barbeiro: h.barbeiro?.usuario?.nome || '—'
+        })),
+        ...historicoLancamentos.map(l => ({
+          dataHora: l.data,
+          servico: l.servico?.nome || (l.categoria === 'VENDA_PRODUTO' ? 'Produto' : 'Avulso'),
+          barbeiro: l.barbeiro?.usuario?.nome || '—'
+        }))
+      ].sort((a, b) => new Date(b.dataHora).getTime() - new Date(a.dataHora).getTime());
 
       const config = await ConfiguracaoService.obter();
       const regras = config.regrasFidelidade as any;
@@ -307,8 +328,8 @@ export class PublicoController {
         pontosFaltantes,
         historico: historico.slice(0, 10).map(h => ({
           data: h.dataHora,
-          servico: h.servico?.nome || 'Serviço',
-          barbeiro: h.barbeiro.usuario.nome
+          servico: h.servico,
+          barbeiro: h.barbeiro
         }))
       });
 

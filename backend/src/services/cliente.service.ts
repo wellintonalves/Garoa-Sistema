@@ -190,6 +190,14 @@ export class ClienteService {
           include: { recompensa: { select: { nome: true } } },
           orderBy: { createdAt: 'desc' },
         },
+        lancamentos: {
+          where: { barbeariaId, agendamentoId: null, tipo: 'ENTRADA' },
+          include: {
+            servico: { select: { nome: true } },
+            barbeiro: { include: { usuario: { select: { nome: true } } } },
+          },
+          orderBy: { data: 'desc' },
+        },
       },
     });
 
@@ -241,15 +249,25 @@ export class ClienteService {
       pontosGanhos,
       pontosUsados,
       ...nivelInfo,
-      // Históricos
-      agendamentos: (cliente.agendamentos || []).map((a: any) => ({
-        id: a.id,
-        dataHora: a.dataHora,
-        status: a.status,
-        valorCobrado: a.valorCobrado,
-        servico: a.servico?.nome || '—',
-        barbeiro: a.barbeiro?.usuario?.nome || '—',
-      })),
+      // Históricos combinados (Agendamentos + Lancamentos avulsos)
+      agendamentos: [
+        ...(cliente.agendamentos || []).map((a: any) => ({
+          id: a.id,
+          dataHora: a.dataHora,
+          status: a.status,
+          valorCobrado: a.valorCobrado,
+          servico: a.servico?.nome || '—',
+          barbeiro: a.barbeiro?.usuario?.nome || '—',
+        })),
+        ...(cliente.lancamentos || []).map((l: any) => ({
+          id: l.id,
+          dataHora: l.data,
+          status: 'CONCLUIDO',
+          valorCobrado: Number(l.valor),
+          servico: l.servico?.nome || (l.categoria === 'VENDA_PRODUTO' ? 'Produto' : 'Avulso'),
+          barbeiro: l.barbeiro?.usuario?.nome || '—',
+        }))
+      ].sort((a, b) => new Date(b.dataHora).getTime() - new Date(a.dataHora).getTime()),
       historicoPontos: (cliente.pontosFidelidade || []).map((p: any) => ({
         id: p.id,
         pontos: p.pontos,

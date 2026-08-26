@@ -5,6 +5,7 @@ import { Modal } from '../components/Modal';
 import { Botao } from '../components/ui/Botao';
 import { SkeletonPage } from '../components/Skeleton';
 import { StatCard } from '../components/StatCard';
+import { BuscaCliente } from '../components/BuscaCliente';
 
 import api from '../api/client';
 import { hojeBrasilia } from '../utils/datas';
@@ -50,7 +51,7 @@ export function Financeiro() {
   const [confirmandoExclusao, setConfirmandoExclusao] = useState<string | null>(null);
   const [editId, setEditId] = useState<string | null>(null);
   
-  const formPadrao = { tipo: 'ENTRADA', categoria: '', descricao: '', valor: '', formaPagamento: 'PIX', data: hojeBrasilia(), servicoId: '', barbeiroId: '' };
+  const formPadrao = { tipo: 'ENTRADA', categoria: '', descricao: '', valor: '', formaPagamento: 'PIX', data: hojeBrasilia(), servicoId: '', barbeiroId: '', clienteId: null as string | null };
   const [form, setForm] = useState(formPadrao);
   const [filtroCategoria, setFiltroCategoria] = useState<string>('TODAS');
 
@@ -93,7 +94,8 @@ export function Financeiro() {
         formaPagamento: lancamento.formaPagamento,
         data: lancamento.data.split('T')[0],
         servicoId: lancamento.servicoId || '',
-        barbeiroId: lancamento.barbeiroId || ''
+        barbeiroId: lancamento.barbeiroId || '',
+        clienteId: null
       });
     } else {
       setEditId(null);
@@ -332,6 +334,12 @@ export function Financeiro() {
 
           {form.tipo === 'ENTRADA' && (
             <>
+              <div className="z-50 relative">
+                <BuscaCliente 
+                  onSelect={(id) => setForm({...form, clienteId: id})} 
+                  selectedClienteId={form.clienteId} 
+                />
+              </div>
               <div>
                 <label className="input-label">Serviço (Opcional)</label>
                 <select value={form.servicoId} onChange={e => setForm({...form, servicoId: e.target.value})} className="ds-select">

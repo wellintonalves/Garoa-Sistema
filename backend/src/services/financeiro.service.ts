@@ -4,6 +4,8 @@ import { TipoLancamento, FormaPagamento } from '@prisma/client';
 import { inicioDiaBrasilia, fimDiaBrasilia, diaBrasiliaStr, getHoraMinutoBrasilia } from '../lib/timezone';
 import { CATEGORIA_VENDA_PRODUTO } from '../lib/constantes';
 import { obterIdsServicosAgendamento } from '../utils/agendamento.util';
+import { prepararOperacoesFidelidadeLancamento } from './fidelidade.engine';
+import { tenantStorage } from '../lib/als';
 
 interface DadosLancamento {
   tipo: TipoLancamento;
@@ -12,6 +14,7 @@ interface DadosLancamento {
   valor: number;
   formaPagamento: FormaPagamento;
   agendamentoId?: string;
+  clienteId?: string;
   barbeiroId?: string;
   servicoId?: string;
   data: string;
@@ -58,20 +61,59 @@ export class FinanceiroService {
       }
     }
 
+    const payloadLancamento = {
+      tipo: dados.tipo,
+      categoria: dados.categoria,
+      descricao: dados.descricao,
+      valor: dados.valor,
+      formaPagamento: dados.formaPagamento,
+      agendamentoId: dados.agendamentoId || null,
+      clienteId: dados.clienteId || null,
+      barbeiroId: dados.barbeiroId || null,
+      servicoId: dados.servicoId || null,
+      valorComissao,
+      valorLiquido,
+      data: inicioDiaBrasilia(dados.data),
+    };
+
+    const store = tenantStorage.getStore();
+    const barbeariaId = store?.barbeariaId;
+
+    // Se houver cliente vinculado a uma entrada avulsa, pontua na mesma transação
+    if (dados.tipo === 'ENTRADA' && dados.clienteId && !dados.agendamentoId && barbeariaId) {
+      // 'temp' será substituído pelo ID real dentro da transação
+      const ops = await prepararOperacoesFidelidadeLancamento(
+        'temp',
+        dados.clienteId,
+        barbeariaId,
+        dados.servicoId || null,
+        dados.valor
+      );
+
+      return prisma.$transaction(async (tx) => {
+        const lancamento = await tx.lancamentoFinanceiro.create({
+          data: payloadLancamento as any,
+        });
+
+        if (ops.pontosParaCriar.length > 0) {
+          for (const op of ops.pontosParaCriar) {
+            await tx.pontoFidelidade.create({
+              data: {
+                clienteId: op.clienteId,
+                barbeariaId: op.barbeariaId,
+                lancamentoId: lancamento.id,
+                pontos: op.pontos,
+                descricao: op.descricao
+              }
+            });
+          }
+        }
+        return lancamento;
+      });
+    }
+
     return prisma.lancamentoFinanceiro.create({
-      data: {
-        tipo: dados.tipo,
-        categoria: dados.categoria,
-        descricao: dados.descricao,
-        valor: dados.valor,
-        formaPagamento: dados.formaPagamento,
-        agendamentoId: dados.agendamentoId || null,
-        barbeiroId: dados.barbeiroId || null,
-        servicoId: dados.servicoId || null,
-        valorComissao,
-        valorLiquido,
-        data: inicioDiaBrasilia(dados.data),
-      } as any,
+      data: payloadLancamento as any,
     });
   }
 

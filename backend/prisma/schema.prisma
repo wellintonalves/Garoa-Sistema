@@ -80,26 +80,26 @@ enum StatusResgate {
 }
 
 model Barbearia {
-  id                 String   @id @default(uuid())
-  nome               String
-  slug               String   @unique
-  telefone           String?
-  endereco           String?
-  logo               String?
-  corPrimaria        String?  @default("#FF8C00") // Laranja
-  corSecundaria      String?  @default("#1A1A1A") // Escuro
-  corTexto           String?  @default("#FFFFFF") // Branco
-  fonte              String?  @default("Inter")
-  fonteCorpo         String?  @default("Inter")
-  fonteNumeros       String?  @default("DM Mono")
-  horarioAbertura    String?  @default("09:00")
+  id                  String   @id @default(uuid())
+  nome                String
+  slug                String   @unique
+  telefone            String?
+  endereco            String?
+  logo                String?
+  corPrimaria         String?  @default("#FF8C00") // Laranja
+  corSecundaria       String?  @default("#1A1A1A") // Escuro
+  corTexto            String?  @default("#FFFFFF") // Branco
+  fonte               String?  @default("Inter")
+  fonteCorpo          String?  @default("Inter")
+  fonteNumeros        String?  @default("DM Mono")
+  horarioAbertura     String?  @default("09:00")
   horarioFechamento   String?  @default("19:00")
   temAlmoco           Boolean  @default(false)
   horarioAlmocoInicio String?  @default("12:00")
   horarioAlmocoFim    String?  @default("13:00")
   diasFuncionamento   String[] @default(["1", "2", "3", "4", "5", "6"]) // Seg a Sab
-  ativo              Boolean  @default(true)
-  createdAt          DateTime @default(now())
+  ativo               Boolean  @default(true)
+  createdAt           DateTime @default(now())
 
   usuarios               Usuario[]
   barbeiros              Barbeiro[]
@@ -124,20 +124,20 @@ model Barbearia {
 }
 
 model Usuario {
-  id                String   @id @default(uuid())
+  id                String    @id @default(uuid())
   nome              String
   email             String
   senha             String
-  papel             Papel    @default(CLIENTE)
+  papel             Papel     @default(CLIENTE)
   barbeariaId       String?
-  emailVerificado   Boolean  @default(false)
+  emailVerificado   Boolean   @default(false)
   codigoVerificacao String?
   codigoExpiracao   DateTime?
-  createdAt         DateTime @default(now())
+  createdAt         DateTime  @default(now())
 
-  barbearia Barbearia? @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
-  barbeiro  Barbeiro?
-  cliente   Cliente?
+  barbearia         Barbearia?            @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
+  barbeiro          Barbeiro?
+  cliente           Cliente?
   remarcacoesFeitas HistoricoRemarcacao[]
 
   @@unique([email, barbeariaId])
@@ -145,42 +145,42 @@ model Usuario {
 }
 
 model Barbeiro {
-  id              String   @id @default(uuid())
-  usuarioId       String   @unique
-  barbeariaId     String?
-  foto            String?
-  especialidades  String[]
-  comissaoPercent Float    @default(50)
-  cor             String?  @default("#F97316") // Laranja
-  ativo           Boolean  @default(true)
-  trabalhandoAgora Boolean @default(false)
-  telefone        String?
+  id               String   @id @default(uuid())
+  usuarioId        String   @unique
+  barbeariaId      String?
+  foto             String?
+  especialidades   String[]
+  comissaoPercent  Float    @default(50)
+  cor              String?  @default("#F97316") // Laranja
+  ativo            Boolean  @default(true)
+  trabalhandoAgora Boolean  @default(false)
+  telefone         String?
   horariosTrabalho Json?
-  avaliacaoMedia  Float?   @default(5.0)
+  avaliacaoMedia   Float?   @default(5.0)
 
-  barbearia       Barbearia?             @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
-  usuario         Usuario                @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
-  agendamentos    Agendamento[]
-  lancamentos     LancamentoFinanceiro[]
-  aprovacoes      AprovacaoEdicao[]
-  bloqueiosAgenda BloqueioAgenda[]
-  avaliacoes         Avaliacao[]
-  remarcacoesAnteriores HistoricoRemarcacao[] @relation("BarbeiroAnteriorRel")
-  remarcacoesNovas      HistoricoRemarcacao[] @relation("BarbeiroNovoRel")
+  barbearia             Barbearia?             @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
+  usuario               Usuario                @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  agendamentos          Agendamento[]
+  lancamentos           LancamentoFinanceiro[]
+  aprovacoes            AprovacaoEdicao[]
+  bloqueiosAgenda       BloqueioAgenda[]
+  avaliacoes            Avaliacao[]
+  remarcacoesAnteriores HistoricoRemarcacao[]  @relation("BarbeiroAnteriorRel")
+  remarcacoesNovas      HistoricoRemarcacao[]  @relation("BarbeiroNovoRel")
 
   @@index([barbeariaId])
   @@map("barbeiros")
 }
 
 model BloqueioAgenda {
-  id          String   @id @default(uuid())
-  barbeiroId  String
-  dataInicio  DateTime
-  dataFim     DateTime
-  motivo      String?
-  createdAt   DateTime @default(now())
+  id         String   @id @default(uuid())
+  barbeiroId String
+  dataInicio DateTime
+  dataFim    DateTime
+  motivo     String?
+  createdAt  DateTime @default(now())
 
-  barbeiro    Barbeiro @relation(fields: [barbeiroId], references: [id], onDelete: Cascade)
+  barbeiro Barbeiro @relation(fields: [barbeiroId], references: [id], onDelete: Cascade)
 
   @@index([barbeiroId])
   @@index([dataInicio, dataFim])
@@ -188,13 +188,13 @@ model BloqueioAgenda {
 }
 
 model Cliente {
-  id               String    @id @default(uuid())
-  usuarioId        String    @unique
-  barbeariaId      String?
-  telefone         String?
-  dataNascimento   DateTime?
-  observacoes      String?
-  codigoIndicacao  String?   @unique
+  id              String    @id @default(uuid())
+  usuarioId       String    @unique
+  barbeariaId     String?
+  telefone        String?
+  dataNascimento  DateTime?
+  observacoes     String?
+  codigoIndicacao String?   @unique
 
   barbearia          Barbearia?          @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
   usuario            Usuario             @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
@@ -202,6 +202,7 @@ model Cliente {
   clientesBarbearias ClienteBarbearia[]
   pontosFidelidade   PontoFidelidade[]
   resgatesRecompensa ResgateRecompensa[]
+  lancamentos        LancamentoFinanceiro[]
   chatMensagens      ChatMensagem[]
   indicacoesFeitas   Indicacao[]         @relation("Indicador")
   indicacaoRecebida  Indicacao[]         @relation("Indicado")
@@ -217,7 +218,7 @@ model ClienteBarbearia {
   barbeariaId String?
   conectadoEm DateTime @default(now())
 
-  cliente   Cliente   @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+  cliente   Cliente    @relation(fields: [clienteId], references: [id], onDelete: Cascade)
   barbearia Barbearia? @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
 
   @@unique([clienteId, barbeariaId])
@@ -235,18 +236,20 @@ enum BaseCalculoPontos {
 }
 
 model PontoFidelidade {
-  id            String   @id @default(uuid())
+  id            String              @id @default(uuid())
   clienteId     String
   barbeariaId   String?
-  agendamentoId String?  @unique
+  agendamentoId String?             @unique
+  lancamentoId  String?             @unique
   tipo          TipoTransacaoPontos @default(ACUMULO)
   pontos        Int
   saldoApos     Int                 @default(0)
   descricao     String
-  data          DateTime @default(now())
+  data          DateTime            @default(now())
 
-  cliente   Cliente   @relation(fields: [clienteId], references: [id], onDelete: Cascade)
-  barbearia Barbearia? @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
+  cliente    Cliente    @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+  barbearia  Barbearia? @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
+  lancamento LancamentoFinanceiro? @relation(fields: [lancamentoId], references: [id], onDelete: SetNull)
 
   @@map("pontos_fidelidade")
 }
@@ -262,48 +265,48 @@ model Servico {
   cor             String? @default("#22C55E") // Verde
   ativo           Boolean @default(true)
 
-  barbearia    Barbearia?             @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
-  agendamentos Agendamento[]
-  lancamentos  LancamentoFinanceiro[]
-  recompensas  Recompensa[]
-  remarcacoesAnteriores HistoricoRemarcacao[] @relation("ServicoAnteriorRel")
-  remarcacoesNovas      HistoricoRemarcacao[] @relation("ServicoNovoRel")
+  barbearia             Barbearia?             @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
+  agendamentos          Agendamento[]
+  lancamentos           LancamentoFinanceiro[]
+  recompensas           Recompensa[]
+  remarcacoesAnteriores HistoricoRemarcacao[]  @relation("ServicoAnteriorRel")
+  remarcacoesNovas      HistoricoRemarcacao[]  @relation("ServicoNovoRel")
 
   @@map("servicos")
 }
 
 model Agendamento {
-  id           String             @id @default(uuid())
+  id           String            @id @default(uuid())
   barbeariaId  String?
   clienteId    String
   barbeiroId   String
   servicoId    String
-  servicosIds  String[]           @default([])
+  servicosIds  String[]          @default([])
   dataHora     DateTime
-  status       StatusAgendamento  @default(AGUARDANDO)
+  status       StatusAgendamento @default(AGUARDANDO)
   observacoes  String?
-  valorCobrado Decimal            @db.Decimal(10, 2)
-  origem       String             @default("SISTEMA")
-  
+  valorCobrado Decimal           @db.Decimal(10, 2)
+  origem       String            @default("SISTEMA")
+
   // Descontos e Fidelidade
-  valorBruto              Decimal            @default(0) @db.Decimal(10, 2)
-  tipoDesconto            TipoDesconto       @default(NENHUM)
-  descontoManual          Decimal            @default(0) @db.Decimal(10, 2)
-  descontoPercentualAplic Decimal?           @db.Decimal(10, 2)
-  pontosUtilizados        Int                @default(0)
-  descontoPontos          Decimal            @default(0) @db.Decimal(10, 2)
-  valorDesconto           Decimal            @default(0) @db.Decimal(10, 2)
-  valorLiquido            Decimal            @default(0) @db.Decimal(10, 2)
-  
-  createdAt    DateTime           @default(now())
+  valorBruto              Decimal      @default(0) @db.Decimal(10, 2)
+  tipoDesconto            TipoDesconto @default(NENHUM)
+  descontoManual          Decimal      @default(0) @db.Decimal(10, 2)
+  descontoPercentualAplic Decimal?     @db.Decimal(10, 2)
+  pontosUtilizados        Int          @default(0)
+  descontoPontos          Decimal      @default(0) @db.Decimal(10, 2)
+  valorDesconto           Decimal      @default(0) @db.Decimal(10, 2)
+  valorLiquido            Decimal      @default(0) @db.Decimal(10, 2)
+
+  createdAt DateTime @default(now())
 
   barbearia Barbearia? @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
-  cliente  Cliente  @relation(fields: [clienteId], references: [id], onDelete: Cascade)
-  barbeiro Barbeiro @relation(fields: [barbeiroId], references: [id], onDelete: Cascade)
-  servico  Servico  @relation(fields: [servicoId], references: [id], onDelete: Cascade)
+  cliente   Cliente    @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+  barbeiro  Barbeiro   @relation(fields: [barbeiroId], references: [id], onDelete: Cascade)
+  servico   Servico    @relation(fields: [servicoId], references: [id], onDelete: Cascade)
 
-  lancamentos LancamentoFinanceiro[]
-  avaliacao   Avaliacao?
+  lancamentos          LancamentoFinanceiro[]
+  avaliacao            Avaliacao?
   historicoRemarcacoes HistoricoRemarcacao[]
 
   @@index([barbeariaId, dataHora])
@@ -321,7 +324,8 @@ model LancamentoFinanceiro {
   valor          Decimal        @db.Decimal(10, 2)
   formaPagamento FormaPagamento
   agendamentoId  String?
-  
+
+  clienteId            String?
   barbeiroId           String?
   servicoId            String?
   valorComissao        Decimal?             @db.Decimal(10, 2)
@@ -329,15 +333,17 @@ model LancamentoFinanceiro {
   percentualComissao   Decimal?             @db.Decimal(10, 2)
   baseComissaoAplicada BaseCalculoComissao?
 
-  data                 DateTime
-  createdAt            DateTime             @default(now())
+  data      DateTime
+  createdAt DateTime @default(now())
 
-  aprovacoes  AprovacaoEdicao[]
+  aprovacoes AprovacaoEdicao[]
 
   barbearia   Barbearia?   @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
   agendamento Agendamento? @relation(fields: [agendamentoId], references: [id], onDelete: SetNull)
+  cliente     Cliente?     @relation(fields: [clienteId], references: [id], onDelete: SetNull)
   barbeiro    Barbeiro?    @relation(fields: [barbeiroId], references: [id], onDelete: SetNull)
   servico     Servico?     @relation(fields: [servicoId], references: [id], onDelete: SetNull)
+  pontoFidelidade PontoFidelidade?
 
   @@index([barbeariaId, data])
   @@map("lancamentos_financeiros")
@@ -380,13 +386,13 @@ model VendaProduto {
 }
 
 model Configuracao {
-  id                    String              @id @default(uuid())
-  barbeariaId           String?             @unique
+  id                    String  @id @default(uuid())
+  barbeariaId           String? @unique
   horariosFuncionamento Json?
   regrasFidelidade      Json?
-  
-  baseCalculoComissao   BaseCalculoComissao @default(VALOR_LIQUIDO)
-  baseCalculoPontos     BaseCalculoPontos   @default(VALOR_LIQUIDO)
+
+  baseCalculoComissao BaseCalculoComissao @default(VALOR_LIQUIDO)
+  baseCalculoPontos   BaseCalculoPontos   @default(VALOR_LIQUIDO)
 
   barbearia Barbearia? @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
 
@@ -394,27 +400,27 @@ model Configuracao {
 }
 
 model ConfiguracaoFidelidade {
-  id                     String   @id @default(uuid())
-  barbeariaId            String?  @unique
-  ativo                  Boolean  @default(false)
-  pontosPorReal          Int      @default(0)
-  pontosPorVisita        Int      @default(0)
-  pontosDobroAniversario Boolean  @default(false)
-  pontosPorIndicacao     Int      @default(0)
-  pontosParaIndicado     Int      @default(0)
-  pontosBoasVindas       Int      @default(0)
-  valorPorPonto          Decimal  @default(0.00) @db.Decimal(10, 2)
+  id                     String  @id @default(uuid())
+  barbeariaId            String? @unique
+  ativo                  Boolean @default(false)
+  pontosPorReal          Int     @default(0)
+  pontosPorVisita        Int     @default(0)
+  pontosDobroAniversario Boolean @default(false)
+  pontosPorIndicacao     Int     @default(0)
+  pontosParaIndicado     Int     @default(0)
+  pontosBoasVindas       Int     @default(0)
+  valorPorPonto          Decimal @default(0.00) @db.Decimal(10, 2)
   regrasPorServico       Json?
-  
+
   // Resgate de pontos como desconto
-  resgatePontosAtivo        Boolean  @default(false)
-  percentualMaxPontos       Int      @default(30)
-  descontoMaxReais          Decimal  @default(0) @db.Decimal(10, 2)
-  descontoMaxPercentual     Decimal  @default(100) @db.Decimal(10, 2)
-  permitirCombinarDescontos Boolean  @default(false)
-  
-  createdAt              DateTime @default(now())
-  updatedAt              DateTime @updatedAt
+  resgatePontosAtivo        Boolean @default(false)
+  percentualMaxPontos       Int     @default(30)
+  descontoMaxReais          Decimal @default(0) @db.Decimal(10, 2)
+  descontoMaxPercentual     Decimal @default(100) @db.Decimal(10, 2)
+  permitirCombinarDescontos Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   barbearia Barbearia? @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
 
@@ -432,8 +438,8 @@ model Recompensa {
   ativo             Boolean        @default(true)
   createdAt         DateTime       @default(now())
 
-  barbearia Barbearia? @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
-  servico   Servico?   @relation(fields: [servicoId], references: [id], onDelete: SetNull)
+  barbearia Barbearia?          @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
+  servico   Servico?            @relation(fields: [servicoId], references: [id], onDelete: SetNull)
   resgates  ResgateRecompensa[]
 
   @@map("recompensas")
@@ -458,13 +464,13 @@ model ResgateRecompensa {
 }
 
 model ChatMensagem {
-  id          String             @id @default(uuid())
+  id          String            @id @default(uuid())
   barbeariaId String?
   clienteId   String
   texto       String
   remetente   RemetenteMensagem
-  lida        Boolean            @default(false)
-  createdAt   DateTime           @default(now())
+  lida        Boolean           @default(false)
+  createdAt   DateTime          @default(now())
 
   barbearia Barbearia? @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
   cliente   Cliente    @relation(fields: [clienteId], references: [id], onDelete: Cascade)
@@ -488,13 +494,13 @@ model Indicacao {
 }
 
 model AprovacaoEdicao {
-  id              String         @id @default(uuid())
-  lancamentoId    String
-  barbeiroId      String
-  acao            String         // "EDITAR" ou "EXCLUIR"
-  dadosNovos      Json?          // Null if acao == EXCLUIR
-  status          StatusAprovacao @default(PENDENTE)
-  createdAt       DateTime       @default(now())
+  id           String          @id @default(uuid())
+  lancamentoId String
+  barbeiroId   String
+  acao         String // "EDITAR" ou "EXCLUIR"
+  dadosNovos   Json? // Null if acao == EXCLUIR
+  status       StatusAprovacao @default(PENDENTE)
+  createdAt    DateTime        @default(now())
 
   lancamento LancamentoFinanceiro @relation(fields: [lancamentoId], references: [id], onDelete: Cascade)
   barbeiro   Barbeiro             @relation(fields: [barbeiroId], references: [id], onDelete: Cascade)

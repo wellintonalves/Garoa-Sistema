@@ -37,13 +37,27 @@ NAO marque nada como testado, aprovado ou concluido por conta propria. Registre 
 
 ## EM ANDAMENTO AGORA
 
-Correcao do calculo do fechamento de atendimento.
+Implementação de "Cliente no lançamento manual (Parte B)".
 
-Bug encontrado em producao: o fechamento lia agendamento.servico.preco - a relacao antiga, no singular - e ignorava todos os servicos menos o primeiro. Um atendimento de R$ 75,00 (tres servicos) com 10% de desconto foi registrado como R$ 36,00. A comissao saiu R$ 18,00 em vez de R$ 33,75.
+SITUACAO: IMPLEMENTADO E COMMITADO LOCALMENTE (sem push).
 
-O trabalho e guiado pelo documento checklist-definitivo-fechamento.md, entregue pelo Wellinton. Sao 7 blocos com caixinhas e ele substitui qualquer plano anterior.
+O que foi feito:
+- Adicionadas as colunas `clienteId` em `LancamentoFinanceiro` e `lancamentoId` em `PontoFidelidade` (com índice único) via `prisma db push --accept-data-loss` localmente (postgres-dev).
+- Atualizado o histórico do cliente (backend: `cliente.service.ts` e `publico.controller.ts`) para consultar `LancamentoFinanceiro` vinculados ao cliente e mesclá-los com o histórico de agendamentos.
+- Alterado o `fidelidade.engine.ts` para processar acúmulo de pontos também por `lancamentoId`.
+- Alterado o `financeiro.service.ts` para capturar `barbeariaId` via ALS e criar Lançamento + Pontos na mesma transação caso `clienteId` seja preenchido.
+- Criado componente frontend `BuscaCliente.tsx` com *debounce*, tratamento de fechamento por Esc/clique fora, e navegação limpa (sem erros de lint).
+- Adicionado o campo `BuscaCliente` no formulário modal em `Financeiro.tsx`.
+- Builds do frontend e backend (`npm run build`) completados com sucesso e sem erros de TypeScript (`tsc --noEmit`).
 
-Situacao: em execucao. Nada publicado.
+Próximo passo:
+- Aguardando Wellinton realizar a verificação final na UI (testando os 12 cenários propostos e validando) e autorizar o push para produção.
+
+ATENCAO - EXISTEM TRES COPIAS DO PROJETO NA MAQUINA. So uma vale:
+- C:\dev\valen-barber  <- ESTA. E a unica correta
+- C:\Users\welli\Garoa_Sistema  <- copia velha, NAO USE
+- C:\Users\welli\OneDrive\Documentos\Garoa Sistema  <- 240 commits atrasada, dentro do OneDrive, NAO USE
+Antes de qualquer comando git, confirme o caminho com pwd. Um push da pasta errada ja foi recusado por causa disso.
 
 ## DECISOES FECHADAS - nao reabra, nao proponha alternativa
 
@@ -62,18 +76,26 @@ Situacao: em execucao. Nada publicado.
 | Servico extra no fechamento | Permitido, nao estende o bloco na agenda |
 | Lancamento financeiro | Um so, com nome composto: Combo (Corte social + Barba + Sobrancelha) |
 
+## CONTEXTO DE USO REAL - importante para priorizar
+
+Duas barbearias reais ja usam o sistema em producao: a do socio do Wellinton e mais uma em teste.
+ELAS NAO USAM A AGENDA. O fluxo diario delas e o LANCAMENTO MANUAL do financeiro.
+
+Consequencia: a tela de lancamento manual e a mais critica do sistema hoje, e ela nao tem campo de
+cliente. Ou seja, o programa de fidelidade nao funciona para nenhum cliente dessas duas barbearias.
+
 ## FILA - nesta ordem, uma de cada vez
 
-1. Concluir a correcao do fechamento (em andamento)
-2. Selecao multipla de servicos no painel do ADMIN - hoje so o cliente consegue
-3. Servico extra no fechamento
-4. Tabela de itens com preco e duracao congelados + lancamento como combo
+1. Cliente no lancamento manual, com busca por nome (Parte B) - e a tela que os usuarios reais usam todo dia
+2. Auditoria das demais telas, com foco em responsividade no celular
+3. Selecao multipla de servicos no painel do ADMIN - hoje so o cliente consegue
+4. Servico extra no fechamento
+5. Tabela de itens com preco e duracao congelados + lancamento como combo
 
 ## PENDENCIAS CONHECIDAS - nao mexa sem pedido explicito
 
-- 4 atendimentos concluidos sem lancamento financeiro, R$ 210 no total
-- Atendimento 4d4a8561 com valor errado em producao. Correcao pendente de autorizacao
-- 14 agendamentos aguardando fechamento com valorBruto zerado; 10 deles so tem servicoId
+- DADOS DE TESTE EM PRODUCAO - NAO CORRIGIR, decisao do Wellinton. Os 4 atendimentos sem lancamento (R$ 210), o atendimento 4d4a8561 com valor errado, e os 14 agendamentos com valorBruto zerado sao TODOS da conta de teste do Wellinton. Sao valores ficticios. Os scripts A e B foram escritos mas NAO serao executados. Nao gaste tempo com isso
+- Causa dos 4 orfaos: o fechamento antigo nao era atomico. Hoje o lancamento financeiro e criado dentro do mesmo $transaction que muda o status para CONCLUIDO, entao nao deve se repetir
 - Editar um lancamento no relatorio nao atualiza o agendamento - os dois valores divergem
 - valorCobrado e valorLiquido no agendamento sao redundantes
 - z-index fora da escala em outras telas. Piores casos: AprovacoesPopup (99999) e ClienteHome (10000)
@@ -91,6 +113,7 @@ Situacao: em execucao. Nada publicado.
 - injetarDuracaoTotalServicos sobrescreve ag.servico.nome e ag.servico.duracaoMinutos com o resumo do atendimento inteiro. O objeto deixa de representar um serviço. As três grades dependem disso para desenhar o bloco. Tarefa futura: criar ag.servicos, ag.duracaoTotalMinutos e ag.nomeServicos, parar de sobrescrever, e ajustar os 13 arquivos que leem esses campos. Lista dos arquivos levantada e disponível
 - O campo servicosAdicionais tem nome enganoso: contém todos os serviços, não só os adicionais. Foi o que causou a duplicação no modal de detalhes
 - A tela Editar Lançamento tem uma caixa de seleção de um serviço. Não representa combo. Depende da tabela de itens
+- Grafico "Faturamento Dia a Dia" com filtro de UM dia mostra so um numero solto, sem linha. O backend JA calcula a serie por hora nesse caso (financeiro.service.ts, perto da linha 527) e o dado nao esta sendo usado. Melhoria aprovada pelo Wellinton: exibir faturamento POR HORA quando o periodo for de um dia so. Prioridade baixa, fica para depois do lancamento
 
 ## COMO TRABALHAR
 

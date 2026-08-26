@@ -6,6 +6,7 @@ export interface OperacoesFidelidade {
     clienteId: string;
     barbeariaId: string;
     agendamentoId?: string;
+    lancamentoId?: string;
     pontos: number;
     descricao: string;
   }>;
@@ -118,6 +119,76 @@ export async function prepararOperacoesFidelidade(
         operacoes.indicacaoParaAtualizarId = indicacao.id;
       }
     }
+  }
+
+  return operacoes;
+}
+
+/**
+ * Lê os dados necessários para o cálculo de pontos de fidelidade para um Lançamento Avulso.
+ */
+export async function prepararOperacoesFidelidadeLancamento(
+  lancamentoId: string,
+  clienteId: string,
+  barbeariaId: string,
+  servicoId: string | null,
+  preco: number
+): Promise<OperacoesFidelidade> {
+  const operacoes: OperacoesFidelidade = { pontosParaCriar: [] };
+
+  const [pontuacaoExistente, config, cliente] = await Promise.all([
+    prisma.pontoFidelidade.findFirst({ where: { lancamentoId } }),
+    prisma.configuracaoFidelidade.findUnique({ where: { barbeariaId } }),
+    prisma.cliente.findUnique({ where: { id: clienteId }, select: { dataNascimento: true } })
+  ]);
+
+  if (pontuacaoExistente || !config || !config.ativo) {
+    return operacoes;
+  }
+
+  let pontos = 0;
+  let descricao = '';
+  let servicoNome = 'Avulso';
+
+  if (servicoId) {
+    const servico = await prisma.servico.findUnique({ where: { id: servicoId }, select: { nome: true } });
+    if (servico) servicoNome = servico.nome;
+    
+    const regrasPorServico = (config.regrasPorServico as Array<{ servicoId: string; pontos: number }> | null) ?? [];
+    const regraServico = regrasPorServico.find(r => r.servicoId === servicoId);
+    if (regraServico && regraServico.pontos > 0) {
+      pontos = regraServico.pontos;
+      descricao = `${servicoNome} — regra específica do serviço`;
+    }
+  }
+
+  if (pontos === 0) {
+    if (config.pontosPorReal > 0 && preco > 0) {
+      pontos = Math.floor(Number(preco) * config.pontosPorReal);
+      descricao = `${servicoNome} — ${config.pontosPorReal} ponto(s) por R$1,00`;
+    } else if (config.pontosPorVisita > 0) {
+      pontos = config.pontosPorVisita;
+      descricao = `${servicoNome} — visita concluída`;
+    }
+  }
+
+  if (pontos > 0 && config.pontosDobroAniversario && cliente?.dataNascimento) {
+    const hoje = new Date();
+    const nasc = new Date(cliente.dataNascimento);
+    if (nasc.getDate() === hoje.getDate() && nasc.getMonth() === hoje.getMonth()) {
+      pontos = pontos * 2;
+      descricao += ' (dobro — aniversário!)';
+    }
+  }
+
+  if (pontos > 0) {
+    operacoes.pontosParaCriar.push({
+      clienteId,
+      barbeariaId,
+      lancamentoId,
+      pontos,
+      descricao
+    });
   }
 
   return operacoes;
