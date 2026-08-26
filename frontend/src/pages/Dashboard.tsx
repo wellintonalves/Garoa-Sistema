@@ -20,7 +20,7 @@ interface DadosDashboard {
   pendentes: number;
   estoqueBaixo: number;
   ticketMedio: number;
-  servicoMaisRealizado: { nome: string; count: number; total: number } | null;
+  servicoMaisRealizado: { nome: string; count: number } | null;
   porDia: Array<{ data: string; entradas: number; produtos: number; saidas: number }>;
   variacaoFaturamento?: number | null;
   variacaoServicos?: number | null;
