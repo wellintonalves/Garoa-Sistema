@@ -402,6 +402,7 @@ export class FinanceiroService {
     ]);
 
     let faturamentoServicos = 0;
+    let faturamentoAtendimentos = 0;
     let faturamentoProdutos = 0;
     let totalSaidas = 0;
     let concluidos = 0;
@@ -433,20 +434,24 @@ export class FinanceiroService {
         if (l.categoria === CATEGORIA_VENDA_PRODUTO) {
           faturamentoProdutos += valor;
           porDia[diaKey].produtos += valor;
-        } else if (l.servicoId) {
-          concluidos++;
+        } else {
           faturamentoServicos += valor;
           porDia[diaKey].entradas += valor;
 
-          // Contagem de serviços
-          const ids = l.agendamento ? obterIdsServicosAgendamento(l.agendamento) : [l.servicoId];
-          ids.forEach(id => {
-            const nome = mapaNomesServicos[id] || l.servico?.nome || 'Serviço Desconhecido';
-            if (!servicoContagem[id]) {
-              servicoContagem[id] = { nome, count: 0, total: 0 };
-            }
-            servicoContagem[id].count++;
-          });
+          if (l.servicoId) {
+            concluidos++;
+            faturamentoAtendimentos += valor;
+
+            // Contagem de serviços
+            const ids = l.agendamento ? obterIdsServicosAgendamento(l.agendamento) : [l.servicoId];
+            ids.forEach(id => {
+              const nome = mapaNomesServicos[id] || l.servico?.nome || 'Serviço Desconhecido';
+              if (!servicoContagem[id]) {
+                servicoContagem[id] = { nome, count: 0, total: 0 };
+              }
+              servicoContagem[id].count++;
+            });
+          }
         }
       } else {
         totalSaidas += valor;
@@ -462,6 +467,7 @@ export class FinanceiroService {
 
     // --- Processar Período Anterior ---
     let antFaturamentoServicos = 0;
+    let antFaturamentoAtendimentos = 0;
     let antFaturamentoProdutos = 0;
     let antTotalSaidas = 0;
     let antConcluidos = 0;
@@ -471,9 +477,12 @@ export class FinanceiroService {
       if (l.tipo === 'ENTRADA') {
         if (l.categoria === CATEGORIA_VENDA_PRODUTO) {
           antFaturamentoProdutos += valor;
-        } else if (l.servicoId) {
-          antConcluidos++;
+        } else {
           antFaturamentoServicos += valor;
+          if (l.servicoId) {
+            antConcluidos++;
+            antFaturamentoAtendimentos += valor;
+          }
         }
       } else {
         antTotalSaidas += valor;
@@ -485,8 +494,8 @@ export class FinanceiroService {
     const faturamentoTotal = faturamentoServicos + faturamentoProdutos;
 
     // Ticket médio
-    const ticketMedio = concluidos > 0 ? faturamentoServicos / concluidos : 0;
-    const antTicketMedio = antConcluidos > 0 ? antFaturamentoServicos / antConcluidos : 0;
+    const ticketMedio = concluidos > 0 ? faturamentoAtendimentos / concluidos : 0;
+    const antTicketMedio = antConcluidos > 0 ? antFaturamentoAtendimentos / antConcluidos : 0;
 
     // Função auxiliar para calcular variação % (legado)
     const calcVar = (atual: number, anterior: number): number | null => {
