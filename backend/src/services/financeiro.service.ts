@@ -3,6 +3,7 @@ import { prisma } from '../lib/prisma';
 import { TipoLancamento, FormaPagamento } from '@prisma/client';
 import { inicioDiaBrasilia, fimDiaBrasilia, diaBrasiliaStr, getHoraMinutoBrasilia } from '../lib/timezone';
 import { CATEGORIA_VENDA_PRODUTO } from '../lib/constantes';
+import { obterIdsServicosAgendamento } from '../utils/agendamento.util';
 
 interface DadosLancamento {
   tipo: TipoLancamento;
@@ -380,7 +381,10 @@ export class FinanceiroService {
     const [lancamentos, agendamentos, todosEstoque, lancamentosAnteriores, agendamentosAnteriores] = await Promise.all([
       prisma.lancamentoFinanceiro.findMany({
         where: { data: { gte: dataInicio, lte: dataFim } } as any,
-        include: { servico: { select: { nome: true } } },
+        include: { 
+          servico: { select: { nome: true } },
+          agendamento: { select: { servicoId: true, servicosIds: true } }
+        },
         orderBy: { data: 'asc' },
       }),
       prisma.agendamento.findMany({
@@ -400,8 +404,24 @@ export class FinanceiroService {
     let faturamentoServicos = 0;
     let faturamentoProdutos = 0;
     let totalSaidas = 0;
+    let concluidos = 0;
+    let agendamentosConcluidosNaAgenda = 0;
     const porDia: Record<string, { entradas: number; produtos: number; saidas: number }> = {};
     const servicoContagem: Record<string, { nome: string; count: number; total: number }> = {};
+
+    const idsServicosSet = new Set<string>();
+    lancamentos.forEach((l: any) => {
+      if (l.tipo === 'ENTRADA' && l.servicoId) {
+        const ids = l.agendamento ? obterIdsServicosAgendamento(l.agendamento) : [l.servicoId];
+        ids.forEach(id => idsServicosSet.add(id));
+      }
+    });
+
+    const servicosNomes = await prisma.servico.findMany({
+      where: { id: { in: Array.from(idsServicosSet) } },
+      select: { id: true, nome: true }
+    });
+    const mapaNomesServicos = Object.fromEntries(servicosNomes.map(s => [s.id, s.nome]));
 
     lancamentos.forEach((l: any) => {
       const valor = Number(l.valor);
@@ -413,18 +433,20 @@ export class FinanceiroService {
         if (l.categoria === CATEGORIA_VENDA_PRODUTO) {
           faturamentoProdutos += valor;
           porDia[diaKey].produtos += valor;
-        } else {
+        } else if (l.servicoId) {
+          concluidos++;
           faturamentoServicos += valor;
           porDia[diaKey].entradas += valor;
 
           // Contagem de serviços
-          if (l.servicoId && l.servico) {
-            if (!servicoContagem[l.servicoId]) {
-              servicoContagem[l.servicoId] = { nome: l.servico.nome, count: 0, total: 0 };
+          const ids = l.agendamento ? obterIdsServicosAgendamento(l.agendamento) : [l.servicoId];
+          ids.forEach(id => {
+            const nome = mapaNomesServicos[id] || l.servico?.nome || 'Serviço Desconhecido';
+            if (!servicoContagem[id]) {
+              servicoContagem[id] = { nome, count: 0, total: 0 };
             }
-            servicoContagem[l.servicoId].count++;
-            servicoContagem[l.servicoId].total += valor;
-          }
+            servicoContagem[id].count++;
+          });
         }
       } else {
         totalSaidas += valor;
@@ -433,20 +455,24 @@ export class FinanceiroService {
     });
 
     // --- Agendamentos no período Atual ---
-    const concluidos = agendamentos.filter((a: any) => a.status === 'CONCLUIDO').length;
+    agendamentos.forEach((a: any) => {
+      if (a.status === 'CONCLUIDO') agendamentosConcluidosNaAgenda++;
+    });
     const pendentes = agendamentos.filter((a: any) => a.status === 'AGUARDANDO' || a.status === 'CONFIRMADO').length;
 
     // --- Processar Período Anterior ---
     let antFaturamentoServicos = 0;
     let antFaturamentoProdutos = 0;
     let antTotalSaidas = 0;
+    let antConcluidos = 0;
     
     lancamentosAnteriores.forEach((l: any) => {
       const valor = Number(l.valor);
       if (l.tipo === 'ENTRADA') {
         if (l.categoria === CATEGORIA_VENDA_PRODUTO) {
           antFaturamentoProdutos += valor;
-        } else {
+        } else if (l.servicoId) {
+          antConcluidos++;
           antFaturamentoServicos += valor;
         }
       } else {
@@ -454,7 +480,7 @@ export class FinanceiroService {
       }
     });
 
-    const antConcluidos = agendamentosAnteriores.filter((a: any) => a.status === 'CONCLUIDO').length;
+    const antAgendamentosConcluidosNaAgenda = agendamentosAnteriores.filter((a: any) => a.status === 'CONCLUIDO').length;
     const antFaturamentoTotal = antFaturamentoServicos + antFaturamentoProdutos;
     const faturamentoTotal = faturamentoServicos + faturamentoProdutos;
 
@@ -463,8 +489,8 @@ export class FinanceiroService {
     const antTicketMedio = antConcluidos > 0 ? antFaturamentoServicos / antConcluidos : 0;
 
     // Função auxiliar para calcular variação % (legado)
-    const calcVar = (atual: number, anterior: number) => {
-      if (anterior === 0) return atual > 0 ? 100 : 0;
+    const calcVar = (atual: number, anterior: number): number | null => {
+      if (anterior === 0) return null;
       return ((atual - anterior) / anterior) * 100;
     };
 
@@ -516,9 +542,9 @@ export class FinanceiroService {
         }
       });
 
-      agendamentos.forEach((a: any) => {
-        if (a.status === 'CONCLUIDO') {
-          const { hora } = getHoraMinutoBrasilia(new Date(a.dataHora));
+      lancamentos.forEach((l: any) => {
+        if (l.tipo === 'ENTRADA' && l.servicoId) {
+          const { hora } = getHoraMinutoBrasilia(new Date(l.data));
           if (hora < horasCount) bucketsAtendimentos[hora]++;
         }
       });
@@ -533,9 +559,9 @@ export class FinanceiroService {
       serieFaturamentoProdutos = porDiaCompleto.map(d => d.produtos);
       serieFaturamentoTotal = porDiaCompleto.map(d => d.entradas + d.produtos);
       const atendimentosPorDia: Record<string, number> = {};
-      agendamentos.forEach((a: any) => {
-        if (a.status === 'CONCLUIDO') {
-          const key = diaBrasiliaStr(new Date(a.dataHora));
+      lancamentos.forEach((l: any) => {
+        if (l.tipo === 'ENTRADA' && l.servicoId) {
+          const key = diaBrasiliaStr(new Date(l.data));
           atendimentosPorDia[key] = (atendimentosPorDia[key] || 0) + 1;
         }
       });
@@ -550,7 +576,8 @@ export class FinanceiroService {
       faturamentoTotal,
       totalSaidas,
       saldo: faturamentoTotal - totalSaidas,
-      totalAtendimentos: concluidos,
+      totalAtendimentos: agendamentosConcluidosNaAgenda,
+      atendimentosFechados: concluidos,
       pendentes,
       estoqueBaixo,
       ticketMedio,
@@ -560,7 +587,8 @@ export class FinanceiroService {
       variacaoFaturamento: calcVar(faturamentoTotal, antFaturamentoTotal),
       variacaoServicos: calcVar(faturamentoServicos, antFaturamentoServicos),
       variacaoProdutos: calcVar(faturamentoProdutos, antFaturamentoProdutos),
-      variacaoAtendimentos: calcVar(concluidos, antConcluidos),
+      variacaoAtendimentos: calcVar(agendamentosConcluidosNaAgenda, antAgendamentosConcluidosNaAgenda),
+      variacaoAtendimentosFechados: calcVar(concluidos, antConcluidos),
       variacaoTicket: calcVar(ticketMedio, antTicketMedio),
       // Novo formato estruturado por métrica
       metricas: {

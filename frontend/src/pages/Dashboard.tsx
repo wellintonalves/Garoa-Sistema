@@ -16,16 +16,18 @@ interface DadosDashboard {
   totalSaidas: number;
   saldo: number;
   totalAtendimentos: number;
+  atendimentosFechados: number;
   pendentes: number;
   estoqueBaixo: number;
   ticketMedio: number;
   servicoMaisRealizado: { nome: string; count: number; total: number } | null;
   porDia: Array<{ data: string; entradas: number; produtos: number; saidas: number }>;
-  variacaoFaturamento?: number;
-  variacaoServicos?: number;
-  variacaoProdutos?: number;
-  variacaoAtendimentos?: number;
-  variacaoTicket?: number;
+  variacaoFaturamento?: number | null;
+  variacaoServicos?: number | null;
+  variacaoProdutos?: number | null;
+  variacaoAtendimentos?: number | null;
+  variacaoAtendimentosFechados?: number | null;
+  variacaoTicket?: number | null;
   metricas?: Record<string, { atual: number; anterior: number; periodo: string; serie: number[] }>;
 }
 
@@ -210,12 +212,21 @@ export function Dashboard() {
           {/* Destaque Principal - Top 3 (Pareto: Agendamentos do dia, Faturamento, Alertas) */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px', marginBottom: '24px' }}>
             <CardMetrica
-              titulo={periodoAtivo === 'hoje' ? 'Agendamentos do Dia' : 'Atendimentos Concluídos'}
+              titulo={periodoAtivo === 'hoje' ? 'Agendamentos do Dia' : 'Agendamentos'}
               valor={formatarNumero(dados.totalAtendimentos)}
               icone={CalendarCheck}
               subtexto={`${dados.pendentes} aguardando / confirmados`}
               delta={dados.variacaoAtendimentos}
               serie={dados.metricas?.totalAtendimentos?.serie}
+              rotuloComparativo={getRotuloComparativo(periodoAtivo)}
+            />
+            <CardMetrica
+              titulo="Atendimentos fechados"
+              valor={formatarNumero(dados.atendimentosFechados)}
+              icone={CalendarCheck}
+              subtexto="Serviços efetivamente concluídos"
+              delta={dados.variacaoAtendimentosFechados}
+              serie={dados.metricas?.atendimentosFechados?.serie || dados.metricas?.totalAtendimentos?.serie}
               rotuloComparativo={getRotuloComparativo(periodoAtivo)}
             />
             <CardMetrica
