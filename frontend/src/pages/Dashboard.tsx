@@ -331,7 +331,7 @@ export function Dashboard() {
                     {dados.servicoMaisRealizado.nome}
                   </p>
                   <p style={{ fontFamily: 'var(--fonte-mono)', fontSize: '11px', color: 'var(--texto-secundario)', margin: 0 }}>
-                    {dados.servicoMaisRealizado.count}x ({formatarMoeda(dados.servicoMaisRealizado.total)})
+                    {dados.servicoMaisRealizado.count}x
                   </p>
                 </>
               ) : (

@@ -408,7 +408,7 @@ export class FinanceiroService {
     let concluidos = 0;
     let agendamentosConcluidosNaAgenda = 0;
     const porDia: Record<string, { entradas: number; produtos: number; saidas: number }> = {};
-    const servicoContagem: Record<string, { nome: string; count: number; total: number }> = {};
+    const servicoContagem: Record<string, { nome: string; count: number }> = {};
 
     const idsServicosSet = new Set<string>();
     lancamentos.forEach((l: any) => {
@@ -447,7 +447,7 @@ export class FinanceiroService {
             ids.forEach(id => {
               const nome = mapaNomesServicos[id] || l.servico?.nome || 'Serviço Desconhecido';
               if (!servicoContagem[id]) {
-                servicoContagem[id] = { nome, count: 0, total: 0 };
+                servicoContagem[id] = { nome, count: 0 };
               }
               servicoContagem[id].count++;
             });
@@ -505,8 +505,8 @@ export class FinanceiroService {
 
     // Preencher dias sem lançamento no range
     const porDiaCompleto: Array<{ data: string; entradas: number; produtos: number; saidas: number }> = [];
-    const cursor = new Date(inicio);
-    const fimLoop = new Date(fim);
+    const cursor = new Date(dataInicio);
+    const fimLoop = new Date(dataFim);
     while (cursor <= fimLoop) {
       const key = diaBrasiliaStr(cursor);
       porDiaCompleto.push({
