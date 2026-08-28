@@ -79,6 +79,20 @@ export class FinanceiroService {
     const store = tenantStorage.getStore();
     const barbeariaId = store?.barbeariaId;
 
+    if (dados.clienteId && barbeariaId) {
+      const cliente = await prisma.cliente.findUnique({ where: { id: dados.clienteId } });
+      if (!cliente) throw new Error('Cliente não encontrado');
+
+      const vinculadoDiretamente = cliente.barbeariaId === barbeariaId;
+      const vinculoJunction = await prisma.clienteBarbearia.findUnique({
+        where: { clienteId_barbeariaId: { clienteId: dados.clienteId, barbeariaId } }
+      });
+
+      if (!vinculadoDiretamente && !vinculoJunction) {
+        throw new Error('Cliente não pertence a esta barbearia');
+      }
+    }
+
     // Se houver cliente vinculado a uma entrada avulsa, pontua na mesma transação
     if (dados.tipo === 'ENTRADA' && dados.clienteId && !dados.agendamentoId && barbeariaId) {
       // 'temp' será substituído pelo ID real dentro da transação

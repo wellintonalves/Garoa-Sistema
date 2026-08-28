@@ -17,17 +17,20 @@ export function ClienteLoginPrincipal() {
   const [searchParams] = useSearchParams();
   const expirado = searchParams.get('exp') === '1';
   const [erro, setErro] = useState(expirado ? 'Sua sessão expirou. Entre novamente para continuar.' : '');
+  const [referencia, setReferencia] = useState('');
   const [carregando, setCarregando] = useState(false);
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
     setErro('');
+    setReferencia('');
     setCarregando(true);
     try {
       await login(email.trim(), senha);
       navigate(location.state?.destino || '/cliente/home');
     } catch (err: any) {
-      setErro(err?.response?.data?.erro || err.message || 'Email ou senha incorretos.');
+      setErro(err?.response?.data?.erro || 'Não foi possível conectar. Tente novamente em instantes.');
+      setReferencia(err?.response?.data?.referencia || '');
     } finally {
       setCarregando(false);
     }
@@ -115,7 +118,10 @@ export function ClienteLoginPrincipal() {
               color: 'var(--erro)', fontSize: 'var(--texto-sm, 0.75rem)',
             }} role="alert">
               <WarningCircle size={18} weight="regular" style={{ flexShrink: 0 }} aria-hidden="true" />
-              <span>{erro}</span>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                <span>{erro}</span>
+                {referencia && <span style={{ fontSize: '0.65rem', opacity: 0.8 }}>Cód: {referencia}</span>}
+              </div>
             </div>
           ) : null}
         </div>

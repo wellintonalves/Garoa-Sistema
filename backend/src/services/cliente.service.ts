@@ -35,23 +35,39 @@ export class ClienteService {
     ordenar?: string;
   }) {
     const termoBusca = filtros?.busca?.trim();
-    const buscaFilter = termoBusca
-      ? {
-          OR: [
-            { usuario: { nome: { contains: termoBusca, mode: 'insensitive' as const } } },
-            { telefone: { contains: termoBusca } },
-          ],
-        }
-      : {};
+
+    // Filtro de barbearia — OBRIGATÓRIO em qualquer situação
+    const filtroBarbearia = {
+      OR: [
+        { barbeariaId },
+        { clientesBarbearias: { some: { barbeariaId } } },
+      ],
+    };
+
+    // Condições de busca textual (nome, telefone)
+    let where: any;
+    if (termoBusca) {
+      const condicoes: any[] = [
+        { usuario: { nome: { contains: termoBusca, mode: 'insensitive' as const } } },
+        { telefone: { contains: termoBusca } },
+      ];
+
+      // Só inclui busca por dígitos quando o termo realmente contém dígitos
+      // — contains: '' é verdadeiro para toda linha e anula o filtro
+      const somenteDigitos = termoBusca.replace(/\D/g, '');
+      if (somenteDigitos.length > 0) {
+        condicoes.push({ telefone: { contains: somenteDigitos } });
+      }
+
+      // AND garante que AMBOS os filtros se apliquem:
+      // o cliente pertence à barbearia E corresponde à busca
+      where = { AND: [filtroBarbearia, { OR: condicoes }] };
+    } else {
+      where = filtroBarbearia;
+    }
 
     const clientes: any[] = await (prisma.cliente as any).findMany({
-      where: {
-        OR: [
-          { barbeariaId },
-          { clientesBarbearias: { some: { barbeariaId } } }
-        ],
-        ...buscaFilter,
-      },
+      where,
       include: {
         usuario: {
           select: { id: true, nome: true, email: true },

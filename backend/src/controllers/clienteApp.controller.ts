@@ -2,7 +2,7 @@
 import { Response } from 'express';
 import { ClienteAppService } from '../services/clienteApp.service';
 import { ClienteAuthRequest } from '../types';
-import { Request } from 'express';
+import { Request, NextFunction } from 'express';
 import { VerificacaoService } from '../services/verificacao.service';
 
 export class ClienteAppController {
@@ -41,7 +41,7 @@ export class ClienteAppController {
   }
 
   /** POST /cliente/login */
-  static async login(req: Request, res: Response): Promise<void> {
+  static async login(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { email, senha } = req.body;
 
@@ -53,12 +53,11 @@ export class ClienteAppController {
       const resultado = await ClienteAppService.login(email, senha);
       res.json(resultado);
     } catch (error) {
-      const mensagem = error instanceof Error ? error.message : 'Erro ao fazer login';
-      if (mensagem === 'Email não verificado') {
-        res.status(403).json({ erro: mensagem, emailNaoVerificado: true });
+      if (error instanceof Error && error.message === 'Email não verificado') {
+        res.status(403).json({ erro: error.message, emailNaoVerificado: true });
         return;
       }
-      res.status(401).json({ erro: mensagem });
+      next(error);
     }
   }
 

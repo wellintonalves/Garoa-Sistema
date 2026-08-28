@@ -1,12 +1,11 @@
 // Controller do app do barbeiro
-import { Response } from 'express';
 import { BarbeiroAppService } from '../services/barbeiroApp.service';
 import { BarbeiroAuthRequest } from '../types';
-import { Request } from 'express';
+import { Request, Response, NextFunction } from 'express';
 
 export class BarbeiroAppController {
   /** POST /barbeiro/login */
-  static async login(req: Request, res: Response): Promise<void> {
+  static async login(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { email, senha, barbeariaId } = req.body;
 
@@ -26,8 +25,7 @@ export class BarbeiroAppController {
         });
         return;
       }
-      const mensagem = error instanceof Error ? error.message : 'Erro ao fazer login';
-      res.status(401).json({ erro: mensagem });
+      next(error);
     }
   }
 

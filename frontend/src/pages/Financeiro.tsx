@@ -318,7 +318,6 @@ export function Financeiro() {
                     fontFamily: 'var(--fonte-interface)',
                     fontSize: '11px',
                     letterSpacing: '0.1em',
-                    textTransform: 'uppercase',
                     cursor: 'pointer',
                     background: isSelected ? 'var(--bg-surface2)' : 'transparent',
                     border: `1px solid ${isSelected ? activeColor : 'var(--border)'}`,

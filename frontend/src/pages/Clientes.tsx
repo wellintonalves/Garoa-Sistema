@@ -369,7 +369,7 @@ export function Clientes() {
                         {c.totalVisitas}
                       </td>
                       {/* Gasto total */}
-                      <td data-label="Gasto Total" style={{ textAlign: 'right', fontFamily: 'var(--fonte-numeros)', fontSize: '0.8125rem', color: 'rgba(var(--cor-primaria-rgb), 0.15)' }}>
+                      <td data-label="Gasto Total" style={{ textAlign: 'right', fontFamily: 'var(--fonte-numeros)', fontSize: '0.8125rem', color: 'var(--text-primary)' }}>
                         {formatarMoeda(c.totalGasto)}
                       </td>
                       {/* Pontos */}

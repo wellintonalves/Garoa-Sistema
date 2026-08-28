@@ -1,11 +1,11 @@
 // Controller de autenticação
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { AuthService } from '../services/auth.service';
 import { VerificacaoService } from '../services/verificacao.service';
 
 export class AuthController {
   /** POST /auth/login */
-  static async login(req: Request, res: Response): Promise<void> {
+  static async login(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const email = req.body.email?.trim().toLowerCase();
       const senha = req.body.senha;
@@ -19,8 +19,7 @@ export class AuthController {
       const resultado = await AuthService.login({ email, senha, papel: 'ADMIN' });
       res.json(resultado);
     } catch (error) {
-      const mensagem = error instanceof Error ? error.message : 'Erro ao fazer login';
-      res.status(401).json({ erro: mensagem });
+      next(error);
     }
   }
 

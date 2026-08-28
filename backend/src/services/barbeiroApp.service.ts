@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import { prisma } from '../lib/prisma';
 import { authConfig } from '../config/auth';
 import { BarbeiroJWT } from '../types';
+import { ErroDeNegocio } from '../lib/erros';
 import { diaBrasiliaStr, inicioDiaBrasilia, fimDiaBrasilia } from '../lib/timezone';
 import { prepararOperacoesFidelidade, creditarPontosPorAgendamento } from './fidelidade.engine';
 import { FormaPagamento } from '@prisma/client';
@@ -36,7 +37,7 @@ export class BarbeiroAppService {
 
     const comBarbeiro = candidatos.filter((u) => u.barbeiro !== null);
     if (comBarbeiro.length === 0) {
-      throw new Error('Email ou senha incorretos');
+      throw new ErroDeNegocio('Email ou senha incorretos', 401);
     }
 
     // Testa a senha contra CADA candidato — não assume que o primeiro é o certo
@@ -46,14 +47,14 @@ export class BarbeiroAppService {
     }
 
     if (combinam.length === 0) {
-      throw new Error('Email ou senha incorretos');
+      throw new ErroDeNegocio('Email ou senha incorretos', 401);
     }
 
     const ativos = combinam.filter((u) => u.barbeiro!.ativo);
 
     // Só reporta "desativada" se a senha bateu e TODAS as contas estão inativas
     if (ativos.length === 0) {
-      throw new Error('Conta de barbeiro desativada');
+      throw new ErroDeNegocio('Conta de barbeiro desativada', 403);
     }
 
     // Ambiguidade real: mesmo email + mesma senha em mais de uma barbearia ativa

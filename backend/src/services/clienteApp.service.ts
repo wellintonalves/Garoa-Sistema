@@ -5,6 +5,7 @@ import { prisma } from '../lib/prisma';
 import { Prisma } from '@prisma/client';
 import { authConfig } from '../config/auth';
 import { ClienteJWT } from '../types';
+import { ErroDeNegocio } from '../lib/erros';
 import {
   toBrasiliaDate,
   inicioDiaBrasilia,
@@ -149,7 +150,7 @@ export class ClienteAppService {
     });
 
     if (!usuario || !usuario.cliente) {
-      throw new Error('Email ou senha incorretos');
+      throw new ErroDeNegocio('Email ou senha incorretos', 401);
     }
 
     if (!usuario.emailVerificado) {
@@ -158,7 +159,7 @@ export class ClienteAppService {
 
     const senhaValida = await bcrypt.compare(senha, usuario.senha);
     if (!senhaValida) {
-      throw new Error('Email ou senha incorretos');
+      throw new ErroDeNegocio('Email ou senha incorretos', 401);
     }
 
     const payload: ClienteJWT = {

@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { prisma } from '../lib/prisma';
 import { authConfig } from '../config/auth';
+import { ErroDeNegocio } from '../lib/erros';
 import { Papel } from '@prisma/client';
 import { UsuarioJWT } from '../types';
 
@@ -83,7 +84,7 @@ export class AuthService {
     });
 
     if (candidatos.length === 0) {
-      throw new Error('Email ou senha incorretos');
+      throw new ErroDeNegocio('Email ou senha incorretos', 401);
     }
 
     let usuario: any = null;
@@ -92,7 +93,7 @@ export class AuthService {
     }
 
     if (!usuario) {
-      throw new Error('Email ou senha incorretos');
+      throw new ErroDeNegocio('Email ou senha incorretos', 401);
     }
 
     // Gera o token

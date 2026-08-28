@@ -12,5 +12,6 @@ export const Z_INDEX = {
   CABECALHO_FIXO: 50,
   MENU_SUSPENSO: 100,
   MODAL: 200,
+  SUSPENSO_EM_MODAL: 250,
   TOAST_AVISO: 300,
 } as const;

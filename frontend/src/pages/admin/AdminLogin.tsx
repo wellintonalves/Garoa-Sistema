@@ -15,11 +15,13 @@ export function AdminLogin() {
   const [searchParams] = useSearchParams();
   const expirado = searchParams.get('exp') === '1';
   const [erro, setErro] = useState(expirado ? 'Sua sessão expirou. Entre novamente para continuar.' : '');
+  const [referencia, setReferencia] = useState('');
   const [carregando, setCarregando] = useState(false);
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
     setErro('');
+    setReferencia('');
     setCarregando(true);
     try {
       const res = await api.post('/auth/login', { email: email.trim(), senha, papel: 'ADMIN' });
@@ -29,7 +31,8 @@ export function AdminLogin() {
       loginDireto(res.data.token, res.data.usuario);
       navigate('/admin');
     } catch (err: any) {
-      setErro(err?.response?.data?.erro || err.message || 'Email ou senha incorretos.');
+      setErro(err?.response?.data?.erro || 'Não foi possível conectar. Tente novamente em instantes.');
+      setReferencia(err?.response?.data?.referencia || '');
     } finally {
       setCarregando(false);
     }
@@ -107,7 +110,10 @@ export function AdminLogin() {
               color: 'var(--erro)', fontSize: 'var(--texto-sm, 0.75rem)',
             }} role="alert">
               <AlertCircle size={16} style={{ flexShrink: 0 }} />
-              <span>{erro}</span>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                <span>{erro}</span>
+                {referencia && <span style={{ fontSize: '0.65rem', opacity: 0.8 }}>Cód: {referencia}</span>}
+              </div>
             </div>
           ) : null}
         </div>
