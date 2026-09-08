@@ -67,7 +67,7 @@ export class RelatorioService {
         0
       );
 
-      const comissaoPercent = barbeiro?.comissaoPercent || 50;
+      const comissaoPercent = barbeiro?.comissaoPercent ?? 0;
 
       comissoesPorBarbeiro.push({
         barbeiroId,

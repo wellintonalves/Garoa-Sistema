@@ -107,6 +107,7 @@ model Barbearia {
   servicos               Servico[]
   agendamentos           Agendamento[]
   lancamentosFinanceiros LancamentoFinanceiro[]
+  itens                  ItemAtendimento[]
   estoque                Estoque[]
   vendasProdutos         VendaProduto[]
   configuracoes          Configuracao[]
@@ -268,6 +269,7 @@ model Servico {
   barbearia             Barbearia?             @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
   agendamentos          Agendamento[]
   lancamentos           LancamentoFinanceiro[]
+  itens                 ItemAtendimento[]
   recompensas           Recompensa[]
   remarcacoesAnteriores HistoricoRemarcacao[]  @relation("ServicoAnteriorRel")
   remarcacoesNovas      HistoricoRemarcacao[]  @relation("ServicoNovoRel")
@@ -306,6 +308,7 @@ model Agendamento {
   servico   Servico    @relation(fields: [servicoId], references: [id], onDelete: Cascade)
 
   lancamentos          LancamentoFinanceiro[]
+  itens                ItemAtendimento[]
   avaliacao            Avaliacao?
   historicoRemarcacoes HistoricoRemarcacao[]
 
@@ -344,6 +347,7 @@ model LancamentoFinanceiro {
   barbeiro    Barbeiro?    @relation(fields: [barbeiroId], references: [id], onDelete: SetNull)
   servico     Servico?     @relation(fields: [servicoId], references: [id], onDelete: SetNull)
   pontoFidelidade PontoFidelidade?
+  itens       ItemAtendimento[]
 
   @@index([barbeariaId, data])
   @@map("lancamentos_financeiros")
@@ -560,4 +564,33 @@ model HistoricoRemarcacao {
 
   @@index([agendamentoId])
   @@map("historico_remarcacoes")
+}
+
+model ItemAtendimento {
+  // Nota Arquitetural: Não usamos CHECK constraint no PostgreSQL para garantir
+  // a exclusão mútua de (agendamentoId vs lancamentoId) pois o Prisma não modela CHECK nativamente,
+  // o que causaria conflitos e falhas no comando `db push` rodado no boot em produção.
+  // A garantia de vínculo único é feita pela inserção aninhada e transacionada no código.
+  id             String   @id @default(uuid())
+  barbeariaId    String?
+
+  agendamentoId  String?
+  lancamentoId   String?
+
+  servicoId      String?  
+  nome           String
+  preco          Decimal  @db.Decimal(10, 2)
+  duracaoMinutos Int
+  ordem          Int      @default(0)
+
+  agendamento  Agendamento?          @relation(fields: [agendamentoId], references: [id], onDelete: Cascade)
+  lancamento   LancamentoFinanceiro? @relation(fields: [lancamentoId], references: [id], onDelete: Cascade)
+  servico      Servico?              @relation(fields: [servicoId], references: [id], onDelete: SetNull)
+  barbearia    Barbearia?            @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
+
+  @@index([barbeariaId])
+  @@index([agendamentoId])
+  @@index([lancamentoId])
+  @@index([servicoId])
+  @@map("itens_atendimento")
 }

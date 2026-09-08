@@ -83,7 +83,7 @@ export class BarbeiroService {
       data: {
         foto: dados.foto || null,
         especialidades: dados.especialidades || [],
-        comissaoPercent: dados.comissaoPercent || 50,
+        comissaoPercent: dados.comissaoPercent ?? 50,
         cor: dados.cor || '#F97316',
         barbearia: barbeariaId ? { connect: { id: barbeariaId } } : undefined,
         usuario: {

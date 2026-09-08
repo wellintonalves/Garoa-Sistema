@@ -21,6 +21,8 @@ interface Lancamento {
   servico?: { nome: string };
   valorComissao?: string;
   valorLiquido?: string;
+  valorBrutoOriginal?: string;
+  itens?: any[];
 }
 interface ResumoDia {
   totalEntradas: number; entradasServicos: number; entradasProdutos: number;
@@ -51,8 +53,16 @@ export function Financeiro() {
   const [confirmandoExclusao, setConfirmandoExclusao] = useState<string | null>(null);
   const [editId, setEditId] = useState<string | null>(null);
   
-  const formPadrao = { tipo: 'ENTRADA', categoria: '', descricao: '', valor: '', formaPagamento: 'PIX', data: hojeBrasilia(), servicoId: '', barbeiroId: '', clienteId: null as string | null };
+  const formPadrao = { 
+    tipo: 'ENTRADA', categoria: '', descricao: '', valor: '', formaPagamento: 'PIX', 
+    data: hojeBrasilia(), barbeiroId: '', clienteId: null as string | null,
+    itens: [] as any[], tipoDesconto: 'NENHUM', valorDescontoManual: '', pontosUsados: '' 
+  };
   const [form, setForm] = useState(formPadrao);
+  const [fidelidade, setFidelidade] = useState<any>(null);
+  const [erroFidelidade, setErroFidelidade] = useState<string | null>(null);
+  const [simulacao, setSimulacao] = useState<any>(null);
+  const [erroSimulacao, setErroSimulacao] = useState<string | null>(null);
   const [filtroCategoria, setFiltroCategoria] = useState<string>('TODAS');
 
   async function carregar() {
@@ -74,14 +84,66 @@ export function Financeiro() {
 
   useEffect(() => { carregar(); }, []);
 
-  useEffect(() => {
-    if (form.servicoId) {
-      const servico = servicos.find(s => s.id === form.servicoId);
-      if (servico) {
-        setForm(prev => ({ ...prev, valor: servico.preco, categoria: 'Serviço Prestado', tipo: 'ENTRADA' }));
-      }
+  const buscarFidelidade = async () => {
+    if (!form.clienteId) { setFidelidade(null); setErroFidelidade(null); return; }
+    try {
+      // Endpoint dedicado: devolve saldoPontos, resgatePontosAtivo e maxPontosUtilizaveis
+      // ja considerando o teto percentual sobre o valor do atendimento.
+      // O detalhe do cliente (/clientes/:id) NAO devolve esses campos.
+      const valorServico = Number(form.valor) || 0;
+      const res = await api.get(`/fidelidade/clientes/${form.clienteId}/saldo`, {
+        params: { valorServico },
+      });
+      setFidelidade(res.data || null);
+      setErroFidelidade(null);
+    } catch (err) {
+      setFidelidade(null);
+      setErroFidelidade('Não foi possível carregar a fidelidade.');
     }
-  }, [form.servicoId, servicos]);
+  };
+
+  // Depende tambem do valor: o teto percentual de pontos e calculado sobre ele.
+  useEffect(() => { buscarFidelidade(); }, [form.clienteId, form.valor]);
+
+  const buscarSimulacao = async () => {
+    if (form.tipo !== 'ENTRADA') { setSimulacao(null); setErroSimulacao(null); return; }
+    setErroSimulacao(null);
+    try {
+      const payload = {
+        tipo: 'ENTRADA',
+        tipoDesconto: form.tipoDesconto,
+        descontoReais: form.tipoDesconto === 'REAIS' ? Number(form.valorDescontoManual) : undefined,
+        descontoPercentual: form.tipoDesconto === 'PERCENTUAL' ? Number(form.valorDescontoManual) : undefined,
+        pontosUsados: form.tipoDesconto === 'PONTOS' ? Number(form.pontosUsados) : undefined,
+        clienteId: form.clienteId || undefined,
+        barbeiroId: form.barbeiroId || undefined,
+        itens: form.itens && form.itens.length > 0 ? form.itens.map(i => ({ servicoId: i.servicoId })) : undefined,
+        valor: form.valor ? Number(form.valor) : undefined
+      };
+      const res = await api.post('/financeiro/simular-desconto', payload);
+      setSimulacao(res.data);
+      if (res.data.valorDesconto > res.data.valorBruto) {
+         setErroSimulacao('O desconto não pode ser maior que o valor bruto.');
+      }
+    } catch (err) {
+      setErroSimulacao('Não foi possível simular o valor.');
+    }
+  };
+
+  useEffect(() => {
+    const timeout = setTimeout(buscarSimulacao, 300);
+    return () => clearTimeout(timeout);
+  }, [form.tipo, form.tipoDesconto, form.valorDescontoManual, form.pontosUsados, form.clienteId, form.barbeiroId, form.itens, form.valor]);
+
+  useEffect(() => {
+    if (form.itens && form.itens.length > 0 && !editId) {
+      const soma = form.itens.reduce((acc, item) => {
+        const s = servicos.find(x => x.id === item.servicoId);
+        return acc + (s ? Number(s.preco) : 0);
+      }, 0);
+      setForm(prev => ({ ...prev, valor: String(soma), categoria: 'Serviço Prestado', tipo: 'ENTRADA' }));
+    }
+  }, [form.itens, servicos, editId]);
 
   function abrirModal(lancamento?: Lancamento) {
     if (lancamento) {
@@ -93,9 +155,12 @@ export function Financeiro() {
         valor: lancamento.valor,
         formaPagamento: lancamento.formaPagamento,
         data: lancamento.data.split('T')[0],
-        servicoId: lancamento.servicoId || '',
         barbeiroId: lancamento.barbeiroId || '',
-        clienteId: null
+        clienteId: null,
+        itens: lancamento.itens?.length ? lancamento.itens : (lancamento.servicoId ? [{ servicoId: lancamento.servicoId }] : []),
+        tipoDesconto: 'NENHUM',
+        valorDescontoManual: '',
+        pontosUsados: ''
       });
     } else {
       setEditId(null);
@@ -112,9 +177,13 @@ export function Financeiro() {
       const payload = { 
         ...form, 
         valor: Number(form.valor),
-        servicoId: form.servicoId || undefined,
-        barbeiroId: form.barbeiroId || undefined
+        itens: form.itens.map(i => ({ servicoId: i.servicoId })),
+        barbeiroId: form.barbeiroId || undefined,
+        descontoReais: form.tipoDesconto === 'REAIS' ? Number(form.valorDescontoManual) : undefined,
+        descontoPercentual: form.tipoDesconto === 'PERCENTUAL' ? Number(form.valorDescontoManual) : undefined,
+        pontosUsados: form.tipoDesconto === 'PONTOS' ? Number(form.pontosUsados) : undefined
       };
+      delete (payload as any).servicoId;
       if (editId) {
         await api.put(`/financeiro/${editId}`, payload);
       } else {
@@ -340,11 +409,34 @@ export function Financeiro() {
                 />
               </div>
               <div>
-                <label className="input-label">Serviço (Opcional)</label>
-                <select value={form.servicoId} onChange={e => setForm({...form, servicoId: e.target.value})} className="ds-select">
-                  <option value="">Selecione um serviço...</option>
-                  {servicos.map(s => <option key={s.id} value={s.id}>{s.nome}</option>)}
-                </select>
+                <label className="input-label mb-2 block">Serviços (Opcional)</label>
+                <div className="flex flex-col gap-2 max-h-[160px] overflow-y-auto pr-2 rounded-md border border-[var(--border)] p-3 bg-[var(--bg-surface)]">
+                  {servicos.map(s => {
+                    const checked = form.itens && form.itens.some((i: any) => i.servicoId === s.id);
+                    return (
+                      <label key={s.id} className="flex items-center gap-2 text-sm text-[var(--text-primary)] cursor-pointer select-none">
+                        <input 
+                          type="checkbox" 
+                          checked={checked}
+                          onChange={(e) => {
+                            setForm(prev => {
+                              let novosItens = prev.itens ? [...prev.itens] : [];
+                              if (e.target.checked) {
+                                novosItens.push({ servicoId: s.id, nome: s.nome, preco: s.preco });
+                              } else {
+                                novosItens = novosItens.filter((i: any) => i.servicoId !== s.id);
+                              }
+                              return { ...prev, itens: novosItens };
+                            });
+                          }}
+                          className="rounded border-[var(--border)] text-[var(--cor-primaria)] focus:ring-[var(--cor-primaria)] bg-[var(--bg-surface2)]"
+                        />
+                        <span className="flex-1">{s.nome}</span>
+                        <span className="text-[var(--texto-secundario)] font-mono text-xs">{fmt(Number(s.preco))}</span>
+                      </label>
+                    );
+                  })}
+                </div>
               </div>
               <div>
                 <label className="input-label">Barbeiro (Opcional)</label>
@@ -364,17 +456,93 @@ export function Financeiro() {
           <div>
             <label className="input-label">Descrição / Observação</label>
             <input value={form.descricao} onChange={e => setForm({...form, descricao: e.target.value})} placeholder="Opcional" className="ds-input" />
-          </div>
-
-          <div>
-            <label className="input-label">Valor (R$)</label>
+          </div>          <div>
+            <label className="input-label">Valor Bruto / Base (R$)</label>
             <input type="number" step="0.01" value={form.valor} onChange={e => setForm({...form, valor: e.target.value})} className="ds-input" />
           </div>
 
-          {form.tipo === 'ENTRADA' && form.barbeiroId && form.valor && (
+          {form.tipo === 'ENTRADA' && (
+            <div>
+              <label className="input-label mb-2 block">Desconto</label>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <div className="flex flex-wrap gap-1 sm:flex-nowrap" style={{ flexShrink: 0 }}>
+                  {[
+                    { value: 'NENHUM', label: 'Nenhum' },
+                    { value: 'REAIS', label: 'R$' },
+                    { value: 'PERCENTUAL', label: '%' },
+                    { value: 'PONTOS', label: 'Pontos' },
+                  ].map(tipo => {
+                    const isPontos = tipo.value === 'PONTOS';
+                    const isLoading = isPontos && !fidelidade && !erroFidelidade;
+                    const isDisabled = isPontos && (!form.clienteId || isLoading || !!erroFidelidade || (fidelidade && (!fidelidade.resgatePontosAtivo || fidelidade.saldoPontos === 0)));
+                    return (
+                      <button
+                        key={tipo.value}
+                        type="button"
+                        onClick={() => {
+                          setForm(prev => {
+                            const next = { ...prev, tipoDesconto: tipo.value };
+                            if (tipo.value === 'NENHUM') { next.valorDescontoManual = ''; next.pontosUsados = ''; }
+                            else if (tipo.value === 'PONTOS') { next.valorDescontoManual = ''; }
+                            else { next.pontosUsados = ''; }
+                            return next;
+                          });
+                        }}
+                        disabled={!!isDisabled}
+                        className={`px-3 py-2 rounded-md text-xs font-medium transition-colors border flex items-center gap-1 ${
+                          form.tipoDesconto === tipo.value 
+                          ? 'bg-[var(--cor-primaria)] text-[var(--texto-sobre-primaria)] border-[var(--cor-primaria)]' 
+                          : 'bg-transparent text-[var(--text-primary)] border-[var(--border)] hover:bg-[var(--bg-surface2)]'
+                        }`}
+                      >
+                        {isLoading && <Spinner className="animate-spin" size={14} />}
+                        {tipo.label}
+                      </button>
+                    );
+                  })}
+                </div>
+                
+                {form.tipoDesconto === 'PONTOS' ? (
+                  <div className="flex-1 flex flex-col justify-center">
+                    <input
+                      type="number"
+                      value={form.pontosUsados}
+                      onChange={e => setForm({...form, pontosUsados: e.target.value})}
+                      placeholder="Pontos"
+                      className="ds-input py-2"
+                    />
+                    {fidelidade && (
+                      <span className="text-[10px] text-[var(--texto-secundario)] mt-1 ml-1">
+                        Saldo: {fidelidade.saldoPontos} pts (máx {fidelidade.maxPontosUtilizaveis})
+                      </span>
+                    )}
+                  </div>
+                ) : form.tipoDesconto !== 'NENHUM' ? (
+                  <div className="flex-1">
+                    <input
+                      type="number"
+                      step={form.tipoDesconto === 'REAIS' ? "0.01" : "1"}
+                      value={form.valorDescontoManual}
+                      onChange={e => setForm({...form, valorDescontoManual: e.target.value})}
+                      placeholder={form.tipoDesconto === 'REAIS' ? '0,00' : '0%'}
+                      className="ds-input py-2"
+                    />
+                  </div>
+                ) : <div className="flex-1" />}
+              </div>
+            </div>
+          )}
+
+          {form.tipo === 'ENTRADA' && form.valor && (
             <div style={{ padding: '12px', background: 'var(--bg-surface2)', border: '1px solid var(--border)', fontFamily: 'var(--fonte-interface)', fontSize: '11px', color: 'var(--text-primary)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-              <p>Comissão do Barbeiro: <strong style={{ color: 'var(--cor-icone)' }}>{fmt(previaComissao)}</strong></p>
-              <p>Líquido Barbearia: <strong style={{ color: 'var(--sucesso)' }}>{fmt(previaLiquido)}</strong></p>
+              <p>Valor Final (a cobrar): <strong style={{ color: 'var(--text-primary)' }}>{simulacao && !erroSimulacao ? fmt(simulacao.valorLiquido) : fmt(Number(form.valor || 0))}</strong></p>
+              {form.barbeiroId && (
+                <>
+                  <p>Comissão do Barbeiro: <strong style={{ color: 'var(--cor-icone)' }}>{simulacao && !erroSimulacao ? fmt(simulacao.valorComissao) : fmt(previaComissao)}</strong></p>
+                  <p>Líquido Barbearia: <strong style={{ color: 'var(--sucesso)' }}>{simulacao && !erroSimulacao ? fmt(simulacao.valorLiquido - simulacao.valorComissao) : fmt(previaLiquido)}</strong></p>
+                </>
+              )}
+              {erroSimulacao && <p style={{ color: 'var(--error-text)' }}>{erroSimulacao}</p>}
             </div>
           )}
 

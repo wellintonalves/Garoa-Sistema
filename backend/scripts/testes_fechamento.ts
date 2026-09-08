@@ -148,8 +148,8 @@ runTest('5.6: Acúmulo de pontos', () => {
     percentualComissao: 50
   });
 
-  // Base é 67.50. pontosPorReal = 1. -> 67 pontos. + 10 por visita = 77
-  assert.strictEqual(result.pontosAcumulados, 77);
+  // Mesma precedência do crédito real: por valor substitui pontos por visita.
+  assert.strictEqual(result.pontosAcumulados, 67);
 });
 
 // 5.7 Preço alterado depois da marcação -> fechamento usa o preço da marcação
@@ -180,6 +180,43 @@ runTest('5.8: servicosIds vazio, servicoId preenchido -> valor correto, nao zero
 
   const ids = obterIdsServicosAgendamento(agendamento);
   assert.deepStrictEqual(ids, ['serv1']);
+});
+
+// 5.9 Sem barbeiro e barbeiro com 0% não podem receber a comissão padrão.
+runTest('5.9: comissão 0% permanece zero', () => {
+  const result = calcularFechamento({
+    valorBrutoOriginal: 105,
+    precosServicosAtuais: [105],
+    tipoDesconto: 'NENHUM',
+    valorDescontoReais: 0,
+    valorDescontoPercentual: 0,
+    pontosUsados: 0,
+    saldoPontos: 0,
+    configFidelidade: configFidelidadePadrao,
+    configGlobal: configGlobalPadrao,
+    percentualComissao: 0,
+  });
+
+  assert.strictEqual(result.valorComissao, 0);
+  assert.strictEqual(result.valorLiquido, 105);
+});
+
+runTest('5.10: comissão positiva continua calculada', () => {
+  const result = calcularFechamento({
+    valorBrutoOriginal: 105,
+    precosServicosAtuais: [105],
+    tipoDesconto: 'NENHUM',
+    valorDescontoReais: 0,
+    valorDescontoPercentual: 0,
+    pontosUsados: 0,
+    saldoPontos: 0,
+    configFidelidade: configFidelidadePadrao,
+    configGlobal: configGlobalPadrao,
+    percentualComissao: 40,
+  });
+
+  assert.strictEqual(result.valorComissao, 42);
+  assert.strictEqual(result.valorLiquido, 105);
 });
 
 console.log('\nTodos os testes passaram! ✅\n');

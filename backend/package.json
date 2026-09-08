@@ -14,7 +14,11 @@
     "seed:descontos": "tsx prisma/seed-testes-desconto.ts",
     "fix:admin": "tsx fix_admin_barbearia.ts",
     "backup:force": "tsx scripts/force_backup.ts",
-    "test:fechamento": "tsx scripts/testes_fechamento.ts"
+    "test:fechamento": "tsx scripts/testes_fechamento.ts",
+    "test:fidelidade": "tsx scripts/testes_fidelidade_combo.ts",
+    "test:financeiro": "tsx scripts/testes_financeiro_postgres.ts",
+    "test:concorrencia": "tsx scripts/testes_resgate_concorrente.ts",
+    "test": "npm run test:fechamento && npm run test:fidelidade"
   },
   "dependencies": {
     "@prisma/client": "^6.8.0",

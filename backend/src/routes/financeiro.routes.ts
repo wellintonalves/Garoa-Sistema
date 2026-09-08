@@ -15,6 +15,7 @@ router.get('/dashboard', FinanceiroController.dashboardResumo);
 router.get('/resumo-dia', FinanceiroController.resumoDia);
 router.get('/ultimos-7-dias', FinanceiroController.ultimos7Dias);
 router.post('/', FinanceiroController.criar);
+router.post('/simular-desconto', FinanceiroController.simularDesconto);
 router.put('/:id', FinanceiroController.atualizar);
 router.post('/:id/adicionar', FinanceiroController.adicionarPendente);
 router.delete('/:id', FinanceiroController.remover);

@@ -42,7 +42,7 @@ export class ServicoService {
         descricao: dados.descricao,
         preco: dados.preco,
         duracaoMinutos: dados.duracaoMinutos,
-        comissaoPercent: dados.comissaoPercent || 50,
+        comissaoPercent: dados.comissaoPercent ?? 50,
         cor: dados.cor || '#22C55E',
         barbeariaId: barbeariaId || null,
       } as any,

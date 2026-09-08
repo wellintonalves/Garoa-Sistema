@@ -5,11 +5,12 @@ import { prisma } from '../lib/prisma';
 import { authConfig } from '../config/auth';
 import { BarbeiroJWT } from '../types';
 import { ErroDeNegocio } from '../lib/erros';
+import { validarSaldoParaResgate, tratarConflitoDeFechamento } from './saldoFidelidade.util';
 import { diaBrasiliaStr, inicioDiaBrasilia, fimDiaBrasilia } from '../lib/timezone';
 import { prepararOperacoesFidelidade, creditarPontosPorAgendamento } from './fidelidade.engine';
 import { FormaPagamento } from '@prisma/client';
 import { DescontoService, TipoDesconto } from './desconto.service';
-import { obterIdsServicosAgendamento } from '../utils/agendamento.util';
+import { obterIdsServicosAgendamento, obterItensDoAtendimento } from '../utils/agendamento.util';
 
 interface RespostaAuthBarbeiro {
   token: string;
@@ -159,7 +160,7 @@ export class BarbeiroAppService {
 
     const totalAtendimentos = lancamentos.length;
     const valorBruto = lancamentos.reduce((acc, l) => acc + Number(l.valor), 0);
-    const percentualComissao = barbeiro?.comissaoPercent || 50;
+    const percentualComissao = barbeiro?.comissaoPercent ?? 0;
     const valorComissao = lancamentos.reduce((acc, l) => acc + Number(l.valorComissao || 0), 0);
 
     return {
@@ -190,7 +191,7 @@ export class BarbeiroAppService {
   ) {
     const agendamentoOriginal = await prisma.agendamento.findUnique({
       where: { id: agendamentoId },
-      include: { servico: true },
+      include: { servico: true, itens: true },
     });
 
     if (!agendamentoOriginal) {
@@ -230,11 +231,11 @@ export class BarbeiroAppService {
         select: { comissaoPercent: true, barbeariaId: true },
       }),
       prisma.pontoFidelidade.aggregate({
-        where: { clienteId: agendamentoOriginal.clienteId },
+        where: { clienteId: agendamentoOriginal.clienteId, barbeariaId: agendamentoOriginal.barbeariaId },
         _sum: { pontos: true }
       }),
       prisma.resgateRecompensa.aggregate({
-        where: { clienteId: agendamentoOriginal.clienteId, status: { in: ['PENDENTE', 'CONFIRMADO'] } },
+        where: { clienteId: agendamentoOriginal.clienteId, barbeariaId: agendamentoOriginal.barbeariaId, status: { in: ['PENDENTE', 'CONFIRMADO'] } },
         _sum: { pontosUsados: true }
       })
     ]);
@@ -246,32 +247,33 @@ export class BarbeiroAppService {
     const totalGasto = agregacaoResgates._sum.pontosUsados || 0;
     const saldoPontos = totalGanho - totalGasto;
 
-    let precosServicosAtuais: number[] = [];
-    const idsServicos = obterIdsServicosAgendamento(agendamentoOriginal);
+    const catalogoServicos = await prisma.servico.findMany({
+      where: { barbeariaId: agendamentoOriginal.barbeariaId! }
+    });
+    const catalogoMap = new Map(catalogoServicos.map(s => [
+      s.id, 
+      { nome: s.nome, preco: Number(s.preco), duracaoMinutos: s.duracaoMinutos }
+    ]));
+
+    const itens = obterItensDoAtendimento(agendamentoOriginal, catalogoMap);
+    const precosServicosAtuais = itens.map(i => i.preco);
+    const valorBruto = precosServicosAtuais.reduce((acc, preco) => acc + preco, 0);
     
-    let valorBruto = Number(agendamentoOriginal.valorBruto || 0);
-    if (valorBruto === 0) {
-      console.warn(`[Fechamento] ALERT: Agendamento ${agendamentoId} está com valorBruto=0. Efetuando recálculo seguro.`);
-      const servicos = await prisma.servico.findMany({
-        where: { id: { in: idsServicos } }
-      });
-      precosServicosAtuais = servicos.map(s => Number(s.preco));
-      valorBruto = precosServicosAtuais.reduce((acc, preco) => acc + preco, 0);
-      
-      if (valorBruto === 0 && servicos.some(s => Number(s.preco) > 0)) {
-        throw new Error('O valor calculado dos serviços é 0, mas os serviços não são gratuitos.');
-      }
+    if (itens.length === 0) {
+      throw new Error('O valor calculado dos serviços é 0, mas os serviços não são gratuitos.');
     }
     
     let tipoDesconto: TipoDesconto = 'NENHUM';
-    if (pontosUsados && pontosUsados > 0) tipoDesconto = 'PONTOS';
+    if (pontosUsados && pontosUsados > 0 && ((descontoReais ?? 0) > 0 || (descontoPercentual ?? 0) > 0)) tipoDesconto = 'COMBINADO';
+    else if (pontosUsados && pontosUsados > 0) tipoDesconto = 'PONTOS';
     else if (descontoReais && descontoReais > 0) tipoDesconto = 'REAIS';
     else if (descontoPercentual && descontoPercentual > 0) tipoDesconto = 'PERCENTUAL';
 
     const { calcularFechamento } = await import('../utils/financeiro.util');
-    const comissaoPercent = barbeiro?.comissaoPercent || 50;
+    const comissaoPercent = barbeiro?.comissaoPercent ?? 0;
 
     const resultadoFechamento = calcularFechamento({
+      servicosIds: obterIdsServicosAgendamento(agendamentoOriginal),
       valorBrutoOriginal: valorBruto,
       precosServicosAtuais,
       tipoDesconto,
@@ -280,6 +282,9 @@ export class BarbeiroAppService {
       pontosUsados: pontosUsados ? Number(pontosUsados) : 0,
       saldoPontos,
       configFidelidade: {
+        ativo: configFidelidade.ativo,
+        regrasPorServico: configFidelidade.regrasPorServico,
+        pontosDobroAniversario: configFidelidade.pontosDobroAniversario,
         resgatePontosAtivo: configFidelidade.resgatePontosAtivo ?? false,
         valorPorPonto: Number(configFidelidade.valorPorPonto),
         percentualMaxPontos: Number(configFidelidade.percentualMaxPontos),
@@ -305,7 +310,7 @@ export class BarbeiroAppService {
       agendamentoOriginal.id,
       agendamentoOriginal.clienteId,
       agendamentoOriginal.barbeariaId!,
-      agendamentoOriginal.servicoId,
+      obterIdsServicosAgendamento(agendamentoOriginal),
       baseParaPontos
     );
 
@@ -315,6 +320,12 @@ export class BarbeiroAppService {
 
     // Usar $transaction
     const resultadoFinal = await prisma.$transaction(async (tx) => {
+      const claim = await tx.agendamento.updateMany({
+        where: { id: agendamentoId, barbeariaId, status: { not: 'CONCLUIDO' } },
+        data: { status: 'CONCLUIDO' },
+      });
+      if (claim.count !== 1) throw new ErroDeNegocio('Este agendamento já foi concluído.', 409);
+      await validarSaldoParaResgate(tx, agendamentoOriginal.clienteId, barbeariaId, pontosAUsar);
       // A. Atualiza agendamento
       const updated = await tx.agendamento.update({
         where: { id: agendamentoId },
@@ -339,7 +350,7 @@ export class BarbeiroAppService {
             clienteId: agendamentoOriginal.clienteId,
             barbeariaId: agendamentoOriginal.barbeariaId!,
             pontos: -pontosAUsar,
-            descricao: `Resgate no serviço ${agendamentoOriginal.servico.nome}`,
+            descricao: `Resgate no atendimento ${agendamentoOriginal.id}`,
             data: new Date(),
           },
         });
@@ -381,10 +392,7 @@ export class BarbeiroAppService {
         message: 'Agendamento concluído com sucesso',
         agendamento: updated
       };
-    });
-
-    // Credita pontos de fidelidade ganhos
-    await creditarPontosPorAgendamento(agendamentoId);
+    }, { isolationLevel: 'Serializable' }).catch(tratarConflitoDeFechamento);
 
     return resultadoFinal;
   }

@@ -3,6 +3,7 @@ import { Response } from 'express';
 import { FinanceiroService } from '../services/financeiro.service';
 import { diaBrasiliaStr } from '../lib/timezone';
 import { AuthRequest } from '../types';
+import { ErroDeNegocio } from '../lib/erros';
 
 export class FinanceiroController {
   /** GET /financeiro */
@@ -37,6 +38,20 @@ export class FinanceiroController {
     } catch (error) {
       console.error('[Financeiro] Falha ao criar lançamento. Payload:', req.body, 'Erro:', error);
       const msg = error instanceof Error ? error.message : 'Erro ao criar lançamento';
+      res.status(error instanceof ErroDeNegocio ? error.status : 400).json({ erro: msg });
+    }
+  }
+
+  /** POST /financeiro/simular-desconto */
+  static async simularDesconto(req: AuthRequest, res: Response): Promise<void> {
+    try {
+      const { tipoDesconto, descontoReais, descontoPercentual, pontosUsados, clienteId, itens, servicosIds, servicoId, barbeiroId } = req.body;
+      const simulacao = await FinanceiroService.simularDesconto({
+        tipoDesconto, descontoReais, descontoPercentual, pontosUsados, clienteId, itens, servicosIds, servicoId, barbeiroId
+      });
+      res.json(simulacao);
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : 'Erro ao simular desconto';
       res.status(400).json({ erro: msg });
     }
   }

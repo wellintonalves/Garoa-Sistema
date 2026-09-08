@@ -1,5 +1,6 @@
 import { prisma } from '../lib/prisma';
-import { Agendamento, ConfiguracaoFidelidade, Servico, Cliente } from '@prisma/client';
+import { obterIdsServicosAgendamento } from '../utils/agendamento.util';
+import { somarPontosPorServicos, calcularPontosAtendimento } from '../utils/fidelidade.util';
 
 export interface OperacoesFidelidade {
   pontosParaCriar: Array<{
@@ -20,7 +21,7 @@ export async function prepararOperacoesFidelidade(
   agendamentoId: string,
   clienteId: string,
   barbeariaId: string,
-  servicoId: string,
+  servicoId: string | string[],
   precoServico: number | null
 ): Promise<OperacoesFidelidade> {
   const operacoes: OperacoesFidelidade = { pontosParaCriar: [] };
@@ -42,13 +43,14 @@ export async function prepararOperacoesFidelidade(
   let pontos = 0;
   let descricao = '';
 
-  const regrasPorServico = (config.regrasPorServico as Array<{ servicoId: string; pontos: number }> | null) ?? [];
-  const regraServico = regrasPorServico.find(r => r.servicoId === servicoId);
+  const ids = Array.isArray(servicoId) ? servicoId : [servicoId];
+  const servicos = await prisma.servico.findMany({ where: { id: { in: ids }, barbeariaId }, select: { id: true, nome: true } });
+  const nomes = new Map(servicos.map(s => [s.id, s.nome]));
+  const servicoNome = ids.map(id => nomes.get(id) || 'Serviço').join(' + ') || 'Serviço';
+  const pontosServicos = somarPontosPorServicos(ids, config.regrasPorServico);
 
-  const servicoNome = (await prisma.servico.findUnique({ where: { id: servicoId }, select: { nome: true } }))?.nome || 'Serviço';
-
-  if (regraServico && regraServico.pontos > 0) {
-    pontos = regraServico.pontos;
+  if (pontosServicos > 0) {
+    pontos = pontosServicos;
     descricao = `${servicoNome} — regra específica do serviço`;
   } else if (config.pontosPorReal > 0 && precoServico) {
     pontos = Math.floor(Number(precoServico) * config.pontosPorReal);
@@ -58,14 +60,9 @@ export async function prepararOperacoesFidelidade(
     descricao = `${servicoNome} — visita concluída`;
   }
 
-  if (pontos > 0 && config.pontosDobroAniversario && cliente?.dataNascimento) {
-    const hoje = new Date();
-    const nasc = new Date(cliente.dataNascimento);
-    if (nasc.getDate() === hoje.getDate() && nasc.getMonth() === hoje.getMonth()) {
-      pontos = pontos * 2;
-      descricao += ' (dobro — aniversário!)';
-    }
-  }
+  const pontosFinais = calcularPontosAtendimento(config, ids, Number(precoServico ?? 0), cliente?.dataNascimento);
+  if (pontosFinais > pontos) descricao += ' (dobro — aniversário!)';
+  pontos = pontosFinais;
 
   if (pontos > 0) {
     operacoes.pontosParaCriar.push({
@@ -131,7 +128,7 @@ export async function prepararOperacoesFidelidadeLancamento(
   lancamentoId: string,
   clienteId: string,
   barbeariaId: string,
-  servicoId: string | null,
+  servicoId: string | string[] | null,
   preco: number
 ): Promise<OperacoesFidelidade> {
   const operacoes: OperacoesFidelidade = { pontosParaCriar: [] };
@@ -151,13 +148,12 @@ export async function prepararOperacoesFidelidadeLancamento(
   let servicoNome = 'Avulso';
 
   if (servicoId) {
-    const servico = await prisma.servico.findUnique({ where: { id: servicoId }, select: { nome: true } });
-    if (servico) servicoNome = servico.nome;
-    
-    const regrasPorServico = (config.regrasPorServico as Array<{ servicoId: string; pontos: number }> | null) ?? [];
-    const regraServico = regrasPorServico.find(r => r.servicoId === servicoId);
-    if (regraServico && regraServico.pontos > 0) {
-      pontos = regraServico.pontos;
+    const ids = Array.isArray(servicoId) ? servicoId : [servicoId];
+    const servicos = await prisma.servico.findMany({ where: { id: { in: ids }, barbeariaId }, select: { id: true, nome: true } });
+    const nomes = new Map(servicos.map(s => [s.id, s.nome]));
+    servicoNome = ids.map(id => nomes.get(id) || 'Serviço').join(' + ') || 'Avulso';
+    pontos = somarPontosPorServicos(ids, config.regrasPorServico);
+    if (pontos > 0) {
       descricao = `${servicoNome} — regra específica do serviço`;
     }
   }
@@ -172,14 +168,10 @@ export async function prepararOperacoesFidelidadeLancamento(
     }
   }
 
-  if (pontos > 0 && config.pontosDobroAniversario && cliente?.dataNascimento) {
-    const hoje = new Date();
-    const nasc = new Date(cliente.dataNascimento);
-    if (nasc.getDate() === hoje.getDate() && nasc.getMonth() === hoje.getMonth()) {
-      pontos = pontos * 2;
-      descricao += ' (dobro — aniversário!)';
-    }
-  }
+  const pontosFinais = calcularPontosAtendimento(config,
+    Array.isArray(servicoId) ? servicoId : servicoId ? [servicoId] : [], preco, cliente?.dataNascimento);
+  if (pontosFinais > pontos) descricao += ' (dobro — aniversário!)';
+  pontos = pontosFinais;
 
   if (pontos > 0) {
     operacoes.pontosParaCriar.push({
@@ -200,7 +192,7 @@ export async function prepararOperacoesFidelidadeLancamento(
 export async function creditarPontosPorAgendamento(agendamentoId: string) {
   const agendamento = await prisma.agendamento.findUnique({
     where: { id: agendamentoId },
-    include: { servico: true }
+    include: { servico: true, itens: true }
   });
 
   if (!agendamento || agendamento.status !== 'CONCLUIDO' || !agendamento.clienteId || !agendamento.barbeariaId) return;
@@ -209,7 +201,7 @@ export async function creditarPontosPorAgendamento(agendamentoId: string) {
     agendamentoId,
     agendamento.clienteId,
     agendamento.barbeariaId,
-    agendamento.servicoId,
+    obterIdsServicosAgendamento(agendamento),
     Number(agendamento.servico?.preco || 0)
   );
 

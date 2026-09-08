@@ -1,5 +1,6 @@
 // Serviço de clientes — CRUD + dados agregados por barbearia
 import { prisma } from '../lib/prisma';
+import { validarSaldoParaResgate } from './saldoFidelidade.util';
 
 interface DadosCliente {
   nome: string;
@@ -173,7 +174,11 @@ export class ClienteService {
       where: { clienteId, barbeariaId }
     });
 
-    const saldoPontos = pontos.reduce((acc, p) => acc + p.pontos, 0);
+    const resgates = await prisma.resgateRecompensa.aggregate({
+      where: { clienteId, barbeariaId, status: { in: ['PENDENTE', 'CONFIRMADO'] } },
+      _sum: { pontosUsados: true },
+    });
+    const saldoPontos = pontos.reduce((acc, p) => acc + p.pontos, 0) - (resgates._sum.pontosUsados ?? 0);
 
     return {
       saldoPontos,
@@ -202,7 +207,7 @@ export class ClienteService {
           orderBy: { data: 'desc' },
         },
         resgatesRecompensa: {
-          where: { barbeariaId },
+          where: { barbeariaId, status: { in: ['PENDENTE', 'CONFIRMADO'] } },
           include: { recompensa: { select: { nome: true } } },
           orderBy: { createdAt: 'desc' },
         },
@@ -318,29 +323,12 @@ export class ClienteService {
       throw new Error('Recompensa não encontrada ou inativa');
     }
 
-    // Calcular saldo de pontos
-    const pontosAgregados = await prisma.pontoFidelidade.aggregate({
-      _sum: { pontos: true },
-      where: { clienteId, barbeariaId },
-    });
-    const resgatesAgregados = await (prisma as any).resgateRecompensa.aggregate({
-      _sum: { pontosUsados: true },
-      where: { clienteId, barbeariaId, status: { in: ['PENDENTE', 'CONFIRMADO'] } },
-    });
-    const saldo = (pontosAgregados._sum.pontos || 0) - (resgatesAgregados._sum.pontosUsados || 0);
-
-    if (saldo < recompensa.pontosNecessarios) {
-      throw new Error('Saldo de pontos insuficiente');
-    }
-
-    return (prisma as any).resgateRecompensa.create({
-      data: {
-        clienteId,
-        recompensaId,
-        barbeariaId,
-        pontosUsados: recompensa.pontosNecessarios,
-      },
-    });
+    return prisma.$transaction(async tx => {
+      await validarSaldoParaResgate(tx, clienteId, barbeariaId, recompensa.pontosNecessarios);
+      return tx.resgateRecompensa.create({ data: {
+        clienteId, recompensaId, barbeariaId, pontosUsados: recompensa.pontosNecessarios,
+      } });
+    }, { isolationLevel: 'Serializable' });
   }
 
   /** Aniversariantes do mês atual */

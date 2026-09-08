@@ -31,6 +31,7 @@ interface Lancamento {
   servico?: { nome: string } | null;
   servicoId?: string | null;
   barbeiroId?: string | null;
+  itens?: { nome: string }[];
 }
 
 interface RelatorioData {
@@ -345,8 +346,12 @@ export function Relatorios() {
                       <td style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--texto-secundario)' }}>
                         {new Date(l.data).toLocaleDateString('pt-BR')}
                       </td>
-                      <td>
-                        <p style={{ fontWeight: 500, color: 'var(--text-primary)' }}>{l.servico ? l.servico.nome : l.categoria}</p>
+                        <td>
+                          <p style={{ fontWeight: 500, color: 'var(--text-primary)' }}>
+                            {l.itens && l.itens.length > 0
+                              ? l.itens.map((i: any) => i.nome).join(' + ')
+                              : (l.servico ? l.servico.nome : l.categoria)}
+                          </p>
                         <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '0.8125rem', color: 'var(--texto-secundario)', marginTop: '2px' }}>
                           {l.barbeiro ? l.barbeiro.usuario.nome : 'Sem Barbeiro'}
                         </p>

@@ -14,6 +14,8 @@ import { prepararOperacoesFidelidade, creditarPontosPorAgendamento } from './fid
 import { HorariosUtil, injetarDuracaoTotalServicos } from './horarios.util';
 import { DescontoService, TipoDesconto } from './desconto.service';
 import { obterIdsServicosAgendamento } from '../utils/agendamento.util';
+import { validarSaldoParaResgate, tratarConflitoDeFechamento } from './saldoFidelidade.util';
+import { ErroDeNegocio } from '../lib/erros';
 interface DadosAgendamento {
   clienteId: string;
   barbeiroId: string;
@@ -202,6 +204,16 @@ export class AgendamentoService {
         valorLiquido: valorTotal,
         origem: dados.origem || 'ONLINE',
         status: dados.status || 'AGUARDANDO',
+        itens: {
+          create: todosServicos.map((s, idx) => ({
+            servicoId: s.id,
+            nome: s.nome,
+            preco: Number(s.preco),
+            duracaoMinutos: s.duracaoMinutos,
+            barbeariaId: dados.barbeariaId || barbeiro.barbeariaId,
+            ordem: idx
+          }))
+        }
       } as any,
       include: {
         cliente: { include: { usuario: { select: { nome: true } } } },
@@ -226,7 +238,7 @@ export class AgendamentoService {
 
     const agendamentoOriginal = await prisma.agendamento.findUnique({
       where: { id },
-      include: { servico: true },
+      include: { servico: true, itens: true },
     });
 
     if (!agendamentoOriginal) {
@@ -294,11 +306,11 @@ export class AgendamentoService {
           select: { comissaoPercent: true, barbeariaId: true },
         }),
         prisma.pontoFidelidade.aggregate({
-          where: { clienteId: agendamentoOriginal.clienteId },
+          where: { clienteId: agendamentoOriginal.clienteId, barbeariaId: agendamentoOriginal.barbeariaId },
           _sum: { pontos: true }
         }),
         prisma.resgateRecompensa.aggregate({
-          where: { clienteId: agendamentoOriginal.clienteId, status: { in: ['PENDENTE', 'CONFIRMADO'] } },
+          where: { clienteId: agendamentoOriginal.clienteId, barbeariaId: agendamentoOriginal.barbeariaId, status: { in: ['PENDENTE', 'CONFIRMADO'] } },
           _sum: { pontosUsados: true }
         })
       ]);
@@ -314,8 +326,10 @@ export class AgendamentoService {
       let precosServicosAtuais: number[] = [];
       const idsServicos = obterIdsServicosAgendamento(agendamentoOriginal);
       
-      let valorBruto = Number(agendamentoOriginal.valorBruto || 0);
-      if (valorBruto === 0) {
+      let valorBruto = agendamentoOriginal.itens.length
+        ? agendamentoOriginal.itens.reduce((total, item) => total + Number(item.preco), 0)
+        : Number(agendamentoOriginal.valorBruto || 0);
+      if (valorBruto === 0 && !agendamentoOriginal.itens.length) {
         console.warn(`[Fechamento] Agendamento ${agendamentoOriginal.id} com valorBruto zerado. Calculando na hora.`);
         const servicos = await prisma.servico.findMany({
           where: { id: { in: idsServicos } }
@@ -356,18 +370,24 @@ export class AgendamentoService {
         agendamentoOriginal.id,
         agendamentoOriginal.clienteId,
         agendamentoOriginal.barbeariaId!,
-        agendamentoOriginal.servicoId,
+        obterIdsServicosAgendamento(agendamentoOriginal),
         baseParaPontos
       );
 
       // 6. Preparar valores de Comissão
-      const comissaoPercent = barbeiro?.comissaoPercent || 50;
+      const comissaoPercent = barbeiro ? (barbeiro.comissaoPercent ?? 0) : 0;
       const baseComissao = configGlobal.baseCalculoComissao === 'VALOR_BRUTO' ? valorBruto : valorFinal;
-      const valorComissao = (baseComissao * comissaoPercent) / 100;
+      const valorComissao = Math.round(baseComissao * comissaoPercent) / 100;
       const valorLiquido = valorFinal - valorComissao;
 
       // Usar $transaction para garantir atomicidade total
       resultadoFinal = await prisma.$transaction(async (tx) => {
+        const claim = await tx.agendamento.updateMany({
+          where: { id, barbeariaId: agendamentoOriginal.barbeariaId, status: { not: 'CONCLUIDO' } },
+          data: { status: 'CONCLUIDO' },
+        });
+        if (claim.count !== 1) throw new ErroDeNegocio('Este agendamento já foi concluído.', 409);
+        await validarSaldoParaResgate(tx, agendamentoOriginal.clienteId, agendamentoOriginal.barbeariaId!, pontosAUsar);
         // A. Atualiza o agendamento
         const updated = await tx.agendamento.update({
           where: { id },
@@ -398,7 +418,7 @@ export class AgendamentoService {
               clienteId: agendamentoOriginal.clienteId,
               barbeariaId: agendamentoOriginal.barbeariaId!,
               pontos: -pontosAUsar,
-              descricao: `Resgate no serviço ${agendamentoOriginal.servico.nome}`,
+              descricao: `Resgate no atendimento ${agendamentoOriginal.id}`,
               data: new Date(),
             },
           });
@@ -437,7 +457,7 @@ export class AgendamentoService {
         }
 
         return updated;
-      });
+      }, { isolationLevel: 'Serializable' }).catch(tratarConflitoDeFechamento);
 
     } else {
       // Se não está concluindo (apenas reagendando, etc), apenas update simples
@@ -457,6 +477,29 @@ export class AgendamentoService {
         if (currentIds.length <= 1) {
           (payloadUpdate as any).servicosIds = [dadosAgendamento.servicoId];
         }
+      }
+
+      if ((payloadUpdate as any).servicosIds) {
+        const novosIds = (payloadUpdate as any).servicosIds;
+        const novosServicos = await prisma.servico.findMany({ where: { id: { in: novosIds } } });
+        
+        const novoValorBruto = novosServicos.reduce((acc, s) => acc + Number(s.preco), 0);
+        // Agendamentos concluídos já são rejeitados na entrada deste método.
+        (payloadUpdate as any).valorBruto = novoValorBruto;
+        (payloadUpdate as any).valorCobrado = novoValorBruto;
+        (payloadUpdate as any).valorLiquido = novoValorBruto;
+
+        (payloadUpdate as any).itens = {
+          deleteMany: {},
+          create: novosServicos.map((s, idx) => ({
+            servicoId: s.id,
+            nome: s.nome,
+            preco: Number(s.preco),
+            duracaoMinutos: s.duracaoMinutos,
+            barbeariaId: agendamentoOriginal.barbeariaId,
+            ordem: idx
+          }))
+        };
       }
 
       if (mudouDataBarbeiroServico && !payloadUpdate.status) {
@@ -562,7 +605,8 @@ export class AgendamentoService {
     pontosUsados: number = 0
   ) {
     const agendamento = await prisma.agendamento.findUnique({
-      where: { id: agendamentoId }
+      where: { id: agendamentoId },
+      include: { itens: true, cliente: { select: { dataNascimento: true } } },
     });
 
     if (!agendamento) throw new Error('Agendamento não encontrado');
@@ -579,11 +623,11 @@ export class AgendamentoService {
         select: { comissaoPercent: true }
       }),
       prisma.pontoFidelidade.aggregate({
-        where: { clienteId: agendamento.clienteId },
+        where: { clienteId: agendamento.clienteId, barbeariaId: agendamento.barbeariaId },
         _sum: { pontos: true }
       }),
       prisma.resgateRecompensa.aggregate({
-        where: { clienteId: agendamento.clienteId, status: { in: ['PENDENTE', 'CONFIRMADO'] } },
+        where: { clienteId: agendamento.clienteId, barbeariaId: agendamento.barbeariaId, status: { in: ['PENDENTE', 'CONFIRMADO'] } },
         _sum: { pontosUsados: true }
       })
     ]);
@@ -611,14 +655,22 @@ export class AgendamentoService {
     const { calcularFechamento } = await import('../utils/financeiro.util');
     
     return calcularFechamento({
-      valorBrutoOriginal: Number(agendamento.valorBruto || 0),
-      precosServicosAtuais,
+      servicosIds: obterIdsServicosAgendamento(agendamento),
+      temCliente: Boolean(agendamento.clienteId),
+      dataNascimento: agendamento.cliente.dataNascimento,
+      valorBrutoOriginal: agendamento.itens.length
+        ? agendamento.itens.reduce((total, item) => total + Number(item.preco), 0)
+        : Number(agendamento.valorBruto || 0),
+      precosServicosAtuais: agendamento.itens.length ? agendamento.itens.map(item => Number(item.preco)) : precosServicosAtuais,
       tipoDesconto,
       valorDescontoReais: descontoReais,
       valorDescontoPercentual: descontoPercentual,
       pontosUsados,
       saldoPontos,
       configFidelidade: {
+        ativo: configFidelidade.ativo,
+        regrasPorServico: configFidelidade.regrasPorServico,
+        pontosDobroAniversario: configFidelidade.pontosDobroAniversario,
         resgatePontosAtivo: configFidelidade.resgatePontosAtivo ?? false,
         valorPorPonto: Number(configFidelidade.valorPorPonto),
         percentualMaxPontos: Number(configFidelidade.percentualMaxPontos),
@@ -632,7 +684,7 @@ export class AgendamentoService {
         baseCalculoComissao: configGlobal.baseCalculoComissao,
         baseCalculoPontos: configGlobal.baseCalculoPontos
       },
-      percentualComissao: barbeiro?.comissaoPercent || 50
+      percentualComissao: barbeiro ? (barbeiro.comissaoPercent ?? 0) : 0
     });
   }
 }

@@ -6,6 +6,8 @@ import { CATEGORIA_VENDA_PRODUTO } from '../lib/constantes';
 import { obterIdsServicosAgendamento } from '../utils/agendamento.util';
 import { prepararOperacoesFidelidadeLancamento } from './fidelidade.engine';
 import { tenantStorage } from '../lib/als';
+import { ErroDeNegocio } from '../lib/erros';
+import { validarSaldoParaResgate, tratarConflitoDeFechamento } from './saldoFidelidade.util';
 
 interface DadosLancamento {
   tipo: TipoLancamento;
@@ -18,6 +20,12 @@ interface DadosLancamento {
   barbeiroId?: string;
   servicoId?: string;
   data: string;
+  itens?: { servicoId: string; preco?: number }[];
+  servicosIds?: string[];
+  tipoDesconto?: 'NENHUM' | 'REAIS' | 'PERCENTUAL' | 'PONTOS' | 'COMBINADO';
+  descontoReais?: number;
+  descontoPercentual?: number;
+  pontosUsados?: number;
 }
 
 export class FinanceiroService {
@@ -37,27 +45,123 @@ export class FinanceiroService {
       include: { 
         agendamento: { select: { id: true } },
         barbeiro: { include: { usuario: { select: { nome: true } } } },
-        servico: { select: { nome: true } }
+        servico: { select: { nome: true } },
+        itens: { orderBy: { ordem: 'asc' } }
       },
       orderBy: { data: 'desc' },
     });
+  }
+
+  /** POST /financeiro/simular-desconto */
+  static async simularDesconto(dados: any) {
+    const store = tenantStorage.getStore();
+    const barbeariaId = store?.barbeariaId;
+    if (!barbeariaId) throw new Error('Contexto de barbearia não encontrado');
+
+    const [configFidelidade, configGlobal, barbeiro, agregacaoPontos, agregacaoResgates] = await Promise.all([
+      prisma.configuracaoFidelidade.findUnique({ where: { barbeariaId } }),
+      prisma.configuracao.findUnique({ where: { barbeariaId } }),
+      dados.barbeiroId ? prisma.barbeiro.findUnique({ where: { id: dados.barbeiroId }, select: { comissaoPercent: true } }) : null,
+      dados.clienteId ? prisma.pontoFidelidade.aggregate({ where: { clienteId: dados.clienteId, barbeariaId }, _sum: { pontos: true } }) : null,
+      dados.clienteId ? prisma.resgateRecompensa.aggregate({ where: { clienteId: dados.clienteId, barbeariaId, status: { in: ['PENDENTE', 'CONFIRMADO'] } }, _sum: { pontosUsados: true } }) : null
+    ]);
+
+    if (!configFidelidade) throw new Error('Configuração de fidelidade não encontrada');
+    if (!configGlobal) throw new Error('Configuração geral não encontrada');
+
+    const cliente = dados.clienteId ? await prisma.cliente.findFirst({
+      where: { id: dados.clienteId, OR: [
+        { barbeariaId }, { clientesBarbearias: { some: { barbeariaId } } },
+      ] }, select: { dataNascimento: true },
+    }) : null;
+    if (dados.clienteId && !cliente) throw new ErroDeNegocio('Cliente não pertence a esta barbearia.');
+
+    const totalGanho = agregacaoPontos?._sum?.pontos || 0;
+    const totalGasto = agregacaoResgates?._sum?.pontosUsados || 0;
+    const saldoPontos = totalGanho - totalGasto;
+
+    let precosServicosAtuais: number[] = [];
+    if (dados.itens && dados.itens.length > 0) {
+      const ids = dados.itens.map((i: any) => i.servicoId).filter(Boolean);
+      const servicos = await prisma.servico.findMany({ where: { id: { in: ids } } });
+      if (servicos.length !== ids.length) {
+        throw new ErroDeNegocio('Um ou mais serviços informados não foram encontrados no catálogo.');
+      }
+      precosServicosAtuais = servicos.map(s => Number(s.preco));
+    } else if (dados.servicosIds && dados.servicosIds.length > 0) {
+      const servicos = await prisma.servico.findMany({ where: { id: { in: dados.servicosIds } } });
+      precosServicosAtuais = servicos.map(s => Number(s.preco));
+    } else if (dados.servicoId) {
+      const servico = await prisma.servico.findUnique({ where: { id: dados.servicoId } });
+      if (servico) precosServicosAtuais.push(Number(servico.preco));
+    } else if (dados.valor) {
+      precosServicosAtuais = [Number(dados.valor)];
+    }
+    
+    const valorBrutoOriginal = precosServicosAtuais.reduce((a, b) => a + b, 0);
+
+    const { calcularFechamento } = await import('../utils/financeiro.util');
+    
+    const resultado = calcularFechamento({
+      servicosIds: obterIdsServicosAgendamento(dados),
+      temCliente: Boolean(cliente),
+      dataNascimento: cliente?.dataNascimento,
+      valorBrutoOriginal,
+      precosServicosAtuais,
+      tipoDesconto: dados.tipoDesconto || 'NENHUM',
+      valorDescontoReais: Number(dados.descontoReais || 0),
+      valorDescontoPercentual: Number(dados.descontoPercentual || 0),
+      pontosUsados: Number(dados.pontosUsados || 0),
+      saldoPontos,
+      configFidelidade: {
+        ativo: configFidelidade.ativo,
+        regrasPorServico: configFidelidade.regrasPorServico,
+        pontosDobroAniversario: configFidelidade.pontosDobroAniversario,
+        resgatePontosAtivo: configFidelidade.resgatePontosAtivo ?? false,
+        valorPorPonto: Number(configFidelidade.valorPorPonto),
+        percentualMaxPontos: Number(configFidelidade.percentualMaxPontos),
+        descontoMaxReais: Number(configFidelidade.descontoMaxReais),
+        descontoMaxPercentual: Number(configFidelidade.descontoMaxPercentual),
+        permitirCombinarDescontos: configFidelidade.permitirCombinarDescontos ?? false,
+        pontosPorReal: Number(configFidelidade.pontosPorReal || 0),
+        pontosPorVisita: Number(configFidelidade.pontosPorVisita || 0)
+      },
+      configGlobal: {
+        baseCalculoComissao: configGlobal.baseCalculoComissao,
+        baseCalculoPontos: configGlobal.baseCalculoPontos
+      },
+      percentualComissao: barbeiro ? (barbeiro.comissaoPercent ?? 0) : 0
+    });
+    return { ...resultado,
+      baseAcumulo: configGlobal.baseCalculoPontos === 'VALOR_BRUTO' ? resultado.valorBruto : resultado.valorLiquido,
+      percentualComissao: barbeiro?.comissaoPercent ?? 0,
+      baseComissaoAplicada: configGlobal.baseCalculoComissao,
+    };
   }
 
   /** Cria um lançamento */
   static async criar(dados: DadosLancamento) {
     let valorComissao: number | null = null;
     let valorLiquido: number | null = null;
+    let valorFinal = Number(dados.valor || 0);
+
+    let descontoInfo: any = null;
 
     // Se for serviço prestado e tiver barbeiro vinculado
-    if (dados.tipo === 'ENTRADA' && dados.barbeiroId) {
+    if (dados.tipo === 'ENTRADA' && dados.categoria !== CATEGORIA_VENDA_PRODUTO && (dados.tipoDesconto || dados.itens?.length || dados.servicosIds?.length || dados.servicoId)) {
+      descontoInfo = await FinanceiroService.simularDesconto(dados);
+      valorFinal = descontoInfo.valorLiquido;
+      valorComissao = descontoInfo.valorComissao;
+      valorLiquido = valorFinal - (valorComissao || 0);
+    } else if (dados.tipo === 'ENTRADA' && dados.categoria !== CATEGORIA_VENDA_PRODUTO && dados.barbeiroId) {
       const barbeiro = await prisma.barbeiro.findUnique({
         where: { id: dados.barbeiroId },
         select: { comissaoPercent: true }
       });
 
       if (barbeiro) {
-        valorComissao = (dados.valor * barbeiro.comissaoPercent) / 100;
-        valorLiquido = dados.valor - valorComissao;
+        valorComissao = (valorFinal * barbeiro.comissaoPercent) / 100;
+        valorLiquido = valorFinal - valorComissao;
       }
     }
 
@@ -65,7 +169,7 @@ export class FinanceiroService {
       tipo: dados.tipo,
       categoria: dados.categoria,
       descricao: dados.descricao,
-      valor: dados.valor,
+      valor: valorFinal,
       formaPagamento: dados.formaPagamento,
       agendamentoId: dados.agendamentoId || null,
       clienteId: dados.clienteId || null,
@@ -73,11 +177,61 @@ export class FinanceiroService {
       servicoId: dados.servicoId || null,
       valorComissao,
       valorLiquido,
+      percentualComissao: descontoInfo?.percentualComissao,
+      baseComissaoAplicada: descontoInfo?.baseComissaoAplicada,
       data: inicioDiaBrasilia(dados.data),
     };
 
     const store = tenantStorage.getStore();
     const barbeariaId = store?.barbeariaId;
+
+    if (dados.itens && dados.itens.length > 0) {
+      const servicosAtuais = await prisma.servico.findMany({ where: { id: { in: dados.itens.map((i: any) => i.servicoId) } } });
+      const mapServicos = new Map(servicosAtuais.map((s: any) => [s.id, s]));
+      
+      (payloadLancamento as any).itens = {
+        create: dados.itens.map((item: any, idx: number) => {
+          const s = mapServicos.get(item.servicoId);
+          if (!s) {
+            throw new ErroDeNegocio(`Serviço não encontrado: ${item.servicoId}`);
+          }
+          return {
+            servicoId: item.servicoId,
+            nome: s.nome,
+            preco: Number(s.preco),
+            duracaoMinutos: s.duracaoMinutos,
+            barbeariaId: barbeariaId,
+            ordem: idx
+          };
+        })
+      };
+    } else if (dados.servicosIds && dados.servicosIds.length > 0) {
+      const servicosAtuais = await prisma.servico.findMany({ where: { id: { in: dados.servicosIds } } });
+      (payloadLancamento as any).itens = {
+        create: servicosAtuais.map((s: any, idx: number) => ({
+          servicoId: s.id,
+          nome: s.nome,
+          preco: Number(s.preco),
+          duracaoMinutos: s.duracaoMinutos,
+          barbeariaId: barbeariaId,
+          ordem: idx
+        }))
+      };
+    } else if (dados.servicoId) {
+      const s = await prisma.servico.findUnique({ where: { id: dados.servicoId } });
+      if (s) {
+        (payloadLancamento as any).itens = {
+          create: [{
+            servicoId: s.id,
+            nome: s.nome,
+            preco: Number(s.preco),
+            duracaoMinutos: s.duracaoMinutos,
+            barbeariaId: barbeariaId,
+            ordem: 0
+          }]
+        };
+      }
+    }
 
     if (dados.clienteId && barbeariaId) {
       const cliente = await prisma.cliente.findUnique({ where: { id: dados.clienteId } });
@@ -100,11 +254,21 @@ export class FinanceiroService {
         'temp',
         dados.clienteId,
         barbeariaId,
-        dados.servicoId || null,
-        dados.valor
+        obterIdsServicosAgendamento(dados),
+        descontoInfo?.baseAcumulo ?? valorFinal
       );
 
+      if (descontoInfo?.pontosUtilizados > 0) {
+        ops.pontosParaCriar.push({
+          clienteId: dados.clienteId,
+          barbeariaId,
+          pontos: -descontoInfo.pontosUtilizados,
+          descricao: `Resgate de pontos - Lançamento manual`
+        });
+      }
+
       return prisma.$transaction(async (tx) => {
+        await validarSaldoParaResgate(tx, dados.clienteId!, barbeariaId, descontoInfo?.pontosUtilizados ?? 0);
         const lancamento = await tx.lancamentoFinanceiro.create({
           data: payloadLancamento as any,
         });
@@ -115,15 +279,16 @@ export class FinanceiroService {
               data: {
                 clienteId: op.clienteId,
                 barbeariaId: op.barbeariaId,
-                lancamentoId: lancamento.id,
+                // O vínculo único pertence ao crédito; o débito mantém a referência no extrato.
+                lancamentoId: op.lancamentoId ? lancamento.id : undefined,
                 pontos: op.pontos,
-                descricao: op.descricao
+                descricao: op.lancamentoId ? op.descricao : `${op.descricao} — lançamento ${lancamento.id}`
               }
             });
           }
         }
         return lancamento;
-      });
+      }, { isolationLevel: 'Serializable' }).catch(tratarConflitoDeFechamento);
     }
 
     return prisma.lancamentoFinanceiro.create({
@@ -321,7 +486,8 @@ export class FinanceiroService {
       where,
       include: {
         barbeiro: { include: { usuario: { select: { nome: true } } } },
-        servico: { select: { nome: true } }
+        servico: { select: { nome: true } },
+        itens: { orderBy: { ordem: 'asc' } }
       },
       orderBy: { data: 'desc' }
     });

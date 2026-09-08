@@ -1,6 +1,7 @@
 import { TipoDesconto } from '../services/desconto.service';
+import { calcularPontosAtendimento, ConfiguracaoAcumulo } from './fidelidade.util';
 
-export interface ConfiguracaoFidelidadeFinanceiro {
+export interface ConfiguracaoFidelidadeFinanceiro extends ConfiguracaoAcumulo {
   resgatePontosAtivo: boolean;
   valorPorPonto: number;
   percentualMaxPontos: number;
@@ -12,6 +13,9 @@ export interface ConfiguracaoFidelidadeFinanceiro {
 }
 
 export interface EntradaFechamento {
+  servicosIds?: string[];
+  temCliente?: boolean;
+  dataNascimento?: Date | null;
   valorBrutoOriginal: number;
   precosServicosAtuais: number[];
   tipoDesconto: TipoDesconto;
@@ -52,10 +56,15 @@ export function calcularFechamento(entrada: EntradaFechamento): ResultadoFechame
   }
 
   let descontoManual = 0;
-  const temDescontoManual = (entrada.tipoDesconto === 'REAIS' || entrada.tipoDesconto === 'PERCENTUAL' || entrada.tipoDesconto === 'COMBINADO') && (entrada.valorDescontoReais > 0 || entrada.valorDescontoPercentual > 0);
+  if (![entrada.valorDescontoReais, entrada.valorDescontoPercentual, entrada.pontosUsados].every(Number.isFinite)
+    || entrada.valorDescontoReais < 0 || entrada.valorDescontoPercentual < 0
+    || entrada.pontosUsados < 0 || !Number.isInteger(entrada.pontosUsados)) {
+    throw new Error('Informe descontos válidos e pontos inteiros não negativos.');
+  }
+  const temDescontoManual = entrada.valorDescontoReais > 0 || entrada.valorDescontoPercentual > 0;
   const querUsarPontos = (entrada.tipoDesconto === 'PONTOS' || entrada.tipoDesconto === 'COMBINADO') && entrada.pontosUsados > 0;
 
-  if (temDescontoManual && querUsarPontos && !configFidelidade.permitirCombinarDescontos) {
+  if (temDescontoManual && entrada.pontosUsados > 0 && !configFidelidade.permitirCombinarDescontos) {
     throw new Error('Combinação de desconto manual com pontos não é permitida.');
   }
 
@@ -117,10 +126,9 @@ export function calcularFechamento(entrada: EntradaFechamento): ResultadoFechame
 
   // Acúmulo de Pontos da Visita
   const baseAcumulo = entrada.configGlobal.baseCalculoPontos === 'VALOR_BRUTO' ? valorBruto : valorLiquido;
-  // Apenas soma os pontos base. Sem aplicar multiplicador de indicação ou aniversário (esses ficam na camada de serviços)
-  const pontosPorReal = Math.floor(baseAcumulo * configFidelidade.pontosPorReal);
-  const pontosPorVisita = configFidelidade.pontosPorVisita;
-  const pontosAcumulados = pontosPorReal + pontosPorVisita;
+  const pontosAcumulados = entrada.temCliente === false ? 0 : calcularPontosAtendimento(
+    configFidelidade, entrada.servicosIds ?? [], baseAcumulo, entrada.dataNascimento,
+  );
 
   return {
     valorBruto,

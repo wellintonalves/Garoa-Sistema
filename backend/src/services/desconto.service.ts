@@ -48,10 +48,14 @@ export class DescontoService {
     let descontoManual = 0;
 
     // Regra 10: Combinar
-    const temDescontoManual = (tipo === 'REAIS' || tipo === 'PERCENTUAL' || tipo === 'COMBINADO') && (valorReais > 0 || percentual > 0);
+    if (![valorReais, percentual, pontos].every(Number.isFinite) || valorReais < 0 || percentual < 0
+      || pontos < 0 || !Number.isInteger(pontos)) {
+      throw new Error('Informe descontos válidos e pontos inteiros não negativos.');
+    }
+    const temDescontoManual = valorReais > 0 || percentual > 0;
     const querUsarPontos = (tipo === 'PONTOS' || tipo === 'COMBINADO') && pontos > 0;
 
-    if (temDescontoManual && querUsarPontos && !config.permitirCombinarDescontos) {
+    if (temDescontoManual && pontos > 0 && !config.permitirCombinarDescontos) {
       throw new Error('Combinação de desconto manual com pontos não é permitida.');
     }
 
