@@ -9,6 +9,7 @@ import { BuscaCliente } from '../components/BuscaCliente';
 
 import api from '../api/client';
 import { hojeBrasilia } from '../utils/datas';
+import { statusPontos, type SaldoPontos } from '../utils/statusPontos';
 
 interface Barbeiro { id: string; usuario: { nome: string }; comissaoPercent: number; }
 interface Servico { id: string; nome: string; preco: string; }
@@ -59,10 +60,14 @@ export function Financeiro() {
     itens: [] as any[], tipoDesconto: 'NENHUM', valorDescontoManual: '', pontosUsados: '' 
   };
   const [form, setForm] = useState(formPadrao);
-  const [fidelidade, setFidelidade] = useState<any>(null);
+  const [fidelidade, setFidelidade] = useState<SaldoPontos | null>(null);
+  const [chaveSaldoRecebido, setChaveSaldoRecebido] = useState('');
+  const [tentativaFidelidade, setTentativaFidelidade] = useState(0);
   const [erroFidelidade, setErroFidelidade] = useState<string | null>(null);
   const [simulacao, setSimulacao] = useState<any>(null);
   const [erroSimulacao, setErroSimulacao] = useState<string | null>(null);
+  const [chaveSimulada, setChaveSimulada] = useState('');
+  const [tentativaSimulacao, setTentativaSimulacao] = useState(0);
   const [filtroCategoria, setFiltroCategoria] = useState<string>('TODAS');
 
   async function carregar() {
@@ -84,30 +89,57 @@ export function Financeiro() {
 
   useEffect(() => { carregar(); }, []);
 
-  const buscarFidelidade = async () => {
-    if (!form.clienteId) { setFidelidade(null); setErroFidelidade(null); return; }
+  const chaveSaldo = JSON.stringify([modalAberto, form.tipo, form.clienteId, form.valor, tentativaFidelidade]);
+  const carregandoFidelidade = modalAberto && form.tipo === 'ENTRADA' && !!form.clienteId && chaveSaldoRecebido !== chaveSaldo;
+  const disponibilidadePontos = statusPontos(form.clienteId, carregandoFidelidade, erroFidelidade, fidelidade);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    setChaveSaldoRecebido('');
+    setFidelidade(null);
+    setErroFidelidade(null);
+    if (!modalAberto || form.tipo !== 'ENTRADA' || !form.clienteId) return;
+    const buscar = async () => {
     try {
       // Endpoint dedicado: devolve saldoPontos, resgatePontosAtivo e maxPontosUtilizaveis
       // ja considerando o teto percentual sobre o valor do atendimento.
       // O detalhe do cliente (/clientes/:id) NAO devolve esses campos.
       const valorServico = Number(form.valor) || 0;
-      const res = await api.get(`/fidelidade/clientes/${form.clienteId}/saldo`, {
+      // request evita compartilhar uma GET cancelada pelo StrictMode no deduplicador.
+      const res = await api.request<SaldoPontos>({ method: 'GET', url: `/fidelidade/clientes/${form.clienteId}/saldo`,
         params: { valorServico },
+        signal: controller.signal,
       });
+      if (controller.signal.aborted) return;
       setFidelidade(res.data || null);
-      setErroFidelidade(null);
     } catch (err) {
-      setFidelidade(null);
-      setErroFidelidade('Não foi possível carregar a fidelidade.');
+      if (controller.signal.aborted) return;
+      setErroFidelidade(err instanceof Error ? err.message : 'Não foi possível carregar a fidelidade.');
+    } finally {
+      if (!controller.signal.aborted) setChaveSaldoRecebido(chaveSaldo);
     }
-  };
+    };
+    void buscar();
+    return () => controller.abort();
+  }, [modalAberto, form.tipo, form.clienteId, form.valor, chaveSaldo]);
 
-  // Depende tambem do valor: o teto percentual de pontos e calculado sobre ele.
-  useEffect(() => { buscarFidelidade(); }, [form.clienteId, form.valor]);
+  useEffect(() => {
+    if (!carregandoFidelidade && !disponibilidadePontos.habilitado) {
+      setForm(prev => prev.tipoDesconto === 'PONTOS' ? { ...prev, tipoDesconto: 'NENHUM', pontosUsados: '' } : prev);
+    }
+  }, [carregandoFidelidade, disponibilidadePontos.habilitado]);
 
-  const buscarSimulacao = async () => {
-    if (form.tipo !== 'ENTRADA') { setSimulacao(null); setErroSimulacao(null); return; }
+  const chaveSimulacao = JSON.stringify([modalAberto, form.tipo, form.tipoDesconto, form.valorDescontoManual, form.pontosUsados, form.clienteId, form.barbeiroId, form.itens, form.valor, tentativaSimulacao]);
+  const simulando = modalAberto && form.tipo === 'ENTRADA' && chaveSimulada !== chaveSimulacao;
+  const bloqueioSalvar = salvando || (form.tipo === 'ENTRADA' && (simulando || !!erroSimulacao || (form.tipoDesconto === 'PONTOS' && !disponibilidadePontos.habilitado)));
+
+  useEffect(() => {
+    const controller = new AbortController();
+    setChaveSimulada('');
+    setSimulacao(null);
     setErroSimulacao(null);
+    if (!modalAberto || form.tipo !== 'ENTRADA') return;
+    const buscarSimulacao = async () => {
     try {
       const payload = {
         tipo: 'ENTRADA',
@@ -120,20 +152,22 @@ export function Financeiro() {
         itens: form.itens && form.itens.length > 0 ? form.itens.map(i => ({ servicoId: i.servicoId })) : undefined,
         valor: form.valor ? Number(form.valor) : undefined
       };
-      const res = await api.post('/financeiro/simular-desconto', payload);
+      const res = await api.post('/financeiro/simular-desconto', payload, { signal: controller.signal });
+      if (controller.signal.aborted) return;
       setSimulacao(res.data);
       if (res.data.valorDesconto > res.data.valorBruto) {
          setErroSimulacao('O desconto não pode ser maior que o valor bruto.');
       }
     } catch (err) {
-      setErroSimulacao('Não foi possível simular o valor.');
+      if (controller.signal.aborted) return;
+      setErroSimulacao(err instanceof Error ? err.message : 'Não foi possível simular o valor.');
+    } finally {
+      if (!controller.signal.aborted) setChaveSimulada(chaveSimulacao);
     }
   };
-
-  useEffect(() => {
     const timeout = setTimeout(buscarSimulacao, 300);
-    return () => clearTimeout(timeout);
-  }, [form.tipo, form.tipoDesconto, form.valorDescontoManual, form.pontosUsados, form.clienteId, form.barbeiroId, form.itens, form.valor]);
+    return () => { clearTimeout(timeout); controller.abort(); };
+  }, [modalAberto, chaveSimulacao, form.tipo, form.tipoDesconto, form.valorDescontoManual, form.pontosUsados, form.clienteId, form.barbeiroId, form.itens, form.valor]);
 
   useEffect(() => {
     if (form.itens && form.itens.length > 0 && !editId) {
@@ -171,7 +205,7 @@ export function Financeiro() {
   }
 
   async function salvarLancamento() {
-    if (salvando) return;
+    if (bloqueioSalvar) return;
     setSalvando(true);
     try {
       const payload = { 
@@ -404,7 +438,9 @@ export function Financeiro() {
             <>
               <div className="z-50 relative">
                 <BuscaCliente 
-                  onSelect={(id) => setForm({...form, clienteId: id})} 
+                  onSelect={(id) => setForm(prev => ({ ...prev, clienteId: id,
+                    ...(prev.clienteId !== id && prev.tipoDesconto === 'PONTOS' ? { tipoDesconto: 'NENHUM', pontosUsados: '' } : {})
+                  }))}
                   selectedClienteId={form.clienteId} 
                 />
               </div>
@@ -473,8 +509,8 @@ export function Financeiro() {
                     { value: 'PONTOS', label: 'Pontos' },
                   ].map(tipo => {
                     const isPontos = tipo.value === 'PONTOS';
-                    const isLoading = isPontos && !fidelidade && !erroFidelidade;
-                    const isDisabled = isPontos && (!form.clienteId || isLoading || !!erroFidelidade || (fidelidade && (!fidelidade.resgatePontosAtivo || fidelidade.saldoPontos === 0)));
+                    const isLoading = isPontos && carregandoFidelidade;
+                    const isDisabled = isPontos && !disponibilidadePontos.habilitado;
                     return (
                       <button
                         key={tipo.value}
@@ -489,6 +525,9 @@ export function Financeiro() {
                           });
                         }}
                         disabled={!!isDisabled}
+                        title={isPontos ? disponibilidadePontos.motivo ?? undefined : undefined}
+                        aria-describedby={isPontos ? 'motivo-pontos' : undefined}
+                        style={{ minHeight: 48, fontSize: 13, opacity: isDisabled ? 0.6 : 1 }}
                         className={`px-3 py-2 rounded-md text-xs font-medium transition-colors border flex items-center gap-1 ${
                           form.tipoDesconto === tipo.value 
                           ? 'bg-[var(--cor-primaria)] text-[var(--texto-sobre-primaria)] border-[var(--cor-primaria)]' 
@@ -506,13 +545,17 @@ export function Financeiro() {
                   <div className="flex-1 flex flex-col justify-center">
                     <input
                       type="number"
+                      min={0}
+                      step={1}
+                      max={fidelidade?.maxPontosUtilizaveis}
+                      disabled={carregandoFidelidade}
                       value={form.pontosUsados}
                       onChange={e => setForm({...form, pontosUsados: e.target.value})}
                       placeholder="Pontos"
                       className="ds-input py-2"
                     />
-                    {fidelidade && (
-                      <span className="text-[10px] text-[var(--texto-secundario)] mt-1 ml-1">
+                    {fidelidade && !carregandoFidelidade && (
+                      <span className="text-[13px] text-[var(--texto-secundario)] mt-1 ml-1">
                         Saldo: {fidelidade.saldoPontos} pts (máx {fidelidade.maxPontosUtilizaveis})
                       </span>
                     )}
@@ -530,19 +573,28 @@ export function Financeiro() {
                   </div>
                 ) : <div className="flex-1" />}
               </div>
+              <p id="motivo-pontos" role="status" style={{ fontSize: 13, color: 'var(--texto-secundario)', marginTop: 8 }}>
+                {disponibilidadePontos.motivo}
+              </p>
+              {erroFidelidade && !carregandoFidelidade && form.clienteId && (
+                <button type="button" className="btn-secondary" onClick={() => setTentativaFidelidade(t => t + 1)}>Tentar carregar pontos novamente</button>
+              )}
             </div>
           )}
 
-          {form.tipo === 'ENTRADA' && form.valor && (
+          {form.tipo === 'ENTRADA' && (form.valor || erroSimulacao) && (
             <div style={{ padding: '12px', background: 'var(--bg-surface2)', border: '1px solid var(--border)', fontFamily: 'var(--fonte-interface)', fontSize: '11px', color: 'var(--text-primary)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-              <p>Valor Final (a cobrar): <strong style={{ color: 'var(--text-primary)' }}>{simulacao && !erroSimulacao ? fmt(simulacao.valorLiquido) : fmt(Number(form.valor || 0))}</strong></p>
+              <p>Valor Final (a cobrar): <strong style={{ color: 'var(--text-primary)' }}>{simulando ? 'Calculando…' : erroSimulacao ? 'Indisponível' : simulacao ? fmt(simulacao.valorLiquido) : fmt(Number(form.valor || 0))}</strong></p>
               {form.barbeiroId && (
                 <>
                   <p>Comissão do Barbeiro: <strong style={{ color: 'var(--cor-icone)' }}>{simulacao && !erroSimulacao ? fmt(simulacao.valorComissao) : fmt(previaComissao)}</strong></p>
                   <p>Líquido Barbearia: <strong style={{ color: 'var(--sucesso)' }}>{simulacao && !erroSimulacao ? fmt(simulacao.valorLiquido - simulacao.valorComissao) : fmt(previaLiquido)}</strong></p>
                 </>
               )}
-              {erroSimulacao && <p style={{ color: 'var(--error-text)' }}>{erroSimulacao}</p>}
+              {erroSimulacao && !simulando && <>
+                <p role="alert" style={{ color: 'var(--error-text)', fontSize: 13 }}>{erroSimulacao}</p>
+                <button type="button" className="btn-secondary" onClick={() => setTentativaSimulacao(t => t + 1)}>Tentar calcular novamente</button>
+              </>}
             </div>
           )}
 
@@ -561,7 +613,7 @@ export function Financeiro() {
           <button 
             onClick={salvarLancamento} 
             className="btn-primary w-full justify-center" 
-            disabled={salvando}
+            disabled={bloqueioSalvar}
             style={{ 
               opacity: salvando ? 0.7 : 1, 
               cursor: salvando ? 'not-allowed' : 'pointer',
@@ -571,7 +623,7 @@ export function Financeiro() {
             }}
           >
             {salvando && <Spinner size={14} className="animate-spin" />}
-            {salvando ? 'Salvando...' : 'Registrar'}
+            {salvando ? 'Salvando...' : simulando ? 'Calculando...' : 'Registrar'}
           </button>
         </div>
       </Modal>
