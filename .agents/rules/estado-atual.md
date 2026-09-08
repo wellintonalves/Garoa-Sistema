@@ -35,7 +35,66 @@ NAO marque nada como testado, aprovado ou concluido por conta propria. Registre 
 - Escala Z_INDEX centralizada em frontend/src/utils/constantes.ts, aplicada nas tres grades de agenda
 - Correcao do seletor "Todos os barbeiros", que ficava escondido atras do cabecalho fixo
 
-## SITUACAO EM 08/09 - PRONTO PARA PUBLICAR, AGUARDANDO COMMIT
+## EM ANDAMENTO - 08/09 tarde: branch fix/feedback-pontos-financeiro (commit 698da12)
+
+Aguardando decisao do Wellinton sobre merge na main. NAO publicado ainda.
+
+Conteudo: o botao "Pontos" do desconto ficava desabilitado em silencio quando o cliente tinha
+saldo 0 ou o resgate estava desativado - o usuario clicava e nada acontecia, sem explicacao.
+O ChatGPT extraiu frontend/src/utils/statusPontos.ts (funcao pura que devolve
+{ habilitado, motivo }), unica fonte para o disabled E para a mensagem, entao os dois nao podem
+discordar. Corrigiu tambem saldoPontos === 0 para > 0 (saldo negativo passava como habilitado),
+o spinner eterno quando nao havia cliente, e o estado impossivel ao trocar de cliente.
+Acrescentou AbortController nas duas requisicoes e trocou api.get por api.request na busca de
+saldo, porque o deduplicador de GET do client.ts compartilharia uma promise ja cancelada.
+
+O que EU (Claude) alterei, so o mecanico:
+- frontend/package.json: adicionei "test": "vitest run" e "test:watch" - o teste novo estava
+  orfao, mesma doenca dos scripts do backend
+- frontend/src/utils/contraste.test.ts: o teste comparava com o hex fixo #141413, mas
+  CORES_REFERENCIA.escuro virou #0d0d0d no commit e4431a0. NAO era bug: #0d0d0d da 6.23:1 sobre
+  o laranja contra 5.90:1 do antigo, ou seja a funcao escolhe a cor de MAIOR contraste. Passei o
+  teste a comparar com o token em vez do hex, para nao apodrecer de novo.
+
+Verificado por mim antes de aprovar: npx tsc -b em 0 erros; lint:cores passando; statusPontos
+8/8 rodando a funcao compilada; e teste de tela no frontend local (localhost:5173) contra o
+backend local no postgres-dev - os 6 cenarios passaram, incluindo registrar um lancamento real
+com 100 pontos (saldo do Joao Pedro foi de 269 para 194: -100 usados, +25 ganhos).
+
+## PENDENCIA NOVA DESCOBERTA NO TESTE (nao e deste commit, nao bloqueia)
+
+Com servico selecionado, se o usuario editar "Valor Bruto" na mao (ex: de 35 para 80), a dica
+embaixo do campo de pontos passa a dizer "max 240" - porque o endpoint /saldo recebe
+valorServico=80 - mas o backend cobra R$35, que e o preco congelado do item, e recusa com
+"Voce so pode usar ate 105 pontos para este servico". O DINHEIRO ESTA PROTEGIDO (o backend
+barra), mas a dica na tela mente. Duas fontes para o mesmo valor de novo. Corrigir separado.
+
+A verificar tambem: depois de registrar um lancamento de R$25 para o Joao Pedro, o "Gasto Total"
+e o numero de "Visitas" dele na tela de Clientes nao mudaram. Pode ser intencional (so
+agendamento conta como visita) ou pode ser subcontagem - o Wellinton ja disse que cliente avulso
+lancado na mao e a MAIORIA. Confirmar antes do lancamento.
+
+## RAILWAY - COBRANCA REGULARIZADA (08/09)
+
+A fatura de 01/09/2026 (USD 20.00) tinha sido recusada pelo cartao. O Wellinton PAGOU em 08/09 e
+o banner sumiu do painel. Os quatro servicos seguem Online. Nada a fazer.
+
+Identificacao dos bancos (conferido no Railway, aba Settings de cada servico - so o dominio,
+sem credencial):
+- postgres-dev   -> altaria.proxy.rlwy.net:49931
+- Postgres (PROD)-> hayabusa.proxy.rlwy.net:30563
+O backend/.env local usa altaria:49931, ou seja aponta para o DEV. Rodar backend local e seguro.
+
+## SITUACAO EM 08/09 - PUBLICADO COM SUCESSO (commit 27f4568)
+
+Merge fast-forward de fix/comissao-fidelidade-local para main, push feito, deploy concluido.
+Os quatro servicos ficaram Online sem queda. 24 arquivos, 1192 insercoes.
+
+Detalhe de processo: o commit foi feito em BRANCH DE FEATURE, que e o que a regra do projeto
+sempre mandou e vinhamos descumprindo. Manter esse habito: trabalhar na branch, testar, e so
+fazer merge na main quando aprovado. Assim a main fica sempre publicavel.
+
+## O QUE FOI PUBLICADO NESTE COMMIT
 
 Trabalho de varias frentes concluido e TESTADO na tela pelo Wellinton. Nada commitado ainda.
 
@@ -218,6 +277,13 @@ LICAO REGISTRADA: nenhum dos 12 cenarios de teste pegaria isso, porque todos usa
 barbearia so. Toda tela que lista dados precisa de um teste com DUAS barbearias.
 
 ## EM ANDAMENTO AGORA
+
+08/09 — Correção local do feedback de pontos no lançamento manual, branch `fix/feedback-pontos-financeiro`, sem push/merge.
+- Build completo final do frontend executado com exit 0 (lint de cores, TypeScript e Vite); permanece aviso preexistente de `eval` na dependência lottie-web.
+- `frontend/src/pages/Financeiro.tsx`: consulta de fidelidade cancelável e vinculada ao cliente/valor atual; troca de cliente limpa o resgate; explicação visível para indisponibilidade e ação de tentar novamente. Simulação cancelável, erro tratado pelo interceptor existente e botão Registrar bloqueado enquanto calcula ou há erro.
+- `frontend/src/utils/statusPontos.ts` e `.test.ts`: disponibilidade de UI centralizada a partir do saldo/limites do servidor; 8 testes unitários executados com sucesso (incluem saldo zero/negativo, resgate desativado, limite insuficiente, ausência de cliente e consulta pendente).
+- Build completo do backend executado com exit 0. Backend compilado iniciado localmente com backups/cópias desativados, após confirmar o host postgres-dev; `/health` retornou HTTP 200. Nenhuma alteração de schema ou escrita de lançamento em produção.
+- Na aba local, conferidos Pontos desabilitado com mensagem de seleção de cliente (sem spinner), formulário carregado com dados de desenvolvimento e estado de consulta ao selecionar cliente/valor. A conexão de controle do Chrome caiu antes de concluir troca de cliente, resultado de saldo e responsividade em 375/768px; esses testes visuais continuam pendentes.
 
 Correção de comissão e isolamento de saldo de fidelidade — em andamento localmente, sem publicação.
 
