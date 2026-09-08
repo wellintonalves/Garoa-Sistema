@@ -14,7 +14,7 @@ interface Consolidado {
   totalComissoes: number;
   totalLiquido: number;
   totalAtendimentos: number;
-  porBarbeiro: Record<string, { nome: string; bruto: number; comissao: number; liquido: number }>;
+  porBarbeiro: Record<string, { nome: string; bruto: number; comissao: number; liquido: number; percentualAplicado?: number | null; lancamentosDivergentes?: number; lancamentosSemBaseAuditavel?: number }>;
 }
 
 interface Lancamento {
@@ -159,7 +159,6 @@ export function Relatorios() {
     try {
       const payload: any = {
         valor: Number(valoresEdit.valor),
-        valorComissao: valoresEdit.comissao ? Number(valoresEdit.comissao) : null,
         formaPagamento: valoresEdit.formaPagamento,
       };
       if (valoresEdit.servicoId) payload.servicoId = valoresEdit.servicoId;
@@ -309,6 +308,9 @@ export function Relatorios() {
                   <div key={i} style={{ padding: '16px', background: 'var(--bg-surface2)', border: '1px solid var(--border)' }}>
                     <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '12px' }}>{b.nome}</p>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      <p style={{ fontSize: 13, color: 'var(--texto-secundario)' }}>Percentual aplicado: {b.percentualAplicado != null ? `${b.percentualAplicado}%` : 'Variável ou não registrado'}</p>
+                      {!!b.lancamentosDivergentes && <p style={{ fontSize: 13, color: 'var(--error-text)' }}>{b.lancamentosDivergentes} lançamento(s) com comissão divergente.</p>}
+                      {!!b.lancamentosSemBaseAuditavel && <p style={{ fontSize: 13, color: 'var(--texto-secundario)' }}>{b.lancamentosSemBaseAuditavel} lançamento(s) sem percentual ou base histórica suficiente para conferência.</p>}
                       <div className="flex justify-between" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px' }}><span style={{ color: 'var(--texto-secundario)' }}>Produzido:</span><span style={{ color: 'var(--text-primary)' }}>{fmt(b.bruto)}</span></div>
                       <div className="flex justify-between" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px' }}><span style={{ color: 'var(--texto-secundario)' }}>Comissão:</span><span style={{ color: 'var(--error-text)' }}>{fmt(b.comissao)}</span></div>
                       <div className="flex justify-between" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', borderTop: '1px solid var(--border)', paddingTop: '8px', marginTop: '4px' }}><span style={{ color: 'var(--texto-secundario)' }}>Líquido:</span><span style={{ color: 'var(--sucesso)', fontWeight: 500 }}>{fmt(b.liquido)}</span></div>
@@ -441,15 +443,16 @@ export function Relatorios() {
               </div>
               
               <div>
-                <label className="input-label">Comissão (R$)</label>
+                <label className="input-label">Comissão atual (R$)</label>
                 <input 
                   type="number" 
                   step="0.01"
                   className="ds-input" 
                   value={valoresEdit.comissao} 
-                  onChange={e => setValoresEdit({...valoresEdit, comissao: e.target.value})}
-                  placeholder="Opcional"
+                  readOnly
+                  aria-describedby="comissao-automatica"
                 />
+                <p id="comissao-automatica" style={{ fontSize: 13, color: 'var(--texto-secundario)', marginTop: 8 }}>Calculada pelo servidor ao salvar. O percentual preservado é mantido; lançamentos antigos sem percentual usam a configuração atual do barbeiro.</p>
               </div>
 
               <div>

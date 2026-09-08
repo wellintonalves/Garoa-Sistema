@@ -18,7 +18,8 @@
     "test:fidelidade": "tsx scripts/testes_fidelidade_combo.ts",
     "test:financeiro": "tsx scripts/testes_financeiro_postgres.ts",
     "test:concorrencia": "tsx scripts/testes_resgate_concorrente.ts",
-    "test": "npm run test:fechamento && npm run test:fidelidade"
+    "test:comissao": "tsx scripts/testes_relatorio_comissao.ts",
+    "test": "npm run test:fechamento && npm run test:fidelidade && npm run test:comissao"
   },
   "dependencies": {
     "@prisma/client": "^6.8.0",

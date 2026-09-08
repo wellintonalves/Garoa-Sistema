@@ -39,6 +39,7 @@ async function main() {
       const { AgendamentoService } = await import('../src/services/agendamento.service');
       const { BarbeiroAppService } = await import('../src/services/barbeiroApp.service');
       const { ClienteService } = await import('../src/services/cliente.service');
+      const { AprovacaoService } = await import('../src/services/aprovacao.service');
       const a = await tx.barbearia.create({ data: { nome: prefixo, slug: `${prefixo}-a` } });
       const b = await tx.barbearia.create({ data: { nome: prefixo, slug: `${prefixo}-b` } });
       const usuario = await tx.usuario.create({ data: { nome: 'Cliente sintético', email: `${prefixo}@example.invalid`, senha: 'sem-login', papel: 'CLIENTE' } });
@@ -80,6 +81,50 @@ async function main() {
           const produto = await FinanceiroService.criar({ ...dados, categoria: 'Venda de Produto', itens: undefined,
             tipoDesconto: 'NENHUM', clienteId: undefined, barbeiroId: barbeiro.id, valor: 20 });
           assert.equal(Number(produto.valorComissao), 0);
+          // Regressão: criação legada sem serviço/desconto deve preservar a regra aplicada.
+          const avulso = { tipo: 'ENTRADA' as const, categoria: 'Serviço', valor: 35,
+            formaPagamento: 'PIX' as const, data: '2026-09-07', barbeiroId: barbeiro.id };
+          const zero = await FinanceiroService.criar(avulso);
+          assert.equal(Number(zero.percentualComissao), 0);
+          assert.equal(zero.baseComissaoAplicada, 'VALOR_LIQUIDO');
+          await tx.barbeiro.update({ where: { id: barbeiro.id }, data: { comissaoPercent: 45 } });
+          const manual = await FinanceiroService.criar(avulso);
+          assert.equal(Number(manual.valorComissao), 15.75);
+          assert.equal(Number(manual.valorLiquido), 19.25);
+          assert.equal(Number(manual.percentualComissao), 45);
+          // Mesmo uma mudança posterior da configuração não altera o percentual histórico.
+          await tx.barbeiro.update({ where: { id: barbeiro.id }, data: { comissaoPercent: 50 } });
+          await FinanceiroService.atualizar(manual.id, { valor: 40, valorComissao: 999, valorLiquido: 999,
+            percentualComissao: 100, baseComissaoAplicada: 'VALOR_BRUTO', barbeariaId: b.id } as any, true);
+          const editado = await tx.lancamentoFinanceiro.findUniqueOrThrow({ where: { id: manual.id } });
+          assert.equal(Number(editado.valorComissao), 18);
+          assert.equal(Number(editado.valorLiquido), 22);
+          assert.equal(Number(editado.percentualComissao), 45);
+          assert.equal(editado.barbeariaId, shop.id);
+          assert.equal(editado.baseComissaoAplicada, 'VALOR_LIQUIDO');
+          await FinanceiroService.atualizar(manual.id, { formaPagamento: 'DINHEIRO', valorComissao: 123 } as any, true);
+          assert.equal(Number((await tx.lancamentoFinanceiro.findUniqueOrThrow({ where: { id: manual.id } })).valorComissao), 18);
+          await FinanceiroService.atualizar(zero.id, { valor: 40 }, true);
+          assert.equal(Number((await tx.lancamentoFinanceiro.findUniqueOrThrow({ where: { id: zero.id } })).valorComissao), 0);
+          await assert.rejects(() => FinanceiroService.atualizar(manual.id, { valor: -1 }, true), /Valor inválido/);
+          await assert.rejects(() => FinanceiroService.atualizar(manual.id, { valor: NaN }, true), /Valor inválido/);
+          // Aprovações antigas também não podem injetar uma comissão arbitrária.
+          const aprovacao = await tx.aprovacaoEdicao.create({ data: { lancamentoId: manual.id, barbeiroId: barbeiro.id,
+            acao: 'EDITAR', dadosNovos: { valor: 50, valorComissao: 50, percentualComissao: 100 } } });
+          await AprovacaoService.aprovar(aprovacao.id, barbeiro.id);
+          assert.equal(Number((await tx.lancamentoFinanceiro.findUniqueOrThrow({ where: { id: manual.id } })).valorComissao), 22.5);
+          await FinanceiroService.atualizar(manual.id, { barbeiroId: null } as any, true);
+          assert.equal(Number((await tx.lancamentoFinanceiro.findUniqueOrThrow({ where: { id: manual.id } })).valorComissao), 0);
+          await FinanceiroService.atualizar(manual.id, { barbeiroId: barbeiro.id }, true);
+          assert.equal(Number((await tx.lancamentoFinanceiro.findUniqueOrThrow({ where: { id: manual.id } })).valorComissao), 25);
+          // Base bruta usa itens congelados, não o valor pós-desconto nem o catálogo atual.
+          await tx.configuracao.update({ where: { barbeariaId: shop.id }, data: { baseCalculoComissao: 'VALOR_BRUTO' } });
+          const bruto = await FinanceiroService.criar({ ...dados, barbeiroId: barbeiro.id, clienteId: undefined,
+            tipoDesconto: 'REAIS', descontoReais: 5, pontosUsados: 0 });
+          await FinanceiroService.atualizar(bruto.id, { valor: 55 }, true);
+          assert.equal(Number((await tx.lancamentoFinanceiro.findUniqueOrThrow({ where: { id: bruto.id } })).valorComissao), 32.5);
+          await tx.configuracao.update({ where: { barbeariaId: shop.id }, data: { baseCalculoComissao: 'VALOR_LIQUIDO' } });
+          console.log('PASS comissão: snapshots, 35→40, campos forjados, percentual histórico/zero, validação, aprovação, remoção/retorno de barbeiro e base bruta congelada.');
           await tx.barbeiro.update({ where: { id: barbeiro.id }, data: { comissaoPercent: 40 } });
           assert.equal((await FinanceiroService.simularDesconto({ ...dados, barbeiroId: barbeiro.id })).valorComissao, 24);
           for (const fluxo of ['admin', 'barbeiro']) {
@@ -109,7 +154,7 @@ async function main() {
       }
       console.log('PASS PostgreSQL: manual + admin + barbeiro, duas unidades, comissão zero/positiva/produto, prévia versus crédito, débito e recompensa sem dupla subtração, repetição de fechamento.');
       throw rollback;
-    }, { timeout: 120000, maxWait: 10000 });
+    }, { timeout: 300000, maxWait: 10000 });
   } catch (error) { if (error !== rollback) throw error; }
   assert.equal(await db.barbearia.count({ where: { nome: prefixo } }), 0);
   console.log('PASS rollback: nenhuma fixture persistiu. Concorrência não coberta por esta transação única.');

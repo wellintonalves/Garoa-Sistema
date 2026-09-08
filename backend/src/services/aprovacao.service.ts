@@ -1,6 +1,6 @@
-import { PrismaClient, StatusAprovacao } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { StatusAprovacao } from '@prisma/client';
+import { prisma } from '../lib/prisma';
+import { FinanceiroService } from './financeiro.service';
 
 export class AprovacaoService {
   /**
@@ -41,41 +41,11 @@ export class AprovacaoService {
       // A aprovação é excluída em cascata quando o lançamento é deletado.
       return { id: aprovacaoId, status: StatusAprovacao.APROVADO };
     } else if (aprovacao.acao === 'EDITAR' && aprovacao.dadosNovos) {
-      const dados = aprovacao.dadosNovos as any;
-      await prisma.lancamentoFinanceiro.update({
-        where: { id: aprovacao.lancamentoId },
-        data: {
-          ...dados,
-          data: dados.data ? new Date(dados.data) : undefined,
-        },
-      });
+      const dados = aprovacao.dadosNovos as Parameters<typeof FinanceiroService.atualizar>[1];
+      await FinanceiroService.atualizar(aprovacao.lancamentoId, dados, true);
     } else if (aprovacao.acao === 'ADICIONAR' && aprovacao.dadosNovos) {
-      const dados = aprovacao.dadosNovos as any;
-      const original = await prisma.lancamentoFinanceiro.findUnique({ where: { id: aprovacao.lancamentoId } });
-      
-      let valorComissao = dados.valorComissao || null;
-      let valorLiquido = dados.valorLiquido || null;
-
-      if (dados.tipo === 'ENTRADA' && dados.barbeiroId && dados.valor) {
-        const barbeiro = await prisma.barbeiro.findUnique({
-          where: { id: dados.barbeiroId },
-          select: { comissaoPercent: true }
-        });
-        if (barbeiro && barbeiro.comissaoPercent != null) {
-          valorComissao = (dados.valor * barbeiro.comissaoPercent) / 100;
-          valorLiquido = dados.valor - valorComissao;
-        }
-      }
-
-      await prisma.lancamentoFinanceiro.create({
-        data: {
-          ...dados,
-          valorComissao,
-          valorLiquido,
-          barbeariaId: original?.barbeariaId, // Importante para não sumir do painel
-          data: dados.data ? new Date(dados.data) : new Date(),
-        }
-      });
+      const dados = aprovacao.dadosNovos as unknown as Parameters<typeof FinanceiroService.criar>[0];
+      await FinanceiroService.criar(dados);
     }
 
     return prisma.aprovacaoEdicao.update({

@@ -1,6 +1,7 @@
 // Serviço financeiro — CRUD + resumos
 import { prisma } from '../lib/prisma';
-import { TipoLancamento, FormaPagamento } from '@prisma/client';
+import { TipoLancamento, FormaPagamento, BaseCalculoComissao, Prisma } from '@prisma/client';
+import { calcularComissao } from '../utils/comissao.util';
 import { inicioDiaBrasilia, fimDiaBrasilia, diaBrasiliaStr, getHoraMinutoBrasilia } from '../lib/timezone';
 import { CATEGORIA_VENDA_PRODUTO } from '../lib/constantes';
 import { obterIdsServicosAgendamento } from '../utils/agendamento.util';
@@ -141,8 +142,11 @@ export class FinanceiroService {
 
   /** Cria um lançamento */
   static async criar(dados: DadosLancamento) {
+    if (!Number.isFinite(Number(dados.valor)) || Number(dados.valor) < 0) throw new ErroDeNegocio('Valor inválido.');
     let valorComissao: number | null = null;
     let valorLiquido: number | null = null;
+    let percentualAplicado: number | null = null;
+    let baseAplicada: BaseCalculoComissao | null = null;
     let valorFinal = Number(dados.valor || 0);
 
     let descontoInfo: any = null;
@@ -154,15 +158,18 @@ export class FinanceiroService {
       valorComissao = descontoInfo.valorComissao;
       valorLiquido = valorFinal - (valorComissao || 0);
     } else if (dados.tipo === 'ENTRADA' && dados.categoria !== CATEGORIA_VENDA_PRODUTO && dados.barbeiroId) {
-      const barbeiro = await prisma.barbeiro.findUnique({
-        where: { id: dados.barbeiroId },
+      const barbeariaId = tenantStorage.getStore()?.barbeariaId;
+      if (!barbeariaId) throw new ErroDeNegocio('Contexto de barbearia não encontrado.');
+      const barbeiro = await prisma.barbeiro.findFirst({
+        where: { id: dados.barbeiroId, barbeariaId },
         select: { comissaoPercent: true }
       });
-
-      if (barbeiro) {
-        valorComissao = (valorFinal * barbeiro.comissaoPercent) / 100;
-        valorLiquido = valorFinal - valorComissao;
-      }
+      if (!barbeiro) throw new ErroDeNegocio('Barbeiro não encontrado nesta barbearia.');
+      const config = await prisma.configuracao.findUnique({ where: { barbeariaId } });
+      percentualAplicado = barbeiro.comissaoPercent ?? 0;
+      baseAplicada = config?.baseCalculoComissao ?? 'VALOR_LIQUIDO';
+      valorComissao = calcularComissao(valorFinal, percentualAplicado);
+      valorLiquido = Math.round((valorFinal - valorComissao) * 100) / 100;
     }
 
     const payloadLancamento = {
@@ -177,8 +184,8 @@ export class FinanceiroService {
       servicoId: dados.servicoId || null,
       valorComissao,
       valorLiquido,
-      percentualComissao: descontoInfo?.percentualComissao,
-      baseComissaoAplicada: descontoInfo?.baseComissaoAplicada,
+      percentualComissao: descontoInfo?.percentualComissao ?? percentualAplicado,
+      baseComissaoAplicada: descontoInfo?.baseComissaoAplicada ?? baseAplicada,
       data: inicioDiaBrasilia(dados.data),
     };
 
@@ -298,28 +305,80 @@ export class FinanceiroService {
 
   /** Atualiza um lançamento */
   static async atualizar(id: string, dados: Partial<DadosLancamento>, isAdmin: boolean = false) {
-    const lancamento = await prisma.lancamentoFinanceiro.findUnique({ where: { id } });
-    if (!lancamento) throw new Error('Lançamento não encontrado.');
+    const barbeariaId = tenantStorage.getStore()?.barbeariaId;
+    if (!barbeariaId) throw new ErroDeNegocio('Contexto de barbearia não encontrado.');
+    // Campos derivados, relações aninhadas e IDs de tenant nunca vêm da requisição.
+    const permitidos: Partial<Pick<DadosLancamento, 'tipo' | 'categoria' | 'descricao' | 'valor' | 'formaPagamento' | 'data' | 'barbeiroId' | 'clienteId' | 'servicoId'>> = {};
+    const campos = ['tipo', 'categoria', 'descricao', 'valor', 'formaPagamento', 'data', 'barbeiroId', 'clienteId', 'servicoId'] as const;
+    for (const campo of campos) {
+      if (dados[campo] !== undefined) Object.assign(permitidos, { [campo]: dados[campo] });
+    }
+    if (permitidos.valor !== undefined && (typeof permitidos.valor !== 'number' || !Number.isFinite(permitidos.valor) || permitidos.valor < 0)) {
+      throw new ErroDeNegocio('Valor inválido.');
+    }
+    return prisma.$transaction(async tx => {
+    const lancamento = await tx.lancamentoFinanceiro.findFirst({ where: { id, barbeariaId }, include: { itens: true, agendamento: true } });
+    if (!lancamento) throw new ErroDeNegocio('Lançamento não encontrado.');
 
     if (lancamento.barbeiroId && !isAdmin) {
-      const aprovacao = await prisma.aprovacaoEdicao.create({
+      const aprovacao = await tx.aprovacaoEdicao.create({
         data: {
           lancamentoId: id,
           barbeiroId: lancamento.barbeiroId,
           acao: 'EDITAR',
-          dadosNovos: JSON.parse(JSON.stringify(dados)),
+          dadosNovos: JSON.parse(JSON.stringify(permitidos)),
         }
       });
       return { status: 'PENDENTE', aprovacao };
     }
 
-    return prisma.lancamentoFinanceiro.update({
-      where: { id },
-      data: {
-        ...dados,
-        data: dados.data ? inicioDiaBrasilia(dados.data) : undefined,
-      } as any,
-    });
+    const data: Prisma.LancamentoFinanceiroUncheckedUpdateInput = {
+      ...permitidos, data: permitidos.data ? inicioDiaBrasilia(permitidos.data) : undefined,
+      barbeiroId: permitidos.barbeiroId === '' ? null : permitidos.barbeiroId,
+      clienteId: permitidos.clienteId === '' ? null : permitidos.clienteId,
+      servicoId: permitidos.servicoId === '' ? null : permitidos.servicoId,
+    };
+    const barbeiroId = permitidos.barbeiroId !== undefined ? permitidos.barbeiroId || null : lancamento.barbeiroId;
+    if (barbeiroId && barbeiroId !== lancamento.barbeiroId && !await tx.barbeiro.findFirst({ where: { id: barbeiroId, barbeariaId } })) {
+      throw new ErroDeNegocio('Barbeiro não pertence a esta barbearia.');
+    }
+    const clienteId = permitidos.clienteId !== undefined ? permitidos.clienteId || null : lancamento.clienteId;
+    if (clienteId && clienteId !== lancamento.clienteId) {
+      const cliente = await tx.cliente.findFirst({ where: { id: clienteId, OR: [{ barbeariaId }, { clientesBarbearias: { some: { barbeariaId } } }] } });
+      if (!cliente) throw new ErroDeNegocio('Cliente não pertence a esta barbearia.');
+    }
+    if (permitidos.servicoId && permitidos.servicoId !== lancamento.servicoId && !await tx.servico.findFirst({ where: { id: permitidos.servicoId, barbeariaId } })) {
+      throw new ErroDeNegocio('Serviço não pertence a esta barbearia.');
+    }
+    const valor = permitidos.valor ?? Number(lancamento.valor);
+    const tipo = permitidos.tipo ?? lancamento.tipo;
+    const categoria = permitidos.categoria ?? lancamento.categoria;
+    const alterouCalculo = valor !== Number(lancamento.valor) || barbeiroId !== lancamento.barbeiroId || tipo !== lancamento.tipo || categoria !== lancamento.categoria;
+    if (alterouCalculo) {
+      if (tipo !== 'ENTRADA' || categoria === CATEGORIA_VENDA_PRODUTO || !barbeiroId) {
+        Object.assign(data, { valorComissao: 0, valorLiquido: valor, percentualComissao: 0, baseComissaoAplicada: null });
+      } else {
+        const barbeiro = await tx.barbeiro.findFirst({ where: { id: barbeiroId, barbeariaId } });
+        if (!barbeiro) throw new ErroDeNegocio('Barbeiro não encontrado nesta barbearia.');
+        const config = await tx.configuracao.findUnique({ where: { barbeariaId } });
+        const mesmoBarbeiro = barbeiroId === lancamento.barbeiroId && lancamento.tipo === 'ENTRADA' && lancamento.categoria !== CATEGORIA_VENDA_PRODUTO;
+        const percentual = mesmoBarbeiro && lancamento.percentualComissao != null ? Number(lancamento.percentualComissao) : barbeiro.comissaoPercent ?? 0;
+        const base = lancamento.baseComissaoAplicada ?? config?.baseCalculoComissao ?? 'VALOR_LIQUIDO';
+        let valorBase = valor;
+        if (base === 'VALOR_BRUTO') {
+          if (lancamento.agendamento?.valorBruto != null) valorBase = Number(lancamento.agendamento.valorBruto);
+          else if (lancamento.itens.length) valorBase = lancamento.itens.reduce((total, item) => total + Number(item.preco), 0);
+          else if (lancamento.baseComissaoAplicada === 'VALOR_BRUTO' && lancamento.percentualComissao != null &&
+            Math.abs(calcularComissao(Number(lancamento.valor), Number(lancamento.percentualComissao)) - Number(lancamento.valorComissao)) > 0.01) {
+            throw new ErroDeNegocio('Não há valor bruto preservado para recalcular este lançamento com segurança.');
+          }
+        }
+        const comissao = calcularComissao(valorBase, percentual);
+        Object.assign(data, { valorComissao: comissao, valorLiquido: Math.round((valor - comissao) * 100) / 100, percentualComissao: percentual, baseComissaoAplicada: base });
+      }
+    }
+    return tx.lancamentoFinanceiro.update({ where: { id, barbeariaId }, data });
+    }, { isolationLevel: 'Serializable' }).catch(tratarConflitoDeFechamento);
   }
 
   /** Adiciona um lançamento extra vinculado a uma aprovação de edição */
@@ -487,6 +546,7 @@ export class FinanceiroService {
       include: {
         barbeiro: { include: { usuario: { select: { nome: true } } } },
         servico: { select: { nome: true } },
+        agendamento: { select: { valorBruto: true } },
         itens: { orderBy: { ordem: 'asc' } }
       },
       orderBy: { data: 'desc' }
@@ -498,7 +558,7 @@ export class FinanceiroService {
       totalComissoes: 0,
       totalLiquido: 0,
       totalAtendimentos: 0,
-      porBarbeiro: {} as Record<string, { nome: string; bruto: number; comissao: number; liquido: number }>
+      porBarbeiro: {} as Record<string, { nome: string; bruto: number; comissao: number; liquido: number; percentualAplicado: number | null; lancamentosDivergentes: number; lancamentosSemBaseAuditavel: number }>
     };
 
     lancamentos.forEach((l: any) => {
@@ -513,15 +573,26 @@ export class FinanceiroService {
           if (l.barbeiroId && l.barbeiro) {
             const nomeBarbeiro = l.barbeiro.usuario.nome;
             const comissao = Number(l.valorComissao) || 0;
-            const liquido = Number(l.valorLiquido) || valor;
+            const liquido = l.valorLiquido != null ? Number(l.valorLiquido) : valor - comissao;
             
             consolidado.totalComissoes += comissao;
             consolidado.totalLiquido += liquido;
             consolidado.totalAtendimentos++;
 
             if (!consolidado.porBarbeiro[l.barbeiroId]) {
-              consolidado.porBarbeiro[l.barbeiroId] = { nome: nomeBarbeiro, bruto: 0, comissao: 0, liquido: 0 };
+              consolidado.porBarbeiro[l.barbeiroId] = { nome: nomeBarbeiro, bruto: 0, comissao: 0, liquido: 0,
+                percentualAplicado: l.percentualComissao != null ? Number(l.percentualComissao) : null,
+                lancamentosDivergentes: 0, lancamentosSemBaseAuditavel: 0 };
             }
+            const resumoBarbeiro = consolidado.porBarbeiro[l.barbeiroId];
+            const percentual = l.percentualComissao != null ? Number(l.percentualComissao) : null;
+            if (resumoBarbeiro.percentualAplicado !== percentual) resumoBarbeiro.percentualAplicado = null;
+            // Sem percentual/base histórica, não use a configuração atual para acusar erro antigo.
+            const baseAuditavel = l.baseComissaoAplicada === 'VALOR_LIQUIDO' ? valor
+              : l.baseComissaoAplicada === 'VALOR_BRUTO' ? (l.agendamento?.valorBruto != null ? Number(l.agendamento.valorBruto)
+                : l.itens?.length ? l.itens.reduce((total: number, item: { preco: unknown }) => total + Number(item.preco), 0) : null) : null;
+            if (percentual == null || baseAuditavel == null) resumoBarbeiro.lancamentosSemBaseAuditavel++;
+            else if (percentual < 0 || percentual > 100 || baseAuditavel < 0 || Math.abs(Math.round(comissao * 100) - Math.round(calcularComissao(baseAuditavel, percentual) * 100)) > 1) resumoBarbeiro.lancamentosDivergentes++;
             consolidado.porBarbeiro[l.barbeiroId].bruto += valor;
             consolidado.porBarbeiro[l.barbeiroId].comissao += comissao;
             consolidado.porBarbeiro[l.barbeiroId].liquido += liquido;

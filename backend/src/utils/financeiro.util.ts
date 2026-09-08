@@ -1,4 +1,5 @@
 import { TipoDesconto } from '../services/desconto.service';
+import { calcularComissao } from './comissao.util';
 import { calcularPontosAtendimento, ConfiguracaoAcumulo } from './fidelidade.util';
 
 export interface ConfiguracaoFidelidadeFinanceiro extends ConfiguracaoAcumulo {
@@ -122,7 +123,7 @@ export function calcularFechamento(entrada: EntradaFechamento): ResultadoFechame
 
   // Comissão
   const baseComissao = entrada.configGlobal.baseCalculoComissao === 'VALOR_BRUTO' ? valorBruto : valorLiquido;
-  const valorComissao = Math.round((baseComissao * entrada.percentualComissao) / 100 * 100) / 100;
+  const valorComissao = calcularComissao(baseComissao, entrada.percentualComissao);
 
   // Acúmulo de Pontos da Visita
   const baseAcumulo = entrada.configGlobal.baseCalculoPontos === 'VALOR_BRUTO' ? valorBruto : valorLiquido;

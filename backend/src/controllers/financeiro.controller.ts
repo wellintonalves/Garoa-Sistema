@@ -63,8 +63,12 @@ export class FinanceiroController {
       const lancamento = await FinanceiroService.atualizar(req.params.id, req.body, isAdmin);
       res.json(lancamento);
     } catch (error) {
-      const msg = error instanceof Error ? error.message : 'Erro ao atualizar lançamento';
-      res.status(400).json({ erro: msg });
+      if (error instanceof ErroDeNegocio) {
+        res.status(error.status).json({ erro: error.message });
+      } else {
+        console.error('Erro ao atualizar lançamento:', error);
+        res.status(500).json({ erro: 'Não foi possível atualizar o lançamento. Tente novamente.' });
+      }
     }
   }
 
