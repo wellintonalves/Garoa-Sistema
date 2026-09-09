@@ -35,9 +35,24 @@ NAO marque nada como testado, aprovado ou concluido por conta propria. Registre 
 - Escala Z_INDEX centralizada em frontend/src/utils/constantes.ts, aplicada nas tres grades de agenda
 - Correcao do seletor "Todos os barbeiros", que ficava escondido atras do cabecalho fixo
 
-## EM ANDAMENTO - 08/09 tarde: branch fix/feedback-pontos-financeiro (commit 698da12)
+## PUBLICADO 08/09 tarde - commits 698da12 + 50fb69d (main = 50fb69d)
 
-Aguardando decisao do Wellinton sobre merge na main. NAO publicado ainda.
+Merge fast-forward na main, push feito, deploy concluido:
+- barbearia-frontend: ATIVO com 50fb69d, "Deployment successful"
+- barbearia-backend: SKIPPED "No changes to watched files" - CORRETO, o commit so mexeu no
+  frontend. O backend segue ATIVO em 27f4568, que e o codigo certo.
+
+CONFIRMADO EM PRODUCAO por mim: cliente Danilo mota (0 pontos) na barbearia Valen Barber -
+o botao Pontos fica desabilitado E a frase "Este cliente não tem pontos disponíveis." aparece
+na tela. O bug original (botao morto sem explicacao) esta resolvido em producao.
+O Wellinton pode mover isto para "O QUE JA ESTA NO AR".
+
+Percalco no push (nao foi codigo): o hook pre-push rodava `prisma generate` e falhava com
+EPERM ao renomear query_engine-windows.dll.node, porque o backend local (npm run dev) segurava
+a DLL. Matar os processos node resolveu. Descobri de quebra 35 arquivos orfaos
+query_engine-windows.dll.node.tmpXXXX de 21 MB cada = 733 MB acumulados desde 12/07 - toda
+falha de rename deixa um para tras. Apaguei os 35; a pasta caiu para 26 MB. Se node.exe fica
+pendurado com frequencia nessa maquina, isso volta.
 
 Conteudo: o botao "Pontos" do desconto ficava desabilitado em silencio quando o cliente tinha
 saldo 0 ou o resgate estava desativado - o usuario clicava e nada acontecia, sem explicacao.
@@ -61,6 +76,66 @@ Verificado por mim antes de aprovar: npx tsc -b em 0 erros; lint:cores passando;
 backend local no postgres-dev - os 6 cenarios passaram, incluindo registrar um lancamento real
 com 100 pontos (saldo do Joao Pedro foi de 269 para 194: -100 usados, +25 ganhos).
 
+## CORRECAO DO BUG DE COMISSAO - 09/09 (commits c843898 + ddcef65)
+
+Branch fix/comissao-edicao-financeiro. Fecha os DOIS caminhos que causaram o prejuizo:
+- `atualizar` deixou de fazer `{ ...dados } as any`. Agora e lista branca de 9 campos;
+  valorComissao, valorLiquido, percentualComissao e baseComissaoAplicada sao DERIVADOS e nunca
+  vem da requisicao. Se valor/barbeiro/tipo/categoria mudam, recalcula.
+- `criar` passou a gravar percentualComissao e baseComissaoAplicada tambem no ramo do lancamento
+  manual "cru", que era o caminho da MAIORIA e deixava tudo NULL.
+- A tela parou de enviar valorComissao e o campo virou readOnly.
+
+Decisao importante: ao editar, o percentual HISTORICO do lancamento e preservado (nao aplica a
+taxa atual do barbeiro). Corrigir um erro de setembro nao reescreve com a taxa de outubro.
+
+ACHADO DE BRINDE, era um vazamento entre barbearias: aprovacao.service.ts criava o proprio
+`new PrismaClient()`, SEM a extensao de multi-tenant. Todo update/create/delete de lancamento
+naquele arquivo rodava sem filtro de barbearia. Agora usa o prisma compartilhado e delega para
+criar/atualizar.
+
+Verificado antes do merge: tsc 0 erros; npm test (3 suites) verde; e o teste novo
+`npm run test:comissao-http`, que sobe o src/app real em porta aleatoria, com JWT real, extensao
+de tenant real e CORS conferido no header. Ele SE RECUSA a rodar se DATABASE_URL nao for o
+postgres-dev (altaria:49931), e roda tudo dentro de transacao revertida no fim. Os quatro PASS:
+editar 35->40 deu comissao 18 e liquido 22; valorComissao 999 enviado foi ignorado e persistiu
+18/45 no Postgres; barbeiro mudado para 40% e o lancamento manteve 45% (27 sobre 60); rollback
+sem residuo.
+
+Limite conhecido do teste: o `$transaction` do cliente falso nao abre transacao aninhada, entao
+o isolationLevel Serializable do `atualizar` NAO e exercitado ali.
+
+## BUG DE COMISSAO REPORTADO POR CLIENTE REAL - 08/09 (AUDITADO, DADOS NAO CORRIGIDOS)
+
+O dono da H Sousa Barbearia reclamou que a comissao do kaio sales nao batia: 45% de R$1.395
+da R$627,75, o sistema mostrava R$644,75. Ele estava certo.
+
+Auditoria em producao (SELECT, o Wellinton executou; eu li a tela). Comparando cada lancamento
+contra valor x percentual, o banco INTEIRO tem so 3 barbeiros divergentes:
+
+1. kaio sales (H Sousa) - ERRO REAL, R$17,00 pagos a mais. Dois lancamentos:
+   - 9bffa9e7-a5d4-457a-849f-ea5bdeb523a2 | 04/09 | valor 40,00 | comissao 15,75 | 39,38%
+     15,75 = 45% de 35,00. O VALOR foi editado de 35 para 40 e a comissao ficou parada.
+   - 46eadf29-a0d7-4a33-a263-f8e25b1a618d | 05/09 | valor 35,00 | comissao 35,00 | 100%
+     O barbeiro levou o atendimento inteiro. Numero digitado na caixa errada.
+   Correto seria 18,00 e 15,75. Pagou 19,25 a mais num, 2,25 a menos no outro = +17,00.
+
+2. Rainer (H Sousa) - PROVAVEL FALSO POSITIVO. 4 lancamentos, TODOS exatos em 50,00%, todos
+   em 01/09. 50 e o default do schema. Assinatura de "o percentual dele era 50 e o dono mudou
+   para 45 depois" - dinheiro correto na epoca. NAO ha tabela de historico de comissaoPercent,
+   entao nao da para provar pelo banco. CONFIRMAR COM O DONO antes de mexer.
+
+3. Junior (garoa barbearia) - dado de teste do Wellinton, 25 lancamentos, comissaoPercent hoje
+   e 0 mas foram pagos R$566,50. Assinatura do bug antigo do `|| 50`, ja corrigido em 27f4568.
+   Nenhum lancamento novo entrou na lista - a correcao funcionou.
+
+CAUSA NO CODIGO (dois defeitos, nenhum corrigido ainda):
+- financeiro.service.ts:316-322 - `atualizar` faz `{ ...dados } as any`, espalhamento cego.
+  Aceita qualquer valorComissao vindo do cliente e NAO recalcula quando o valor muda.
+- financeiro.service.ts:180 - `percentualComissao` so e gravado quando existe descontoInfo.
+  O lancamento manual "cru" (ramo da linha 156-165) grava NULL, e esse e a MAIORIA dos casos.
+  Sem o percentual gravado, nao da para auditar nada.
+
 ## PENDENCIA NOVA DESCOBERTA NO TESTE (nao e deste commit, nao bloqueia)
 
 Com servico selecionado, se o usuario editar "Valor Bruto" na mao (ex: de 35 para 80), a dica
@@ -68,6 +143,10 @@ embaixo do campo de pontos passa a dizer "max 240" - porque o endpoint /saldo re
 valorServico=80 - mas o backend cobra R$35, que e o preco congelado do item, e recusa com
 "Voce so pode usar ate 105 pontos para este servico". O DINHEIRO ESTA PROTEGIDO (o backend
 barra), mas a dica na tela mente. Duas fontes para o mesmo valor de novo. Corrigir separado.
+
+PRISMA 7 VAI QUEBRAR O SEED: o `prisma generate` avisa que `package.json#prisma` esta deprecado
+e sera removido no Prisma 7. O backend/package.json tem o bloco "prisma": { "seed": ... }.
+Migrar para prisma.config.ts com calma, antes que alguem atualize e descubra no meio de um deploy.
 
 A verificar tambem: depois de registrar um lancamento de R$25 para o Joao Pedro, o "Gasto Total"
 e o numero de "Visitas" dele na tela de Clientes nao mudaram. Pode ser intencional (so
@@ -277,6 +356,13 @@ LICAO REGISTRADA: nenhum dos 12 cenarios de teste pegaria isso, porque todos usa
 barbearia so. Toda tela que lista dados precisa de um teste com DUAS barbearias.
 
 ## EM ANDAMENTO AGORA
+
+08/09 — Comissão na edição: implementação local na branch `fix/comissao-edicao-financeiro`, sem publicação.
+- Financeiro: caminho manual sem serviços grava percentual/base; edição aceita somente campos permitidos, recalcula comissão/líquido na mesma transação serializável e preserva percentual histórico (inclusive 0%). Campo derivado enviado na requisição não é gravado. Aprovação de edição/adição usa o serviço financeiro em vez de espalhar o JSON no Prisma.
+- Relatórios: comissão de edição somente leitura; percentual do período e avisos de divergência/ausência de histórico. Corrigido fallback que transformava líquido 0 em valor bruto. Auditoria não compara percentual atual do barbeiro com lançamentos antigos sem snapshot.
+- Decisão de implementação: edição financeira explícita de registro sem percentual preservado utiliza percentual atual do barbeiro; mensagem na tela explica isso. Base bruta usa itens/agendamento congelados; quando há indício de desconto mas não existe bruto preservado, recálculo é recusado com aviso. Nenhum histórico de produção foi reprocessado.
+- Testes executados: npm test no backend (fechamento, fidelidade e comissão/relatório); npm test no frontend (16 testes); test:financeiro em PostgreSQL de desenvolvimento (duas unidades, criação/edição, campos forjados, zero, percentual histórico, aprovação, base bruta), exit 0 e rollback confirmado. Prazo da transação SOMENTE do teste ampliado de 120 para 300 segundos após timeout na primeira execução.
+- Builds completos finais de frontend e backend passaram com exit 0. Resolvidos durante a validação: DLL Prisma ocupada pelo teste concorrente e referência de status no controller. Chrome não está conectado ao controle de navegador nesta sessão: validação visual da tela Relatórios permanece pendente.
 
 08/09 — Correção local do feedback de pontos no lançamento manual, branch `fix/feedback-pontos-financeiro`, sem push/merge.
 - Build completo final do frontend executado com exit 0 (lint de cores, TypeScript e Vite); permanece aviso preexistente de `eval` na dependência lottie-web.
