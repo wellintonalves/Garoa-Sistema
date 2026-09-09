@@ -19,6 +19,7 @@
     "test:financeiro": "tsx scripts/testes_financeiro_postgres.ts",
     "test:concorrencia": "tsx scripts/testes_resgate_concorrente.ts",
     "test:comissao": "tsx scripts/testes_relatorio_comissao.ts",
+    "test:comissao-http": "tsx scripts/testes_comissao_http.ts",
     "test": "npm run test:fechamento && npm run test:fidelidade && npm run test:comissao"
   },
   "dependencies": {
