@@ -22,6 +22,7 @@
     "test:comissao-http": "tsx scripts/testes_comissao_http.ts",
     "test:email-admin": "tsx scripts/testes_email_admin.ts",
     "test:email-admin-postgres": "tsx scripts/testes_email_admin_postgres.ts",
+    "test:barbearia-inativa": "tsx scripts/testes_barbearia_inativa.ts",
     "test": "npm run test:fechamento && npm run test:fidelidade && npm run test:comissao && npm run test:email-admin"
   },
   "dependencies": {

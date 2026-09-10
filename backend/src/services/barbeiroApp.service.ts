@@ -31,7 +31,7 @@ export class BarbeiroAppService {
       },
       include: {
         barbeiro: {
-          include: { barbearia: { select: { id: true, nome: true, slug: true } } },
+          include: { barbearia: { select: { id: true, nome: true, slug: true, ativo: true } } },
         },
       },
     });
@@ -51,7 +51,7 @@ export class BarbeiroAppService {
       throw new ErroDeNegocio('Email ou senha incorretos', 401);
     }
 
-    const ativos = combinam.filter((u) => u.barbeiro!.ativo);
+    const ativos = combinam.filter((u) => u.barbeiro!.ativo && u.barbeiro!.barbearia?.ativo);
 
     // Só reporta "desativada" se a senha bateu e TODAS as contas estão inativas
     if (ativos.length === 0) {

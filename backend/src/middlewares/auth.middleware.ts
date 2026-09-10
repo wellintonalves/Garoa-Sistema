@@ -3,6 +3,7 @@ import { Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { authConfig } from '../config/auth';
 import { AuthRequest, UsuarioJWT } from '../types';
+import { validarBarbeariaAtiva } from '../services/acessoBarbearia.service';
 
 /** Verifica se o token JWT é válido e anexa dados do usuário ao request */
 export function authMiddleware(req: AuthRequest, res: Response, next: NextFunction): void {
@@ -29,9 +30,9 @@ export function authMiddleware(req: AuthRequest, res: Response, next: NextFuncti
     // Se houver barbeariaId, injeta no contexto async para RLS
     if (decoded.barbeariaId) {
       const { tenantStorage } = require('../lib/als');
-      tenantStorage.run({ barbeariaId: decoded.barbeariaId }, () => {
-        next();
-      });
+      validarBarbeariaAtiva(decoded.barbeariaId)
+        .then(() => tenantStorage.run({ barbeariaId: decoded.barbeariaId! }, () => next()))
+        .catch(next);
     } else {
       next();
     }
@@ -51,14 +52,17 @@ export function authMiddleware(req: AuthRequest, res: Response, next: NextFuncti
 
         if (decodedBarbeiro.barbeariaId) {
           const { tenantStorage } = require('../lib/als');
-          tenantStorage.run({ barbeariaId: decodedBarbeiro.barbeariaId }, () => {
-            next();
-          });
+          validarBarbeariaAtiva(decodedBarbeiro.barbeariaId)
+            .then(() => tenantStorage.run({ barbeariaId: decodedBarbeiro.barbeariaId }, () => next()))
+            .catch(next);
         } else {
           // Fallback legacy
           const { prisma } = require('../lib/prisma');
           prisma.barbeiro.findUnique({ where: { id: decodedBarbeiro.barbeiroId }, select: { barbeariaId: true } })
-            .then((b: any) => {
+            .then(async (b: { barbeariaId: string | null } | null) => {
+              if (!b?.barbeariaId) { res.status(403).json({ erro: 'Acesso de barbeiro indisponível' }); return; }
+              await validarBarbeariaAtiva(b.barbeariaId);
+              req.usuario!.barbeariaId = b.barbeariaId;
               if (b?.barbeariaId) {
                 const { tenantStorage } = require('../lib/als');
                 tenantStorage.run({ barbeariaId: b.barbeariaId }, () => next());
@@ -66,7 +70,7 @@ export function authMiddleware(req: AuthRequest, res: Response, next: NextFuncti
                 next();
               }
             })
-            .catch(() => next());
+            .catch(next);
         }
       } else {
         throw new Error('Não é um token de barbeiro válido');

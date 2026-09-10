@@ -97,6 +97,7 @@ export class AuthService {
         email: { equals: emailNormalizado, mode: 'insensitive' },
         ...(dados.barbeariaId ? { barbeariaId: dados.barbeariaId } : {}),
         ...(dados.papel ? { papel: dados.papel } : {}),
+        OR: [{ barbeariaId: null }, { barbearia: { ativo: true } }],
       },
     });
 
