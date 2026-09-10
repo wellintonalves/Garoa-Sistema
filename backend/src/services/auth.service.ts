@@ -4,7 +4,8 @@ import jwt from 'jsonwebtoken';
 import { prisma } from '../lib/prisma';
 import { authConfig } from '../config/auth';
 import { ErroDeNegocio } from '../lib/erros';
-import { Papel } from '@prisma/client';
+import { Papel, Prisma } from '@prisma/client';
+import { randomUUID } from 'node:crypto';
 import { UsuarioJWT } from '../types';
 
 interface DadosRegistro {
@@ -12,7 +13,7 @@ interface DadosRegistro {
   email: string;
   senha: string;
   papel?: Papel;
-  barbeariaId: string;
+  barbeariaId?: string;
 }
 
 interface DadosLogin {
@@ -30,27 +31,43 @@ interface RespostaAuth {
 export class AuthService {
   /** Registra um novo usuário */
   static async registrar(dados: DadosRegistro): Promise<RespostaAuth> {
-    // Verifica se email já existe na barbearia
-    const existente = await prisma.usuario.findUnique({
-      where: { email_barbeariaId: { email: dados.email, barbeariaId: dados.barbeariaId } },
-    });
-
-    if (existente) {
-      throw new Error('Este email já está cadastrado');
+    const email = dados.email.trim().toLowerCase();
+    const papel = dados.papel ?? 'CLIENTE';
+    if (!email || !Object.values(Papel).includes(papel)) {
+      throw new ErroDeNegocio('Dados de cadastro inválidos', 400);
     }
-
-    // Hash da senha
+    if (!dados.barbeariaId && papel !== 'ADMIN') {
+      throw new ErroDeNegocio('Barbearia não informada', 400);
+    }
     const senhaHash = await bcrypt.hash(dados.senha, authConfig.saltRounds);
-
-    // Cria o usuário
-    const usuario = await prisma.usuario.create({
-      data: {
-        nome: dados.nome,
-        email: dados.email,
-        senha: senhaHash,
-        papel: dados.papel || 'CLIENTE',
-        barbeariaId: dados.barbeariaId,
-      } as any,
+    const usuario = await prisma.$transaction(async tx => {
+      // SERIALIZABLE protege também dois cadastros simultâneos pelo aplicativo.
+      // Clientes e barbeiros continuam podendo usar o mesmo email em outras unidades.
+      const existentes = await tx.$queryRaw<{ id: string }[]>(Prisma.sql`
+        SELECT id FROM usuarios
+        WHERE lower(btrim(email)) = ${email}
+          AND ((papel = 'ADMIN' AND ${papel} = 'ADMIN')
+            OR "barbeariaId" = ${dados.barbeariaId ?? null})
+        LIMIT 1
+      `);
+      if (existentes.length) {
+        throw new ErroDeNegocio('Este email já está cadastrado para este acesso. Use outro email ou recupere sua conta.', 409);
+      }
+      let barbeariaId = dados.barbeariaId;
+      if (!barbeariaId) {
+        const barbearia = await tx.barbearia.create({
+          data: { nome: `Barbearia do ${dados.nome.trim().split(' ')[0]}`, slug: `barbearia-${randomUUID()}` },
+        });
+        barbeariaId = barbearia.id;
+      }
+      return tx.usuario.create({
+        data: { nome: dados.nome, email, senha: senhaHash, papel, barbeariaId },
+      });
+    }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable }).catch((error: unknown) => {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && ['P2034', 'P2002'].includes(error.code)) {
+        throw new ErroDeNegocio('Cadastro em conflito. Tente novamente ou recupere sua conta.', 409);
+      }
+      throw error;
     });
 
     // Gera o token
@@ -87,7 +104,7 @@ export class AuthService {
       throw new ErroDeNegocio('Email ou senha incorretos', 401);
     }
 
-    let usuario: any = null;
+    let usuario: (typeof candidatos)[number] | null = null;
     for (const c of candidatos) {
       if (await bcrypt.compare(dados.senha, c.senha)) { usuario = c; break; }
     }

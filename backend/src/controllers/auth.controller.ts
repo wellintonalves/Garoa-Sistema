@@ -24,7 +24,7 @@ export class AuthController {
   }
 
   /** POST /auth/register */
-  static async registrar(req: Request, res: Response): Promise<void> {
+  static async registrar(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { nome, senha, papel, barbeariaId } = req.body;
       const email = req.body.email?.trim().toLowerCase();
@@ -39,34 +39,15 @@ export class AuthController {
         return;
       }
 
-      let bId = barbeariaId;
-      if (!bId) {
-        if (papel === 'ADMIN') {
-          const prisma = (await import('../lib/prisma')).prisma;
-          // Garante que o novo admin terá uma barbearia criada para ele
-          const slugUnico = `barbearia-${Date.now()}`;
-          const novaBarbearia = await prisma.barbearia.create({
-            data: {
-              nome: `Barbearia do ${nome.split(' ')[0]}`,
-              slug: slugUnico,
-            }
-          });
-          bId = novaBarbearia.id;
-        } else {
-          res.status(400).json({ erro: 'Barbearia não informada' });
-          return;
-        }
-      }
-
-      const resultado = await AuthService.registrar({ nome, email, senha, papel, barbeariaId: bId });
+      // Usuário e eventual nova barbearia são criados juntos, sem cadastros órfãos.
+      const resultado = await AuthService.registrar({ nome, email, senha, papel, barbeariaId });
 
       // Envia o código de verificação após criar o usuário
       await VerificacaoService.enviarCodigo(resultado.usuario.id, resultado.usuario.email, resultado.usuario.nome);
 
       res.status(201).json(resultado);
     } catch (error) {
-      const mensagem = error instanceof Error ? error.message : 'Erro ao registrar';
-      res.status(400).json({ erro: mensagem });
+      next(error);
     }
   }
 }

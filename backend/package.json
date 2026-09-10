@@ -20,7 +20,9 @@
     "test:concorrencia": "tsx scripts/testes_resgate_concorrente.ts",
     "test:comissao": "tsx scripts/testes_relatorio_comissao.ts",
     "test:comissao-http": "tsx scripts/testes_comissao_http.ts",
-    "test": "npm run test:fechamento && npm run test:fidelidade && npm run test:comissao"
+    "test:email-admin": "tsx scripts/testes_email_admin.ts",
+    "test:email-admin-postgres": "tsx scripts/testes_email_admin_postgres.ts",
+    "test": "npm run test:fechamento && npm run test:fidelidade && npm run test:comissao && npm run test:email-admin"
   },
   "dependencies": {
     "@prisma/client": "^6.8.0",
