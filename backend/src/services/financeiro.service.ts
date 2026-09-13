@@ -2,6 +2,7 @@
 import { prisma } from '../lib/prisma';
 import { TipoLancamento, FormaPagamento, BaseCalculoComissao, Prisma } from '@prisma/client';
 import { calcularComissao } from '../utils/comissao.util';
+import { ehAtendimentoFinanceiro } from '../utils/atendimentoFinanceiro.util';
 import { inicioDiaBrasilia, fimDiaBrasilia, diaBrasiliaStr, getHoraMinutoBrasilia } from '../lib/timezone';
 import { CATEGORIA_VENDA_PRODUTO } from '../lib/constantes';
 import { obterIdsServicosAgendamento } from '../utils/agendamento.util';
@@ -731,10 +732,11 @@ export class FinanceiroService {
           faturamentoServicos += valor;
           porDia[diaKey].entradas += valor;
 
-          if (l.servicoId) {
+          if (ehAtendimentoFinanceiro(l)) {
             concluidos++;
             faturamentoAtendimentos += valor;
-
+          }
+          if (l.servicoId) {
             // Contagem de serviços
             const ids = l.agendamento ? obterIdsServicosAgendamento(l.agendamento) : [l.servicoId];
             ids.forEach(id => {
@@ -772,7 +774,7 @@ export class FinanceiroService {
           antFaturamentoProdutos += valor;
         } else {
           antFaturamentoServicos += valor;
-          if (l.servicoId) {
+          if (ehAtendimentoFinanceiro(l)) {
             antConcluidos++;
             antFaturamentoAtendimentos += valor;
           }
@@ -818,20 +820,20 @@ export class FinanceiroService {
     const estoqueBaixo = todosEstoque.filter((i: any) => i.quantidade <= i.quantidadeMinima).length;
 
     // Construir séries cronológicas para o Sparkline (por hora para 1 dia, por dia para múltiplos dias)
-    const diffDaysTotal = Math.round((fimDiaBrasilia(fim).getTime() - dataInicio.getTime()) / (1000 * 60 * 60 * 24));
     let serieFaturamentoTotal: number[] = [];
     let serieFaturamentoServicos: number[] = [];
     let serieFaturamentoProdutos: number[] = [];
     let serieAtendimentos: number[] = [];
     let serieTicketMedio: number[] = [];
 
-    if (diffDaysTotal <= 0) {
+    if (inicio === fim) {
       // Série por hora (0h a 23h ou até a hora atual)
       const maxHora = (inicio === hojeStr) ? getHoraMinutoBrasilia(agora).hora : 23;
       const horasCount = Math.max(2, maxHora + 1);
       const bucketsServicos = new Array(horasCount).fill(0);
       const bucketsProdutos = new Array(horasCount).fill(0);
       const bucketsAtendimentos = new Array(horasCount).fill(0);
+      const bucketsReceitaAtendimentos = new Array(horasCount).fill(0);
 
       lancamentos.forEach((l: any) => {
         if (l.tipo === 'ENTRADA') {
@@ -845,9 +847,12 @@ export class FinanceiroService {
       });
 
       lancamentos.forEach((l: any) => {
-        if (l.tipo === 'ENTRADA' && l.servicoId) {
+        if (ehAtendimentoFinanceiro(l)) {
           const { hora } = getHoraMinutoBrasilia(new Date(l.data));
-          if (hora < horasCount) bucketsAtendimentos[hora]++;
+          if (hora < horasCount) {
+            bucketsAtendimentos[hora]++;
+            bucketsReceitaAtendimentos[hora] += Number(l.valor);
+          }
         }
       });
 
@@ -855,20 +860,22 @@ export class FinanceiroService {
       serieFaturamentoProdutos = bucketsProdutos;
       serieFaturamentoTotal = bucketsServicos.map((v, idx) => v + bucketsProdutos[idx]);
       serieAtendimentos = bucketsAtendimentos;
-      serieTicketMedio = bucketsServicos.map((v, idx) => bucketsAtendimentos[idx] > 0 ? v / bucketsAtendimentos[idx] : 0);
+      serieTicketMedio = bucketsReceitaAtendimentos.map((v, idx) => bucketsAtendimentos[idx] > 0 ? v / bucketsAtendimentos[idx] : 0);
     } else {
       serieFaturamentoServicos = porDiaCompleto.map(d => d.entradas);
       serieFaturamentoProdutos = porDiaCompleto.map(d => d.produtos);
       serieFaturamentoTotal = porDiaCompleto.map(d => d.entradas + d.produtos);
       const atendimentosPorDia: Record<string, number> = {};
+      const receitaAtendimentosPorDia: Record<string, number> = {};
       lancamentos.forEach((l: any) => {
-        if (l.tipo === 'ENTRADA' && l.servicoId) {
+        if (ehAtendimentoFinanceiro(l)) {
           const key = diaBrasiliaStr(new Date(l.data));
           atendimentosPorDia[key] = (atendimentosPorDia[key] || 0) + 1;
+          receitaAtendimentosPorDia[key] = (receitaAtendimentosPorDia[key] || 0) + Number(l.valor);
         }
       });
       serieAtendimentos = porDiaCompleto.map(d => atendimentosPorDia[d.data] || 0);
-      serieTicketMedio = serieFaturamentoServicos.map((v, idx) => serieAtendimentos[idx] > 0 ? v / serieAtendimentos[idx] : 0);
+      serieTicketMedio = porDiaCompleto.map((d, idx) => serieAtendimentos[idx] > 0 ? (receitaAtendimentosPorDia[d.data] || 0) / serieAtendimentos[idx] : 0);
     }
 
     return {
@@ -898,6 +905,7 @@ export class FinanceiroService {
         faturamentoServicos: { atual: faturamentoServicos, anterior: antFaturamentoServicos, periodo: periodoCalc, serie: serieFaturamentoServicos },
         faturamentoProdutos: { atual: faturamentoProdutos, anterior: antFaturamentoProdutos, periodo: periodoCalc, serie: serieFaturamentoProdutos },
         totalAtendimentos: { atual: concluidos, anterior: antConcluidos, periodo: periodoCalc, serie: serieAtendimentos },
+        atendimentosFechados: { atual: concluidos, anterior: antConcluidos, periodo: periodoCalc, serie: serieAtendimentos },
         ticketMedio: { atual: ticketMedio, anterior: antTicketMedio, periodo: periodoCalc, serie: serieTicketMedio },
         totalSaidas: { atual: totalSaidas, anterior: antTotalSaidas, periodo: periodoCalc, serie: porDiaCompleto.map(d => d.saidas) },
         saldo: { atual: faturamentoTotal - totalSaidas, anterior: antFaturamentoTotal - antTotalSaidas, periodo: periodoCalc, serie: porDiaCompleto.map(d => d.entradas + d.produtos - d.saidas) }

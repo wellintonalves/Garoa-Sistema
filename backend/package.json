@@ -23,7 +23,9 @@
     "test:email-admin": "tsx scripts/testes_email_admin.ts",
     "test:email-admin-postgres": "tsx scripts/testes_email_admin_postgres.ts",
     "test:barbearia-inativa": "tsx scripts/testes_barbearia_inativa.ts",
-    "test": "npm run test:fechamento && npm run test:fidelidade && npm run test:comissao && npm run test:email-admin"
+    "test:dashboard": "tsx scripts/testes_dashboard_atendimentos.ts",
+    "test:dashboard-postgres": "tsx scripts/testes_dashboard_postgres.ts",
+    "test": "npm run test:fechamento && npm run test:fidelidade && npm run test:comissao && npm run test:email-admin && npm run test:dashboard"
   },
   "dependencies": {
     "@prisma/client": "^6.8.0",
