@@ -1,852 +1,1102 @@
-// Página de Estoque — gestão completa de produtos com carrinho de vendas
-import { useEffect, useState, useCallback } from 'react';
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  Plus, PencilSimple as Pencil, Check, X, ShoppingCart, Package,
-  TrendUp as TrendingUp, Warning as AlertTriangle, CurrencyDollar as DollarSign, ChartBar as BarChart2, Calendar,
-  Minus, Trash as Trash2,
-} from '@phosphor-icons/react';
-import { Modal } from '../components/Modal';
+  Package,
+  Plus,
+  Minus,
+  Trash,
+  MagnifyingGlass,
+  ShoppingCart,
+  PencilSimple,
+  ArrowClockwise,
+} from "@phosphor-icons/react";
+import { Modal } from "../components/Modal";
+import { BuscaCliente } from "../components/BuscaCliente";
+import { statusPontos, type SaldoPontos } from "../utils/statusPontos";
+import { SkeletonPage } from "../components/Skeleton";
+import api from "../api/client";
+import { hojeBrasilia } from "../utils/datas";
+import "./Vendas.css";
 
-import { SkeletonPage, SkeletonCard } from '../components/Skeleton';
-import api from '../api/client';
-import { dataBrasilia, hojeBrasilia } from '../utils/datas';
-
-// ─── Tipos ─────────────────────────────────────────────────────────────────
-
-interface ItemEstoque {
+interface Produto {
   id: string;
   nome: string;
+  categoria: string | null;
   quantidade: number;
-  unidade: string;
   quantidadeMinima: number;
+  unidade: string;
   custo: string;
   precoVenda: string | null;
 }
-
-interface KPIs {
+interface Item {
+  produto: Produto;
+  quantidade: number;
+}
+interface Kpis {
   valorCusto: number;
   valorVenda: number;
   lucroEstimado: number;
-  totalItens: number;
   alertas: number;
+  semPreco: number;
 }
-
 interface Venda {
   id: string;
+  vendaId: string | null;
   nomeProduto: string;
   quantidade: number;
   precoVenda: string;
-  custoUnitario: string;
-  lucro: string;
   formaPagamento: string;
   data: string;
-  estoque?: { nome: string; unidade: string } | null;
+  descontoRateado: string | null;
+  venda: {
+    valorBruto: string | null;
+    valorDesconto: string | null;
+    tipoDesconto: string | null;
+    descontoPercentual: string | null;
+    pontosUtilizados: number | null;
+    total: string;
+    estornadaEm: string | null;
+    motivoEstorno: string | null;
+    estornadoPorId: string | null;
+  } | null;
 }
-
-interface ResumoVendas {
+interface PreviaDesconto {
+  valorBruto: number;
+  valorDesconto: number;
+  valorLiquido: number;
+  pontosUtilizados: number;
+}
+interface Resumo {
   vendas: Venda[];
   totalReceita: number;
-  totalCusto: number;
   totalLucro: number;
   totalUnidades: number;
-  rankingProdutos: { nome: string; unidades: number; receita: number; lucro: number }[];
 }
-
-interface CartItem {
-  item: ItemEstoque;
-  quantidade: number;
-}
-
-// ─── Constantes ────────────────────────────────────────────────────────────
-
-const FORMAS_PAG = ['DINHEIRO', 'PIX', 'CARTAO_DEBITO', 'CARTAO_CREDITO'] as const;
-type FormaPagamento = typeof FORMAS_PAG[number];
-
-const LABEL_FORMA: Record<string, string> = {
-  DINHEIRO: 'Dinheiro',
-  PIX: 'Pix',
-  CARTAO_DEBITO: 'Cartão Débito',
-  CARTAO_CREDITO: 'Cartão Crédito',
+const formas = {
+  PIX: "Pix",
+  DINHEIRO: "Dinheiro",
+  CARTAO_DEBITO: "Cartão de débito",
+  CARTAO_CREDITO: "Cartão de crédito",
 };
-
-// ─── Helpers ───────────────────────────────────────────────────────────────
-
-const fmt = (v: number) =>
-  Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-
-function margem(custo: string | number, venda: string | null | undefined): string {
-  if (!venda) return '—';
-  const c = Number(custo);
-  const v = Number(venda);
-  if (c <= 0 || v <= 0) return '—';
-  return (((v - c) / c) * 100).toFixed(0) + '%';
+const vazio = {
+  nome: "",
+  categoria: "",
+  quantidade: "0",
+  quantidadeMinima: "5",
+  unidade: "unidade",
+  custo: "",
+  precoVenda: "",
+};
+const moeda = (n: number) =>
+  n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+const normalizar = (s: string) =>
+  s
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+function mensagem(e: unknown) {
+  const erro = e as {
+    response?: { data?: { erro?: string } };
+    message?: string;
+  };
+  return (
+    erro.response?.data?.erro ||
+    erro.message ||
+    "Não foi possível concluir. Tente novamente."
+  );
 }
-
-// ─── Componente ────────────────────────────────────────────────────────────
 
 export function Vendas() {
-  // Dados
-  const [itens, setItens] = useState<ItemEstoque[]>([]);
-  const [kpis, setKpis] = useState<KPIs | null>(null);
-  const [resumoVendas, setResumoVendas] = useState<ResumoVendas | null>(null);
+  const [produtos, setProdutos] = useState<Produto[]>([]);
+  const [kpis, setKpis] = useState<Kpis | null>(null);
   const [carregando, setCarregando] = useState(true);
-  const [carregandoVendas, setCarregandoVendas] = useState(false);
-
-  // Tabs
-  const [aba, setAba] = useState<'estoque' | 'vendas'>('estoque');
-
-  // Edição inline de quantidade
-  const [editandoQtdId, setEditandoQtdId] = useState<string | null>(null);
-  const [editQtd, setEditQtd] = useState('');
-
-  // Modal de criar/editar produto
-  const [modalAberto, setModalAberto] = useState(false);
-  const [editandoProduto, setEditandoProduto] = useState<ItemEstoque | null>(null);
-  const formVazio = { nome: '', quantidade: '', unidade: 'unidade', quantidadeMinima: '5', custo: '', precoVenda: '' };
-  const [form, setForm] = useState(formVazio);
-
-  // ── Carrinho ──────────────────────────────────────────────────────────────
-  const [carrinho, setCarrinho] = useState<CartItem[]>([]);
-  const [modalCarrinho, setModalCarrinho] = useState(false);
-  const [formaPagCart, setFormaPagCart] = useState<FormaPagamento>('PIX');
-  const [fechandoVenda, setFechandoVenda] = useState(false);
-  const [erroCarrinho, setErroCarrinho] = useState<string | null>(null);
-
-  // Totais do carrinho
-  const totalItensCarrinho = carrinho.reduce((s, c) => s + c.quantidade, 0);
-  const totalCarrinho = carrinho.reduce((s, c) => s + Number(c.item.precoVenda) * c.quantidade, 0);
-  const custoCarrinho = carrinho.reduce((s, c) => s + Number(c.item.custo) * c.quantidade, 0);
-  const lucroCarrinho = totalCarrinho - custoCarrinho;
-
-  // Filtro de período para vendas
-  const hoje = hojeBrasilia();
-  const [year, month] = hoje.split('-').map(Number);
-  const primeiroDia = dataBrasilia(new Date(year, month - 1, 1, 12, 0, 0));
-  const [periodoInicio, setPeriodoInicio] = useState(primeiroDia);
-  const [periodoFim, setPeriodoFim] = useState(hoje);
-
-  // ─── Loaders ─────────────────────────────────────────────────────────────
-
-  const carregarEstoque = useCallback(async () => {
+  const [erro, setErro] = useState("");
+  const [aviso, setAviso] = useState("");
+  const [aba, setAba] = useState<"catalogo" | "historico">("catalogo");
+  const [busca, setBusca] = useState("");
+  const [categoria, setCategoria] = useState("");
+  const [carrinho, setCarrinho] = useState<Item[]>([]);
+  const [pagamento, setPagamento] = useState<keyof typeof formas>("PIX");
+  const [ocupado, setOcupado] = useState(false);
+  const trava = useRef(false);
+  const chave = useRef(crypto.randomUUID());
+  const [incerta, setIncerta] = useState(false);
+  const [vendaEstorno, setVendaEstorno] = useState<Venda[] | null>(null);
+  const [motivoEstorno, setMotivoEstorno] = useState('');
+  const [confirmouEstorno, setConfirmouEstorno] = useState(false);
+  const [estornando, setEstornando] = useState(false);
+  const [erroEstorno, setErroEstorno] = useState('');
+  const travaEstorno = useRef(false);
+  const [clienteId, setClienteId] = useState<string | null>(null);
+  const [tipoDesconto, setTipoDesconto] = useState("NENHUM");
+  const [valorDesconto, setValorDesconto] = useState("");
+  const [tentativaDesconto, setTentativaDesconto] = useState(0);
+  const [previa, setPrevia] = useState<{
+    chave: string;
+    dados: PreviaDesconto | null;
+    erro: string | null;
+  }>({ chave: "", dados: null, erro: null });
+  const [saldo, setSaldo] = useState<{
+    chave: string;
+    dados: SaldoPontos | null;
+    erro: string | null;
+  }>({ chave: "", dados: null, erro: null });
+  const [modal, setModal] = useState(false);
+  const [editando, setEditando] = useState<string | null>(null);
+  const [form, setForm] = useState(vazio);
+  const [erroForm, setErroForm] = useState("");
+  const [salvando, setSalvando] = useState(false);
+  const [inicio, setInicio] = useState(hojeBrasilia().slice(0, 8) + "01");
+  const [fim, setFim] = useState(hojeBrasilia());
+  const [resumo, setResumo] = useState<Resumo | null>(null);
+  const [carregandoHistorico, setCarregandoHistorico] = useState(false);
+  const carregar = useCallback(async (signal?: AbortSignal) => {
     try {
-      const [itemsRes, kpisRes] = await Promise.all([
-        api.get<ItemEstoque[]>('/estoque'),
-        api.get<KPIs>('/estoque/kpis'),
+      const [p, k] = await Promise.all([
+        api.request<Produto[]>({ url: "/estoque", signal }),
+        api.request<Kpis>({ url: "/estoque/kpis", signal }),
       ]);
-      setItens(itemsRes.data);
-      setKpis(kpisRes.data);
-    } catch (e) { console.error(e); }
-    finally { setCarregando(false); }
+      if (signal?.aborted) return;
+      setProdutos(p.data);
+      setKpis(k.data);
+      setCarrinho((c) =>
+        c.map((i) => ({
+          ...i,
+          produto: p.data.find((p) => p.id === i.produto.id) || {
+            ...i.produto,
+            quantidade: 0,
+          },
+        })),
+      );
+    } catch (e) {
+      if (!signal?.aborted) setErro(mensagem(e));
+    } finally {
+      if (!signal?.aborted) setCarregando(false);
+    }
   }, []);
-
-  const carregarVendas = useCallback(async () => {
-    setCarregandoVendas(true);
-    try {
-      const r = await api.get<ResumoVendas>('/estoque/vendas', {
-        params: { inicio: periodoInicio, fim: periodoFim },
+  useEffect(() => {
+    const c = new AbortController();
+    void carregar(c.signal);
+    return () => c.abort();
+  }, [carregar]);
+  const historico = useCallback(
+    async (signal?: AbortSignal) => {
+      if (!inicio || !fim || inicio > fim) {
+        setErro("Selecione um período válido.");
+        setResumo(null);
+        setCarregandoHistorico(false);
+        return;
+      }
+      setErro("");
+      setCarregandoHistorico(true);
+      try {
+        const r = await api.request<Resumo>({
+          url: "/estoque/vendas",
+          params: { inicio, fim },
+          signal,
+        });
+        if (!signal?.aborted) setResumo(r.data);
+      } catch (e) {
+        if (!signal?.aborted) setErro(mensagem(e));
+      } finally {
+        if (!signal?.aborted) setCarregandoHistorico(false);
+      }
+    },
+    [inicio, fim],
+  );
+  useEffect(() => {
+    if (aba !== "historico") return;
+    const c = new AbortController();
+    void historico(c.signal);
+    return () => c.abort();
+  }, [aba, historico]);
+  const categorias = [
+    ...new Set(produtos.map((p) => p.categoria || "Sem categoria")),
+  ].sort();
+  const visiveis = produtos.filter(
+    (p) =>
+      (!categoria || (p.categoria || "Sem categoria") === categoria) &&
+      normalizar(p.nome).includes(normalizar(busca)),
+  );
+  const total =
+    carrinho.reduce(
+      (s, i) =>
+        s + Math.round(Number(i.produto.precoVenda) * 100) * i.quantidade,
+      0,
+    ) / 100;
+  const unidades = carrinho.reduce((s, i) => s + i.quantidade, 0);
+  const invalido = carrinho.some(
+    (i) =>
+      i.quantidade > i.produto.quantidade || Number(i.produto.precoVenda) <= 0,
+  );
+  const chaveSaldo = JSON.stringify({ clienteId, total, tentativaDesconto });
+  useEffect(() => {
+    const c = new AbortController();
+    const dados = JSON.parse(chaveSaldo) as {
+      clienteId: string | null;
+      total: number;
+    };
+    if (!dados.clienteId) return () => c.abort();
+    void api
+      .request<SaldoPontos>({
+        url: `/fidelidade/clientes/${dados.clienteId}/saldo`,
+        params: { valorServico: dados.total },
+        signal: c.signal,
+      })
+      .then((r) => {
+        if (!c.signal.aborted)
+          setSaldo({ chave: chaveSaldo, dados: r.data, erro: null });
+      })
+      .catch((e) => {
+        if (!c.signal.aborted)
+          setSaldo({ chave: chaveSaldo, dados: null, erro: mensagem(e) });
       });
-      setResumoVendas(r.data);
-    } catch (e) { console.error(e); }
-    finally { setCarregandoVendas(false); }
-  }, [periodoInicio, periodoFim]);
-
-  useEffect(() => { carregarEstoque(); }, [carregarEstoque]);
-  useEffect(() => { if (aba === 'vendas') carregarVendas(); }, [aba, carregarVendas]);
-
-  // ─── Ações de estoque ────────────────────────────────────────────────────
-
-  async function salvarQtd(id: string) {
-    try {
-      await api.put(`/estoque/${id}`, { quantidade: Number(editQtd) });
-      setEditandoQtdId(null);
-      carregarEstoque();
-    } catch (e) { console.error(e); }
+    return () => c.abort();
+  }, [chaveSaldo]);
+  const pontosDisponiveis = statusPontos(
+    clienteId,
+    !!clienteId && saldo.chave !== chaveSaldo,
+    saldo.chave === chaveSaldo ? saldo.erro : null,
+    saldo.chave === chaveSaldo ? saldo.dados : null,
+  );
+  const payloadDesconto = {
+    clienteId,
+    tipoDesconto,
+    descontoReais: tipoDesconto === "REAIS" ? Number(valorDesconto) : 0,
+    descontoPercentual:
+      tipoDesconto === "PERCENTUAL" ? Number(valorDesconto) : 0,
+    pontosUsados: tipoDesconto === "PONTOS" ? Number(valorDesconto) : 0,
+  };
+  const chavePrevia = JSON.stringify({
+    itens: carrinho.map((i) => ({
+      estoqueId: i.produto.id,
+      quantidade: i.quantidade,
+    })),
+    ...payloadDesconto,
+    total,
+    tentativaDesconto,
+  });
+  useEffect(() => {
+    const c = new AbortController();
+    const dados = JSON.parse(chavePrevia) as { itens: unknown[] };
+    if (!dados.itens.length) return () => c.abort();
+    const t = setTimeout(() => {
+      void api
+        .post<PreviaDesconto>("/estoque/simular-desconto", dados, {
+          signal: c.signal,
+        })
+        .then((r) => {
+          if (!c.signal.aborted)
+            setPrevia({ chave: chavePrevia, dados: r.data, erro: null });
+        })
+        .catch((e) => {
+          if (!c.signal.aborted)
+            setPrevia({ chave: chavePrevia, dados: null, erro: mensagem(e) });
+        });
+    }, 250);
+    return () => {
+      clearTimeout(t);
+      c.abort();
+    };
+  }, [chavePrevia]);
+  const simulando = carrinho.length > 0 && previa.chave !== chavePrevia;
+  const erroDesconto = previa.chave === chavePrevia ? previa.erro : null;
+  const calculo = previa.chave === chavePrevia ? previa.dados : null;
+  const bloqueioDesconto =
+    simulando ||
+    !!erroDesconto ||
+    !calculo ||
+    (tipoDesconto === "PONTOS" && !pontosDisponiveis.habilitado);
+  function limparDesconto() {
+    setClienteId(null);
+    setTipoDesconto("NENHUM");
+    setValorDesconto("");
   }
-
-  function abrirModalNovo() {
-    setEditandoProduto(null);
-    setForm(formVazio);
-    setModalAberto(true);
-  }
-
-  function abrirModalEditar(item: ItemEstoque) {
-    setEditandoProduto(item);
-    setForm({
-      nome: item.nome,
-      quantidade: String(item.quantidade),
-      unidade: item.unidade,
-      quantidadeMinima: String(item.quantidadeMinima),
-      custo: item.custo,
-      precoVenda: item.precoVenda ?? '',
+  function adicionar(p: Produto) {
+    if (ocupado || incerta || p.quantidade <= 0 || Number(p.precoVenda) <= 0)
+      return;
+    setCarrinho((c) => {
+      const atual = c.find((i) => i.produto.id === p.id);
+      return atual
+        ? c.map((i) =>
+            i.produto.id === p.id
+              ? { ...i, quantidade: Math.min(p.quantidade, i.quantidade + 1) }
+              : i,
+          )
+        : [...c, { produto: p, quantidade: 1 }];
     });
-    setModalAberto(true);
+    setAviso("");
   }
-
-  async function salvarProduto() {
+  function quantidade(id: string, delta: number) {
+    setCarrinho((c) =>
+      c.map((i) =>
+        i.produto.id === id
+          ? {
+              ...i,
+              quantidade: Math.max(
+                1,
+                Math.min(i.produto.quantidade, i.quantidade + delta),
+              ),
+            }
+          : i,
+      ),
+    );
+  }
+  function editar(p?: Produto) {
+    setErroForm("");
+    setEditando(p?.id || null);
+    setForm(
+      p
+        ? {
+            nome: p.nome,
+            categoria: p.categoria || "",
+            quantidade: String(p.quantidade),
+            quantidadeMinima: String(p.quantidadeMinima),
+            unidade: p.unidade,
+            custo: p.custo,
+            precoVenda: p.precoVenda || "",
+          }
+        : vazio,
+    );
+    setModal(true);
+  }
+  async function salvar() {
+    if (salvando) return;
+    if (
+      !form.nome.trim() ||
+      !form.unidade.trim() ||
+      !form.custo ||
+      !Number.isInteger(Number(form.quantidade)) ||
+      Number(form.quantidade) < 0 ||
+      Number(form.custo) < 0 ||
+      Number(form.precoVenda) < 0
+    ) {
+      setErroForm(
+        "Informe nome, unidade, quantidade inteira e valores não negativos.",
+      );
+      return;
+    }
+    setSalvando(true);
+    setErroForm("");
     try {
-      const payload = {
-        nome: form.nome,
+      const data = {
+        ...form,
         quantidade: Number(form.quantidade),
-        unidade: form.unidade,
         quantidadeMinima: Number(form.quantidadeMinima),
         custo: Number(form.custo),
         precoVenda: form.precoVenda ? Number(form.precoVenda) : null,
       };
-      if (editandoProduto) {
-        await api.put(`/estoque/${editandoProduto.id}`, payload);
-      } else {
-        await api.post('/estoque', payload);
-      }
-      setModalAberto(false);
-      carregarEstoque();
-    } catch (e: any) {
-      alert(e?.response?.data?.erro || 'Erro ao salvar produto');
-    }
-  }
-
-  // ─── Ações do carrinho ───────────────────────────────────────────────────
-
-  function adicionarAoCarrinho(item: ItemEstoque) {
-    if (!item.precoVenda) {
-      abrirModalEditar(item);
-      return;
-    }
-    if (item.quantidade === 0) return;
-
-    setCarrinho(prev => {
-      const existing = prev.find(c => c.item.id === item.id);
-      if (existing) {
-        // Não ultrapassa o estoque disponível
-        if (existing.quantidade >= item.quantidade) return prev;
-        return prev.map(c =>
-          c.item.id === item.id ? { ...c, quantidade: c.quantidade + 1 } : c,
-        );
-      }
-      return [...prev, { item, quantidade: 1 }];
-    });
-  }
-
-  function removerDoCarrinho(id: string) {
-    setCarrinho(prev => prev.filter(c => c.item.id !== id));
-  }
-
-  function atualizarQtdCarrinho(id: string, delta: number) {
-    setCarrinho(prev =>
-      prev.map(c => {
-        if (c.item.id !== id) return c;
-        const nova = c.quantidade + delta;
-        if (nova < 1) return c;
-        if (nova > c.item.quantidade) return c;
-        return { ...c, quantidade: nova };
-      }),
-    );
-  }
-
-  async function fecharVendaCarrinho() {
-    if (carrinho.length === 0) return;
-    setFechandoVenda(true);
-    try {
-      await api.post('/estoque/vender-carrinho', {
-        itens: carrinho.map(c => ({ estoqueId: c.item.id, quantidade: c.quantidade })),
-        formaPagamento: formaPagCart,
+      await api.request({
+        method: editando ? "PUT" : "POST",
+        url: editando ? `/estoque/${editando}` : "/estoque",
+        data,
       });
-      setCarrinho([]);
-      setModalCarrinho(false);
-      setFormaPagCart('PIX');
-      setErroCarrinho(null);
-      carregarEstoque();
-      carregarVendas();
-    } catch (e: any) {
-      setErroCarrinho(e?.response?.data?.erro || 'Não foi possível salvar o lançamento — tente novamente');
+      setModal(false);
+      setAviso("Produto salvo.");
+      await carregar();
+    } catch (e) {
+      setErroForm(mensagem(e));
     } finally {
-      setFechandoVenda(false);
+      setSalvando(false);
     }
   }
-
-  // ─── Render ──────────────────────────────────────────────────────────────
-
+  async function finalizar() {
+    if (trava.current || !carrinho.length || invalido || bloqueioDesconto)
+      return;
+    trava.current = true;
+    setOcupado(true);
+    setErro("");
+    setAviso("");
+    try {
+      const r = await api.post<{ totalVenda: number }>(
+        "/estoque/vender-carrinho",
+        {
+          itens: carrinho.map((i) => ({
+            estoqueId: i.produto.id,
+            quantidade: i.quantidade,
+          })),
+          formaPagamento: pagamento,
+          chaveRequisicao: chave.current,
+          ...payloadDesconto,
+        },
+      );
+      setCarrinho([]);
+      limparDesconto();
+      chave.current = crypto.randomUUID();
+      setIncerta(false);
+      setAviso(
+        `Venda registrada: ${moeda(r.data.totalVenda)}. Estoque atualizado.`,
+      );
+      await carregar();
+    } catch (e) {
+      const status = (e as { response?: { status: number } }).response?.status;
+      setIncerta(!status || status >= 500 || status === 409);
+      setErro(mensagem(e));
+      await carregar();
+    } finally {
+      trava.current = false;
+      setOcupado(false);
+    }
+  }
+  async function estornarVenda() {
+    const id = vendaEstorno?.[0].vendaId;
+    if (!id || travaEstorno.current || !confirmouEstorno || motivoEstorno.trim().length < 5) return;
+    travaEstorno.current = true;
+    setEstornando(true);
+    setErroEstorno('');
+    try {
+      const { data } = await api.post<{ jaEstornada: boolean }>(`/estoque/vendas/${id}/estornar`, { motivo: motivoEstorno });
+      setVendaEstorno(null);
+      setAviso(data.jaEstornada ? 'Esta venda já estava estornada. Nenhuma devolução foi repetida.' : 'Venda estornada. Estoque e pontos devolvidos; saída financeira registrada.');
+      await Promise.all([carregar(), historico()]);
+    } catch (error) {
+      setErroEstorno(mensagem(error));
+      // A mesma venda pode ser consultada/repetida sem duplicar o estorno após timeout.
+    } finally {
+      travaEstorno.current = false;
+      setEstornando(false);
+    }
+  }
+  const grupos = Object.values(
+    (resumo?.vendas || []).reduce<Record<string, Venda[]>>((r, v) => {
+      (r[v.vendaId || v.id] ||= []).push(v);
+      return r;
+    }, {}),
+  );
   if (carregando) return <SkeletonPage />;
-
   return (
-    <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-
-      {/* Cabeçalho */}
-      <div className="flex items-center justify-between flex-wrap gap-4">
-        <h1 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '32px', color: 'var(--text-primary)', letterSpacing: '0.04em' }}>
-          Vendas
-        </h1>
-        <div className="flex items-center gap-2">
-          {/* Botão Carrinho */}
+    <div className="estoque-page">
+      <header className="estoque-header">
+        <div>
+          <p className="estoque-eyebrow">Produtos e operação</p>
+          <h1>Estoque</h1>
+          <p>Seu catálogo, suas vendas. Tudo em um só lugar.</p>
+        </div>
+        <button
+          className="btn-primary"
+          onClick={() => editar()}
+          disabled={ocupado}
+        >
+          <Plus size={20} /> Novo produto
+        </button>
+      </header>
+      {erro && (
+        <div role="alert" className="estoque-erro">
+          {erro}{" "}
           <button
             onClick={() => {
-              setErroCarrinho(null);
-              setModalCarrinho(true);
-            }}
-            className="btn-secondary flex items-center gap-2"
-            style={{
-              position: 'relative',
-              border: totalItensCarrinho > 0 ? '1.5px solid var(--amber)' : undefined,
-              color: totalItensCarrinho > 0 ? 'var(--amber)' : undefined,
+              setErro("");
+              if (aba === "historico") void historico();
+              else void carregar();
             }}
           >
-            <ShoppingCart size={14} strokeWidth={1.5} />
-            Carrinho
-            {totalItensCarrinho > 0 && (
-              <span style={{
-                background: 'var(--amber)',
-                color: 'var(--texto-sobre-primaria)',
-                borderRadius: '10px',
-                padding: '1px 7px',
-                fontSize: '11px',
-                fontWeight: 700,
-                minWidth: '18px',
-                textAlign: 'center',
-                lineHeight: '18px',
-              }}>
-                {totalItensCarrinho}
-              </span>
-            )}
-          </button>
-          <button onClick={abrirModalNovo} className="btn-primary">
-            <Plus size={14} strokeWidth={1.5} /> Novo Produto
+            {aba === "historico"
+              ? "Buscar vendas novamente"
+              : "Atualizar catálogo"}
           </button>
         </div>
-      </div>
-
-      {/* KPI Cards */}
+      )}
+      {aviso && (
+        <div role="status" className="estoque-aviso">
+          {aviso}
+        </div>
+      )}
       {kpis && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '12px' }}>
-          <KpiCard
-            icon={<Package size={16} strokeWidth={1.5} />}
-            label="Valor em Estoque"
-            valor={fmt(kpis.valorCusto)}
-            sub="custo total dos produtos"
-            cor="var(--texto-secundario)"
-          />
-          <KpiCard
-            icon={<DollarSign size={16} strokeWidth={1.5} />}
-            label="Receita Potencial"
-            valor={fmt(kpis.valorVenda)}
-            sub="se vender tudo em estoque"
-            cor="var(--amber)"
-          />
-          <KpiCard
-            icon={<TrendingUp size={16} strokeWidth={1.5} />}
-            label="Lucro Estimado"
-            valor={fmt(kpis.lucroEstimado)}
-            sub="receita potencial – custo"
-            cor="var(--sucesso)"
-          />
-          <KpiCard
-            icon={<AlertTriangle size={16} strokeWidth={1.5} />}
-            label="Alertas"
-            valor={String(kpis.alertas)}
-            sub={kpis.alertas === 1 ? 'produto abaixo do mínimo' : 'produtos abaixo do mínimo'}
-            cor={kpis.alertas > 0 ? 'var(--perigo)' : 'var(--texto-secundario)'}
-          />
-        </div>
+        <section className="estoque-kpis" aria-label="Resumo do estoque">
+          {[
+            [
+              "Valor em estoque",
+              moeda(kpis.valorCusto),
+              "Custo de todos os produtos",
+            ],
+            [
+              "Receita potencial",
+              moeda(kpis.valorVenda),
+              "Produtos com preço de venda",
+            ],
+            [
+              "Lucro estimado",
+              moeda(kpis.lucroEstimado),
+              "Receita menos custo dos produtos precificados",
+            ],
+            [
+              "Alertas",
+              String(kpis.alertas),
+              "Produtos no mínimo ou abaixo dele",
+            ],
+          ].map(([nome, valor, sub]) => (
+            <article key={nome} className="card">
+              <span>{nome}</span>
+              <strong
+                className={
+                  nome === "Lucro estimado" && kpis.lucroEstimado < 0
+                    ? "negativo"
+                    : ""
+                }
+              >
+                {valor}
+              </strong>
+              <small>{sub}</small>
+            </article>
+          ))}
+        </section>
       )}
-
-      {/* Tabs */}
-      <div style={{ display: 'flex', gap: '4px', borderBottom: '1px solid var(--border)', paddingBottom: '0' }}>
-        {([['estoque', 'Produtos'], ['vendas', 'Histórico de Vendas']] as const).map(([id, label]) => (
-          <button
-            key={id}
-            onClick={() => setAba(id)}
-            style={{
-              padding: '8px 18px',
-              background: 'none',
-              border: 'none',
-              borderBottom: aba === id ? '2px solid var(--amber)' : '2px solid transparent',
-              color: aba === id ? 'var(--text-primary)' : 'var(--texto-secundario)',
-              fontFamily: 'var(--fonte-interface)',
-              fontSize: '0.8125rem',
-              letterSpacing: '0.08em',
-              textTransform: 'uppercase',
-              cursor: 'pointer',
-              marginBottom: '-1px',
-            }}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
-
-      {/* ── ABA: PRODUTOS ─────────────────────────────────────────────────── */}
-      {aba === 'estoque' && (
-        <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-          <div className="table-wrapper overflow-x-auto">
-            <table className="ds-table">
-              <thead>
-                <tr>
-                  <th>Produto</th>
-                  <th>Qtd</th>
-                  <th>Mín</th>
-                  <th>Custo Unit.</th>
-                  <th>Preço Venda</th>
-                  <th>Margem</th>
-                  <th>Status</th>
-                  <th style={{ textAlign: 'right' }}>Ações</th>
-                </tr>
-              </thead>
-              <tbody>
-                {itens.length === 0 && (
-                  <tr>
-                    <td colSpan={8} style={{ textAlign: 'center', color: 'var(--texto-secundario)', padding: '2rem', fontFamily: 'var(--fonte-interface)', fontSize: '0.8125rem' }}>
-                      Nenhum produto cadastrado
-                    </td>
-                  </tr>
-                )}
-                {itens.map(item => {
-                  const baixo = item.quantidade <= item.quantidadeMinima;
-                  const semPreco = !item.precoVenda;
-                  const noCarrinho = carrinho.find(c => c.item.id === item.id);
-                  return (
-                    <tr key={item.id} style={{ background: baixo ? 'rgba(226, 75, 74, 0.05)' : 'transparent' }}>
-                      <td style={{ fontWeight: 500, color: 'var(--text-primary)' }}>
-                        {item.nome}
-                        {noCarrinho && (
-                          <span style={{
-                            marginLeft: '8px',
-                            background: 'rgba(255,140,0,0.15)',
-                            color: 'var(--amber)',
-                            borderRadius: '4px',
-                            padding: '1px 6px',
-                            fontSize: '10px',
-                            fontFamily: 'var(--fonte-interface)',
-                            fontWeight: 600,
-                          }}>
-                            {noCarrinho.quantidade} no carrinho
-                          </span>
-                        )}
-                      </td>
-                      <td>
-                        {editandoQtdId === item.id ? (
-                          <input
-                            type="number"
-                            value={editQtd}
-                            onChange={e => setEditQtd(e.target.value)}
-                            className="ds-input"
-                            style={{ width: '80px', minHeight: '32px', padding: '6px 8px' }}
-                          />
-                        ) : (
-                          <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '0.8125rem', color: baixo ? 'var(--perigo)' : 'var(--text-primary)' }}>
-                            {item.quantidade} <span style={{ fontSize: '10px', color: 'var(--texto-secundario)' }}>{item.unidade}</span>
-                          </span>
-                        )}
-                      </td>
-                      <td style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--texto-secundario)' }}>{item.quantidadeMinima}</td>
-                      <td style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '0.8125rem', color: 'var(--texto-secundario)' }}>
-                        {fmt(Number(item.custo))}
-                      </td>
-                      <td style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '0.8125rem', color: semPreco ? 'var(--text-disabled)' : 'var(--amber)' }}>
-                        {item.precoVenda ? fmt(Number(item.precoVenda)) : '—'}
-                      </td>
-                      <td style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '0.8125rem', color: 'var(--sucesso)' }}>
-                        {margem(item.custo, item.precoVenda)}
-                      </td>
-                      <td>
-                        {baixo
-                          ? <span className="badge badge-cancelled">Baixo</span>
-                          : <span className="badge badge-confirmed">OK</span>}
-                      </td>
-                      <td style={{ textAlign: 'right' }}>
-                        <div className="flex items-center justify-end gap-1">
-                          {editandoQtdId === item.id ? (
-                            <>
-                              <IconBtn onClick={() => salvarQtd(item.id)} color="var(--sucesso)" title="Salvar">
-                                <Check size={14} strokeWidth={1.5} />
-                              </IconBtn>
-                              <IconBtn onClick={() => setEditandoQtdId(null)} color="var(--perigo)" title="Cancelar">
-                                <X size={14} strokeWidth={1.5} />
-                              </IconBtn>
-                            </>
-                          ) : (
-                            <>
-                              <IconBtn
-                                onClick={() => { setEditandoQtdId(item.id); setEditQtd(String(item.quantidade)); }}
-                                color="var(--texto-secundario)"
-                                title="Ajustar quantidade"
-                              >
-                                <Pencil size={13} strokeWidth={1.5} />
-                              </IconBtn>
-                              <IconBtn onClick={() => abrirModalEditar(item)} color="var(--texto-secundario)" title="Editar produto">
-                                <BarChart2 size={13} strokeWidth={1.5} />
-                              </IconBtn>
-                              <IconBtn
-                                onClick={() => adicionarAoCarrinho(item)}
-                                color={semPreco ? 'var(--texto-secundario)' : item.quantidade === 0 ? 'var(--texto-secundario)' : 'var(--amber)'}
-                                title={semPreco ? 'Definir preço de venda' : item.quantidade === 0 ? 'Sem estoque' : 'Adicionar ao carrinho'}
-                                disabled={item.quantidade === 0 && !semPreco}
-                              >
-                                <ShoppingCart size={13} strokeWidth={1.5} />
-                              </IconBtn>
-                            </>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
+      {!!kpis?.semPreco && (
+        <p className="estoque-muted">
+          {kpis.semPreco} produto(s) sem preço de venda. Defina o preço para
+          vender; receita e lucro estimados consideram apenas produtos
+          precificados.
+        </p>
       )}
-
-      {/* ── ABA: VENDAS ───────────────────────────────────────────────────── */}
-      {aba === 'vendas' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          {/* Filtro de período */}
-          <div className="card">
-            <div className="flex flex-wrap items-end gap-3">
-              <div>
-                <label className="input-label">De</label>
-                <input type="date" value={periodoInicio} onChange={e => setPeriodoInicio(e.target.value)} className="ds-input" style={{ width: '138px' }} />
-              </div>
-              <div>
-                <label className="input-label">Até</label>
-                <input type="date" value={periodoFim} onChange={e => setPeriodoFim(e.target.value)} className="ds-input" style={{ width: '138px' }} />
-              </div>
-              <button onClick={carregarVendas} className="btn-primary flex items-center gap-1 px-4">
-                <Calendar size={13} strokeWidth={1.5} /> Buscar
+      <nav className="estoque-tabs" aria-label="Área de estoque">
+        <button
+          aria-pressed={aba === "catalogo"}
+          onClick={() => setAba("catalogo")}
+        >
+          Nova venda de produtos
+        </button>
+        <button
+          aria-pressed={aba === "historico"}
+          onClick={() => setAba("historico")}
+        >
+          Histórico de vendas
+        </button>
+      </nav>
+      {aba === "catalogo" ? (
+        <div className="estoque-layout">
+          <section className="estoque-catalogo">
+            <div className="estoque-busca">
+              <MagnifyingGlass size={22} />
+              <input
+                aria-label="Buscar produtos"
+                placeholder="Buscar um produto…"
+                value={busca}
+                onChange={(e) => setBusca(e.target.value)}
+              />
+              <button
+                aria-label="Atualizar estoque"
+                onClick={() => void carregar()}
+                disabled={ocupado}
+              >
+                <ArrowClockwise size={20} />
               </button>
             </div>
-          </div>
-
-          {carregandoVendas ? <SkeletonCard /> : resumoVendas && (
-            <>
-              {/* KPIs de vendas */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '12px' }}>
-                <KpiCard icon={<DollarSign size={16} strokeWidth={1.5} />} label="Receita no Período" valor={fmt(resumoVendas.totalReceita)} sub={`${resumoVendas.totalUnidades} unidades vendidas`} cor="var(--amber)" />
-                <KpiCard icon={<Package size={16} strokeWidth={1.5} />} label="Custo Total" valor={fmt(resumoVendas.totalCusto)} sub="custo dos produtos vendidos" cor="var(--texto-secundario)" />
-                <KpiCard icon={<TrendingUp size={16} strokeWidth={1.5} />} label="Lucro Líquido" valor={fmt(resumoVendas.totalLucro)} sub="receita − custo" cor="var(--sucesso)" />
+            <div className="estoque-categorias" aria-label="Categorias">
+              <button
+                aria-pressed={!categoria}
+                onClick={() => setCategoria("")}
+              >
+                Todos
+              </button>
+              {categorias.map((c) => (
+                <button
+                  key={c}
+                  aria-pressed={categoria === c}
+                  onClick={() => setCategoria(c)}
+                >
+                  {c}
+                </button>
+              ))}
+            </div>
+            <p className="estoque-muted">
+              {visiveis.length} produto(s) no catálogo
+            </p>
+            {!visiveis.length && (
+              <div className="card estoque-vazio">
+                <Package size={36} />
+                <h2>
+                  {produtos.length
+                    ? "Nenhum produto encontrado"
+                    : "Seu catálogo começa aqui"}
+                </h2>
+                <p>
+                  {produtos.length
+                    ? "Experimente outra busca ou categoria."
+                    : "Cadastre seu primeiro produto para começar a vender."}
+                </p>
+                <button
+                  className="btn-secondary"
+                  onClick={() =>
+                    produtos.length
+                      ? (setBusca(""), setCategoria(""))
+                      : editar()
+                  }
+                >
+                  {produtos.length ? "Limpar filtros" : "Cadastrar produto"}
+                </button>
               </div>
-
-              {/* Ranking */}
-              {resumoVendas.rankingProdutos.length > 0 && (
-                <div className="card">
-                  <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--texto-secundario)', marginBottom: '12px' }}>
-                    Mais Vendidos
-                  </p>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    {resumoVendas.rankingProdutos.slice(0, 5).map((p, i) => (
-                      <div key={i} className="flex items-center justify-between" style={{ padding: '8px 0', borderBottom: '1px solid var(--border)' }}>
-                        <div>
-                          <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '13px', color: 'var(--text-primary)', fontWeight: 600 }}>{p.nome}</span>
-                          <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--texto-secundario)', marginLeft: '8px' }}>{p.unidades} un.</span>
-                        </div>
-                        <div className="flex gap-4" style={{ textAlign: 'right' }}>
-                          <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '0.8125rem', color: 'var(--amber)' }}>{fmt(p.receita)}</span>
-                          <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '0.8125rem', color: 'var(--sucesso)' }}>{fmt(p.lucro)}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Histórico tabela */}
-              <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-                <div className="table-wrapper overflow-x-auto">
-                  <table className="ds-table">
-                    <thead>
-                      <tr>
-                        <th>Data</th>
-                        <th>Produto</th>
-                        <th>Qtd</th>
-                        <th>Preço Unit.</th>
-                        <th>Total</th>
-                        <th>Lucro</th>
-                        <th>Pagamento</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {resumoVendas.vendas.length === 0 && (
-                        <tr>
-                          <td colSpan={7} style={{ textAlign: 'center', color: 'var(--texto-secundario)', padding: '2rem', fontFamily: 'var(--fonte-interface)', fontSize: '0.8125rem' }}>
-                            Nenhuma venda no período
-                          </td>
-                        </tr>
-                      )}
-                      {resumoVendas.vendas.map(v => (
-                        <tr key={v.id}>
-                          <td style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--texto-secundario)', whiteSpace: 'nowrap' }}>
-                            {new Date(v.data).toLocaleDateString('pt-BR')}
-                          </td>
-                          <td style={{ fontWeight: 500, color: 'var(--text-primary)' }}>{v.nomeProduto}</td>
-                          <td style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '0.8125rem' }}>{v.quantidade}</td>
-                          <td style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '0.8125rem', color: 'var(--texto-secundario)' }}>{fmt(Number(v.precoVenda))}</td>
-                          <td style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '0.8125rem', color: 'var(--amber)' }}>
-                            {fmt(Number(v.precoVenda) * v.quantidade)}
-                          </td>
-                          <td style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '0.8125rem', color: 'var(--sucesso)' }}>
-                            {fmt(Number(v.lucro))}
-                          </td>
-                          <td style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', color: 'var(--texto-secundario)' }}>
-                            {LABEL_FORMA[v.formaPagamento] ?? v.formaPagamento}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </>
-          )}
-        </div>
-      )}
-
-      {/* ── Modal Criar/Editar Produto ────────────────────────────────────── */}
-      <Modal aberto={modalAberto} onFechar={() => setModalAberto(false)} titulo={editandoProduto ? 'Editar Produto' : 'Novo Produto'}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <div>
-            <label className="input-label">Nome</label>
-            <input value={form.nome} onChange={e => setForm({ ...form, nome: e.target.value })} className="ds-input" />
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="input-label">Quantidade</label>
-              <input type="number" value={form.quantidade} onChange={e => setForm({ ...form, quantidade: e.target.value })} className="ds-input" />
-            </div>
-            <div>
-              <label className="input-label">Unidade</label>
-              <input value={form.unidade} onChange={e => setForm({ ...form, unidade: e.target.value })} placeholder="unidade, ml, g…" className="ds-input" />
-            </div>
-          </div>
-          <div>
-            <label className="input-label">Qtd. Mínima para alerta</label>
-            <input type="number" value={form.quantidadeMinima} onChange={e => setForm({ ...form, quantidadeMinima: e.target.value })} className="ds-input" />
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="input-label">Custo Unitário (R$)</label>
-              <input type="number" step="0.01" value={form.custo} onChange={e => setForm({ ...form, custo: e.target.value })} className="ds-input" />
-            </div>
-            <div>
-              <label className="input-label">Preço de Venda (R$)</label>
-              <input type="number" step="0.01" value={form.precoVenda} onChange={e => setForm({ ...form, precoVenda: e.target.value })} placeholder="Opcional" className="ds-input" />
-            </div>
-          </div>
-          {form.custo && form.precoVenda && (
-            <div style={{ background: 'var(--bg-surface2)', borderRadius: '6px', padding: '10px 14px', display: 'flex', justifyContent: 'space-between' }}>
-              <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', color: 'var(--texto-secundario)' }}>Margem estimada</span>
-              <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '13px', color: 'var(--sucesso)', fontWeight: 600 }}>
-                {margem(form.custo, form.precoVenda)}
-              </span>
-            </div>
-          )}
-          <button onClick={salvarProduto} className="btn-primary w-full justify-center">
-            {editandoProduto ? 'Salvar Alterações' : 'Cadastrar'}
-          </button>
-        </div>
-      </Modal>
-
-      {/* ── Modal Carrinho ────────────────────────────────────────────────── */}
-      <Modal aberto={modalCarrinho} onFechar={() => setModalCarrinho(false)} titulo="Carrinho de Vendas">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          {erroCarrinho && (
-            <div style={{ padding: '12px', background: 'var(--perigo-fundo)', border: '1px solid var(--error-text)', borderRadius: '6px', color: 'var(--error-text)', fontFamily: 'var(--fonte-interface)', fontSize: '13px', fontWeight: 500 }}>
-              {erroCarrinho}
-            </div>
-          )}
-          {carrinho.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '2rem 0' }}>
-              <ShoppingCart size={32} strokeWidth={1} style={{ color: 'var(--text-muted)', margin: '0 auto 12px' }} />
-              <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '13px', color: 'var(--texto-secundario)' }}>
-                Nenhum produto no carrinho.
-              </p>
-              <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '0.8125rem', color: 'var(--texto-secundario)', marginTop: '4px' }}>
-                Clique no ícone 🛒 ao lado de cada produto para adicionar.
-              </p>
-            </div>
-          ) : (
-            <>
-              {/* Lista de itens */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                {carrinho.map(c => (
-                  <div
-                    key={c.item.id}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '12px',
-                      padding: '10px 12px',
-                      borderRadius: '6px',
-                      background: 'var(--bg-surface2)',
-                    }}
-                  >
-                    {/* Nome e preço unit */}
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {c.item.nome}
-                      </p>
-                      <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--texto-secundario)' }}>
-                        {fmt(Number(c.item.precoVenda))} / {c.item.unidade}
-                      </p>
-                    </div>
-
-                    {/* Ajuste de quantidade */}
-                    <div className="flex items-center gap-1">
-                      <button
-                        onClick={() => atualizarQtdCarrinho(c.item.id, -1)}
-                        disabled={c.quantidade <= 1}
-                        style={{
-                          width: '26px', height: '26px',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          background: 'var(--bg-surface)', border: '1px solid var(--border)',
-                          borderRadius: '4px', cursor: c.quantidade <= 1 ? 'default' : 'pointer',
-                          color: c.quantidade <= 1 ? 'var(--texto-secundario)' : 'var(--text-primary)',
-                          opacity: c.quantidade <= 1 ? 0.4 : 1,
-                        }}
-                      >
-                        <Minus size={11} strokeWidth={2} />
-                      </button>
-                      <span style={{
-                        fontFamily: 'var(--fonte-numeros)', fontSize: '13px', fontWeight: 600,
-                        color: 'var(--text-primary)', minWidth: '24px', textAlign: 'center',
-                      }}>
-                        {c.quantidade}
+            )}
+            <div className="estoque-produtos">
+              {visiveis.map((p) => {
+                const noCarrinho =
+                  carrinho.find((i) => i.produto.id === p.id)?.quantidade || 0;
+                const preco = Number(p.precoVenda) > 0;
+                return (
+                  <article className="card estoque-produto" key={p.id}>
+                    <div className="estoque-produto-top">
+                      <span className="estoque-produto-icone">
+                        <Package size={32} />
                       </span>
                       <button
-                        onClick={() => atualizarQtdCarrinho(c.item.id, +1)}
-                        disabled={c.quantidade >= c.item.quantidade}
-                        style={{
-                          width: '26px', height: '26px',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          background: 'var(--bg-surface)', border: '1px solid var(--border)',
-                          borderRadius: '4px', cursor: c.quantidade >= c.item.quantidade ? 'default' : 'pointer',
-                          color: c.quantidade >= c.item.quantidade ? 'var(--texto-secundario)' : 'var(--text-primary)',
-                          opacity: c.quantidade >= c.item.quantidade ? 0.4 : 1,
-                        }}
+                        aria-label={`Editar ${p.nome}`}
+                        onClick={() => editar(p)}
+                        disabled={ocupado || incerta}
                       >
-                        <Plus size={11} strokeWidth={2} />
+                        <PencilSimple size={20} />
                       </button>
                     </div>
-
-                    {/* Subtotal */}
-                    <span style={{
-                      fontFamily: 'var(--fonte-numeros)', fontSize: '13px',
-                      color: 'var(--amber)', fontWeight: 600, minWidth: '72px', textAlign: 'right',
-                    }}>
-                      {fmt(Number(c.item.precoVenda) * c.quantidade)}
-                    </span>
-
-                    {/* Remover */}
+                    <small>{p.categoria || "Sem categoria"}</small>
+                    <h2>{p.nome}</h2>
+                    <strong>
+                      {preco
+                        ? moeda(Number(p.precoVenda))
+                        : "Preço não definido"}
+                    </strong>
+                    <p>
+                      {p.quantidade} {p.unidade} disponíveis
+                    </p>
+                    {p.quantidade <= p.quantidadeMinima && (
+                      <span className="estoque-alerta">
+                        {p.quantidade ? "Estoque baixo" : "Sem estoque"}
+                      </span>
+                    )}
                     <button
-                      onClick={() => removerDoCarrinho(c.item.id)}
-                      style={{
-                        width: '26px', height: '26px',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        background: 'transparent', border: 'none',
-                        cursor: 'pointer', color: 'var(--perigo)', borderRadius: '4px',
-                      }}
-                      title="Remover"
+                      className="btn-primary"
+                      disabled={
+                        ocupado ||
+                        incerta ||
+                        (preco &&
+                          (p.quantidade === 0 || noCarrinho >= p.quantidade))
+                      }
+                      onClick={() => (preco ? adicionar(p) : editar(p))}
                     >
-                      <Trash2 size={13} strokeWidth={1.5} />
+                      <Plus size={18} />
+                      {!preco
+                        ? "Definir preço"
+                        : noCarrinho
+                          ? `Adicionar · ${noCarrinho} no carrinho`
+                          : "Adicionar"}
                     </button>
-                  </div>
-                ))}
-              </div>
-
-              {/* Resumo financeiro */}
-              <div style={{ background: 'var(--bg-surface2)', borderRadius: '8px', padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <SumRow label={`${carrinho.length} produto${carrinho.length > 1 ? 's' : ''} · ${totalItensCarrinho} unidade${totalItensCarrinho > 1 ? 's' : ''}`} valor={fmt(totalCarrinho)} cor="var(--amber)" />
-                <SumRow label="Custo estimado" valor={fmt(custoCarrinho)} cor="var(--texto-secundario)" />
-                <div style={{ borderTop: '1px solid var(--border)', paddingTop: '8px', marginTop: '4px' }}>
-                  <SumRow label="Lucro estimado" valor={fmt(lucroCarrinho)} cor="var(--sucesso)" bold />
-                </div>
-              </div>
-
-              {/* Forma de pagamento */}
-              <div>
-                <label className="input-label">Forma de Pagamento</label>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                  {FORMAS_PAG.map(f => (
-                    <button
-                      key={f}
-                      onClick={() => setFormaPagCart(f)}
-                      style={{
-                        padding: '10px',
-                        borderRadius: '6px',
-                        border: formaPagCart === f ? '1.5px solid var(--amber)' : '1px solid var(--border)',
-                        background: formaPagCart === f ? 'rgba(255,140,0,0.08)' : 'var(--bg-surface2)',
-                        color: formaPagCart === f ? 'var(--text-primary)' : 'var(--texto-secundario)',
-                        fontFamily: 'var(--fonte-interface)',
-                        fontSize: '0.8125rem',
-                        cursor: 'pointer',
-                      }}
-                    >
-                      {LABEL_FORMA[f]}
-                    </button>
+                  </article>
+                );
+              })}
+            </div>
+          </section>
+          <aside
+            className="card estoque-carrinho"
+            aria-label="Carrinho de produtos"
+          >
+            <div className="estoque-carrinho-titulo">
+              <ShoppingCart size={24} />
+              <h2>Sua venda</h2>
+              <span>{unidades}</span>
+            </div>
+            <p className="estoque-muted">
+              Somente produtos. Serviços são registrados separadamente.
+            </p>
+            {carrinho.length ? (
+              <>
+                <button
+                  className="estoque-limpar"
+                  disabled={ocupado || incerta}
+                  onClick={() => {
+                    setCarrinho([]);
+                    limparDesconto();
+                  }}
+                >
+                  Limpar carrinho
+                </button>
+                <div className="estoque-itens">
+                  {carrinho.map((i) => (
+                    <article key={i.produto.id} className="estoque-item">
+                      <div>
+                        <h3>{i.produto.nome}</h3>
+                        <small>
+                          {moeda(Number(i.produto.precoVenda))} por{" "}
+                          {i.produto.unidade}
+                        </small>
+                      </div>
+                      <button
+                        aria-label={`Remover ${i.produto.nome}`}
+                        disabled={ocupado || incerta}
+                        onClick={() =>
+                          setCarrinho((c) =>
+                            c.filter((x) => x.produto.id !== i.produto.id),
+                          )
+                        }
+                      >
+                        <Trash size={18} />
+                      </button>
+                      <div className="estoque-quantidade">
+                        <button
+                          aria-label={`Diminuir ${i.produto.nome}`}
+                          disabled={ocupado || incerta || i.quantidade <= 1}
+                          onClick={() => quantidade(i.produto.id, -1)}
+                        >
+                          <Minus size={16} />
+                        </button>
+                        <span>{i.quantidade}</span>
+                        <button
+                          aria-label={`Aumentar ${i.produto.nome}`}
+                          disabled={
+                            ocupado ||
+                            incerta ||
+                            i.quantidade >= i.produto.quantidade
+                          }
+                          onClick={() => quantidade(i.produto.id, 1)}
+                        >
+                          <Plus size={16} />
+                        </button>
+                      </div>
+                      <strong>
+                        {moeda(Number(i.produto.precoVenda) * i.quantidade)}
+                      </strong>
+                    </article>
                   ))}
                 </div>
+              </>
+            ) : (
+              <div className="estoque-vazio">
+                <ShoppingCart size={38} />
+                <h3>Seu carrinho está vazio</h3>
+                <p>Adicione produtos do catálogo para montar uma venda.</p>
               </div>
-
-              {/* Botão fechar venda */}
-              <button
-                onClick={fecharVendaCarrinho}
-                disabled={fechandoVenda}
-                className="btn-primary w-full justify-center"
-                style={{ opacity: fechandoVenda ? 0.6 : 1, fontSize: '14px', padding: '12px' }}
-              >
-                {fechandoVenda ? 'Registrando…' : `Fechar Venda · ${fmt(totalCarrinho)}`}
-              </button>
+            )}
+            {invalido && (
+              <p role="alert" className="estoque-erro">
+                A quantidade ou o preço mudou. Ajuste os itens antes de
+                finalizar.
+              </p>
+            )}
+            <fieldset
+              disabled={ocupado || incerta}
+              className="estoque-desconto"
+            >
+              <legend>Cliente e desconto</legend>
+              <BuscaCliente
+                selectedClienteId={clienteId}
+                onSelect={(id) => {
+                  setClienteId(id);
+                  if (id !== clienteId && tipoDesconto === "PONTOS") {
+                    setTipoDesconto("NENHUM");
+                    setValorDesconto("");
+                  }
+                }}
+              />
+              <div className="estoque-tipos-desconto">
+                {[
+                  ["NENHUM", "Sem desconto"],
+                  ["REAIS", "Reais"],
+                  ["PERCENTUAL", "Porcentagem"],
+                  ["PONTOS", "Pontos"],
+                ].map(([tipo, label]) => (
+                  <button
+                    type="button"
+                    key={tipo}
+                    aria-pressed={tipoDesconto === tipo}
+                    disabled={
+                      tipo === "PONTOS" && !pontosDisponiveis.habilitado
+                    }
+                    onClick={() => {
+                      setTipoDesconto(tipo);
+                      setValorDesconto("");
+                    }}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+              {tipoDesconto !== "NENHUM" && (
+                <label htmlFor="valor-desconto-produtos">
+                  {tipoDesconto === "PONTOS"
+                    ? "Pontos a utilizar"
+                    : tipoDesconto === "REAIS"
+                      ? "Desconto em reais"
+                      : "Desconto em porcentagem"}
+                  <input
+                    id="valor-desconto-produtos"
+                    className="ds-input"
+                    type="number"
+                    min="0"
+                    step={tipoDesconto === "REAIS" ? "0.01" : "1"}
+                    value={valorDesconto}
+                    onChange={(e) => setValorDesconto(e.target.value)}
+                  />
+                </label>
+              )}
+              {pontosDisponiveis.motivo && (
+                <small>{pontosDisponiveis.motivo}</small>
+              )}
+              {clienteId && saldo.chave === chaveSaldo && saldo.dados && (
+                <small>
+                  Saldo: {saldo.dados.saldoPontos} pontos · Máximo nesta venda:{" "}
+                  {saldo.dados.maxPontosUtilizaveis}
+                </small>
+              )}
+              {simulando && <p role="status">Calculando desconto…</p>}
+              {erroDesconto && (
+                <p role="alert" className="estoque-erro">
+                  {erroDesconto}
+                </p>
+              )}
+              {(erroDesconto || saldo.erro) && (
+                <button
+                  type="button"
+                  onClick={() => setTentativaDesconto((t) => t + 1)}
+                >
+                  Tentar novamente
+                </button>
+              )}
+            </fieldset>
+            <div className="estoque-total">
+              <span>Subtotal</span>
+              <span>{moeda(total)}</span>
+              <span>Desconto</span>
+              <span>
+                {carrinho.length
+                  ? calculo
+                    ? moeda(calculo.valorDesconto)
+                    : "—"
+                  : moeda(0)}
+              </span>
+              <strong>Total da venda</strong>
+              <strong>
+                {carrinho.length
+                  ? calculo
+                    ? moeda(calculo.valorLiquido)
+                    : "—"
+                  : moeda(0)}
+              </strong>
+            </div>
+            <label htmlFor="pagamento-produtos">Forma de pagamento</label>
+            <select
+              id="pagamento-produtos"
+              className="ds-input"
+              value={pagamento}
+              disabled={ocupado || incerta}
+              onChange={(e) =>
+                setPagamento(e.target.value as keyof typeof formas)
+              }
+            >
+              {Object.entries(formas).map(([v, l]) => (
+                <option key={v} value={v}>
+                  {l}
+                </option>
+              ))}
+            </select>
+            {incerta && (
+              <div role="alert" className="estoque-erro">
+                Confira o histórico antes de iniciar outra venda.{" "}
+                <button onClick={() => setAba("historico")}>
+                  Ver histórico
+                </button>
+                <button
+                  disabled={ocupado}
+                  onClick={() => {
+                    setIncerta(false);
+                    setCarrinho([]);
+                    limparDesconto();
+                    chave.current = crypto.randomUUID();
+                    setErro("");
+                  }}
+                >
+                  Já conferi: iniciar nova venda
+                </button>
+              </div>
+            )}
+            <button
+              className="btn-primary estoque-finalizar"
+              disabled={
+                ocupado ||
+                incerta ||
+                !carrinho.length ||
+                invalido ||
+                bloqueioDesconto
+              }
+              onClick={() => void finalizar()}
+            >
+              {ocupado ? "Registrando venda…" : "Finalizar venda"}
+            </button>
+            <small className="estoque-muted">
+              O estoque e os preços são conferidos ao confirmar.
+            </small>
+          </aside>
+        </div>
+      ) : (
+        <section className="estoque-historico">
+          <div className="estoque-filtros">
+            <label>
+              De
+              <input
+                aria-label="Data inicial"
+                type="date"
+                className="ds-input"
+                value={inicio}
+                onChange={(e) => setInicio(e.target.value)}
+              />
+            </label>
+            <label>
+              Até
+              <input
+                aria-label="Data final"
+                type="date"
+                className="ds-input"
+                value={fim}
+                onChange={(e) => setFim(e.target.value)}
+              />
+            </label>
+            <button className="btn-secondary" onClick={() => void historico()}>
+              Buscar vendas
+            </button>
+          </div>
+          {carregandoHistorico ? (
+            <p role="status">Carregando vendas…</p>
+          ) : (
+            <>
+              <p>
+                {resumo?.totalUnidades || 0} unidades · Receita{" "}
+                {moeda(resumo?.totalReceita || 0)} · Lucro{" "}
+                {moeda(resumo?.totalLucro || 0)}
+                {' '}· Totais das vendas não estornadas
+              </p>
+              {!grupos.length && (
+                <div className="card estoque-vazio">
+                  Nenhuma venda neste período.
+                </div>
+              )}
+              {grupos.map((g) => (
+                <article
+                  key={g[0].vendaId || g[0].id}
+                  className="card estoque-venda"
+                >
+                  <h3>
+                    {g[0].vendaId ? "Venda de produtos" : "Registro anterior"} ·{" "}
+                    {new Date(g[0].data).toLocaleString("pt-BR", {
+                      timeZone: "America/Sao_Paulo",
+                    })}
+                  </h3>
+                  {g[0].venda?.estornadaEm && (
+                    <p>Estornada em {new Date(g[0].venda.estornadaEm).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })} · {g[0].venda.motivoEstorno}</p>
+                  )}
+                  {g.map((v) => (
+                    <p key={v.id}>
+                      {v.quantidade} × {v.nomeProduto}
+                      <strong>
+                        {moeda(
+                          Number(v.precoVenda) * v.quantidade -
+                            Number(v.descontoRateado ?? 0),
+                        )}
+                      </strong>
+                    </p>
+                  ))}
+                  {Number(g[0].venda?.valorDesconto) > 0 && (
+                    <p>
+                      Desconto (
+                      {g[0].venda?.tipoDesconto === "PONTOS"
+                        ? `${g[0].venda?.pontosUtilizados} pontos`
+                        : g[0].venda?.tipoDesconto === "PERCENTUAL"
+                          ? `${g[0].venda?.descontoPercentual}%`
+                          : "reais"}
+                      )
+                      <strong>
+                        {moeda(Number(g[0].venda?.valorDesconto))}
+                      </strong>
+                    </p>
+                  )}
+                  <p>
+                    {formas[g[0].formaPagamento as keyof typeof formas]}
+                    <strong>
+                      Total{" "}
+                      {moeda(
+                        g.reduce(
+                          (s, v) =>
+                            s +
+                            Number(v.precoVenda) * v.quantidade -
+                            Number(v.descontoRateado ?? 0),
+                          0,
+                        ),
+                      )}
+                    </strong>
+                  </p>
+                  {g[0].vendaId && !g[0].venda?.estornadaEm && (
+                    <button className="btn-secondary" onClick={() => {
+                      setVendaEstorno(g); setMotivoEstorno(''); setConfirmouEstorno(false); setErroEstorno('');
+                    }}>Estornar venda</button>
+                  )}
+                  {!g[0].vendaId && <p>Registro anterior sem vínculo auditável: estorno automático indisponível.</p>}
+                </article>
+              ))}
             </>
           )}
-        </div>
+        </section>
+      )}
+      <Modal aberto={!!vendaEstorno} onFechar={() => !estornando && setVendaEstorno(null)} titulo="Estornar venda de produtos">
+        <form className="estoque-form" onSubmit={e => { e.preventDefault(); void estornarVenda(); }}>
+          <p>Estorno integral de {moeda(Number(vendaEstorno?.[0].venda?.total ?? 0))}. Os produtos voltam ao estoque e os pontos utilizados são devolvidos. O histórico será preservado.</p>
+          <p>O sistema registra a devolução financeira, mas não envia Pix nem cancela cobranças na operadora. Confirme o reembolso por {formas[vendaEstorno?.[0].formaPagamento as keyof typeof formas]} antes de prosseguir.</p>
+          <label>Motivo do estorno<textarea className="ds-input" required minLength={5} maxLength={500} value={motivoEstorno} disabled={estornando} onChange={e => setMotivoEstorno(e.target.value)} /></label>
+          <label className="estoque-confirmacao"><input type="checkbox" checked={confirmouEstorno} disabled={estornando} onChange={e => setConfirmouEstorno(e.target.checked)} />Confirmo a devolução dos produtos e o reembolso integral.</label>
+          {erroEstorno && <p role="alert">{erroEstorno} Você pode repetir a confirmação desta mesma venda sem duplicar o estorno.</p>}
+          <button className="btn-primary" disabled={estornando || !confirmouEstorno || motivoEstorno.trim().length < 5}>{estornando ? 'Estornando…' : 'Confirmar estorno'}</button>
+        </form>
       </Modal>
-    </div>
-  );
-}
-
-// ─── Sub-componentes ─────────────────────────────────────────────────────────
-
-function KpiCard({ icon, label, valor, sub, cor }: {
-  icon: React.ReactNode; label: string; valor: string; sub: string; cor: string;
-}) {
-  return (
-    <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-      <div className="flex items-center gap-2">
-        <span style={{ color: cor }}>{icon}</span>
-        <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--texto-secundario)' }}>
-          {label}
-        </span>
-      </div>
-      <p style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '22px', fontWeight: 700, color: cor, lineHeight: 1 }}>
-        {valor}
-      </p>
-      <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--texto-secundario)' }}>{sub}</p>
-    </div>
-  );
-}
-
-function IconBtn({ onClick, color, title, children, disabled }: {
-  onClick: () => void; color: string; title: string; children: React.ReactNode; disabled?: boolean;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      title={title}
-      disabled={disabled}
-      style={{
-        width: '28px', height: '28px',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        background: 'transparent', border: 'none', cursor: disabled ? 'default' : 'pointer',
-        color: disabled ? 'var(--texto-secundario)' : color, opacity: disabled ? 0.35 : 1,
-        borderRadius: '4px',
-      }}
-    >
-      {children}
-    </button>
-  );
-}
-
-function SumRow({ label, valor, cor, bold }: { label: string; valor: string; cor: string; bold?: boolean }) {
-  return (
-    <div className="flex items-center justify-between">
-      <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', color: 'var(--texto-secundario)' }}>{label}</span>
-      <span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '13px', color: cor, fontWeight: bold ? 700 : 500 }}>{valor}</span>
+      <Modal
+        aberto={modal}
+        onFechar={() => !salvando && setModal(false)}
+        titulo={editando ? "Editar produto" : "Novo produto"}
+      >
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            void salvar();
+          }}
+          className="estoque-form"
+        >
+          {erroForm && (
+            <p role="alert" className="estoque-erro">
+              {erroForm}
+            </p>
+          )}
+          {(
+            [
+              ["nome", "Nome", "text"],
+              ["categoria", "Categoria", "text"],
+              ["quantidade", "Quantidade", "number"],
+              ["unidade", "Unidade", "text"],
+              ["quantidadeMinima", "Mínimo para alerta", "number"],
+              ["custo", "Custo unitário (R$)", "number"],
+              ["precoVenda", "Preço de venda (R$)", "number"],
+            ] as const
+          ).map(([key, label, type]) => (
+            <label key={key} htmlFor={`produto-${key}`}>
+              {label}
+              <input
+                id={`produto-${key}`}
+                className="ds-input"
+                type={type}
+                min={type === "number" ? 0 : undefined}
+                step={
+                  key === "custo" || key === "precoVenda" ? "0.01" : undefined
+                }
+                maxLength={key === "categoria" ? 60 : undefined}
+                list={key === "categoria" ? "categorias-produtos" : undefined}
+                required={!["categoria", "precoVenda"].includes(key)}
+                value={form[key]}
+                onChange={(e) => setForm({ ...form, [key]: e.target.value })}
+              />
+            </label>
+          ))}
+          <datalist id="categorias-produtos">
+            {categorias
+              .filter((c) => c !== "Sem categoria")
+              .map((c) => (
+                <option key={c} value={c} />
+              ))}
+          </datalist>
+          <button disabled={salvando} className="btn-primary" type="submit">
+            {salvando ? "Salvando…" : "Salvar produto"}
+          </button>
+        </form>
+      </Modal>
     </div>
   );
 }

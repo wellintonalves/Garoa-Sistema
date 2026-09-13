@@ -110,6 +110,7 @@ model Barbearia {
   itens                  ItemAtendimento[]
   estoque                Estoque[]
   vendasProdutos         VendaProduto[]
+  vendasEstoque          VendaEstoque[]
   configuracoes          Configuracao[]
   historicoRemarcacoes   HistoricoRemarcacao[]
   clientesBarbearias     ClienteBarbearia[]
@@ -347,6 +348,8 @@ model LancamentoFinanceiro {
   barbeiro    Barbeiro?    @relation(fields: [barbeiroId], references: [id], onDelete: SetNull)
   servico     Servico?     @relation(fields: [servicoId], references: [id], onDelete: SetNull)
   pontoFidelidade PontoFidelidade?
+  vendaEstoque VendaEstoque? @relation("VendaOriginal")
+  estornoVendaEstoque VendaEstoque? @relation("VendaEstorno")
   itens       ItemAtendimento[]
 
   @@index([barbeariaId, data])
@@ -357,6 +360,7 @@ model Estoque {
   id               String   @id @default(uuid())
   barbeariaId      String?
   nome             String
+  categoria        String?
   quantidade       Int
   unidade          String
   quantidadeMinima Int      @default(5)
@@ -374,19 +378,52 @@ model VendaProduto {
   id             String         @id @default(uuid())
   barbeariaId    String?
   estoqueId      String?
+  vendaId        String?
   nomeProduto    String
   quantidade     Int
   precoVenda     Decimal        @db.Decimal(10, 2)
   custoUnitario  Decimal        @db.Decimal(10, 2)
   lucro          Decimal        @db.Decimal(10, 2)
+  descontoRateado Decimal?       @db.Decimal(10, 2)
   formaPagamento FormaPagamento
   data           DateTime       @default(now())
 
   barbearia Barbearia? @relation(fields: [barbeariaId], references: [id], onDelete: SetNull)
   estoque   Estoque?   @relation(fields: [estoqueId], references: [id], onDelete: SetNull)
+  venda     VendaEstoque? @relation(fields: [vendaId], references: [id], onDelete: Restrict)
 
+  @@index([vendaId])
   @@index([barbeariaId, data])
   @@map("vendas_produtos")
+}
+
+model VendaEstoque {
+  id String @id @default(uuid())
+  barbeariaId String
+  chaveRequisicao String
+  total Decimal @db.Decimal(10, 2)
+  valorBruto Decimal? @db.Decimal(10, 2)
+  tipoDesconto TipoDesconto?
+  valorDesconto Decimal? @db.Decimal(10, 2)
+  descontoManual Decimal? @db.Decimal(10, 2)
+  descontoPontos Decimal? @db.Decimal(10, 2)
+  descontoPercentual Decimal? @db.Decimal(10, 2)
+  pontosUtilizados Int?
+  formaPagamento FormaPagamento
+  data DateTime @default(now())
+  lancamentoId String @unique
+  estornadaEm DateTime?
+  motivoEstorno String?
+  estornadoPorId String?
+  estornoLancamentoId String? @unique
+  barbearia Barbearia @relation(fields: [barbeariaId], references: [id], onDelete: Restrict)
+  lancamento LancamentoFinanceiro @relation("VendaOriginal", fields: [lancamentoId], references: [id], onDelete: Restrict)
+  estornoLancamento LancamentoFinanceiro? @relation("VendaEstorno", fields: [estornoLancamentoId], references: [id], onDelete: Restrict)
+  itens VendaProduto[]
+
+  @@unique([barbeariaId, chaveRequisicao])
+  @@index([barbeariaId, data])
+  @@map("vendas_estoque")
 }
 
 model Configuracao {

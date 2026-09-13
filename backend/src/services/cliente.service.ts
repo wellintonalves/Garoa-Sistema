@@ -1,6 +1,14 @@
 // Serviço de clientes — CRUD + dados agregados por barbearia
 import { prisma } from '../lib/prisma';
 import { validarSaldoParaResgate } from './saldoFidelidade.util';
+import { CATEGORIA_VENDA_PRODUTO } from '../lib/constantes';
+import { resumirPontos } from '../utils/extratoPontos.util';
+
+const categoriasProduto = [CATEGORIA_VENDA_PRODUTO, 'VENDA_PRODUTO'];
+const comprasAtivas = {
+  tipo: 'ENTRADA' as const, categoria: { in: categoriasProduto },
+  OR: [{ vendaEstoque: { is: null } }, { vendaEstoque: { is: { estornadaEm: null } } }],
+};
 
 interface DadosCliente {
   nome: string;
@@ -77,6 +85,11 @@ export class ClienteService {
     });
 
     if (clientes.length === 0) return [];
+    const statsCompras = await prisma.lancamentoFinanceiro.groupBy({
+      by: ['clienteId'], where: { barbeariaId, clienteId: { not: null }, ...comprasAtivas },
+      _sum: { valor: true }, _count: { id: true },
+    });
+    const comprasMap = new Map(statsCompras.map(c => [c.clienteId, c]));
 
     // Agregações de agendamentos (apenas concluídos da barbearia atual)
     const statsAgendamentos: any[] = await (prisma.agendamento as any).groupBy({
@@ -97,7 +110,7 @@ export class ClienteService {
     // Agregações de resgates
     const statsResgates: any[] = await (prisma as any).resgateRecompensa.groupBy({
       by: ['clienteId'],
-      where: { barbeariaId },
+      where: { barbeariaId, status: { in: ['PENDENTE', 'CONFIRMADO'] } },
       _sum: { pontosUsados: true }
     });
 
@@ -109,7 +122,7 @@ export class ClienteService {
     const resultado = clientes.map((c: any) => {
       const ag = agendamentosMap.get(c.id);
       const totalVisitas = ag?._count?.id || 0;
-      const totalGasto = ag?._sum?.valorCobrado || 0;
+      const totalGasto = Number(ag?._sum?.valorCobrado || 0) + Number(comprasMap.get(c.id)?._sum.valor ?? 0);
       const ultimoAtendimento = ag?._max?.dataHora || null;
 
       const pGanhos = pontosMap.get(c.id)?._sum?.pontos || 0;
@@ -214,6 +227,7 @@ export class ClienteService {
         lancamentos: {
           where: { barbeariaId, agendamentoId: null, tipo: 'ENTRADA' },
           include: {
+            vendaEstoque: { select: { estornadaEm: true } },
             servico: { select: { nome: true } },
             barbeiro: { include: { usuario: { select: { nome: true } } } },
           },
@@ -238,8 +252,13 @@ export class ClienteService {
 
     const agConcluidos = (cliente.agendamentos || []).filter((a: any) => a.status === 'CONCLUIDO');
     const totalVisitas = agConcluidos.length;
-    const totalGasto = agConcluidos.reduce((s: number, a: any) => s + Number(a.valorCobrado), 0);
-    const ticketMedio = totalVisitas > 0 ? totalGasto / totalVisitas : 0;
+    const compras = (cliente.lancamentos || []).filter((l: any) =>
+      categoriasProduto.includes(l.categoria) && !l.vendaEstoque?.estornadaEm);
+    const totalGasto = agConcluidos.reduce((s: number, a: any) => s + Number(a.valorCobrado), 0)
+      + compras.reduce((s: number, l: any) => s + Number(l.valor), 0);
+    // Ticket por operação concluída: compras não são visitas.
+    const totalOperacoes = totalVisitas + compras.length;
+    const ticketMedio = totalOperacoes > 0 ? totalGasto / totalOperacoes : 0;
 
     const primeiraVisita = agConcluidos.length > 0
       ? agConcluidos[agConcluidos.length - 1].dataHora
@@ -248,9 +267,8 @@ export class ClienteService {
       ? agConcluidos[0].dataHora
       : null;
 
-    const pontosGanhos = (cliente.pontosFidelidade || []).reduce((s: number, p: any) => s + p.pontos, 0);
-    const pontosUsados = (cliente.resgatesRecompensa || []).reduce((s: number, r: any) => s + r.pontosUsados, 0);
-    const pontosAtuais = pontosGanhos - pontosUsados;
+    const { totalGanho: pontosGanhos, totalGasto: pontosUsados, saldo: pontosAtuais } =
+      resumirPontos(cliente.pontosFidelidade || [], cliente.resgatesRecompensa || []);
     const nivelInfo = calcularNivel(pontosAtuais);
 
     return {
@@ -261,6 +279,7 @@ export class ClienteService {
       observacoes: cliente.observacoes,
       // Estatísticas
       totalVisitas,
+      totalCompras: compras.length,
       totalGasto: Number(totalGasto.toFixed(2)),
       ticketMedio: Number(ticketMedio.toFixed(2)),
       primeiraVisita,
@@ -283,9 +302,11 @@ export class ClienteService {
         ...(cliente.lancamentos || []).map((l: any) => ({
           id: l.id,
           dataHora: l.data,
-          status: 'CONCLUIDO',
+          status: l.vendaEstoque?.estornadaEm ? 'CANCELADO' : 'CONCLUIDO',
           valorCobrado: Number(l.valor),
-          servico: l.servico?.nome || (l.categoria === 'VENDA_PRODUTO' ? 'Produto' : 'Avulso'),
+          servico: categoriasProduto.includes(l.categoria)
+            ? `Compra de produtos${l.vendaEstoque?.estornadaEm ? ' (estornada)' : ''}: ${l.descricao || 'Venda'}`
+            : l.servico?.nome || 'Avulso',
           barbeiro: l.barbeiro?.usuario?.nome || '—',
         }))
       ].sort((a, b) => new Date(b.dataHora).getTime() - new Date(a.dataHora).getTime()),
@@ -398,11 +419,18 @@ export class ClienteService {
         status: 'CONCLUIDO',
       },
     });
+    const todasCompras = await prisma.lancamentoFinanceiro.aggregate({
+      where: { barbeariaId, clienteId: { not: null }, ...comprasAtivas },
+      _sum: { valor: true }, _count: { id: true },
+    });
+    const quantidadeOperacoes = todosAgendamentos._count + todasCompras._count.id;
+    const valorOperacoes = Number(todosAgendamentos._avg.valorCobrado || 0) * todosAgendamentos._count
+      + Number(todasCompras._sum.valor || 0);
 
     return {
       totalClientes,
       clientesAtivos,
-      ticketMedio: Number(Number(todosAgendamentos._avg.valorCobrado || 0).toFixed(2)),
+      ticketMedio: quantidadeOperacoes ? Number((valorOperacoes / quantidadeOperacoes).toFixed(2)) : 0,
     };
   }
 

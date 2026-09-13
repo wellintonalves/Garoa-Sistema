@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import {Prisma} from '@prisma/client';
+import {ratearDesconto} from '../src/services/descontoProdutos.service';
+const rateio=(valores:number[],desconto:number)=>ratearDesconto(valores.map(v=>new Prisma.Decimal(v)),desconto).map(v=>v.toNumber());
+assert.deepEqual(rateio([1,1,1],1),[0.34,0.33,0.33]);
+assert.deepEqual(rateio([0.01,0.02],0.03),[0.01,0.02]);
+assert.deepEqual(rateio([40,60],10),[4,6]);
+assert.deepEqual(rateio([40,60],0),[0,0]);
+assert.throws(()=>rateio([1],2));
+assert.throws(()=>rateio([1],-1));
+console.log('PASS rateio: proporcionalidade, centavos residuais, desconto integral, zero e limites.');

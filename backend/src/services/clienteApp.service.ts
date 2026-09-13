@@ -1,5 +1,6 @@
 // Serviço do app do cliente — autenticação, barbearias, agendamentos, fidelidade
 import bcrypt from 'bcryptjs';
+import { tipoMovimentoPontos } from '../utils/extratoPontos.util';
 import jwt from 'jsonwebtoken';
 import { prisma } from '../lib/prisma';
 import { Prisma } from '@prisma/client';
@@ -578,8 +579,8 @@ export class ClienteAppService {
 
   /** Fidelidade do cliente em uma barbearia */
   static async fidelidade(clienteId: string, barbeariaId: string) {
-    const pontosAgregados = await prisma.pontoFidelidade.aggregate({
-      _sum: { pontos: true },
+    const pontosAgregados = await prisma.pontoFidelidade.groupBy({
+      by: ['pontos'], _sum: { pontos: true },
       where: { clienteId, barbeariaId },
     });
 
@@ -588,8 +589,9 @@ export class ClienteAppService {
       where: { clienteId, barbeariaId, status: { in: ['PENDENTE', 'CONFIRMADO'] } },
     });
 
-    const totalGanhos = pontosAgregados._sum.pontos || 0;
-    const totalUsados = resgatesAgregados._sum.pontosUsados || 0;
+    const totalGanhos = pontosAgregados.reduce((s, p) => s + Math.max(0, p._sum.pontos ?? 0), 0);
+    const totalUsados = (resgatesAgregados._sum.pontosUsados || 0)
+      + pontosAgregados.reduce((s, p) => s + Math.max(0, -(p._sum.pontos ?? 0)), 0);
     const saldo = totalGanhos - totalUsados;
 
     const config = await prisma.configuracaoFidelidade.findUnique({
@@ -619,7 +621,7 @@ export class ClienteAppService {
     const historico = [
       ...pontos.map(p => ({
         id: p.id,
-        tipo: 'GANHO',
+        tipo: tipoMovimentoPontos(p.pontos),
         pontos: p.pontos,
         descricao: p.descricao,
         data: p.data,

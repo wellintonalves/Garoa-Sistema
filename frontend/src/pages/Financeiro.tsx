@@ -14,6 +14,8 @@ import { statusPontos, type SaldoPontos } from '../utils/statusPontos';
 interface Barbeiro { id: string; usuario: { nome: string }; comissaoPercent: number; }
 interface Servico { id: string; nome: string; preco: string; }
 interface Lancamento {
+  vendaEstoque?: { id: string; estornadaEm: string | null } | null;
+  estornoVendaEstoque?: { id: string } | null;
   id: string; tipo: string; categoria: string; descricao: string | null;
   valor: string; formaPagamento: string; data: string;
   barbeiroId?: string | null;
@@ -373,6 +375,9 @@ export function Financeiro() {
                   </p>
                 </div>
                 <div style={{ display: 'flex', gap: '8px' }}>
+                  {l.vendaEstoque || l.estornoVendaEstoque ? (
+                    <a href="/admin/vendas" className="btn-secondary">Ver histórico de vendas</a>
+                  ) : <>
                   <button 
                     onClick={() => abrirModal(l)} 
                     style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--texto-secundario)', padding: '4px' }} 
@@ -389,6 +394,7 @@ export function Financeiro() {
                   >
                     {apagando === l.id ? <Spinner size={14} className="animate-spin" /> : <Trash size={14} />}
                   </button>
+                  </>}
                 </div>
               </div>
             </div>

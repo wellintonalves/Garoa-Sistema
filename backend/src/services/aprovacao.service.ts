@@ -37,7 +37,7 @@ export class AprovacaoService {
 
     // Aplicar a alteração
     if (aprovacao.acao === 'EXCLUIR') {
-      await prisma.lancamentoFinanceiro.delete({ where: { id: aprovacao.lancamentoId } });
+      await FinanceiroService.remover(aprovacao.lancamentoId, true);
       // A aprovação é excluída em cascata quando o lançamento é deletado.
       return { id: aprovacaoId, status: StatusAprovacao.APROVADO };
     } else if (aprovacao.acao === 'EDITAR' && aprovacao.dadosNovos) {

@@ -4,7 +4,7 @@ import { TipoLancamento, FormaPagamento, BaseCalculoComissao, Prisma } from '@pr
 import { calcularComissao } from '../utils/comissao.util';
 import { ehAtendimentoFinanceiro } from '../utils/atendimentoFinanceiro.util';
 import { inicioDiaBrasilia, fimDiaBrasilia, diaBrasiliaStr, getHoraMinutoBrasilia } from '../lib/timezone';
-import { CATEGORIA_VENDA_PRODUTO } from '../lib/constantes';
+import { CATEGORIA_VENDA_PRODUTO, CATEGORIA_ESTORNO_PRODUTO } from '../lib/constantes';
 import { obterIdsServicosAgendamento } from '../utils/agendamento.util';
 import { prepararOperacoesFidelidadeLancamento } from './fidelidade.engine';
 import { tenantStorage } from '../lib/als';
@@ -45,6 +45,8 @@ export class FinanceiroService {
     return prisma.lancamentoFinanceiro.findMany({
       where,
       include: { 
+        vendaEstoque: { select: { id: true, estornadaEm: true } },
+        estornoVendaEstoque: { select: { id: true } },
         agendamento: { select: { id: true } },
         barbeiro: { include: { usuario: { select: { nome: true } } } },
         servico: { select: { nome: true } },
@@ -318,8 +320,10 @@ export class FinanceiroService {
       throw new ErroDeNegocio('Valor inválido.');
     }
     return prisma.$transaction(async tx => {
-    const lancamento = await tx.lancamentoFinanceiro.findFirst({ where: { id, barbeariaId }, include: { itens: true, agendamento: true } });
+    const lancamento = await tx.lancamentoFinanceiro.findFirst({ where: { id, barbeariaId }, include: { itens: true, agendamento: true, vendaEstoque: true, estornoVendaEstoque: true } });
     if (!lancamento) throw new ErroDeNegocio('Lançamento não encontrado.');
+    if (lancamento.vendaEstoque || lancamento.estornoVendaEstoque)
+      throw new ErroDeNegocio('Venda de produtos e estorno não podem ser editados no Financeiro. Use Estoque → Histórico de vendas para estornar e registrar uma nova venda.');
 
     if (lancamento.barbeiroId && !isAdmin) {
       const aprovacao = await tx.aprovacaoEdicao.create({
@@ -405,8 +409,10 @@ export class FinanceiroService {
 
   /** Remove um lançamento */
   static async remover(id: string, isAdmin: boolean = false) {
-    const lancamento = await prisma.lancamentoFinanceiro.findUnique({ where: { id } });
+    const lancamento = await prisma.lancamentoFinanceiro.findUnique({ where: { id }, include: { vendaEstoque: true, estornoVendaEstoque: true } });
     if (!lancamento) throw new Error('Lançamento não encontrado.');
+    if (lancamento.vendaEstoque || lancamento.estornoVendaEstoque)
+      throw new ErroDeNegocio('Este registro preserva o histórico da venda. Para cancelar, use Estornar venda em Estoque → Histórico de vendas.');
 
     if (lancamento.barbeiroId && !isAdmin) {
       const aprovacao = await prisma.aprovacaoEdicao.create({
@@ -565,6 +571,10 @@ export class FinanceiroService {
     lancamentos.forEach((l: any) => {
       const valor = Number(l.valor);
       
+      if (l.tipo === 'SAIDA' && l.categoria === CATEGORIA_ESTORNO_PRODUTO) {
+        consolidado.totalProdutos -= valor;
+        return;
+      }
       if (l.tipo === 'ENTRADA') {
         if (l.categoria === CATEGORIA_VENDA_PRODUTO) {
           consolidado.totalProdutos += valor;
@@ -748,6 +758,10 @@ export class FinanceiroService {
             });
           }
         }
+      } else if (l.categoria === CATEGORIA_ESTORNO_PRODUTO) {
+        // Devolução reduz faturamento; não é despesa operacional nem atendimento.
+        faturamentoProdutos -= valor;
+        porDia[diaKey].produtos -= valor;
       } else {
         totalSaidas += valor;
         porDia[diaKey].saidas += valor;
@@ -779,6 +793,8 @@ export class FinanceiroService {
             antFaturamentoAtendimentos += valor;
           }
         }
+      } else if (l.categoria === CATEGORIA_ESTORNO_PRODUTO) {
+        antFaturamentoProdutos -= valor;
       } else {
         antTotalSaidas += valor;
       }
@@ -836,6 +852,11 @@ export class FinanceiroService {
       const bucketsReceitaAtendimentos = new Array(horasCount).fill(0);
 
       lancamentos.forEach((l: any) => {
+        if (l.tipo === 'SAIDA' && l.categoria === CATEGORIA_ESTORNO_PRODUTO) {
+          const { hora } = getHoraMinutoBrasilia(new Date(l.data));
+          if (hora < horasCount) bucketsProdutos[hora] -= Number(l.valor);
+          return;
+        }
         if (l.tipo === 'ENTRADA') {
           const { hora } = getHoraMinutoBrasilia(new Date(l.data));
           if (hora < horasCount) {

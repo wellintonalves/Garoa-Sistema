@@ -357,6 +357,14 @@ barbearia so. Toda tela que lista dados precisa de um teste com DUAS barbearias.
 
 ## EM ANDAMENTO AGORA
 
+13/09 — Preparação da publicação de estoque: criei backup manual no Postgres de produção (painel 17:08, 1,02 GB). O editor Query falhou por acrescentar LIMIT ao DO; nenhuma DDL daquela tentativa executou. Depois de autorização e login CLI, executei as três etapas aditivas via driver pg/Railway em transações separadas, verificando catálogo e preservação de registros. Commit/push/deploy ainda não realizados neste registro. Detalhes e limites em `docs/estoque-publicacao.md`.
+
+13/09 — Venda composta, descontos e estorno de produtos implementados localmente em `feat/estoque-venda-composta`, sem push/deploy.
+- Registrei estorno integral Serializable com motivo/responsável, estoque e pontos devolvidos e saída compensatória; originais preservados, repetição sem duplicação. Bloqueei edição/exclusão genérica de venda/reversão e acrescentei confirmação no histórico.
+- Ajustei sinais/estatísticas de pontos e gasto/ticket do cliente com compras ativas, sem incrementar visitas. Relatório de produtos desconta reembolso; caixa mantém original e saída em suas datas.
+- Após autorização específica, apliquei SQL aditivo no postgres-dev em transação, sem accept-data-loss. Baseline sem drift; novos campos de auditoria opcionais. Detalhes em `docs/estoque-estorno.md` e SQL em `docs/estoque-estorno.sql`.
+- Executei builds completos backend/frontend com exit0, testes padrão, proteção financeira, extrato, rateio e integração API/Prisma em duas unidades (incluindo repetição, concorrência, rollback e perfil). Conferi venda/estorno no preview, Financeiro e perfil; removi as fixtures e comparei 24 tabelas por hash/contagem, preservando registros não-QA. Backend compilado rodando, health200, preview localhost:5173/admin/vendas. Nenhuma publicação ou dado de produção alterado.
+
 08/09 — Comissão na edição: implementação local na branch `fix/comissao-edicao-financeiro`, sem publicação.
 - Financeiro: caminho manual sem serviços grava percentual/base; edição aceita somente campos permitidos, recalcula comissão/líquido na mesma transação serializável e preserva percentual histórico (inclusive 0%). Campo derivado enviado na requisição não é gravado. Aprovação de edição/adição usa o serviço financeiro em vez de espalhar o JSON no Prisma.
 - Relatórios: comissão de edição somente leitura; percentual do período e avisos de divergência/ausência de histórico. Corrigido fallback que transformava líquido 0 em valor bruto. Auditoria não compara percentual atual do barbeiro com lançamentos antigos sem snapshot.

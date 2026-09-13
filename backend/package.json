@@ -6,6 +6,10 @@
     "node": ">=20.0.0"
   },
   "scripts": {
+    "test:extrato-pontos": "tsx scripts/testes_extrato_pontos.ts",
+    "test:protecao-venda": "tsx scripts/testes_protecao_venda.ts",
+    "test:rateio-desconto": "tsx scripts/testes_rateio_desconto.ts",
+    "test:estoque": "tsx scripts/testes_estoque_venda.ts",
     "dev": "tsx watch src/server.ts",
     "build": "npx prisma generate && tsc",
     "start": "npx prisma db push && node dist/server.js",

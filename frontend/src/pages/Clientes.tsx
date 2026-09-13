@@ -534,7 +534,7 @@ export function Clientes() {
                 {/* Tabs do perfil */}
                 <div className="tab-bar">
                   <button className={`tab-item ${abaDetalhe === 'info' ? 'active' : ''}`} onClick={() => setAbaDetalhe('info')}>Informações</button>
-                  <button className={`tab-item ${abaDetalhe === 'historico' ? 'active' : ''}`} onClick={() => setAbaDetalhe('historico')}>Atendimentos</button>
+                  <button className={`tab-item ${abaDetalhe === 'historico' ? 'active' : ''}`} onClick={() => setAbaDetalhe('historico')}>Atendimentos e compras</button>
                   <button className={`tab-item ${abaDetalhe === 'pontos' ? 'active' : ''}`} onClick={() => setAbaDetalhe('pontos')}>Pontos</button>
                 </div>
 
@@ -569,7 +569,7 @@ export function Clientes() {
                         {[
                           { label: 'Total visitas', value: String(clienteSelecionado.totalVisitas) },
                           { label: 'Total gasto', value: formatarMoeda(clienteSelecionado.totalGasto) },
-                          { label: 'Ticket médio', value: formatarMoeda(clienteSelecionado.ticketMedio) },
+                          { label: 'Ticket médio por operação', value: formatarMoeda(clienteSelecionado.ticketMedio) },
                           { label: 'Primeira visita', value: formatarData(clienteSelecionado.primeiraVisita) },
                           { label: 'Última visita', value: formatarData(clienteSelecionado.ultimaVisita) },
                           { label: 'Pontos atuais', value: String(clienteSelecionado.pontosAtuais) },
@@ -745,7 +745,7 @@ export function Clientes() {
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                       {/* Pontos ganhos */}
                       <div>
-                        <div className="section-divider" style={{ marginTop: 0 }}>Pontos ganhos</div>
+                        <div className="section-divider" style={{ marginTop: 0 }}>Movimentações de pontos</div>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginTop: '8px' }}>
                           {clienteSelecionado.historicoPontos.map(p => (
                             <div
@@ -759,8 +759,8 @@ export function Clientes() {
                                   {formatarData(p.data)}
                                 </p>
                               </div>
-                              <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '18px', color: 'var(--sucesso)' }}>
-                                +{p.pontos}
+                              <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '18px', color: p.pontos < 0 ? 'var(--perigo)' : 'var(--sucesso)' }}>
+                                {p.pontos > 0 ? '+' : ''}{p.pontos}
                               </span>
                             </div>
                           ))}
@@ -774,7 +774,7 @@ export function Clientes() {
 
                       {/* Resgates */}
                       <div>
-                        <div className="section-divider">Resgates realizados</div>
+                        <div className="section-divider">Resgates de recompensas</div>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginTop: '8px' }}>
                           {clienteSelecionado.historicoResgates.map(r => (
                             <div
@@ -795,7 +795,7 @@ export function Clientes() {
                           ))}
                           {clienteSelecionado.historicoResgates.length === 0 && (
                             <p style={{ textAlign: 'center', padding: '1rem', color: 'var(--texto-secundario)', fontFamily: 'var(--fonte-interface)', fontSize: '0.8125rem' }}>
-                              Nenhum resgate realizado
+                              Nenhum resgate de recompensa realizado
                             </p>
                           )}
                         </div>

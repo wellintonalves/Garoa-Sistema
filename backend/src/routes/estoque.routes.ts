@@ -22,7 +22,9 @@ router.put('/:id', EstoqueController.atualizar);
 router.delete('/:id', EstoqueController.remover);
 
 // Venda de produto
+router.post('/simular-desconto', EstoqueController.simularDesconto);
 router.post('/vender-carrinho', EstoqueController.venderCarrinho);
+router.post('/vendas/:id/estornar', EstoqueController.estornar);
 router.post('/:id/vender', EstoqueController.vender);
 
 export default router;

@@ -1,4 +1,5 @@
 import { Response } from 'express';
+import { resumirPontos, tipoMovimentoPontos } from '../utils/extratoPontos.util';
 import { AuthRequest } from '../types';
 import { prisma } from '../lib/prisma';
 import { Prisma, StatusResgate } from '@prisma/client';
@@ -475,7 +476,7 @@ export class FidelidadeController {
       const historico = [
         ...pontos.map(p => ({
           id: p.id,
-          tipo: 'GANHO' as const,
+          tipo: tipoMovimentoPontos(p.pontos),
           pontos: p.pontos,
           descricao: p.descricao,
           data: p.data.toISOString(),
@@ -489,9 +490,7 @@ export class FidelidadeController {
         })),
       ].sort((a, b) => new Date(b.data).getTime() - new Date(a.data).getTime());
 
-      const totalGanho = pontos.reduce((s, p) => s + p.pontos, 0);
-      const totalGasto = resgates.reduce((s, r) => s + r.pontosUsados, 0);
-      const saldo = totalGanho - totalGasto;
+      const { totalGanho, totalGasto, saldo } = resumirPontos(pontos, resgates);
 
       res.json({ saldo, totalGanho, totalGasto, historico });
     } catch (error) {
@@ -531,9 +530,7 @@ export class FidelidadeController {
       });
 
       const clientes = conexoes.map(c => {
-        const totalGanho = c.cliente.pontosFidelidade.reduce((s, p) => s + p.pontos, 0);
-        const totalGasto = c.cliente.resgatesRecompensa.reduce((s, r) => s + r.pontosUsados, 0);
-        const saldo = totalGanho - totalGasto;
+        const { totalGanho, totalGasto, saldo } = resumirPontos(c.cliente.pontosFidelidade, c.cliente.resgatesRecompensa);
         return {
           id: c.cliente.id,
           nome: c.cliente.usuario.nome,

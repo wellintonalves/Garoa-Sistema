@@ -35,6 +35,10 @@ async function main() {
   assert.equal(resultado.consolidado.porBarbeiro.b.percentualAplicado, null);
   linhas = [{ ...comum, valorComissao: 18.01 }];
   assert.equal((await relatorio()).consolidado.porBarbeiro.b.lancamentosDivergentes, 0);
+  linhas = [comum, { tipo: 'ENTRADA', categoria: 'Venda de Produto', valor: 90 },
+    { tipo: 'SAIDA', categoria: 'Estorno de Produto', valor: 90 }];
+  assert.equal((await relatorio()).consolidado.totalProdutos, 0);
+  assert.equal((await relatorio()).consolidado.totalComissoes, 18);
   console.log('PASS comissão e relatório: arredondamento, percentual zero, líquido zero, divergência, ausência de histórico, percentuais mistos e base bruta.');
 }
 main().catch(error => { console.error(error); process.exitCode = 1; });

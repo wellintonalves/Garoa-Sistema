@@ -1,10 +1,18 @@
 // Controller de estoque — CRUD + vendas
-import { Response } from 'express';
+import { Response, NextFunction } from 'express';
 import { EstoqueService } from '../services/estoque.service';
 import { AuthRequest } from '../types';
 import { FormaPagamento } from '@prisma/client';
 
 export class EstoqueController {
+  static async estornar(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
+    try {
+      res.json(await EstoqueService.estornar(req.params.id, req.body.motivo, req.usuario!.id));
+    } catch (error) { next(error); }
+  }
+  static async simularDesconto(req: AuthRequest,res: Response,next: NextFunction):Promise<void>{
+    try{res.json(await EstoqueService.simularDesconto(req.body.itens,req.body));}catch(error){next(error);}
+  }
   /** GET /estoque */
   static async listar(_req: AuthRequest, res: Response): Promise<void> {
     try {
@@ -85,7 +93,7 @@ export class EstoqueController {
   }
 
   /** POST /estoque/vender-carrinho */
-  static async venderCarrinho(req: AuthRequest, res: Response): Promise<void> {
+  static async venderCarrinho(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
     try {
       const { itens, formaPagamento } = req.body;
       if (!Array.isArray(itens) || itens.length === 0) {
@@ -96,10 +104,10 @@ export class EstoqueController {
         res.status(400).json({ erro: 'Forma de pagamento inválida' });
         return;
       }
-      const resultado = await EstoqueService.venderCarrinho(itens, formaPagamento as FormaPagamento);
+      const resultado = await EstoqueService.venderCarrinho(itens, formaPagamento as FormaPagamento, req.body.chaveRequisicao,req.body);
       res.status(201).json(resultado);
     } catch (error) {
-      res.status(400).json({ erro: error instanceof Error ? error.message : 'Erro ao fechar venda do carrinho' });
+      next(error);
     }
   }
 

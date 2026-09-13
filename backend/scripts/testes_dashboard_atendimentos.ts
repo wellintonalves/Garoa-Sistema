@@ -55,6 +55,16 @@ async function main() {
     assert.equal(r.metricas.atendimentosFechados.serie.length, fim === '2026-09-10' ? 24 : 2);
   }
   assert.equal((await resumo('outra', '2026-09-10')).atendimentosFechados, 1);
+  lancamentos.push({ ...base, barbeariaId: 'a', valor: 50, data: dia, tipo: 'SAIDA', categoria: 'Estorno de Produto' });
+  for (const fim of ['2026-09-10', '2026-09-11']) {
+    const r = await resumo('a', fim);
+    assert.equal(r.faturamentoProdutos, 0);
+    assert.equal(r.faturamentoTotal, 220);
+    assert.equal(r.saldo, 210, 'reembolso não é descontado duas vezes');
+    assert.equal(r.atendimentosFechados, 3);
+    assert.equal(r.ticketMedio, 40);
+    assert.equal(r.metricas.faturamentoProdutos.serie.reduce((s, n) => s + n, 0), 0);
+  }
   lancamentos = [];
   const vazio = await resumo('a', '2026-09-10');
   assert.equal(vazio.atendimentosFechados, 0);
