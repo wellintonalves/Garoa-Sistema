@@ -1,6 +1,6 @@
 // Página de Barbeiros — listagem com cards + seção de comissões por período
 import { useEffect, useState } from 'react';
-import { Star, Plus, CurrencyDollar, TrendUp as TrendingUp, Calendar, PencilSimple, Trash, Power } from '@phosphor-icons/react';
+import { Star, Plus, CurrencyDollar, TrendUp as TrendingUp, Calendar, PencilSimple, Trash, Power, Clock } from '@phosphor-icons/react';
 import { Modal } from '../components/Modal';
 import { Botao } from '../components/ui/Botao';
 import { ImageCropperModal } from '../components/ImageCropperModal';
@@ -10,6 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import { dataBrasilia, hojeBrasilia } from '../utils/datas';
 import api from '../api/client';
 import { CORES_REFERENCIA } from '../styles/tokens';
+import { BarbeiroHorariosCard, type DiaConfig } from './barbeiro/BarbeiroHorariosCard';
 
 interface Barbeiro {
   id: string;
@@ -42,6 +43,7 @@ export function Barbeiros() {
   const [editandoId, setEditandoId] = useState<string | null>(null);
   const [confirmandoDesativacao, setConfirmandoDesativacao] = useState<Barbeiro | null>(null);
   const [confirmandoExclusao, setConfirmandoExclusao] = useState<Barbeiro | null>(null);
+  const [configurandoJornada, setConfigurandoJornada] = useState<Barbeiro | null>(null);
   const [nomeConfirmacao, setNomeConfirmacao] = useState('');
   const [form, setForm] = useState({ nome: '', email: '', senha: '', foto: '', especialidades: '', comissaoPercent: '50', cor: CORES_REFERENCIA.corPadraoBarbeiro });
   const navigate = useNavigate();
@@ -192,10 +194,10 @@ export function Barbeiros() {
           return (
           <div
             key={b.id}
-            className="card"
+            className="card min-w-0"
             style={{ borderLeft: b.ativo ? '2px solid var(--amber)' : '2px solid var(--border)' }}
           >
-            <div className="flex items-center gap-4 mb-4">
+            <div className="flex items-start gap-4 mb-4">
               {/* Avatar com iniciais ou foto */}
               {b.foto ? (
                 <img src={b.foto} alt={b.usuario.nome} className="w-12 h-12 rounded-full object-cover border-2 border-[var(--border)]" />
@@ -208,7 +210,7 @@ export function Barbeiros() {
                     background: 'rgba(var(--cor-primaria-rgb), 0.10)',
                     fontFamily: 'var(--fonte-interface)',
                     fontSize: '20px',
-                    color: 'rgba(var(--cor-primaria-rgb), 0.15)',
+                    color: 'var(--cor-primaria-texto)',
                     letterSpacing: '0.04em',
                     borderRadius: '50%',
                   }}
@@ -221,7 +223,7 @@ export function Barbeiros() {
                   className="truncate"
                   style={{
                     fontFamily: 'var(--fonte-interface)',
-                    fontSize: '14px',
+                    fontSize: '16px',
                     fontWeight: 700,
                     color: 'var(--text-primary)',
                   }}
@@ -232,9 +234,9 @@ export function Barbeiros() {
                   className="truncate"
                   style={{
                     fontFamily: 'var(--fonte-interface)',
-                    fontSize: '10px',
+                    fontSize: '12px',
                     color: 'var(--texto-secundario)',
-                    letterSpacing: '0.04em',
+                    letterSpacing: '0',
                   }}
                 >
                   {b.usuario.email}
@@ -243,33 +245,18 @@ export function Barbeiros() {
                   className="truncate"
                   style={{
                     fontFamily: 'var(--fonte-interface)',
-                    fontSize: '10px',
+                    fontSize: '12px',
                     color: totalHistorico > 0 ? 'var(--texto-secundario)' : 'var(--amber)',
-                    letterSpacing: '0.04em',
+                    letterSpacing: '0',
                     marginTop: '2px',
                     fontWeight: 500
                   }}
                 >
                   {totalHistorico > 0 ? `${totalHistorico} registro${totalHistorico !== 1 ? 's' : ''} no histórico` : 'Sem histórico'}
                 </p>
-                {!b.horariosTrabalho && (
-                  <p
-                    style={{
-                      fontFamily: 'var(--fonte-interface)',
-                      fontSize: '10px',
-                      color: 'var(--amber)',
-                      letterSpacing: '0.04em',
-                      marginTop: '4px',
-                      fontWeight: 600
-                    }}
-                    title="Este barbeiro não tem jornada própria. A agenda usará os horários da barbearia."
-                  >
-                    ⚠️ Jornada não configurada
-                  </p>
-                )}
               </div>
               {/* Indicadores */}
-              <div className="ml-auto flex flex-col gap-1 items-end">
+              <div className="ml-auto flex-shrink-0">
                 <div
                   className="flex-shrink-0 badge"
                   style={b.ativo
@@ -279,81 +266,75 @@ export function Barbeiros() {
                 >
                   {b.ativo ? 'Ativo' : 'Inativo'}
                 </div>
-                <div className="flex gap-1">
-                  <button
-                    onClick={() => abrirModalEditar(b)}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      cursor: 'pointer',
-                      color: 'var(--cor-icone)',
-                      padding: '4px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center'
-                    }}
-                    title="Editar Barbeiro"
-                  >
-                    <PencilSimple size={14} />
-                  </button>
-                  {/* Botão Desativar/Ativar */}
-                  <button
-                    onClick={() => {
-                      if (b.ativo) {
-                        setConfirmandoDesativacao(b);
-                      } else {
-                        // Ativar não tem modal
-                        api.put(`/barbeiros/${b.id}`, { ativo: true }).then(() => carregar());
-                      }
-                    }}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      cursor: 'pointer',
-                      color: b.ativo ? 'var(--cor-icone)' : 'var(--sucesso)',
-                      padding: '4px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center'
-                    }}
-                    title={b.ativo ? "Desativar Barbeiro" : "Reativar Barbeiro"}
-                  >
-                    <Power size={14} />
-                  </button>
-                  {/* Botão Excluir Permanente */}
-                  <button
-                    disabled={totalHistorico > 0}
-                    onClick={() => {
-                      if (totalHistorico === 0) {
-                        setConfirmandoExclusao(b);
-                        setNomeConfirmacao('');
-                      }
-                    }}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      cursor: totalHistorico > 0 ? 'not-allowed' : 'pointer',
-                      color: 'var(--perigo)',
-                      padding: '4px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      opacity: totalHistorico > 0 ? 0.3 : 0.6,
-                    }}
-                    onMouseEnter={(e) => { if (totalHistorico === 0) e.currentTarget.style.opacity = '1'; }}
-                    onMouseLeave={(e) => { if (totalHistorico === 0) e.currentTarget.style.opacity = '0.6'; }}
-                    title={totalHistorico > 0 ? "Não é possível excluir: barbeiro possui histórico. Use Desativar." : "Excluir permanentemente"}
-                  >
-                    <Trash size={14} />
-                  </button>
-                </div>
               </div>
+            </div>
+            {!b.horariosTrabalho && (
+              <button
+                type="button"
+                onClick={() => setConfigurandoJornada(b)}
+                className="w-full min-h-[44px] max-md:min-h-[48px] flex items-center justify-between gap-3 px-3 py-2 mb-3 transition-colors"
+                style={{
+                  fontFamily: 'var(--fonte-interface)',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  color: 'var(--cor-primaria-texto)',
+                  background: 'rgba(var(--cor-primaria-rgb), 0.08)',
+                  border: '1px solid rgba(var(--cor-primaria-rgb), 0.25)',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                }}
+                title="A agenda está usando os horários gerais da barbearia"
+              >
+                <span className="flex items-center gap-2 min-w-0">
+                  <Clock size={16} className="flex-shrink-0" />
+                  <span className="truncate">Jornada não configurada</span>
+                </span>
+                <span className="whitespace-nowrap">Configurar</span>
+              </button>
+            )}
+            <div className="flex flex-wrap gap-2 mb-3">
+              <button
+                type="button"
+                onClick={() => abrirModalEditar(b)}
+                className="btn-secondary flex-1 min-h-[44px] max-md:min-h-[48px] px-3 py-2"
+                style={{ fontSize: '12px' }}
+              >
+                <PencilSimple size={16} /> Editar
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (b.ativo) {
+                    setConfirmandoDesativacao(b);
+                  } else {
+                    api.put(`/barbeiros/${b.id}`, { ativo: true }).then(() => carregar());
+                  }
+                }}
+                className="btn-secondary flex-1 min-h-[44px] max-md:min-h-[48px] px-3 py-2"
+                style={{ fontSize: '12px' }}
+              >
+                <Power size={16} /> {b.ativo ? 'Desativar' : 'Reativar'}
+              </button>
+              {totalHistorico === 0 && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setConfirmandoExclusao(b);
+                    setNomeConfirmacao('');
+                  }}
+                  className="btn-secondary flex-1 min-h-[44px] max-md:min-h-[48px] px-3 py-2"
+                  style={{ fontSize: '12px', color: 'var(--perigo)' }}
+                >
+                  <Trash size={16} /> Excluir
+                </button>
+              )}
             </div>
             <div className="flex flex-wrap gap-1.5 mb-3">
               {b.especialidades.map((e, i) => (
                 <span
                   key={i}
-                  className="badge badge-info"
+                  className="badge"
+                  style={{ background: 'var(--bg-surface2)', color: 'var(--texto-secundario)' }}
                 >
                   {e}
                 </span>
@@ -371,9 +352,9 @@ export function Barbeiros() {
                 className="flex items-center gap-1 transition-colors"
                 style={{
                   fontFamily: 'var(--fonte-interface)',
-                  fontSize: '9px',
-                  letterSpacing: '0.12em',
-                  textTransform: 'uppercase',
+                  fontSize: '11px',
+                  letterSpacing: '0.02em',
+                  textTransform: 'none',
                   color: 'var(--texto-secundario)',
                   background: 'transparent',
                   border: 'none',
@@ -383,7 +364,7 @@ export function Barbeiros() {
                 onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--texto-secundario)'; }}
                 title="Ver comissões"
               >
-                <CurrencyDollar size={12} /> Comissões
+                <CurrencyDollar size={14} /> Ver comissões
               </button>
             </div>
           </div>
@@ -449,15 +430,15 @@ export function Barbeiros() {
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '13px' }}>
                     <div className="flex justify-between items-center">
-                      <span style={{ color: 'var(--texto-secundario)', fontFamily: 'var(--fonte-interface)', fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Produzido</span>
+                      <span style={{ color: 'var(--texto-secundario)', fontFamily: 'var(--fonte-interface)', fontSize: '11px', letterSpacing: '0.02em' }}>Produzido</span>
                       <span style={{ color: 'var(--text-primary)', fontFamily: 'var(--fonte-numeros)', fontSize: '0.8125rem' }}>{fmt(b.bruto)}</span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span style={{ color: 'var(--texto-secundario)', fontFamily: 'var(--fonte-interface)', fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Comissão</span>
+                      <span style={{ color: 'var(--texto-secundario)', fontFamily: 'var(--fonte-interface)', fontSize: '11px', letterSpacing: '0.02em' }}>Comissão</span>
                       <span style={{ color: 'var(--cor-icone)', fontFamily: 'var(--fonte-numeros)', fontSize: '0.8125rem', fontWeight: 500 }}>{fmt(b.comissao)}</span>
                     </div>
                     <div className="flex justify-between items-center" style={{ borderTop: '1px solid var(--border)', paddingTop: '8px', marginTop: '4px' }}>
-                      <span style={{ color: 'var(--texto-secundario)', fontFamily: 'var(--fonte-interface)', fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Líquido</span>
+                      <span style={{ color: 'var(--texto-secundario)', fontFamily: 'var(--fonte-interface)', fontSize: '11px', letterSpacing: '0.02em' }}>Líquido</span>
                       <span style={{ color: 'var(--sucesso)', fontFamily: 'var(--fonte-numeros)', fontSize: '0.8125rem', fontWeight: 500 }}>{fmt(b.liquido)}</span>
                     </div>
                   </div>
@@ -515,11 +496,34 @@ export function Barbeiros() {
             <div><label className="input-label">Cor</label>
             <div className="flex items-center gap-2">
               <input type="color" value={form.cor} onChange={e => setForm({...form, cor: e.target.value})} style={{ width: '38px', height: '38px', padding: '0', border: '1px solid var(--borda-forte)', borderRadius: '4px', cursor: 'pointer', background: 'transparent' }} />
-              <input type="text" value={form.cor} onChange={e => setForm({...form, cor: e.target.value})} className="ds-input flex-1" style={{ textTransform: 'uppercase' }} />
+              <input type="text" value={form.cor} onChange={e => setForm({...form, cor: e.target.value})} className="ds-input flex-1" />
             </div></div>
           </div>
           <button onClick={salvarBarbeiro} className="btn-primary w-full justify-center">{editandoId ? "Salvar Alterações" : "Cadastrar"}</button>
         </div>
+      </Modal>
+
+      <Modal
+        aberto={!!configurandoJornada}
+        onFechar={() => setConfigurandoJornada(null)}
+        titulo={configurandoJornada ? `Configurar jornada de ${configurandoJornada.usuario.nome}` : 'Configurar jornada'}
+        largura="max-w-5xl"
+      >
+        {configurandoJornada && (
+          <BarbeiroHorariosCard
+            horariosIniciais={configurandoJornada.horariosTrabalho}
+            titulo="Horários de trabalho"
+            onSalvar={async (horarios: Record<string, DiaConfig>) => {
+              await api.put(`/barbeiros/${configurandoJornada.id}`, { horariosTrabalho: horarios });
+            }}
+            onSuccess={() => {
+              setConfigurandoJornada(null);
+              carregar();
+            }}
+            mostrarErro={(mensagem) => alert(mensagem)}
+            mostrarSucesso={(mensagem) => alert(mensagem)}
+          />
+        )}
       </Modal>
 
       {/* Modal de confirmação de desativação */}

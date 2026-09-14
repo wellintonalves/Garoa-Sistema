@@ -870,7 +870,7 @@ export function Vendas() {
             <label htmlFor="pagamento-produtos">Forma de pagamento</label>
             <select
               id="pagamento-produtos"
-              className="ds-input"
+              className="ds-select"
               value={pagamento}
               disabled={ocupado || incerta}
               onChange={(e) =>

@@ -38,13 +38,13 @@ export function SeletorTema() {
               }}
             >
               <Icone size={20} weight={selecionado ? 'fill' : 'regular'} />
-              <span className="text-xs sm:text-sm tracking-wide">{op.label}</span>
+              <span className="text-sm">{op.label}</span>
             </button>
           );
         })}
       </div>
       {preferencia === 'auto' && (
-        <p className="text-xs text-[var(--texto-secundario)] px-1 font-medium animate-fade-in" style={{ fontFamily: 'var(--fonte-interface)' }}>
+        <p className="text-[13px] text-[var(--texto-secundario)] px-1 font-medium animate-fade-in" style={{ fontFamily: 'var(--fonte-interface)' }}>
           Seguindo o tema do sistema (atual: <strong className="text-[var(--texto-principal)] font-semibold">{modo === 'escuro' ? 'Escuro' : 'Claro'}</strong>).
         </p>
       )}

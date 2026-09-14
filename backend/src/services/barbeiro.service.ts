@@ -21,6 +21,7 @@ interface DadosAtualizacao {
   cor?: string;
   ativo?: boolean;
   trabalhandoAgora?: boolean;
+  horariosTrabalho?: Record<string, unknown>;
 }
 
 export class BarbeiroService {
@@ -132,6 +133,7 @@ export class BarbeiroService {
     if (dados.cor !== undefined) updateBarbeiro.cor = dados.cor;
     if (dados.ativo !== undefined) updateBarbeiro.ativo = dados.ativo;
     if (dados.trabalhandoAgora !== undefined) updateBarbeiro.trabalhandoAgora = dados.trabalhandoAgora;
+    if (dados.horariosTrabalho !== undefined) updateBarbeiro.horariosTrabalho = dados.horariosTrabalho;
 
     return prisma.barbeiro.update({
       where: { id },
@@ -180,4 +182,3 @@ export class BarbeiroService {
     });
   }
 }
-

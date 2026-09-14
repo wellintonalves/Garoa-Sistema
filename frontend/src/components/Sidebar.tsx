@@ -14,6 +14,8 @@ import { useNaoLidasAdmin } from '../hooks/useNaoLidasAdmin';
 interface SidebarProps {
   mobileOpen: boolean;
   onCloseMobile: () => void;
+  recolhido: boolean;
+  onAlternarRecolhido: () => void;
 }
 
 const menuItems = [
@@ -30,8 +32,7 @@ const menuItems = [
   { path: '/admin/configuracoes', label: 'Configurações', icon: Gear },
 ];
 
-export function Sidebar({ mobileOpen, onCloseMobile }: SidebarProps) {
-  const [recolhido, setRecolhido] = useState(false);
+export function Sidebar({ mobileOpen, onCloseMobile, recolhido, onAlternarRecolhido }: SidebarProps) {
   const { usuario, logout } = useAuth();
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [nomeDaBarbearia, setNomeDaBarbearia] = useState<string>(import.meta.env.VITE_BARBEARIA_NOME || 'GAROA');
@@ -67,7 +68,7 @@ export function Sidebar({ mobileOpen, onCloseMobile }: SidebarProps) {
 
       {/* Sidebar Container — Largura 240px no desktop e fundo --fundo-superficie (seção 7.5 e 9) */}
       <aside
-        className={`fixed top-0 bottom-0 left-0 flex flex-col z-50 transition-transform duration-300 ${
+        className={`fixed top-0 bottom-0 left-0 flex flex-col z-50 transition-[width,transform] duration-300 ${
           mobileOpen ? 'translate-x-0' : '-translate-x-full'
         } md:translate-x-0`}
         style={{
@@ -232,7 +233,9 @@ export function Sidebar({ mobileOpen, onCloseMobile }: SidebarProps) {
 
         {/* Botão recolher (só exibe no desktop) */}
         <button
-          onClick={() => setRecolhido(!recolhido)}
+          onClick={onAlternarRecolhido}
+          aria-label={recolhido ? 'Expandir menu lateral' : 'Recolher menu lateral'}
+          aria-expanded={!recolhido}
           className="hidden md:flex absolute -right-3 top-20 w-6 h-6 items-center justify-center transition-colors"
           style={{
             background: 'var(--fundo-superficie, var(--bg-surface))',

@@ -237,7 +237,7 @@ export function Clientes() {
       {resumo && (
         <div className="dashboard-grid">
           <StatCard titulo="Total de clientes" valor={String(resumo.totalClientes)} icone={Users} />
-          <StatCard titulo="Ativos no mês" valor={String(resumo.clientesAtivos)} icone={TrendingUp} destaque />
+          <StatCard titulo="Ativos no mês" valor={String(resumo.clientesAtivos)} icone={TrendingUp} />
           <StatCard titulo="Ticket médio" valor={formatarMoeda(resumo.ticketMedio)} icone={CurrencyDollar} />
         </div>
       )}
@@ -310,17 +310,17 @@ export function Clientes() {
           {/* Tabela de clientes */}
           <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
             <div className="table-wrapper overflow-x-auto">
-              <table className="ds-table" style={{ minWidth: '900px' }}>
+              <table className="ds-table">
                 <thead>
                   <tr>
-                    <th>Cliente</th>
-                    <th>Contato</th>
-                    <th>Última Visita</th>
-                    <th style={{ textAlign: 'center' }}>Visitas</th>
-                    <th style={{ textAlign: 'right' }}>Gasto Total</th>
-                    <th style={{ textAlign: 'center' }}>Pontos</th>
-                    <th style={{ textAlign: 'center' }}>Nível</th>
-                    <th style={{ textAlign: 'right' }}>Ações</th>
+                    <th style={{ fontSize: '13px' }}>Cliente</th>
+                    <th style={{ fontSize: '13px' }}>Contato</th>
+                    <th style={{ fontSize: '13px', textAlign: 'center' }}>Última visita</th>
+                    <th style={{ fontSize: '13px', textAlign: 'center' }}>Visitas</th>
+                    <th style={{ fontSize: '13px', textAlign: 'center' }}>Gasto total</th>
+                    <th style={{ fontSize: '13px', textAlign: 'center' }}>Pontos</th>
+                    <th style={{ fontSize: '13px', textAlign: 'center' }}>Nível</th>
+                    <th style={{ width: '110px', fontSize: '13px', textAlign: 'center' }}>Ações</th>
                   </tr>
                 </thead>
                 <tbody className="stagger-children">
@@ -344,7 +344,7 @@ export function Clientes() {
                           >
                             {getIniciais(c.usuario?.nome || 'Cliente')}
                           </div>
-                          <span style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: '13px' }}>
+                          <span style={{ fontFamily: 'var(--fonte-interface)', fontWeight: 600, color: 'var(--text-primary)', fontSize: '16px' }}>
                             {c.usuario?.nome || 'Cliente sem nome'}
                           </span>
                         </div>
@@ -353,27 +353,27 @@ export function Clientes() {
                       <td data-label="Contato">
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                           <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '0.8125rem', color: 'var(--texto-secundario)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                            <Envelope size={10} /> {c.usuario?.email || '—'}
+                            <Envelope size={18} aria-hidden="true" /> {c.usuario?.email || '—'}
                           </span>
                           <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '0.8125rem', color: 'var(--texto-secundario)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                            <Phone size={10} /> {c.telefone || '—'}
+                            <Phone size={18} aria-hidden="true" /> {c.telefone || '—'}
                           </span>
                         </div>
                       </td>
                       {/* Última visita */}
-                      <td data-label="Última Visita" style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '0.8125rem', color: 'var(--texto-secundario)' }}>
+                      <td data-label="Última visita" style={{ textAlign: 'center', fontFamily: 'var(--fonte-numeros)', fontSize: '16px', fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap', color: 'var(--texto-secundario)' }}>
                         {formatarData(c.ultimoAtendimento)}
                       </td>
                       {/* Visitas */}
-                      <td data-label="Visitas" style={{ textAlign: 'center', fontFamily: 'var(--fonte-interface)', fontSize: '20px', color: 'var(--text-primary)' }}>
+                      <td data-label="Visitas" style={{ textAlign: 'center', fontFamily: 'var(--fonte-numeros)', fontSize: '16px', fontVariantNumeric: 'tabular-nums', color: 'var(--text-primary)' }}>
                         {c.totalVisitas}
                       </td>
                       {/* Gasto total */}
-                      <td data-label="Gasto Total" style={{ textAlign: 'right', fontFamily: 'var(--fonte-numeros)', fontSize: '0.8125rem', color: 'var(--text-primary)' }}>
+                      <td data-label="Gasto total" style={{ textAlign: 'center', fontFamily: 'var(--fonte-numeros)', fontSize: '16px', fontWeight: 600, fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap', color: 'var(--text-primary)' }}>
                         {formatarMoeda(c.totalGasto)}
                       </td>
                       {/* Pontos */}
-                      <td data-label="Pontos" style={{ textAlign: 'center', fontFamily: 'var(--fonte-interface)', fontSize: '18px', color: c.cor }}>
+                      <td data-label="Pontos" style={{ textAlign: 'center', fontFamily: 'var(--fonte-numeros)', fontSize: '16px', fontVariantNumeric: 'tabular-nums', color: c.cor }}>
                         {c.pontosAtuais}
                       </td>
                       {/* Badge nível */}
@@ -381,20 +381,22 @@ export function Clientes() {
                         <span className={`badge ${badgeClass(c.nivel)}`}>{c.nivel}</span>
                       </td>
                       {/* Ações */}
-                      <td data-label="Ações" style={{ textAlign: 'right' }} onClick={e => e.stopPropagation()}>
+                      <td data-label="Ações" style={{ width: '110px', textAlign: 'center' }} onClick={e => e.stopPropagation()}>
                         <button
                           onClick={() => abrirPerfil(c.id)}
                           className="transition-colors"
                           style={{
                             fontFamily: 'var(--fonte-interface)',
-                            fontSize: '9px',
-                            letterSpacing: '0.12em',
-                            textTransform: 'uppercase',
+                            minHeight: '40px',
+                            padding: '0 12px',
+                            fontSize: '13px',
+                            fontWeight: 600,
                             color: 'var(--texto-secundario)',
                             background: 'transparent',
                             border: 'none',
                             cursor: 'pointer',
                           }}
+                          aria-label={`Ver perfil de ${c.usuario?.nome || 'cliente'}`}
                           onMouseEnter={e => { e.currentTarget.style.color = 'var(--amber)'; }}
                           onMouseLeave={e => { e.currentTarget.style.color = 'var(--texto-secundario)'; }}
                         >

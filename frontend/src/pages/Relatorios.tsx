@@ -213,28 +213,28 @@ export function Relatorios() {
           letterSpacing: '0.04em',
         }}
       >
-        Relatórios & Comissões
+        Relatórios e comissões
       </h1>
 
       {/* Filtros */}
       <div className="card" style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', alignItems: 'flex-end' }}>
         <div>
-          <label className="input-label">Data Início</label>
+          <label className="input-label">Data inicial</label>
           <input type="date" value={filtros.inicio} onChange={e => setFiltros({...filtros, inicio: e.target.value})} className="ds-input" />
         </div>
         <div>
-          <label className="input-label">Data Fim</label>
+          <label className="input-label">Data final</label>
           <input type="date" value={filtros.fim} onChange={e => setFiltros({...filtros, fim: e.target.value})} className="ds-input" />
         </div>
         <div>
           <label className="input-label">Barbeiro</label>
           <select value={filtros.barbeiroId} onChange={e => setFiltros({...filtros, barbeiroId: e.target.value})} className="ds-select" style={{ minWidth: '200px' }}>
-            <option value="todos">Todos os Barbeiros</option>
+            <option value="todos">Todos os barbeiros</option>
             {barbeiros.map(b => <option key={b.id} value={b.id}>{b.usuario.nome}</option>)}
           </select>
         </div>
         <button onClick={buscarRelatorio} className="btn-primary" disabled={carregando}>
-          <Funnel size={14} /> {carregando ? 'Buscando...' : 'Filtrar'}
+          <Funnel size={18} /> {carregando ? 'Buscando...' : 'Filtrar'}
         </button>
       </div>
 
@@ -258,7 +258,7 @@ export function Relatorios() {
             <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)' }}>
               Erro ao carregar relatório
             </p>
-            <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', color: 'var(--texto-secundario)', marginTop: '4px' }}>
+            <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '13px', color: 'var(--texto-secundario)', marginTop: '4px' }}>
               {erro}
             </p>
           </div>
@@ -271,28 +271,27 @@ export function Relatorios() {
           {/* Cards de Totais */}
           <div className="dashboard-grid">
             <StatCard
-              titulo="Receita Serviços (Bruto)"
+              titulo="Receita de serviços (bruto)"
               valor={fmt(relatorio.consolidado.totalBruto)}
               icone={Scissors}
               subtexto="Soma de serviços prestados"
             />
             <StatCard
-              titulo="Receita Produtos"
+              titulo="Receita de produtos"
               valor={fmt(relatorio.consolidado.totalProdutos)}
               icone={CurrencyDollar}
               subtexto="Soma de produtos vendidos"
             />
             <StatCard
-              titulo="Comissões Pagas"
+              titulo="Comissões pagas"
               valor={fmt(relatorio.consolidado.totalComissoes)}
               icone={Users}
               subtexto="Total aos barbeiros"
             />
             <StatCard
-              titulo="Lucro Líquido"
+              titulo="Lucro líquido"
               valor={fmt(relatorio.consolidado.totalLiquido)}
               icone={TrendingUp}
-              destaque
               subtexto="Serviços + Produtos − Comissões"
             />
           </div>
@@ -300,20 +299,20 @@ export function Relatorios() {
           {/* Resumo por Barbeiro (quando "Todos" está selecionado) */}
           {filtros.barbeiroId === 'todos' && Object.keys(relatorio.consolidado.porBarbeiro).length > 0 && (
             <div className="card">
-              <h3 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '16px' }}>
-                Resumo por Barbeiro
+              <h3 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '16px' }}>
+                Resumo por barbeiro
               </h3>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px' }}>
                 {Object.values(relatorio.consolidado.porBarbeiro).map((b, i) => (
                   <div key={i} style={{ padding: '16px', background: 'var(--bg-surface2)', border: '1px solid var(--border)' }}>
-                    <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '12px' }}>{b.nome}</p>
+                    <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '12px' }}>{b.nome}</p>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                       <p style={{ fontSize: 13, color: 'var(--texto-secundario)' }}>Percentual aplicado: {b.percentualAplicado != null ? `${b.percentualAplicado}%` : 'Variável ou não registrado'}</p>
                       {!!b.lancamentosDivergentes && <p style={{ fontSize: 13, color: 'var(--error-text)' }}>{b.lancamentosDivergentes} lançamento(s) com comissão divergente.</p>}
                       {!!b.lancamentosSemBaseAuditavel && <p style={{ fontSize: 13, color: 'var(--texto-secundario)' }}>{b.lancamentosSemBaseAuditavel} lançamento(s) sem percentual ou base histórica suficiente para conferência.</p>}
-                      <div className="flex justify-between" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px' }}><span style={{ color: 'var(--texto-secundario)' }}>Produzido:</span><span style={{ color: 'var(--text-primary)' }}>{fmt(b.bruto)}</span></div>
-                      <div className="flex justify-between" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px' }}><span style={{ color: 'var(--texto-secundario)' }}>Comissão:</span><span style={{ color: 'var(--error-text)' }}>{fmt(b.comissao)}</span></div>
-                      <div className="flex justify-between" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', borderTop: '1px solid var(--border)', paddingTop: '8px', marginTop: '4px' }}><span style={{ color: 'var(--texto-secundario)' }}>Líquido:</span><span style={{ color: 'var(--sucesso)', fontWeight: 500 }}>{fmt(b.liquido)}</span></div>
+                      <div className="flex justify-between items-center" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '13px' }}><span style={{ color: 'var(--texto-secundario)' }}>Produzido:</span><span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '16px', fontVariantNumeric: 'tabular-nums', color: 'var(--text-primary)' }}>{fmt(b.bruto)}</span></div>
+                      <div className="flex justify-between items-center" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '13px' }}><span style={{ color: 'var(--texto-secundario)' }}>Comissão:</span><span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '16px', fontVariantNumeric: 'tabular-nums', color: 'var(--text-primary)' }}>{fmt(b.comissao)}</span></div>
+                      <div className="flex justify-between items-center" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '13px', borderTop: '1px solid var(--border)', paddingTop: '8px', marginTop: '4px' }}><span style={{ color: 'var(--texto-secundario)' }}>Líquido:</span><span style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '16px', fontVariantNumeric: 'tabular-nums', color: 'var(--text-primary)', fontWeight: 600 }}>{fmt(b.liquido)}</span></div>
                     </div>
                   </div>
                 ))}
@@ -323,8 +322,8 @@ export function Relatorios() {
 
           {/* Tabela de Lançamentos */}
           <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-            <h3 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)', padding: '1.25rem', borderBottom: '1px solid var(--border)' }}>
-              Detalhamento dos Lançamentos
+            <h3 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)', padding: '1.25rem', borderBottom: '1px solid var(--border)' }}>
+              Detalhamento dos lançamentos
               <span style={{ fontFamily: 'var(--fonte-interface)', fontSize: '0.8125rem', color: 'var(--texto-secundario)', marginLeft: '12px', fontWeight: 400 }}>
                 {entradas.length} {entradas.length === 1 ? 'registro' : 'registros'}
               </span>
@@ -333,23 +332,23 @@ export function Relatorios() {
               <table className="ds-table">
                 <thead>
                   <tr>
-                    <th>Data</th>
-                    <th>Barbeiro / Serviço</th>
-                    <th>Forma Pgto</th>
-                    <th style={{ textAlign: 'right' }}>Valor Total</th>
-                    <th style={{ textAlign: 'right' }}>Comissão</th>
-                    <th style={{ textAlign: 'right' }}>Líquido</th>
-                    <th style={{ width: '40px' }}></th>
+                    <th style={{ fontSize: '13px' }}>Data</th>
+                    <th style={{ fontSize: '13px' }}>Barbeiro / serviço</th>
+                    <th style={{ fontSize: '13px' }}>Forma de pagamento</th>
+                    <th style={{ fontSize: '13px', textAlign: 'center' }}>Valor total</th>
+                    <th style={{ fontSize: '13px', textAlign: 'center' }}>Comissão</th>
+                    <th style={{ fontSize: '13px', textAlign: 'center' }}>Líquido</th>
+                    <th style={{ width: '100px', fontSize: '13px', textAlign: 'center' }}>Ações</th>
                   </tr>
                 </thead>
                 <tbody>
                   {entradas.map((l) => (
                     <tr key={l.id}>
-                      <td style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '11px', color: 'var(--texto-secundario)' }}>
+                      <td style={{ fontFamily: 'var(--fonte-numeros)', fontSize: '16px', fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap', color: 'var(--texto-secundario)' }}>
                         {new Date(l.data).toLocaleDateString('pt-BR')}
                       </td>
                         <td>
-                          <p style={{ fontWeight: 500, color: 'var(--text-primary)' }}>
+                          <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '16px', fontWeight: 500, color: 'var(--text-primary)' }}>
                             {l.itens && l.itens.length > 0
                               ? l.itens.map((i: any) => i.nome).join(' + ')
                               : (l.servico ? l.servico.nome : l.categoria)}
@@ -360,30 +359,32 @@ export function Relatorios() {
                       </td>
                       <td>
                         <span
-                          className="badge badge-info"
-                          style={{ fontSize: '9px' }}
+                          className="badge"
+                          style={{ fontSize: '13px', background: 'var(--fundo-superficie-2)', color: 'var(--texto-secundario)' }}
                         >
                           {FORMA_PAGAMENTO_LABELS[l.formaPagamento] || l.formaPagamento}
                         </span>
                       </td>
-                      <td style={{ textAlign: 'right', fontFamily: 'var(--fonte-numeros)', fontSize: '0.8125rem', color: 'var(--text-primary)' }}>{fmt(l.valor)}</td>
-                      <td style={{ textAlign: 'right', fontFamily: 'var(--fonte-numeros)', fontSize: '0.8125rem', color: 'var(--error-text)' }}>{l.valorComissao ? fmt(l.valorComissao) : '—'}</td>
-                      <td style={{ textAlign: 'right', fontFamily: 'var(--fonte-numeros)', fontSize: '0.8125rem', color: 'var(--sucesso)', fontWeight: 500 }}>{l.valorLiquido ? fmt(l.valorLiquido) : fmt(l.valor)}</td>
-                      <td style={{ textAlign: 'center', verticalAlign: 'middle' }}>
+                      <td style={{ textAlign: 'center', fontFamily: 'var(--fonte-numeros)', fontSize: '16px', fontWeight: 600, fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap', color: 'var(--text-primary)' }}>{fmt(l.valor)}</td>
+                      <td style={{ textAlign: 'center', fontFamily: 'var(--fonte-numeros)', fontSize: '16px', fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap', color: 'var(--text-primary)' }}>{l.valorComissao ? fmt(l.valorComissao) : '—'}</td>
+                      <td style={{ textAlign: 'center', fontFamily: 'var(--fonte-numeros)', fontSize: '16px', fontWeight: 600, fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap', color: 'var(--text-primary)' }}>{l.valorLiquido ? fmt(l.valorLiquido) : fmt(l.valor)}</td>
+                      <td style={{ width: '100px', textAlign: 'center', verticalAlign: 'middle' }}>
                         <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', alignItems: 'center' }}>
                           <button
                             onClick={() => handleEditar(l)}
-                            style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--texto-secundario)' }}
+                            style={{ width: '40px', height: '40px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--texto-secundario)' }}
+                            aria-label="Editar lançamento"
                             title="Editar lançamento"
                           >
-                            <PencilSimple size={14} />
+                            <PencilSimple size={18} />
                           </button>
                           <button
                             onClick={() => setConfirmandoExclusao(l.id)}
-                            style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--error-text)' }}
+                            style={{ width: '40px', height: '40px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--error-text)' }}
+                            aria-label="Excluir lançamento"
                             title="Excluir lançamento"
                           >
-                            <Trash size={14} />
+                            <Trash size={18} />
                           </button>
                         </div>
                       </td>
@@ -391,7 +392,7 @@ export function Relatorios() {
                   ))}
                   {entradas.length === 0 && (
                     <tr>
-                      <td colSpan={6} style={{ padding: '2rem', textAlign: 'center', color: 'var(--texto-secundario)', fontFamily: 'var(--fonte-interface)', fontSize: '11px' }}>
+                      <td colSpan={7} style={{ padding: '2rem', textAlign: 'center', color: 'var(--texto-secundario)', fontFamily: 'var(--fonte-interface)', fontSize: '13px' }}>
                         Nenhum lançamento de entrada encontrado para o período selecionado.
                       </td>
                     </tr>

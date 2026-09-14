@@ -58,7 +58,7 @@ export class ServicoController {
   /** DELETE /servicos/:id */
   static async desativar(req: AuthRequest, res: Response): Promise<void> {
     try {
-      await ServicoService.desativar(req.params.id);
+      await ServicoService.desativar(req.params.id, req.usuario?.barbeariaId || undefined);
       res.json({ mensagem: 'Serviço desativado com sucesso' });
     } catch (error) {
       const msg = error instanceof Error ? error.message : 'Erro ao desativar serviço';

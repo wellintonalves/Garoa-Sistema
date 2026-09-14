@@ -16,6 +16,8 @@ interface Props {
   onSuccess: () => void;
   mostrarErro: (msg: string) => void;
   mostrarSucesso: (msg: string) => void;
+  onSalvar?: (horarios: Record<string, DiaConfig>) => Promise<void>;
+  titulo?: string;
 }
 
 const DIAS_SEMANA = ['segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sabado', 'domingo'];
@@ -38,7 +40,14 @@ const DEFAULT_DIA: DiaConfig = {
   almocoFim: '13:00'
 };
 
-export function BarbeiroHorariosCard({ horariosIniciais, onSuccess, mostrarErro, mostrarSucesso }: Props) {
+export function BarbeiroHorariosCard({
+  horariosIniciais,
+  onSuccess,
+  mostrarErro,
+  mostrarSucesso,
+  onSalvar,
+  titulo = 'Seus horários de trabalho',
+}: Props) {
   const [horarios, setHorarios] = useState<Record<string, DiaConfig>>({});
   const [salvando, setSalvando] = useState(false);
 
@@ -82,9 +91,13 @@ export function BarbeiroHorariosCard({ horariosIniciais, onSuccess, mostrarErro,
   const salvar = async () => {
     setSalvando(true);
     try {
-      await barbeiroApi.put('/barbeiro/perfil', {
-        horariosTrabalho: horarios
-      });
+      if (onSalvar) {
+        await onSalvar(horarios);
+      } else {
+        await barbeiroApi.put('/barbeiro/perfil', {
+          horariosTrabalho: horarios
+        });
+      }
       mostrarSucesso('Horários atualizados e aplicados à agenda!');
       onSuccess();
     } catch (err: any) {
@@ -102,8 +115,8 @@ export function BarbeiroHorariosCard({ horariosIniciais, onSuccess, mostrarErro,
             <Clock size={16} style={{ color: 'var(--cor-primaria)' }} />
           </div>
           <div>
-            <h3 className="text-sm font-semibold uppercase tracking-wider" style={{ color: 'var(--text-primary)' }}>
-              Seus Horários de Trabalho
+            <h3 className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+              {titulo}
             </h3>
             <p className="text-xs mt-1 flex items-center gap-1" style={{ color: 'var(--texto-secundario)' }}>
               <Info size={12} /> Define a sua disponibilidade na agenda
@@ -111,11 +124,11 @@ export function BarbeiroHorariosCard({ horariosIniciais, onSuccess, mostrarErro,
           </div>
         </div>
         
-        <div className="flex items-center gap-2">
-          <button onClick={copiarSegundaParaUteis} className="btn-secondary text-xs px-3 py-2 flex items-center gap-1" title="Copiar Segunda para Terça-Sexta">
-            <Copy size={12} /> Copiar Segunda p/ Úteis
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+          <button onClick={copiarSegundaParaUteis} className="btn-secondary text-xs px-3 py-2 flex items-center gap-1 w-full sm:w-auto" title="Copiar segunda-feira para terça a sexta">
+            <Copy size={12} /> Copiar segunda-feira
           </button>
-          <button onClick={salvar} disabled={salvando} className="btn-primary text-xs px-4 py-2 flex items-center gap-1">
+          <button onClick={salvar} disabled={salvando} className="btn-primary text-xs px-4 py-2 flex items-center gap-1 w-full sm:w-auto">
             {salvando ? 'Salvando...' : <><Save size={12} /> Salvar</>}
           </button>
         </div>
@@ -128,7 +141,7 @@ export function BarbeiroHorariosCard({ horariosIniciais, onSuccess, mostrarErro,
             <div key={dia} className="flex flex-col xl:flex-row xl:items-center gap-4 p-4 rounded-xl border transition-colors" style={{ borderColor: conf.fechado ? 'var(--border)' : 'var(--cor-primaria)', background: conf.fechado ? 'var(--bg-surface2)' : 'transparent', opacity: conf.fechado ? 0.7 : 1 }}>
               
               <div className="flex items-center justify-between xl:w-48">
-                <span className="font-semibold text-sm capitalize" style={{ color: 'var(--text-primary)' }}>
+                <span className="font-semibold text-sm" style={{ color: 'var(--text-primary)' }}>
                   {NOMES_DIAS[dia]}
                 </span>
                 <label className="flex items-center gap-2 cursor-pointer text-xs font-medium">
@@ -144,11 +157,15 @@ export function BarbeiroHorariosCard({ horariosIniciais, onSuccess, mostrarErro,
 
               {!conf.fechado && (
                 <div className="flex flex-col sm:flex-row sm:items-center gap-4 flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs" style={{ color: 'var(--texto-secundario)' }}>Das</span>
-                    <input type="time" value={conf.abertura} onChange={e => handleChange(dia, 'abertura', e.target.value)} className="ds-input py-1 px-2 text-sm w-24" />
-                    <span className="text-xs" style={{ color: 'var(--texto-secundario)' }}>às</span>
-                    <input type="time" value={conf.fechamento} onChange={e => handleChange(dia, 'fechamento', e.target.value)} className="ds-input py-1 px-2 text-sm w-24" />
+                  <div className="grid grid-cols-2 sm:flex sm:items-center gap-3 sm:gap-2 w-full sm:w-auto">
+                    <label className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 min-w-0">
+                      <span className="text-xs" style={{ color: 'var(--texto-secundario)' }}>Das</span>
+                      <input type="time" value={conf.abertura} onChange={e => handleChange(dia, 'abertura', e.target.value)} className="ds-input py-1 px-2 text-sm w-full sm:w-24 min-w-0" />
+                    </label>
+                    <label className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 min-w-0">
+                      <span className="text-xs" style={{ color: 'var(--texto-secundario)' }}>Até</span>
+                      <input type="time" value={conf.fechamento} onChange={e => handleChange(dia, 'fechamento', e.target.value)} className="ds-input py-1 px-2 text-sm w-full sm:w-24 min-w-0" />
+                    </label>
                   </div>
 
                   <div className="w-[1px] h-6 hidden sm:block" style={{ background: 'var(--border)' }} />
@@ -156,7 +173,7 @@ export function BarbeiroHorariosCard({ horariosIniciais, onSuccess, mostrarErro,
                   <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                     <label className="flex items-center gap-2 cursor-pointer text-xs">
                       <input type="checkbox" checked={conf.temAlmoco} onChange={e => handleChange(dia, 'temAlmoco', e.target.checked)} className="rounded text-orange-500 focus:ring-orange-500 border-[var(--borda-forte)]" />
-                      <span style={{ color: 'var(--text-primary)' }}>Tem Intervalo?</span>
+                      <span style={{ color: 'var(--text-primary)' }}>Tem intervalo?</span>
                     </label>
 
                     {conf.temAlmoco && (

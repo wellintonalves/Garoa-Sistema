@@ -6,6 +6,7 @@ import { List } from '@phosphor-icons/react';
 import api from '../api/client';
 export function DashboardLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [sidebarRecolhida, setSidebarRecolhida] = useState(false);
   const [nomeDaBarbearia, setNomeDaBarbearia] = useState<string>(import.meta.env.VITE_BARBEARIA_NOME || 'GAROA');
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
 
@@ -50,15 +51,22 @@ export function DashboardLayout() {
       </header>
 
       {/* Sidebar (Controla seu próprio mobile/desktop view) */}
-      <Sidebar mobileOpen={mobileOpen} onCloseMobile={() => setMobileOpen(false)} />
+      <Sidebar
+        mobileOpen={mobileOpen}
+        onCloseMobile={() => setMobileOpen(false)}
+        recolhido={sidebarRecolhida}
+        onAlternarRecolhido={() => setSidebarRecolhida((valorAtual) => !valorAtual)}
+      />
       
       {/* Conteúdo principal */}
       <main 
-        className="min-h-screen transition-all duration-300 md:ml-[240px]" 
+        className={`min-h-screen min-w-0 transition-[margin] duration-300 ${
+          sidebarRecolhida ? 'md:ml-[64px]' : 'md:ml-[240px]'
+        }`}
       >
         <div 
-          className="p-4 md:p-6" 
-          style={{ maxWidth: '1280px', margin: '0 auto', paddingLeft: 'var(--espaco-5, 1.25rem)', paddingRight: 'var(--espaco-5, 1.25rem)' }}
+          className="w-full min-w-0 p-4 md:p-6"
+          style={{ paddingLeft: 'var(--espaco-5, 1.25rem)', paddingRight: 'var(--espaco-5, 1.25rem)' }}
         >
           <Outlet />
         </div>

@@ -58,9 +58,17 @@ export class ServicoService {
   }
 
   /** Desativa um serviço (soft delete) */
-  static async desativar(id: string) {
+  static async desativar(id: string, barbeariaId?: string) {
+    if (!barbeariaId) throw new Error('Barbearia não identificada');
+
+    const servico = await prisma.servico.findFirst({
+      where: { id, barbeariaId },
+      select: { id: true },
+    });
+    if (!servico) throw new Error('Serviço não encontrado');
+
     return prisma.servico.update({
-      where: { id },
+      where: { id: servico.id },
       data: { ativo: false } as any,
     });
   }
