@@ -5,4 +5,5 @@ build/
 .env.*
 !.env.example
 .DS_Store
-frontend/tsconfig.tsbuildinfo.tmp/
+frontend/tsconfig.tsbuildinfo
+.tmp/
