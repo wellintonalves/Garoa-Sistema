@@ -5,14 +5,22 @@ export function AvisoCobrancaFuturaModal() {
   const [aberto, setAberto] = useState(false);
 
   useEffect(() => {
-    const jaViu = localStorage.getItem('@garoa:aviso-cobranca-v1');
-    if (!jaViu) {
+    try {
+      const jaViu = localStorage.getItem('@garoa:aviso-cobranca-v1');
+      if (!jaViu) {
+        setAberto(true);
+      }
+    } catch {
       setAberto(true);
     }
   }, []);
 
   const handleFechar = () => {
-    localStorage.setItem('@garoa:aviso-cobranca-v1', '1');
+    try {
+      localStorage.setItem('@garoa:aviso-cobranca-v1', '1');
+    } catch {
+      // Ignora erro
+    }
     setAberto(false);
   };
 
@@ -37,7 +45,7 @@ export function AvisoCobrancaFuturaModal() {
             textTransform: 'none',
           }}
         >
-          Voce continua com acesso normal por enquanto. Nada muda hoje.
+          Você continua com acesso normal por enquanto. Nada muda hoje.
         </p>
         <p
           style={{
@@ -45,7 +53,7 @@ export function AvisoCobrancaFuturaModal() {
             textTransform: 'none',
           }}
         >
-          Antes de qualquer cobranca voce sera avisado aqui no painel, com antecedencia e com
+          Antes de qualquer cobrança você será avisado aqui no painel, com antecedência e com
           os valores.
         </p>
         <button

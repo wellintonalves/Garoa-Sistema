@@ -17,8 +17,8 @@ export function FaixaCobrancaFutura() {
           textTransform: 'none',
         }}
       >
-        Em breve o Valen Barber passara a ser um servico pago. Voce sera avisado com
-        antecedencia antes de qualquer cobranca.
+        Em breve o Valen Barber passará a ser um serviço pago. Você será avisado com
+        antecedência antes de qualquer cobrança.
       </span>
     </div>
   );
