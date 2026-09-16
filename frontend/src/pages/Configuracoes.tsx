@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
-import { Gear as Settings, FloppyDisk as Save, QrCode, Star, Desktop, Storefront, Clock, SlidersHorizontal, Copy } from '@phosphor-icons/react';
-import { useNavigate } from 'react-router-dom';
+import { Gear as Settings, FloppyDisk as Save, QrCode, Star, Desktop, Storefront, Clock, SlidersHorizontal, Copy, CreditCard } from '@phosphor-icons/react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import api from '../api/client';
 import { QRCodeSVG } from 'qrcode.react';
 import { SeletorTema } from '../components/SeletorTema';
 import { Modal } from '../components/Modal';
 import { WarningCircle, ArrowRight } from '@phosphor-icons/react';
+import { CancelamentoAssinaturaCard } from '../components/CancelamentoAssinaturaCard';
+import { GestaoAssinaturaCard } from '../components/GestaoAssinaturaCard';
 
 const diasSemana = [
   { key: 'domingo', label: 'Domingo' },
@@ -17,11 +19,15 @@ const diasSemana = [
   { key: 'sabado', label: 'Sábado' },
 ];
 
-type SecaoConfiguracao = 'barbearia' | 'funcionamento' | 'sistema';
+type SecaoConfiguracao = 'barbearia' | 'funcionamento' | 'sistema' | 'assinatura';
 
 export function Configuracoes() {
   const navigate = useNavigate();
-  const [secaoAtiva, setSecaoAtiva] = useState<SecaoConfiguracao>('barbearia');
+  const [searchParams] = useSearchParams();
+  const [secaoAtiva, setSecaoAtiva] = useState<SecaoConfiguracao>(() => searchParams.get('secao') === 'assinatura' ? 'assinatura' : 'barbearia');
+  useEffect(() => {
+    if (searchParams.get('secao') === 'assinatura') setSecaoAtiva('assinatura');
+  }, [searchParams]);
   const [horarios, setHorarios] = useState<any>({});
   const [regrasNegocio, setRegrasNegocio] = useState<{ baseCalculoComissao: string; baseCalculoPontos: string }>({
     baseCalculoComissao: 'VALOR_LIQUIDO',
@@ -165,6 +171,7 @@ export function Configuracoes() {
     { id: 'barbearia', label: 'Barbearia', descricao: 'Dados, identidade visual e acesso por QR Code', icon: Storefront },
     { id: 'funcionamento', label: 'Horários', descricao: 'Dias, horários e intervalos', icon: Clock },
     { id: 'sistema', label: 'Sistema', descricao: 'Regras, fidelidade e aparência', icon: SlidersHorizontal },
+    { id: 'assinatura', label: 'Assinatura', descricao: 'Plano atual, cobrança e cancelamento', icon: CreditCard },
   ];
 
   return (
@@ -574,6 +581,13 @@ export function Configuracoes() {
           </p>
           <SeletorTema />
         </div>
+        )}
+
+        {secaoAtiva === 'assinatura' && (
+          <>
+            <GestaoAssinaturaCard />
+            <CancelamentoAssinaturaCard nomeBarbearia={barbearia.nome || ''} />
+          </>
         )}
       </div>
 

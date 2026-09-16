@@ -1,5 +1,6 @@
 // Serviço de autenticação — login e registro
 import bcrypt from 'bcryptjs';
+import { registrarAceiteDocumentos } from '../domain/privacidade/aceiteDocumentos';
 import jwt from 'jsonwebtoken';
 import { prisma } from '../lib/prisma';
 import { authConfig } from '../config/auth';
@@ -12,6 +13,7 @@ interface DadosRegistro {
   nome: string;
   email: string;
   senha: string;
+  aceiteDocumentos?: unknown;
   papel?: Papel;
   barbeariaId?: string;
 }
@@ -31,6 +33,7 @@ interface RespostaAuth {
 export class AuthService {
   /** Registra um novo usuário */
   static async registrar(dados: DadosRegistro): Promise<RespostaAuth> {
+    const aceite = registrarAceiteDocumentos(dados.aceiteDocumentos, dados.papel === 'ADMIN' ? 'CADASTRO_ADMIN' : 'CADASTRO_TENANT');
     const email = dados.email.trim().toLowerCase();
     const papel = dados.papel ?? 'CLIENTE';
     if (!email || !Object.values(Papel).includes(papel)) {
@@ -61,7 +64,7 @@ export class AuthService {
         barbeariaId = barbearia.id;
       }
       return tx.usuario.create({
-        data: { nome: dados.nome, email, senha: senhaHash, papel, barbeariaId },
+        data: { nome: dados.nome, email, senha: senhaHash, papel, barbeariaId, ...aceite },
       });
     }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable }).catch((error: unknown) => {
       if (error instanceof Prisma.PrismaClientKnownRequestError && ['P2034', 'P2002'].includes(error.code)) {

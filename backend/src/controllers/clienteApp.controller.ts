@@ -4,15 +4,16 @@ import { ClienteAppService } from '../services/clienteApp.service';
 import { ClienteAuthRequest } from '../types';
 import { Request, NextFunction } from 'express';
 import { VerificacaoService } from '../services/verificacao.service';
+import { ErroDeNegocio } from '../lib/erros';
 
 export class ClienteAppController {
   /** POST /cliente/register */
   static async registrar(req: Request, res: Response): Promise<void> {
     try {
-      const { nome, email, senha, telefone, barbeariaId, codigoIndicacao } = req.body;
+      const { nome, email, senha, telefone, dataNascimento, barbeariaId, codigoIndicacao } = req.body;
 
-      if (!nome || !email || !senha) {
-        res.status(400).json({ erro: 'Nome, email e senha são obrigatórios' });
+      if (!nome || !email || !senha || !dataNascimento) {
+        res.status(400).json({ erro: 'Nome, email, senha e data de nascimento são obrigatórios' });
         return;
       }
 
@@ -21,7 +22,7 @@ export class ClienteAppController {
         return;
       }
 
-      const resultado = await ClienteAppService.registrar({ nome, email, senha, telefone, barbeariaId, codigoIndicacao });
+      const resultado = await ClienteAppService.registrar({ nome, email, senha, telefone, dataNascimento, barbeariaId, codigoIndicacao, aceiteDocumentos: req.body.aceiteDocumentos });
 
       // Tenta enviar o email mas não bloqueia o cadastro se falhar
       try {
@@ -168,7 +169,33 @@ export class ClienteAppController {
       const perfil = await ClienteAppService.atualizarPerfil(clienteId, req.body);
       res.json(perfil);
     } catch (error) {
-      res.status(400).json({ erro: 'Erro ao atualizar perfil' });
+      const mensagem = error instanceof Error ? error.message : 'Erro ao atualizar perfil';
+      res.status(400).json({ erro: mensagem });
+    }
+  }
+
+  /** GET /cliente/preferencias-promocionais */
+  static async preferenciasPromocionais(req: ClienteAuthRequest, res: Response): Promise<void> {
+    try {
+      const clienteId = req.cliente?.clienteId;
+      if (!clienteId) { res.status(401).json({ erro: 'Não autorizado' }); return; }
+      res.json(await ClienteAppService.preferenciasPromocionais(clienteId));
+    } catch (error) {
+      const mensagem = error instanceof Error ? error.message : 'Erro ao buscar preferências';
+      res.status(400).json({ erro: mensagem });
+    }
+  }
+
+  /** PUT /cliente/preferencias-promocionais */
+  static async atualizarPreferenciaPromocional(req: ClienteAuthRequest, res: Response): Promise<void> {
+    try {
+      const clienteId = req.cliente?.clienteId;
+      if (!clienteId) { res.status(401).json({ erro: 'Não autorizado' }); return; }
+      res.json(await ClienteAppService.atualizarPreferenciaPromocional(clienteId, req.body));
+    } catch (error) {
+      const mensagem = error instanceof Error ? error.message : 'Erro ao atualizar preferência';
+      const status = error instanceof ErroDeNegocio ? error.status : 400;
+      res.status(status).json({ erro: mensagem });
     }
   }
 

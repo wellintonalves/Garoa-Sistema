@@ -6,6 +6,7 @@ import compression from 'compression';
 import helmet from 'helmet';
 import routes from './routes';
 import { errorMiddleware } from './middlewares/error.middleware';
+import checkoutLocalRoutes from './routes/checkoutLocal.routes';
 
 const app = express();
 
@@ -42,7 +43,7 @@ app.use(cors({
   origin: allowedOrigins,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization', 'Idempotency-Key']
 }));
 
 app.options('*', cors());
@@ -58,6 +59,7 @@ app.get('/health', (_req, res) => {
 
 // Rotas da API
 app.use(routes);
+app.use('/dev/checkout-local', checkoutLocalRoutes);
 
 // Middleware de erro (deve ser o último)
 app.use(errorMiddleware);

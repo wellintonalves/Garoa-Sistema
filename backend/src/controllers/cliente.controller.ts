@@ -146,6 +146,11 @@ export class ClienteController {
   /** POST /clientes */
   static async criar(req: AuthRequest, res: Response): Promise<void> {
     try {
+      const barbeariaId = req.usuario?.barbeariaId;
+      if (!barbeariaId) {
+        res.status(400).json({ erro: 'Barbearia não identificada no token.' });
+        return;
+      }
       const { nome, email, senha, telefone, dataNascimento, observacoes } = req.body;
 
       if (!nome || !email || !senha) {
@@ -155,7 +160,7 @@ export class ClienteController {
 
       const cliente = await ClienteService.criar({
         nome, email, senha, telefone, dataNascimento, observacoes,
-      });
+      }, barbeariaId);
       res.status(201).json(cliente);
     } catch (error) {
       const msg = error instanceof Error ? error.message : 'Erro ao criar cliente';
@@ -188,7 +193,7 @@ export class ClienteController {
         return;
       }
       await ClienteService.remover(req.params.id, barbeariaId);
-      res.json({ mensagem: 'Cliente removido com sucesso' });
+      res.json({ mensagem: 'Cliente arquivado nesta barbearia; conta e histórico foram preservados' });
     } catch (error) {
       const msg = error instanceof Error ? error.message : 'Erro ao remover cliente';
       res.status(400).json({ erro: msg });

@@ -1,5 +1,6 @@
 // Serviço do app do cliente — autenticação, barbearias, agendamentos, fidelidade
 import bcrypt from 'bcryptjs';
+import { registrarAceiteDocumentos } from '../domain/privacidade/aceiteDocumentos';
 import { tipoMovimentoPontos } from '../utils/extratoPontos.util';
 import jwt from 'jsonwebtoken';
 import { prisma } from '../lib/prisma';
@@ -16,12 +17,16 @@ import {
   formatarHorario,
 } from '../lib/timezone';
 import { HorariosUtil, injetarDuracaoTotalServicos } from './horarios.util';
+import { calcularIdade, normalizarDataNascimento } from '../utils/dataNascimento.util';
+import { executarSerializavel, validarVagaCliente } from './limitesAssinatura.service';
 
 interface DadosCadastroCliente {
   nome: string;
   email: string;
   senha: string;
+  aceiteDocumentos?: unknown;
   telefone?: string;
+  dataNascimento: string;
   barbeariaId?: string;
   codigoIndicacao?: string;
 }
@@ -33,8 +38,17 @@ interface RespostaAuthCliente {
 }
 
 export class ClienteAppService {
+  private static chaveOrigemPromocional(origem: 'VALEN' | 'BARBEARIA', barbeariaId?: string) {
+    if (origem === 'VALEN') return 'VALEN';
+    if (!barbeariaId) throw new ErroDeNegocio('Informe a barbearia da preferência', 400);
+    return `BARBEARIA:${barbeariaId}`;
+  }
+
   /** Cadastro global de cliente (sem barbearia fixa) */
   static async registrar(dados: DadosCadastroCliente): Promise<RespostaAuthCliente> {
+    const aceite = registrarAceiteDocumentos(dados.aceiteDocumentos, 'CADASTRO_CLIENTE');
+    dados.email = dados.email.trim().toLowerCase();
+    const dataNascimento = normalizarDataNascimento(dados.dataNascimento);
     // Bônus: Limpeza automática de registros pendentes antigos (> 24h)
     const dataLimite = new Date(Date.now() - 24 * 60 * 60 * 1000);
     try {
@@ -62,13 +76,16 @@ export class ClienteAppService {
         const senhaHash = await bcrypt.hash(dados.senha, authConfig.saltRounds);
         await prisma.usuario.update({
           where: { id: existente.id },
-          data: { nome: dados.nome, senha: senhaHash }
+          data: { nome: dados.nome, senha: senhaHash, ...aceite }
         });
 
-        if (dados.telefone && existente.cliente) {
+        if (existente.cliente) {
           await prisma.cliente.update({
             where: { id: existente.cliente.id },
-            data: { telefone: dados.telefone }
+            data: {
+              ...(dados.telefone ? { telefone: dados.telefone } : {}),
+              dataNascimento,
+            }
           });
         }
 
@@ -102,6 +119,7 @@ export class ClienteAppService {
     // Cria usuario global (sem barbeariaId)
     const usuario = await prisma.usuario.create({
       data: {
+        ...aceite,
         nome: dados.nome,
         email: dados.email,
         senha: senhaHash,
@@ -116,6 +134,7 @@ export class ClienteAppService {
         usuarioId: usuario.id,
         barbeariaId: null,
         telefone: dados.telefone || null,
+        dataNascimento,
       },
     });
 
@@ -223,18 +242,27 @@ export class ClienteAppService {
       throw new Error('Barbearia não encontrada');
     }
 
-    // Cria conexão (ou ignora se já existe)
-    const existente = await prisma.clienteBarbearia.findUnique({
-      where: { clienteId_barbeariaId: { clienteId, barbeariaId } },
-    });
+    // Cria ou reativa sob transação serializável para respeitar o limite do plano.
+    const resultadoConexao = await executarSerializavel(async (tx) => {
+      const existente = await tx.clienteBarbearia.findUnique({
+        where: { clienteId_barbeariaId: { clienteId, barbeariaId } },
+      });
+      if (existente?.ativo) return { conexao: existente, nova: false };
 
-    if (existente) {
-      return existente;
-    }
+      await validarVagaCliente(tx, barbeariaId);
+      if (existente) {
+        const reativada = await tx.clienteBarbearia.update({
+          where: { id: existente.id },
+          data: { ativo: true, arquivadoEm: null, conectadoEm: new Date() },
+        });
+        return { conexao: reativada, nova: false };
+      }
 
-    const conexao = await prisma.clienteBarbearia.create({
-      data: { clienteId, barbeariaId },
+      const criada = await tx.clienteBarbearia.create({ data: { clienteId, barbeariaId } });
+      return { conexao: criada, nova: true };
     });
+    const conexao = resultadoConexao.conexao;
+    if (!resultadoConexao.nova) return conexao;
 
     // Processamento pós-conexão: boas-vindas e indicação
     try {
@@ -362,17 +390,18 @@ export class ClienteAppService {
     return codigo;
   }
 
-  /** Desconecta cliente de uma barbearia */
+  /** Arquiva a conexão sem apagar conta ou histórico. */
   static async desconectarBarbearia(clienteId: string, barbeariaId: string) {
-    return prisma.clienteBarbearia.deleteMany({
+    return prisma.clienteBarbearia.updateMany({
       where: { clienteId, barbeariaId },
+      data: { ativo: false, arquivadoEm: new Date() },
     });
   }
 
   /** Lista barbearias conectadas ao cliente */
   static async minhasBarbearias(clienteId: string) {
     const conexoes = await prisma.clienteBarbearia.findMany({
-      where: { clienteId },
+      where: { clienteId, ativo: true },
       include: {
         barbearia: {
           select: {
@@ -431,7 +460,7 @@ export class ClienteAppService {
   }
 
   /** Atualiza perfil do cliente */
-  static async atualizarPerfil(clienteId: string, dados: { nome?: string; telefone?: string }) {
+  static async atualizarPerfil(clienteId: string, dados: { nome?: string; telefone?: string; dataNascimento?: string }) {
     const cliente = await prisma.cliente.findUnique({
       where: { id: clienteId },
     });
@@ -444,14 +473,111 @@ export class ClienteAppService {
       });
     }
 
-    if (dados.telefone !== undefined) {
+    if (dados.telefone !== undefined || dados.dataNascimento !== undefined) {
       await prisma.cliente.update({
         where: { id: clienteId },
-        data: { telefone: dados.telefone },
+        data: {
+          ...(dados.telefone !== undefined ? { telefone: dados.telefone } : {}),
+          ...(dados.dataNascimento !== undefined
+            ? { dataNascimento: normalizarDataNascimento(dados.dataNascimento) }
+            : {}),
+        },
       });
     }
 
     return this.perfil(clienteId);
+  }
+
+  /** Campanhas são opcionais; avisos necessários de conta/agendamento não usam estas opções. */
+  static async preferenciasPromocionais(clienteId: string) {
+    const [preferencias, conexoes] = await Promise.all([
+      prisma.preferenciaPromocional.findMany({
+        where: { clienteId },
+        orderBy: { chaveOrigem: 'asc' },
+      }),
+      prisma.clienteBarbearia.findMany({
+        where: { clienteId, ativo: true },
+        select: { barbeariaId: true, barbearia: { select: { nome: true } } },
+      }),
+    ]);
+
+    const porChave = new Map(preferencias.map((preferencia) => [preferencia.chaveOrigem, preferencia]));
+    const padrao = (chaveOrigem: string, origem: 'VALEN' | 'BARBEARIA', barbeariaId: string | null, nome: string) => {
+      const preferencia = porChave.get(chaveOrigem);
+      return {
+        origem,
+        barbeariaId,
+        nome,
+        emailHabilitado: preferencia?.emailHabilitado ?? false,
+        emailAlteradoEm: preferencia?.emailAlteradoEm ?? null,
+        inAppHabilitado: preferencia?.inAppHabilitado ?? false,
+        inAppAlteradoEm: preferencia?.inAppAlteradoEm ?? null,
+      };
+    };
+
+    return [
+      padrao('VALEN', 'VALEN', null, 'Valen Barber'),
+      ...conexoes
+        .filter((conexao): conexao is typeof conexao & { barbeariaId: string } => Boolean(conexao.barbeariaId))
+        .map((conexao) => padrao(
+          this.chaveOrigemPromocional('BARBEARIA', conexao.barbeariaId),
+          'BARBEARIA',
+          conexao.barbeariaId,
+          conexao.barbearia?.nome || 'Barbearia',
+        )),
+    ];
+  }
+
+  static async atualizarPreferenciaPromocional(clienteId: string, dados: {
+    origem: 'VALEN' | 'BARBEARIA';
+    barbeariaId?: string;
+    canal: 'EMAIL' | 'IN_APP';
+    habilitado: boolean;
+  }) {
+    if (!['VALEN', 'BARBEARIA'].includes(dados.origem)) {
+      throw new ErroDeNegocio('Origem promocional inválida', 400);
+    }
+    if (!['EMAIL', 'IN_APP'].includes(dados.canal) || typeof dados.habilitado !== 'boolean') {
+      throw new ErroDeNegocio('Preferência promocional inválida', 400);
+    }
+
+    if (dados.habilitado) {
+      const cliente = await prisma.cliente.findUnique({
+        where: { id: clienteId },
+        select: { dataNascimento: true },
+      });
+      const idade = calcularIdade(cliente?.dataNascimento);
+      if (idade === null || idade < 18) {
+        throw new ErroDeNegocio('Campanhas promocionais exigem data de nascimento informada e idade mínima de 18 anos', 403);
+      }
+    }
+
+    const barbeariaId = dados.origem === 'BARBEARIA' ? dados.barbeariaId : undefined;
+    const chaveOrigem = this.chaveOrigemPromocional(dados.origem, barbeariaId);
+    if (barbeariaId) {
+      const conexao = await prisma.clienteBarbearia.findFirst({
+        where: { clienteId, barbeariaId, ativo: true },
+        select: { id: true },
+      });
+      if (!conexao) throw new ErroDeNegocio('Cliente não está conectado a esta barbearia', 403);
+    }
+
+    const agora = new Date();
+    const alteracao = dados.canal === 'EMAIL'
+      ? { emailHabilitado: dados.habilitado, emailAlteradoEm: agora }
+      : { inAppHabilitado: dados.habilitado, inAppAlteradoEm: agora };
+
+    return prisma.preferenciaPromocional.upsert({
+      where: { clienteId_chaveOrigem: { clienteId, chaveOrigem } },
+      create: {
+        clienteId,
+        origem: dados.origem,
+        chaveOrigem,
+        barbeariaId: barbeariaId || null,
+        ...alteracao,
+      },
+      update: alteracao,
+    });
   }
 
   /** Agendamentos do cliente em uma barbearia */

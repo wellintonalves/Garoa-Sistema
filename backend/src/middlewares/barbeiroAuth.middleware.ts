@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import { authConfig } from '../config/auth';
 import { BarbeiroAuthRequest, BarbeiroJWT } from '../types';
 import { validarBarbeariaAtiva } from '../services/acessoBarbearia.service';
+import { validarEscritaAssinatura } from '../services/acessoAssinatura.service';
 
 /** Verifica se o token JWT do barbeiro é válido */
 export function barbeiroAuthMiddleware(req: BarbeiroAuthRequest, res: Response, next: NextFunction): void {
@@ -30,6 +31,7 @@ export function barbeiroAuthMiddleware(req: BarbeiroAuthRequest, res: Response, 
     if (decoded.barbeariaId) {
       const { tenantStorage } = require('../lib/als');
       validarBarbeariaAtiva(decoded.barbeariaId)
+        .then(() => validarEscritaAssinatura(decoded.barbeariaId!, req.method, req.originalUrl))
         .then(() => tenantStorage.run({ barbeariaId: decoded.barbeariaId }, () => next()))
         .catch(next);
     } else {
@@ -39,6 +41,7 @@ export function barbeiroAuthMiddleware(req: BarbeiroAuthRequest, res: Response, 
         .then(async (b: { barbeariaId: string | null } | null) => {
           if (!b?.barbeariaId) { res.status(403).json({ erro: 'Acesso de barbeiro indisponível' }); return; }
           await validarBarbeariaAtiva(b.barbeariaId);
+          await validarEscritaAssinatura(b.barbeariaId, req.method, req.originalUrl);
           req.barbeiro!.barbeariaId = b.barbeariaId;
           if (b?.barbeariaId) {
             const { tenantStorage } = require('../lib/als');

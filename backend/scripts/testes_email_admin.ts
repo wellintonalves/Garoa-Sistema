@@ -36,8 +36,25 @@ const fake = {
 
 async function main() {
   const { AuthService } = await import('../src/services/auth.service');
-  const dados = { nome: 'Teste', email: ' Admin@example.test ', senha: 'teste-seguro', papel: 'ADMIN' as const };
+  const { ClienteAppService } = await import('../src/services/clienteApp.service');
+  const dados = { nome: 'Teste', email: ' Admin@example.test ', senha: 'teste-seguro', papel: 'ADMIN' as const, aceiteDocumentos: { aceito: true, termosVersao: '2026-09-15', privacidadeVersao: '2026-09-15' } };
+  for (const aceiteDocumentos of [undefined, false, { aceito: false }, { ...dados.aceiteDocumentos, aceito: 'true' }, { ...dados.aceiteDocumentos, termosVersao: 'antiga' }, { ...dados.aceiteDocumentos, privacidadeVersao: 'antiga' }]) {
+    await assert.rejects(AuthService.registrar({ ...dados, aceiteDocumentos }), /Leia e aceite/);
+    await assert.rejects(ClienteAppService.registrar({ ...dados, dataNascimento: '1990-01-01', aceiteDocumentos }), /Leia e aceite/);
+    assert.equal(usuarios.length, 0, 'sem aceite n„o persiste usu·rio');
+    assert.equal(lojas, 0, 'sem aceite n„o persiste barbearia');
+  }
+  const antesAceite = Date.now();
   const primeiro = await AuthService.registrar(dados);
+  assert.equal(usuarios[0].termosUsoVersao, '2026-09-15');
+  assert.equal(usuarios[0].privacidadeVersao, '2026-09-15');
+  assert.equal(usuarios[0].aceiteDocumentosOrigem, 'CADASTRO_ADMIN');
+  assert.ok(usuarios[0].aceiteDocumentosEm!.getTime() >= antesAceite);
+  // Representa cadastro anterior ‡ coleta: login n„o inventa nem exige aceite.
+  usuarios[0].aceiteDocumentosEm = null;
+  usuarios[0].termosUsoVersao = null;
+  usuarios[0].privacidadeVersao = null;
+  usuarios[0].aceiteDocumentosOrigem = null;
   assert.equal(primeiro.usuario.email, 'admin@example.test');
   assert.equal(lojas, 1);
   await assert.rejects(AuthService.registrar({ ...dados, barbeariaId: 'outra' }), /j√° est√° cadastrado/);
@@ -49,6 +66,7 @@ async function main() {
   await AuthService.registrar({ ...dados, papel: 'BARBEIRO', barbeariaId: 'barbeiro-b' });
   assert.equal((await AuthService.login({ ...dados, email: 'admin@example.test' })).usuario.id, primeiro.usuario.id);
   assert.equal((await AuthService.login({ ...dados, papel: 'CLIENTE', barbeariaId: 'cliente-b' })).usuario.barbeariaId, 'cliente-b');
+  assert.equal(usuarios[0].aceiteDocumentosEm, null, 'login legado n„o fabrica aceite');
   falharCriacao = true;
   await assert.rejects(AuthService.registrar({ ...dados, email: 'novo@example.test' }), /Falha simulada/);
   assert.equal(lojas, 1, 'erro ao criar usu√°rio reverte barbearia');

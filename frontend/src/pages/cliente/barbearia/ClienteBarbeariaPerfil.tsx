@@ -11,6 +11,7 @@ import { SkeletonCard, SkeletonText } from '../../../components/ui/Skeleton';
 interface PerfilData {
   id: string;
   telefone: string | null;
+  dataNascimento: string | null;
   usuario: { id: string; nome: string; email: string };
   stats: {
     atendimentos: number;
@@ -32,6 +33,22 @@ interface AgendamentoItem {
   valorCobrado: string;
 }
 
+interface PreferenciaPromocional {
+  origem: 'VALEN' | 'BARBEARIA';
+  barbeariaId: string | null;
+  nome: string;
+  emailHabilitado: boolean;
+  emailAlteradoEm: string | null;
+  inAppHabilitado: boolean;
+  inAppAlteradoEm: string | null;
+}
+
+function dataLocalIso(): string {
+  const agora = new Date();
+  const deslocamentoMs = agora.getTimezoneOffset() * 60_000;
+  return new Date(agora.getTime() - deslocamentoMs).toISOString().slice(0, 10);
+}
+
 function getTier(atendimentos: number): { label: string; show: boolean } {
   if (atendimentos >= 10) return { label: 'Cliente VIP', show: true };
   if (atendimentos >= 5)  return { label: 'Cliente Frequente', show: true };
@@ -46,9 +63,12 @@ export function ClienteBarbeariaPerfil() {
   const [barbearias, setBarbearias] = useState<BarbeariaConectada[]>([]);
   const [nome, setNome] = useState('');
   const [telefone, setTelefone] = useState('');
+  const [dataNascimento, setDataNascimento] = useState('');
   const [salvando, setSalvando] = useState(false);
   const [carregando, setCarregando] = useState(true);
   const [mensagem, setMensagem] = useState('');
+  const [preferencias, setPreferencias] = useState<PreferenciaPromocional[]>([]);
+  const [alterandoPreferencia, setAlterandoPreferencia] = useState('');
   const [modalObj, setModalObj] = useState<{aberto: boolean; titulo: string; mensagem: string; tipo: 'erro'|'sucesso'|'aviso'|'info'; isConfirm?: boolean, onConfirm?: () => void, textoBotao?: string}>({ aberto: false, titulo: '', mensagem: '', tipo: 'info' });
 
   // Stats por barbearia (calculados dos agendamentos da barbearia atual)
@@ -58,15 +78,20 @@ export function ClienteBarbeariaPerfil() {
     setCarregando(true);
     Promise.allSettled([
       clienteApi.get<PerfilData>('/cliente/perfil'),
-      clienteApi.get<BarbeariaConectada[]>('/cliente/minhas-barbearias')
-    ]).then(([resPerfil, resBarbearias]) => {
+      clienteApi.get<BarbeariaConectada[]>('/cliente/minhas-barbearias'),
+      clienteApi.get<PreferenciaPromocional[]>('/cliente/preferencias-promocionais'),
+    ]).then(([resPerfil, resBarbearias, resPreferencias]) => {
       if (resPerfil.status === 'fulfilled') {
         setPerfil(resPerfil.value.data);
         setNome(resPerfil.value.data.usuario.nome);
         setTelefone(resPerfil.value.data.telefone || '');
+        setDataNascimento(resPerfil.value.data.dataNascimento?.slice(0, 10) || '');
       }
       if (resBarbearias.status === 'fulfilled') {
         setBarbearias(resBarbearias.value.data);
+      }
+      if (resPreferencias.status === 'fulfilled') {
+        setPreferencias(resPreferencias.value.data);
       }
     }).finally(() => setCarregando(false));
 
@@ -90,13 +115,43 @@ export function ClienteBarbeariaPerfil() {
     setSalvando(true);
     setMensagem('');
     try {
-      await clienteApi.put('/cliente/perfil', { nome, telefone });
+      await clienteApi.put('/cliente/perfil', {
+        nome,
+        telefone,
+        ...(dataNascimento ? { dataNascimento } : {}),
+      });
       setMensagem('Perfil atualizado com sucesso!');
       setTimeout(() => setMensagem(''), 3000);
     } catch { 
       setMensagem('Erro ao salvar. Tente novamente.'); 
     } finally { 
       setSalvando(false); 
+    }
+  }
+
+  async function alterarPreferencia(preferencia: PreferenciaPromocional, canal: 'EMAIL' | 'IN_APP') {
+    const chave = `${preferencia.origem}:${preferencia.barbeariaId || 'VALEN'}:${canal}`;
+    const campo = canal === 'EMAIL' ? 'emailHabilitado' : 'inAppHabilitado';
+    setAlterandoPreferencia(chave);
+    setMensagem('');
+    try {
+      await clienteApi.put('/cliente/preferencias-promocionais', {
+        origem: preferencia.origem,
+        barbeariaId: preferencia.barbeariaId || undefined,
+        canal,
+        habilitado: !preferencia[campo],
+      });
+      setPreferencias((atuais) => atuais.map((item) =>
+        item.origem === preferencia.origem && item.barbeariaId === preferencia.barbeariaId
+          ? { ...item, [campo]: !item[campo] }
+          : item
+      ));
+    } catch (error) {
+      const texto = (error as { response?: { data?: { erro?: string } } })?.response?.data?.erro
+        || 'Não foi possível atualizar a preferência.';
+      setMensagem(`Erro: ${texto}`);
+    } finally {
+      setAlterandoPreferencia('');
     }
   }
 
@@ -233,6 +288,21 @@ export function ClienteBarbeariaPerfil() {
                    className="w-full bg-[var(--fundo-input)] border border-[var(--borda-forte)] rounded p-3 text-[var(--text-primary)] font-interface focus:outline-none focus:border-[var(--cor-primaria)] transition-colors" style={{ fontFamily: 'var(--fonte-mono)' }} />
           </div>
           <div>
+            <label htmlFor="perfil-data-nascimento" className="block mb-1.5" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--texto-secundario)', fontWeight: 600 }}>Data de nascimento</label>
+            <input
+              id="perfil-data-nascimento"
+              type="date"
+              value={dataNascimento}
+              onChange={e => setDataNascimento(e.target.value)}
+              max={dataLocalIso()}
+              className="w-full bg-[var(--fundo-input)] border border-[var(--borda-forte)] rounded p-3 text-[var(--text-primary)] font-interface focus:outline-none focus:border-[var(--cor-primaria)] transition-colors"
+              style={{ fontFamily: 'var(--fonte-mono)' }}
+            />
+            {!dataNascimento && (
+              <p className="mt-1.5 text-[13px] text-[var(--texto-secundario)]">Data ainda não informada.</p>
+            )}
+          </div>
+          <div>
             <label className="block mb-1.5" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--texto-secundario)', fontWeight: 600 }}>Email (Somente leitura)</label>
             <input value={perfil?.usuario.email || ''} disabled
                    className="w-full bg-[var(--superficie-1)] border border-[var(--borda)] rounded p-3 text-[var(--text-disabled)] font-interface cursor-not-allowed" style={{ fontFamily: 'var(--fonte-mono)' }} />
@@ -247,6 +317,48 @@ export function ClienteBarbeariaPerfil() {
           <button onClick={salvar} disabled={salvando} className="btn-primary w-full justify-center mt-2 py-3 flex items-center gap-2" style={{ fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 600 }}>
             <FloppyDisk size={18} weight="bold" /> {salvando ? 'Salvando...' : 'Salvar Alterações'}
           </button>
+        </div>
+      </div>
+
+      {/* Preferências promocionais: consentimento separado por remetente e canal. */}
+      <div className="mb-8 p-5 rounded-xl bg-[var(--fundo-sidebar)] border border-[var(--borda)] shadow-sm">
+        <h2 className="mb-2 text-[16px] font-semibold text-[var(--text-primary)]">Comunicações promocionais</h2>
+        <p className="mb-4 text-[13px] leading-relaxed text-[var(--texto-secundario)]">
+          Escolha separadamente quem pode enviar promoções. Avisos necessários da sua conta e dos seus agendamentos não são alterados aqui.
+        </p>
+        <div className="flex flex-col gap-3">
+          {preferencias.map((preferencia) => (
+            <div key={`${preferencia.origem}:${preferencia.barbeariaId || 'VALEN'}`} className="rounded-lg border border-[var(--borda)] bg-[var(--superficie-1)] p-4">
+              <p className="mb-3 text-[14px] font-semibold text-[var(--text-primary)]">{preferencia.nome}</p>
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                {([
+                  ['EMAIL', 'Promoções por e-mail', preferencia.emailHabilitado],
+                  ['IN_APP', 'Promoções no aplicativo', preferencia.inAppHabilitado],
+                ] as const).map(([canal, rotulo, habilitado]) => {
+                  const chave = `${preferencia.origem}:${preferencia.barbeariaId || 'VALEN'}:${canal}`;
+                  return (
+                    <button
+                      key={canal}
+                      type="button"
+                      role="switch"
+                      aria-checked={habilitado}
+                      disabled={alterandoPreferencia === chave}
+                      onClick={() => alterarPreferencia(preferencia, canal)}
+                      className="flex min-h-11 items-center justify-between gap-3 rounded-md border border-[var(--borda)] px-3 py-2 text-left text-[13px] text-[var(--text-primary)] transition-colors hover:border-[var(--cor-primaria)] disabled:opacity-60"
+                    >
+                      <span>{rotulo}</span>
+                      <span className={`h-5 w-9 rounded-full p-0.5 transition-colors ${habilitado ? 'bg-[var(--cor-primaria)]' : 'bg-[var(--borda-forte)]'}`} aria-hidden="true">
+                        <span className={`block h-4 w-4 rounded-full bg-[var(--texto-inverso)] transition-transform ${habilitado ? 'translate-x-4' : 'translate-x-0'}`} />
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+          {preferencias.length === 0 && (
+            <p className="text-[13px] text-[var(--texto-secundario)]">Nenhuma origem promocional disponível.</p>
+          )}
         </div>
       </div>
 

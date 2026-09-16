@@ -4,6 +4,7 @@ import { prisma } from './lib/prisma';
 import { copiarBanco } from './lib/dbSync';
 import { agendarBackupDiario } from './lib/backupJob';
 import { corrigirDados } from './lib/fixOrphans';
+import { agendarProcessosAssinatura } from './lib/assinaturaJob';
 
 process.on('uncaughtException', (err) => {
   console.error('❌ uncaughtException:', err);
@@ -37,7 +38,7 @@ async function start() {
     }
     console.log('MIGRACAO: copiando dados do backup para o banco principal');
     try {
-      const result = await copiarBanco(process.env.BACKUP_DIRECT_URL, process.env.DATABASE_URL);
+      const result = await copiarBanco(process.env.BACKUP_DIRECT_URL, process.env.DATABASE_URL, { modo: 'RESTAURACAO' });
       console.log('✅ MIGRACAO concluída:', result);
     } catch (err) {
       console.error('❌ Erro na migração:', err);
@@ -50,6 +51,8 @@ async function start() {
       agendarBackupDiario(process.env.DATABASE_URL, process.env.BACKUP_DIRECT_URL);
     }
   }
+
+  agendarProcessosAssinatura();
 
   app.listen(PORT, () => {
     console.log(`🏪 Servidor da barbearia rodando na porta ${PORT}`);

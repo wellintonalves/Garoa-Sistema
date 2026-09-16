@@ -67,6 +67,7 @@ export class TenantController {
         nome,
         email,
         senha,
+        aceiteDocumentos: req.body.aceiteDocumentos,
         papel: 'CLIENTE',
         barbeariaId: barbearia.id
       });

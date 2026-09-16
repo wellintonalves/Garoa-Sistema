@@ -1,15 +1,24 @@
+import { AceiteDocumentos, dadosAceiteDocumentos } from '../../components/AceiteDocumentos';
 // Tela de cadastro do cliente — /cadastro
 // Visual premium mobile-first para o cliente
 import { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useClienteAuth } from '../../hooks/useClienteAuth';
-import { User, Phone, Envelope, Lock, WarningCircle, Scissors, ArrowLeft, Eye, EyeSlash, Gift } from '@phosphor-icons/react';
+import { User, Phone, Envelope, Lock, WarningCircle, Scissors, ArrowLeft, Eye, EyeSlash, Gift, Cake } from '@phosphor-icons/react';
+
+function dataLocalIso(): string {
+  const agora = new Date();
+  const deslocamentoMs = agora.getTimezoneOffset() * 60_000;
+  return new Date(agora.getTime() - deslocamentoMs).toISOString().slice(0, 10);
+}
 
 export function ClienteCadastro() {
   const navigate = useNavigate();
   const { registrar } = useClienteAuth();
   const [nome, setNome] = useState('');
+  const [aceitoDocumentos, setAceitoDocumentos] = useState(false);
   const [telefone, setTelefone] = useState('');
+  const [dataNascimento, setDataNascimento] = useState('');
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [mostrarSenha, setMostrarSenha] = useState(false);
@@ -31,6 +40,7 @@ export function ClienteCadastro() {
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
+    if (!aceitoDocumentos) return;
     setErro('');
 
     if (senha.length < 6) {
@@ -40,7 +50,7 @@ export function ClienteCadastro() {
 
     setEnviando(true);
     try {
-      const { usuarioId } = await registrar(nome, email, senha, telefone);
+      const { usuarioId } = await registrar(nome, email, senha, telefone, dataNascimento, dadosAceiteDocumentos(aceitoDocumentos), barbeariaId, codigoIndicacao);
       navigate('/verificar-email', {
         state: {
           email,
@@ -312,6 +322,26 @@ export function ClienteCadastro() {
             </div>
           </div>
 
+          {/* Data de nascimento */}
+          <div>
+            <label htmlFor="cadastro-data-nascimento" style={labelStyle}>Data de nascimento</label>
+            <div style={{ position: 'relative' }}>
+              <Cake size={18} weight="regular" style={iconStyle} aria-hidden="true" />
+              <input
+                id="cadastro-data-nascimento"
+                type="date"
+                value={dataNascimento}
+                onChange={(e) => setDataNascimento(e.target.value)}
+                max={dataLocalIso()}
+                required
+                autoComplete="bday"
+                style={inputStyle}
+                onFocus={handleFocus}
+                onBlur={handleBlur}
+              />
+            </div>
+          </div>
+
           {/* Email */}
           <div>
             <label style={labelStyle}>Email</label>
@@ -377,6 +407,7 @@ export function ClienteCadastro() {
           </div>
 
           {/* Botão Criar */}
+          <AceiteDocumentos aceito={aceitoDocumentos} onChange={setAceitoDocumentos} />
           <button
             id="cadastro-submit"
             type="submit"

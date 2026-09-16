@@ -4,6 +4,9 @@ import { Outlet } from 'react-router-dom';
 import { Sidebar } from '../components/Sidebar';
 import { List } from '@phosphor-icons/react';
 import api from '../api/client';
+import { TransicaoLegadoBanner } from '../components/TransicaoLegadoBanner';
+import { AvisoPagamentoBanner } from '../components/AvisoPagamentoBanner';
+import { PlanosAssinaturaModal } from '../components/PlanosAssinaturaModal';
 export function DashboardLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [sidebarRecolhida, setSidebarRecolhida] = useState(false);
@@ -68,9 +71,12 @@ export function DashboardLayout() {
           className="w-full min-w-0 p-4 md:p-6"
           style={{ paddingLeft: 'var(--espaco-5, 1.25rem)', paddingRight: 'var(--espaco-5, 1.25rem)' }}
         >
+          <TransicaoLegadoBanner />
+          <AvisoPagamentoBanner />
           <Outlet />
         </div>
       </main>
+      <PlanosAssinaturaModal />
     </div>
   );
 }

@@ -1,3 +1,4 @@
+import { AceiteDocumentos, dadosAceiteDocumentos } from '../../components/AceiteDocumentos';
 import { useState } from 'react';
 import { User, Envelope as Mail, Lock, WarningCircle as AlertCircle, CheckCircle, Eye, EyeSlash as EyeOff } from '@phosphor-icons/react';
 import { useNavigate } from 'react-router-dom';
@@ -7,6 +8,7 @@ import { Input, Botao } from '../../components/ui';
 export function AdminPrimeiroAcesso() {
   const navigate = useNavigate();
   const [nome, setNome] = useState('');
+  const [aceitoDocumentos, setAceitoDocumentos] = useState(false);
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [mostrarSenha, setMostrarSenha] = useState(false);
@@ -16,10 +18,11 @@ export function AdminPrimeiroAcesso() {
 
   async function handleRegistro(e: React.FormEvent) {
     e.preventDefault();
+    if (!aceitoDocumentos) return;
     setErro('');
     setCarregando(true);
     try {
-      const res = await api.post('/auth/register', { nome: nome.trim(), email: email.trim(), senha, papel: 'ADMIN' });
+      const res = await api.post('/auth/register', { nome: nome.trim(), email: email.trim(), senha, papel: 'ADMIN', aceiteDocumentos: dadosAceiteDocumentos(aceitoDocumentos) });
       setSucesso(true);
       const token = res.data.token;
       const usuarioId = res.data.usuario.id;
@@ -168,6 +171,7 @@ export function AdminPrimeiroAcesso() {
             }
           />
 
+          <AceiteDocumentos aceito={aceitoDocumentos} onChange={setAceitoDocumentos} />
           <Botao
             type="submit"
             variante="primario"

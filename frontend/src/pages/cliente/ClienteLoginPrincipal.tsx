@@ -1,3 +1,4 @@
+import { LinksDocumentos } from '../../components/AceiteDocumentos';
 import { useState } from 'react';
 import { Envelope, Lock, WarningCircle, Eye, EyeSlash } from '@phosphor-icons/react';
 import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
@@ -186,6 +187,7 @@ export function ClienteLoginPrincipal() {
             Entrar
           </Botao>
         </form>
+        <LinksDocumentos />
 
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: 'var(--espaco-4)' }}>
           <button

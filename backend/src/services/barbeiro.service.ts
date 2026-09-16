@@ -1,5 +1,6 @@
 // Serviço de barbeiros — CRUD completo
 import { prisma } from '../lib/prisma';
+import { executarSerializavel, validarVagaBarbeiro } from './limitesAssinatura.service';
 
 interface DadosBarbeiro {
   nome: string;
@@ -80,7 +81,7 @@ export class BarbeiroService {
     const bcrypt = await import('bcryptjs');
     const senhaHash = await bcrypt.hash(dados.senha, 10);
 
-    return prisma.barbeiro.create({
+    const criar = async (banco: any) => banco.barbeiro.create({
       data: {
         foto: dados.foto || null,
         especialidades: dados.especialidades || [],
@@ -102,6 +103,12 @@ export class BarbeiroService {
           select: { id: true, nome: true, email: true, papel: true },
         },
       },
+    });
+
+    if (!barbeariaId) return criar(prisma);
+    return executarSerializavel(async (tx) => {
+      await validarVagaBarbeiro(tx, barbeariaId);
+      return criar(tx);
     });
   }
 
@@ -135,7 +142,7 @@ export class BarbeiroService {
     if (dados.trabalhandoAgora !== undefined) updateBarbeiro.trabalhandoAgora = dados.trabalhandoAgora;
     if (dados.horariosTrabalho !== undefined) updateBarbeiro.horariosTrabalho = dados.horariosTrabalho;
 
-    return prisma.barbeiro.update({
+    const atualizarBarbeiro = (banco: any) => banco.barbeiro.update({
       where: { id },
       data: updateBarbeiro,
       include: {
@@ -144,6 +151,14 @@ export class BarbeiroService {
         },
       },
     });
+
+    if (dados.ativo === true && !barbeiro.ativo && barbeiro.barbeariaId) {
+      return executarSerializavel(async (tx) => {
+        await validarVagaBarbeiro(tx, barbeiro.barbeariaId!);
+        return atualizarBarbeiro(tx);
+      });
+    }
+    return atualizarBarbeiro(prisma);
   }
 
   /** Desativa um barbeiro (soft delete) */
