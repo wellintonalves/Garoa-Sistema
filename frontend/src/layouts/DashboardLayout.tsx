@@ -1,5 +1,6 @@
 // Layout principal responsivo
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
+import { AuthContext } from '../contexts/AuthContext';
 import { Outlet } from 'react-router-dom';
 import { Sidebar } from '../components/Sidebar';
 import { List } from '@phosphor-icons/react';
@@ -8,6 +9,8 @@ import { TransicaoLegadoBanner } from '../components/TransicaoLegadoBanner';
 import { AvisoPagamentoBanner } from '../components/AvisoPagamentoBanner';
 import { PlanosAssinaturaModal } from '../components/PlanosAssinaturaModal';
 export function DashboardLayout() {
+  const { usuario } = useContext(AuthContext);
+  const isAdmin = usuario?.papel === 'ADMIN';
   const [mobileOpen, setMobileOpen] = useState(false);
   const [sidebarRecolhida, setSidebarRecolhida] = useState(false);
   const [nomeDaBarbearia, setNomeDaBarbearia] = useState<string>(import.meta.env.VITE_BARBEARIA_NOME || 'GAROA');
@@ -74,12 +77,12 @@ export function DashboardLayout() {
           className="w-full min-w-0 p-4 md:p-6"
           style={{ paddingLeft: 'var(--espaco-5, 1.25rem)', paddingRight: 'var(--espaco-5, 1.25rem)' }}
         >
-          <TransicaoLegadoBanner />
-          <AvisoPagamentoBanner />
+          {isAdmin && <TransicaoLegadoBanner />}
+          {isAdmin && <AvisoPagamentoBanner />}
           <Outlet />
         </div>
       </main>
-      <PlanosAssinaturaModal />
+      {isAdmin && <PlanosAssinaturaModal />}
     </div>
   );
 }
