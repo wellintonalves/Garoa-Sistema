@@ -64,10 +64,9 @@ export function TransicaoLegadoBanner() {
     <div className="min-w-0 flex-1 space-y-2">
       <h2 className="font-semibold text-base">Escolha um plano para continuar com sua barbearia</h2>
       {transicao.status === 'AGUARDANDO_AVISO' ? <p>Você terá cinco dias corridos a partir deste aviso para contratar um plano. A data limite será confirmada ao registrar o aviso.</p> :
-        transicao.status === 'PRAZO_MIGRACAO' ? <p>Contrate até {data(transicao.prazoAte)} para manter o acesso completo. Depois, ficam disponíveis apenas consulta e exportação por trinta dias.</p> :
+        transicao.status === 'PRAZO_MIGRACAO' ? <p>Contrate até {data(transicao.prazoAte)} para manter o acesso completo.</p> :
         transicao.status === 'CONSULTA_EXPORTACAO' ? <p>O prazo de transição terminou. Você pode consultar e exportar seus dados até {data(transicao.consultaExportacaoAte)}.</p> :
         <p>O período de consulta e exportação terminou. Entre em contato com o suporte para verificar sua conta.</p>}
-      {!transicao.elegivelTeste && <p>Contas existentes não recebem um novo teste de sete dias. A cobrança começa na contratação.</p>}
     </div>
     <VerPlanosButton />
   </section>;
