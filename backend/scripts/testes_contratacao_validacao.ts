@@ -12,12 +12,17 @@ const model = (list: any[]) => ({
 });
 const db: any = { $queryRaw: async()=>[], $transaction:async(op:any)=>op(db), assinaturaSaas: model(rows), mudancaAssinatura: model(mudancas), usuario: { findFirst: async () => ({id:'admin'}) }, barbearia: { findUnique: async ({where}:any) => ({id:where.id, legadoAssinatura:true}) } };
 (globalThis as any).prisma = { $extends: () => db };
+db.eventoWebhookAsaas = { findMany: async () => [] };
 async function main() {
   const { AssinaturaOperacionalService: s } = await import('../src/services/assinaturaOperacional.service');
   const user = {id:'admin',papel:'ADMIN',barbeariaId:'a'} as any;
   const data = { plano:'BASICO',periodicidade:'MENSAL',formasPagamento:['CREDIT_CARD'],termosVersao:'2026-09-15',ofertaVersao:'2026-09-15',aceite:true,chaveIdempotencia:'request-0001'} as any;
   let resposta: any = {estado:'FALHA', criacaoConfirmadamenteRecusada:true};
   const provider = {configurado:true, criarCheckoutAssinatura:async()=>{chamadas++;return resposta;}} as any;
+  process.env.ASSINATURA_PRO_DISPONIVEL = 'false';
+  await assert.rejects(s.iniciarContratacao(user,{...data,plano:'PRO'},provider), /Pró ainda não está disponível/);
+  assert.equal(chamadas,0,'Pró indisponível não chama o provedor');
+  process.env.ASSINATURA_PRO_DISPONIVEL = 'true';
   for (const patch of [{aceite:'true'}, {aceite:1}, {termosVersao:'old'}, {ofertaVersao:'arbitrary'}, {periodicidade:'SEMESTRAL'}, {plano:'ADMIN'}, {formasPagamento:'PIX'}, {formasPagamento:['PIX']}, {formasPagamento:['PIX','CREDIT_CARD']}]) {
     await assert.rejects(s.iniciarContratacao(user,{...data,...patch},provider));
   }
@@ -47,6 +52,13 @@ async function main() {
   mudancas.push({id:'pending-other-key',assinaturaId:rows[0].id,status:'AGENDADA',chaveIdempotencia:'first-change'});
   await assert.rejects(s.solicitarMudanca(user,{aceite:true,ofertaVersao:'2026-09-15',chaveIdempotencia:'second-change',periodicidadeDestino:'ANUAL'} as any,provider), /mudança pendente/);
   assert.equal(mudancas.length,2,'segunda mudança não é criada');
+  const ofertas: any[] = [];
+  const provedorPro = {configurado:true, criarCheckoutAssinatura:async(entrada:any)=>{ofertas.push(entrada);return {estado:'CRIADO',checkoutId:`pro-${ofertas.length}`,checkoutUrl:'https://sandbox.asaas.com/checkout/teste'};}} as any;
+  for (const periodo of ['MENSAL','ANUAL']) {
+    await s.iniciarContratacao({...user,barbeariaId:`pro-${periodo}`},{...data,plano:'PRO',periodicidade:periodo,chaveIdempotencia:`pro-contratacao-${periodo}`},provedorPro);
+  }
+  assert.deepEqual(ofertas.map(o=>o.valorCentavos),[6999,69990],'Pró usa os preços aprovados nos dois períodos');
+  assert.deepEqual(ofertas.map(o=>o.periodicidade),['MENSAL','ANUAL']);
   console.log('Contratação: aceite estrito, versões, enums, isolamento de idempotência, falha explícita/retry e ambiguidade sem duplicação passaram.');
 }
 main().catch(e=>{console.error(e);process.exitCode=1;});
