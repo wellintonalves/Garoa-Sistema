@@ -1,3 +1,4 @@
+import { AceiteDocumentos, dadosAceiteDocumentos } from '../../components/AceiteDocumentos';
 
 import { useNavigate, useParams } from 'react-router-dom';
 import { useClientAuth } from '../../hooks/useClientAuth';
@@ -10,19 +11,25 @@ export function RegisterClient() {
   const { slug } = useParams();
   const { entrar } = useClientAuth();
   const [nome, setNome] = useState('');
+  const [aceitoDocumentos, setAceitoDocumentos] = useState(false);
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [telefone, setTelefone] = useState('');
+  const [enviando, setEnviando] = useState(false);
   const [modalObj, setModalObj] = useState<{aberto: boolean; titulo: string; mensagem: string; tipo: 'erro'|'sucesso'|'aviso'|'info'; isConfirm?: boolean, onConfirm?: () => void, textoBotao?: string}>({ aberto: false, titulo: '', mensagem: '', tipo: 'info' });
 
   const handleRegister = async (e: any) => {
     e.preventDefault();
+    if (!aceitoDocumentos || enviando) return;
+    setEnviando(true);
     try {
-      const res = await api.post('/b/' + slug + '/auth/register', { nome, email, senha, telefone });
+      const res = await api.post('/b/' + slug + '/auth/register', { nome, email: email.trim().toLowerCase(), senha, telefone, aceiteDocumentos: dadosAceiteDocumentos(aceitoDocumentos) });
       entrar(slug as string, res.data.token, res.data.usuario);
       navigate('/b/' + slug + '/app');
     } catch (err: any) {
       setModalObj({ aberto: true, titulo: 'Falha no cadastro', mensagem: err.response?.data?.erro || 'Erro ao registrar', tipo: 'erro', textoBotao: 'Entendi' });
+    } finally {
+      setEnviando(false);
     }
   };
 
@@ -31,10 +38,11 @@ export function RegisterClient() {
       <h2 className='text-2xl text-orange-500 mb-6'>Criar Conta</h2>
       <form onSubmit={handleRegister} className='flex flex-col w-full max-w-xs'>
         <input className='mb-4 p-2 rounded bg-[var(--superficie-2)] border-[var(--borda-forte)] border bg-[var(--superficie-2)] border-[var(--borda-forte)] text-[var(--texto-principal)]' type='text' placeholder='Nome' value={nome} onChange={e => setNome(e.target.value)} required />
-        <input className='mb-4 p-2 rounded bg-[var(--superficie-2)] border-[var(--borda-forte)] border bg-[var(--superficie-2)] border-[var(--borda-forte)] text-[var(--texto-principal)]' type='email' placeholder='Email' value={email} onChange={e => setEmail(e.target.value)} required />
+        <input className='mb-4 p-2 rounded bg-[var(--superficie-2)] border-[var(--borda-forte)] border bg-[var(--superficie-2)] border-[var(--borda-forte)] text-[var(--texto-principal)]' type='email' inputMode='email' autoCapitalize='none' autoCorrect='off' spellCheck={false} autoComplete='email' placeholder='Email' value={email} onChange={e => setEmail(e.target.value)} required />
         <input className='mb-4 p-2 rounded bg-[var(--superficie-2)] border-[var(--borda-forte)] border bg-[var(--superficie-2)] border-[var(--borda-forte)] text-[var(--texto-principal)]' type='text' placeholder='WhatsApp' value={telefone} onChange={e => setTelefone(e.target.value)} />
         <input className='mb-6 p-2 rounded bg-[var(--superficie-2)] border-[var(--borda-forte)] border bg-[var(--superficie-2)] border-[var(--borda-forte)] text-[var(--texto-principal)]' type='password' placeholder='Senha' value={senha} onChange={e => setSenha(e.target.value)} required />
-        <button type='submit' className='bg-orange-500 text-[var(--texto-principal)] p-2 rounded font-semibold'>Cadastrar</button>
+        <AceiteDocumentos aceito={aceitoDocumentos} onChange={setAceitoDocumentos} />
+        <button type='submit' disabled={enviando} className='bg-orange-500 text-[var(--texto-principal)] p-2 rounded font-semibold'>{enviando ? 'Criando conta…' : 'Cadastrar'}</button>
       </form>
       
       <ModalAlert 

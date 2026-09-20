@@ -14,6 +14,8 @@ import { ClienteLayout } from './layouts/ClienteLayout';
 import { BarbeiroAuthProvider } from './contexts/BarbeiroAuthContext';
 import { BarbeiroLayout } from './layouts/BarbeiroLayout';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import { DocumentoLegal } from './pages/publico/DocumentoLegal';
+import { CheckoutLocal } from './pages/dev/CheckoutLocal';
 
 // Páginas usando React.lazy
 const Dashboard = lazy(() => import('./pages/Dashboard').then(m => ({ default: m.Dashboard })));
@@ -28,6 +30,7 @@ const Configuracoes = lazy(() => import('./pages/Configuracoes').then(m => ({ de
 const Agendar = lazy(() => import('./pages/publico/Agendar').then(m => ({ default: m.Agendar })));
 const Fidelidade = lazy(() => import('./pages/publico/Fidelidade').then(m => ({ default: m.Fidelidade })));
 const DesignSystemDev = lazy(() => import('./pages/dev/DesignSystemDev').then(m => ({ default: m.DesignSystemDev })));
+const AssinaturaPreviewDev = lazy(() => import('./pages/dev/AssinaturaPreviewDev').then(m => ({ default: m.AssinaturaPreviewDev })));
 
 const Welcome = lazy(() => import('./pages/tenant/Welcome').then(m => ({ default: m.Welcome })));
 const LoginClient = lazy(() => import('./pages/tenant/LoginClient').then(m => ({ default: m.LoginClient })));
@@ -83,6 +86,9 @@ export function App() {
             <BarbeiroAuthProvider>
               <Suspense fallback={<div className="h-screen w-full flex p-8"><SkeletonPage className="w-full" /></div>}>
                 <Routes>
+                  {import.meta.env.DEV && <Route path="/dev/checkout" element={<ErrorBoundary><CheckoutLocal /></ErrorBoundary>} />}
+                  <Route path="/termos-de-uso" element={<ErrorBoundary><DocumentoLegal tipo="termos" /></ErrorBoundary>} />
+                  <Route path="/politica-de-privacidade" element={<ErrorBoundary><DocumentoLegal tipo="privacidade" /></ErrorBoundary>} />
                   {/* === Tela Principal — Login do Cliente === */}
                   <Route path="/" element={<ClienteLoginPrincipal />} />
                   <Route path="/cadastro" element={<ClienteCadastro />} />
@@ -145,7 +151,7 @@ export function App() {
                     <Route path="financeiro" element={<Financeiro />} />
                     <Route path="relatorios" element={<Relatorios />} />
                     <Route path="vendas" element={<Vendas />} />
-                    <Route path="configuracoes" element={<Configuracoes />} />
+                    <Route path="configuracoes" element={<ErrorBoundary><Configuracoes /></ErrorBoundary>} />
                     <Route path="fidelidade" element={<AdminFidelidade />} />
                     <Route path="chat" element={<AdminChat />} />
                   </Route>
@@ -159,6 +165,7 @@ export function App() {
 
                   {/* Rota interna de desenvolvimento / design system showcase */}
                   <Route path="/dev/design-system" element={<DesignSystemDev />} />
+                  <Route path="/dev/assinatura" element={import.meta.env.DEV ? <AssinaturaPreviewDev /> : <Navigate to="/" replace />} />
 
                   {/* Fallback */}
                   <Route path="*" element={<Navigate to="/" replace />} />

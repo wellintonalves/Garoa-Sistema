@@ -1,20 +1,20 @@
 // Layout principal responsivo
-import { useState, useEffect, useContext } from 'react';
+import { useState, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import { Sidebar } from '../components/Sidebar';
 import { List } from '@phosphor-icons/react';
 import api from '../api/client';
-import { FaixaCobrancaFutura } from '../components/FaixaCobrancaFutura';
-import { AvisoCobrancaFuturaModal } from '../components/AvisoCobrancaFuturaModal';
-import { AuthContext } from '../contexts/AuthContext';
+import { TransicaoLegadoBanner } from '../components/TransicaoLegadoBanner';
+import { AvisoPagamentoBanner } from '../components/AvisoPagamentoBanner';
+import { PlanosAssinaturaModal } from '../components/PlanosAssinaturaModal';
 export function DashboardLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [sidebarRecolhida, setSidebarRecolhida] = useState(false);
   const [nomeDaBarbearia, setNomeDaBarbearia] = useState<string>(import.meta.env.VITE_BARBEARIA_NOME || 'GAROA');
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
 
-  const { usuario } = useContext(AuthContext);
-  const isAdmin = usuario?.papel === 'ADMIN';
+
+
 
   useEffect(() => {
     api.get('/configuracoes/minha-barbearia').then(res => {
@@ -74,11 +74,12 @@ export function DashboardLayout() {
           className="w-full min-w-0 p-4 md:p-6"
           style={{ paddingLeft: 'var(--espaco-5, 1.25rem)', paddingRight: 'var(--espaco-5, 1.25rem)' }}
         >
-          {isAdmin && <FaixaCobrancaFutura />}
+          <TransicaoLegadoBanner />
+          <AvisoPagamentoBanner />
           <Outlet />
         </div>
       </main>
-      {isAdmin && <AvisoCobrancaFuturaModal />}
+      <PlanosAssinaturaModal />
     </div>
   );
 }

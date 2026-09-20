@@ -6,13 +6,16 @@
     "node": ">=20.0.0"
   },
   "scripts": {
+    "test:regularizacao": "tsx scripts/testes_regularizacao_asaas.ts",
+    "test:reversoes-postgres": "tsx scripts/testes_reversoes_postgres_local.ts",
+    "check:cobranca": "tsx scripts/verificar_prontidao_cobranca.ts",
     "test:extrato-pontos": "tsx scripts/testes_extrato_pontos.ts",
     "test:protecao-venda": "tsx scripts/testes_protecao_venda.ts",
     "test:rateio-desconto": "tsx scripts/testes_rateio_desconto.ts",
     "test:estoque": "tsx scripts/testes_estoque_venda.ts",
     "dev": "tsx watch src/server.ts",
     "build": "npx prisma generate && tsc",
-    "start": "npx prisma db push && node dist/server.js",
+    "start": "node dist/server.js",
     "seed": "tsx prisma/seed.ts",
     "seed:multitenant": "tsx prisma/seed-multitenant.ts",
     "seed:descontos": "tsx prisma/seed-testes-desconto.ts",
@@ -29,12 +32,23 @@
     "test:barbearia-inativa": "tsx scripts/testes_barbearia_inativa.ts",
     "test:dashboard": "tsx scripts/testes_dashboard_atendimentos.ts",
     "test:dashboard-postgres": "tsx scripts/testes_dashboard_postgres.ts",
-    "test": "npm run test:fechamento && npm run test:fidelidade && npm run test:comissao && npm run test:email-admin && npm run test:dashboard"
+    "test:assinatura": "tsx scripts/testes_cancelamento_assinatura.ts",
+    "test:data-nascimento": "tsx scripts/testes_data_nascimento.ts",
+    "test:preferencias-promocionais": "tsx scripts/testes_preferencias_promocionais.ts",
+    "test:regras-assinatura": "tsx scripts/testes_regras_assinatura.ts",
+    "test:limites-assinatura": "tsx scripts/testes_limites_acesso_assinatura.ts",
+    "test:arquivamento-cliente": "tsx scripts/testes_arquivamento_cliente.ts",
+    "test:retencao-backup": "tsx scripts/testes_retencao_backup.ts",
+    "test:exportacao": "tsx scripts/testes_exportacao.ts",
+    "test:provedor-asaas": "tsx scripts/testes_provedor_asaas.ts",
+    "test:assinatura-fluxo-local": "tsx scripts/testes_assinatura_fluxo_local.ts",
+    "test": "npm run test:fechamento && npm run test:fidelidade && npm run test:comissao && npm run test:email-admin && npm run test:dashboard && npm run test:assinatura && npm run test:regras-assinatura && npm run test:limites-assinatura && npm run test:arquivamento-cliente && npm run test:retencao-backup && npm run test:exportacao && npm run test:data-nascimento && npm run test:preferencias-promocionais && npm run test:provedor-asaas && npm run test:assinatura-fluxo-local"
   },
   "dependencies": {
     "@prisma/client": "^6.8.0",
     "@supabase/supabase-js": "^2.107.0",
     "@types/ws": "^8.18.1",
+    "archiver": "^7.0.1",
     "bcrypt": "^6.0.0",
     "bcryptjs": "^3.0.2",
     "compression": "^1.8.1",
@@ -51,6 +65,7 @@
     "ws": "^8.21.0"
   },
   "devDependencies": {
+    "@types/archiver": "^6.0.3",
     "@types/bcrypt": "^6.0.0",
     "@types/bcryptjs": "^2.4.6",
     "@types/compression": "^1.8.1",

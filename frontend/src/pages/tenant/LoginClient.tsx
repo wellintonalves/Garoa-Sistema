@@ -1,3 +1,4 @@
+import { LinksDocumentos } from '../../components/AceiteDocumentos';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useClientAuth } from '../../hooks/useClientAuth';
 import { useState, useEffect } from 'react';
@@ -38,6 +39,7 @@ export function LoginClient() {
         <input className='mb-6 p-2 rounded bg-[var(--superficie-2)] border-[var(--borda-forte)] border bg-[var(--superficie-2)] border-[var(--borda-forte)] text-[var(--texto-principal)]' type='password' placeholder='Senha' value={senha} onChange={e => setSenha(e.target.value)} required />
         <button type='submit' className='bg-orange-500 text-[var(--texto-principal)] p-2 rounded font-semibold'>Entrar</button>
       </form>
+        <LinksDocumentos />
 
       <ModalAlert 
         aberto={modalObj.aberto} 

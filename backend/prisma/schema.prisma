@@ -79,7 +79,75 @@ enum StatusResgate {
   CANCELADO
 }
 
+enum StatusCancelamentoAssinatura {
+  PROCESSAMENTO_PENDENTE
+  RENOVACAO_CANCELADA
+  REJEITADA
+}
+
+enum CanalCancelamentoAssinatura {
+  SISTEMA
+  EMAIL
+}
+
+enum PlanoAssinatura {
+  BASICO
+  PRO
+}
+
+enum PeriodicidadeAssinatura {
+  MENSAL
+  ANUAL
+}
+
+enum StatusAssinatura {
+  PRE_CADASTRO
+  TESTE
+  ATIVA
+  PAGAMENTO_PENDENTE
+  CONSULTA_EXPORTACAO
+  ENCERRADA
+}
+
+enum TipoMudancaAssinatura {
+  UPGRADE
+  DOWNGRADE
+  PERIODICIDADE
+}
+
+enum StatusMudancaAssinatura {
+  SOLICITADA
+  AGUARDANDO_PAGAMENTO
+  AGENDADA
+  EFETIVADA
+  CANCELADA
+}
+
+enum OrigemPreferenciaPromocional {
+  VALEN
+  BARBEARIA
+}
+
+enum StatusExclusaoDados {
+  AGUARDANDO_POLITICA
+  RETENCAO_LEGAL
+  EXCLUSAO_AUTORIZADA
+  PROPAGADA_BACKUP
+}
+
+enum StatusEventoWebhookAsaas {
+  PENDENTE
+  PROCESSANDO
+  PROCESSADO
+  IGNORADO
+  FALHA
+}
+
 model Barbearia {
+  legadoAssinatura Boolean @default(false)
+  avisoMigracaoEm DateTime?
+  prazoMigracaoAte DateTime?
+  consultaMigracaoAte DateTime?
   id                  String   @id @default(uuid())
   nome                String
   slug                String   @unique
@@ -101,26 +169,29 @@ model Barbearia {
   ativo               Boolean  @default(true)
   createdAt           DateTime @default(now())
 
-  usuarios               Usuario[]
-  barbeiros              Barbeiro[]
-  clientes               Cliente[]
-  servicos               Servico[]
-  agendamentos           Agendamento[]
-  lancamentosFinanceiros LancamentoFinanceiro[]
-  itens                  ItemAtendimento[]
-  estoque                Estoque[]
-  vendasProdutos         VendaProduto[]
-  vendasEstoque          VendaEstoque[]
-  configuracoes          Configuracao[]
-  historicoRemarcacoes   HistoricoRemarcacao[]
-  clientesBarbearias     ClienteBarbearia[]
-  pontosFidelidade       PontoFidelidade[]
-  configuracaoFidelidade ConfiguracaoFidelidade?
-  recompensas            Recompensa[]
-  resgatesRecompensa     ResgateRecompensa[]
-  chatMensagens          ChatMensagem[]
-  indicacoes             Indicacao[]
-  avaliacoes             Avaliacao[]
+  usuarios                           Usuario[]
+  barbeiros                          Barbeiro[]
+  clientes                           Cliente[]
+  servicos                           Servico[]
+  agendamentos                       Agendamento[]
+  lancamentosFinanceiros             LancamentoFinanceiro[]
+  itens                              ItemAtendimento[]
+  estoque                            Estoque[]
+  vendasProdutos                     VendaProduto[]
+  vendasEstoque                      VendaEstoque[]
+  configuracoes                      Configuracao[]
+  historicoRemarcacoes               HistoricoRemarcacao[]
+  clientesBarbearias                 ClienteBarbearia[]
+  pontosFidelidade                   PontoFidelidade[]
+  configuracaoFidelidade             ConfiguracaoFidelidade?
+  recompensas                        Recompensa[]
+  resgatesRecompensa                 ResgateRecompensa[]
+  chatMensagens                      ChatMensagem[]
+  indicacoes                         Indicacao[]
+  avaliacoes                         Avaliacao[]
+  solicitacoesCancelamentoAssinatura SolicitacaoCancelamentoAssinatura[]
+  assinaturaSaas                     AssinaturaSaas?
+  preferenciasPromocionais           PreferenciaPromocional[]
 
   @@map("barbearias")
 }
@@ -133,14 +204,22 @@ model Usuario {
   papel             Papel     @default(CLIENTE)
   barbeariaId       String?
   emailVerificado   Boolean   @default(false)
+  // Nulos preservam ausência de aceite (legado ou cadastro por administrador).
+  aceiteDocumentosEm DateTime?
+  termosUsoVersao String?
+  privacidadeVersao String?
+  aceiteDocumentosOrigem String?
   codigoVerificacao String?
   codigoExpiracao   DateTime?
   createdAt         DateTime  @default(now())
 
-  barbearia         Barbearia?            @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
-  barbeiro          Barbeiro?
-  cliente           Cliente?
-  remarcacoesFeitas HistoricoRemarcacao[]
+  barbearia                          Barbearia?                          @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
+  barbeiro                           Barbeiro?
+  cliente                            Cliente?
+  remarcacoesFeitas                  HistoricoRemarcacao[]
+  solicitacoesCancelamentoAssinatura SolicitacaoCancelamentoAssinatura[]
+  aceitesAssinatura                  AssinaturaSaas[]                    @relation("AceiteAssinaturaUsuario")
+  mudancasAssinaturaSolicitadas      MudancaAssinatura[]                 @relation("SolicitanteMudancaAssinatura")
 
   @@unique([email, barbeariaId])
   @@map("usuarios")
@@ -198,33 +277,78 @@ model Cliente {
   observacoes     String?
   codigoIndicacao String?   @unique
 
-  barbearia          Barbearia?          @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
-  usuario            Usuario             @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
-  agendamentos       Agendamento[]
-  clientesBarbearias ClienteBarbearia[]
-  pontosFidelidade   PontoFidelidade[]
-  resgatesRecompensa ResgateRecompensa[]
-  lancamentos        LancamentoFinanceiro[]
-  chatMensagens      ChatMensagem[]
-  indicacoesFeitas   Indicacao[]         @relation("Indicador")
-  indicacaoRecebida  Indicacao[]         @relation("Indicado")
-  avaliacoes         Avaliacao[]
+  barbearia                Barbearia?               @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
+  usuario                  Usuario                  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  agendamentos             Agendamento[]
+  clientesBarbearias       ClienteBarbearia[]
+  pontosFidelidade         PontoFidelidade[]
+  resgatesRecompensa       ResgateRecompensa[]
+  lancamentos              LancamentoFinanceiro[]
+  chatMensagens            ChatMensagem[]
+  indicacoesFeitas         Indicacao[]              @relation("Indicador")
+  indicacaoRecebida        Indicacao[]              @relation("Indicado")
+  avaliacoes               Avaliacao[]
+  preferenciasPromocionais PreferenciaPromocional[]
 
   @@index([barbeariaId])
   @@map("clientes")
 }
 
 model ClienteBarbearia {
-  id          String   @id @default(uuid())
+  id          String    @id @default(uuid())
   clienteId   String
   barbeariaId String?
-  conectadoEm DateTime @default(now())
+  ativo       Boolean   @default(true)
+  arquivadoEm DateTime?
+  conectadoEm DateTime  @default(now())
 
   cliente   Cliente    @relation(fields: [clienteId], references: [id], onDelete: Cascade)
   barbearia Barbearia? @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
 
   @@unique([clienteId, barbeariaId])
   @@map("clientes_barbearias")
+}
+
+model PreferenciaPromocional {
+  id              String                       @id @default(uuid())
+  clienteId       String
+  origem          OrigemPreferenciaPromocional
+  chaveOrigem     String
+  barbeariaId     String?
+  emailHabilitado Boolean                      @default(false)
+  emailAlteradoEm DateTime?
+  inAppHabilitado Boolean                      @default(false)
+  inAppAlteradoEm DateTime?
+  createdAt       DateTime                     @default(now())
+  updatedAt       DateTime                     @updatedAt
+
+  cliente   Cliente    @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+  barbearia Barbearia? @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
+
+  @@unique([clienteId, chaveOrigem])
+  @@index([barbeariaId])
+  @@map("preferencias_promocionais")
+}
+
+model ExclusaoDadosAuditavel {
+  id                  String              @id @default(uuid())
+  entidade            String
+  registroId          String
+  barbeariaId         String?
+  status              StatusExclusaoDados @default(AGUARDANDO_POLITICA)
+  solicitadoEm        DateTime            @default(now())
+  excluidoPrincipalEm DateTime?
+  removerBackupAte    DateTime?
+  retencaoLegal       Boolean             @default(false)
+  motivoRetencao      String?
+  propagadoBackupEm   DateTime?
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+
+  @@unique([entidade, registroId])
+  @@index([status, removerBackupAte])
+  @@index([barbeariaId])
+  @@map("exclusoes_dados_auditaveis")
 }
 
 enum BaseCalculoComissao {
@@ -249,8 +373,8 @@ model PontoFidelidade {
   descricao     String
   data          DateTime            @default(now())
 
-  cliente    Cliente    @relation(fields: [clienteId], references: [id], onDelete: Cascade)
-  barbearia  Barbearia? @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
+  cliente    Cliente               @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+  barbearia  Barbearia?            @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
   lancamento LancamentoFinanceiro? @relation(fields: [lancamentoId], references: [id], onDelete: SetNull)
 
   @@map("pontos_fidelidade")
@@ -342,15 +466,15 @@ model LancamentoFinanceiro {
 
   aprovacoes AprovacaoEdicao[]
 
-  barbearia   Barbearia?   @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
-  agendamento Agendamento? @relation(fields: [agendamentoId], references: [id], onDelete: SetNull)
-  cliente     Cliente?     @relation(fields: [clienteId], references: [id], onDelete: SetNull)
-  barbeiro    Barbeiro?    @relation(fields: [barbeiroId], references: [id], onDelete: SetNull)
-  servico     Servico?     @relation(fields: [servicoId], references: [id], onDelete: SetNull)
-  pontoFidelidade PontoFidelidade?
-  vendaEstoque VendaEstoque? @relation("VendaOriginal")
-  estornoVendaEstoque VendaEstoque? @relation("VendaEstorno")
-  itens       ItemAtendimento[]
+  barbearia           Barbearia?        @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
+  agendamento         Agendamento?      @relation(fields: [agendamentoId], references: [id], onDelete: SetNull)
+  cliente             Cliente?          @relation(fields: [clienteId], references: [id], onDelete: SetNull)
+  barbeiro            Barbeiro?         @relation(fields: [barbeiroId], references: [id], onDelete: SetNull)
+  servico             Servico?          @relation(fields: [servicoId], references: [id], onDelete: SetNull)
+  pontoFidelidade     PontoFidelidade?
+  vendaEstoque        VendaEstoque?     @relation("VendaOriginal")
+  estornoVendaEstoque VendaEstoque?     @relation("VendaEstorno")
+  itens               ItemAtendimento[]
 
   @@index([barbeariaId, data])
   @@map("lancamentos_financeiros")
@@ -375,21 +499,21 @@ model Estoque {
 }
 
 model VendaProduto {
-  id             String         @id @default(uuid())
-  barbeariaId    String?
-  estoqueId      String?
-  vendaId        String?
-  nomeProduto    String
-  quantidade     Int
-  precoVenda     Decimal        @db.Decimal(10, 2)
-  custoUnitario  Decimal        @db.Decimal(10, 2)
-  lucro          Decimal        @db.Decimal(10, 2)
+  id              String         @id @default(uuid())
+  barbeariaId     String?
+  estoqueId       String?
+  vendaId         String?
+  nomeProduto     String
+  quantidade      Int
+  precoVenda      Decimal        @db.Decimal(10, 2)
+  custoUnitario   Decimal        @db.Decimal(10, 2)
+  lucro           Decimal        @db.Decimal(10, 2)
   descontoRateado Decimal?       @db.Decimal(10, 2)
-  formaPagamento FormaPagamento
-  data           DateTime       @default(now())
+  formaPagamento  FormaPagamento
+  data            DateTime       @default(now())
 
-  barbearia Barbearia? @relation(fields: [barbeariaId], references: [id], onDelete: SetNull)
-  estoque   Estoque?   @relation(fields: [estoqueId], references: [id], onDelete: SetNull)
+  barbearia Barbearia?    @relation(fields: [barbeariaId], references: [id], onDelete: SetNull)
+  estoque   Estoque?      @relation(fields: [estoqueId], references: [id], onDelete: SetNull)
   venda     VendaEstoque? @relation(fields: [vendaId], references: [id], onDelete: Restrict)
 
   @@index([vendaId])
@@ -398,28 +522,28 @@ model VendaProduto {
 }
 
 model VendaEstoque {
-  id String @id @default(uuid())
-  barbeariaId String
-  chaveRequisicao String
-  total Decimal @db.Decimal(10, 2)
-  valorBruto Decimal? @db.Decimal(10, 2)
-  tipoDesconto TipoDesconto?
-  valorDesconto Decimal? @db.Decimal(10, 2)
-  descontoManual Decimal? @db.Decimal(10, 2)
-  descontoPontos Decimal? @db.Decimal(10, 2)
-  descontoPercentual Decimal? @db.Decimal(10, 2)
-  pontosUtilizados Int?
-  formaPagamento FormaPagamento
-  data DateTime @default(now())
-  lancamentoId String @unique
-  estornadaEm DateTime?
-  motivoEstorno String?
-  estornadoPorId String?
-  estornoLancamentoId String? @unique
-  barbearia Barbearia @relation(fields: [barbeariaId], references: [id], onDelete: Restrict)
-  lancamento LancamentoFinanceiro @relation("VendaOriginal", fields: [lancamentoId], references: [id], onDelete: Restrict)
-  estornoLancamento LancamentoFinanceiro? @relation("VendaEstorno", fields: [estornoLancamentoId], references: [id], onDelete: Restrict)
-  itens VendaProduto[]
+  id                  String                @id @default(uuid())
+  barbeariaId         String
+  chaveRequisicao     String
+  total               Decimal               @db.Decimal(10, 2)
+  valorBruto          Decimal?              @db.Decimal(10, 2)
+  tipoDesconto        TipoDesconto?
+  valorDesconto       Decimal?              @db.Decimal(10, 2)
+  descontoManual      Decimal?              @db.Decimal(10, 2)
+  descontoPontos      Decimal?              @db.Decimal(10, 2)
+  descontoPercentual  Decimal?              @db.Decimal(10, 2)
+  pontosUtilizados    Int?
+  formaPagamento      FormaPagamento
+  data                DateTime              @default(now())
+  lancamentoId        String                @unique
+  estornadaEm         DateTime?
+  motivoEstorno       String?
+  estornadoPorId      String?
+  estornoLancamentoId String?               @unique
+  barbearia           Barbearia             @relation(fields: [barbeariaId], references: [id], onDelete: Restrict)
+  lancamento          LancamentoFinanceiro  @relation("VendaOriginal", fields: [lancamentoId], references: [id], onDelete: Restrict)
+  estornoLancamento   LancamentoFinanceiro? @relation("VendaEstorno", fields: [estornoLancamentoId], references: [id], onDelete: Restrict)
+  itens               VendaProduto[]
 
   @@unique([barbeariaId, chaveRequisicao])
   @@index([barbeariaId, data])
@@ -438,6 +562,136 @@ model Configuracao {
   barbearia Barbearia? @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
 
   @@map("configuracoes")
+}
+
+model AssinaturaSaas {
+  id                      String                  @id @default(uuid())
+  barbeariaId             String                  @unique
+  plano                   PlanoAssinatura
+  periodicidade           PeriodicidadeAssinatura
+  status                  StatusAssinatura        @default(PRE_CADASTRO)
+  precoCicloCentavos      Int
+  cicloInicio             DateTime?
+  cicloFim                DateTime?
+  testeInicio             DateTime?
+  testeFim                DateTime?
+  proximaCobrancaEm       DateTime?
+  renovacaoAutomatica     Boolean                 @default(true)
+  provedor                String                  @default("ASAAS")
+  clienteExternoId        String?
+  assinaturaExternaId     String?                 @unique
+  checkoutExternoId       String?                 @unique
+  checkoutUrl             String?
+  checkoutExpiraEm        DateTime?
+  formasPagamento         String[]                @default([])
+  contratacaoIdempotencia String?                 @unique
+  ultimoEventoProvedorEm  DateTime?
+  ultimaCobrancaExternaId String?
+  ofertaVersao            String?
+  termosVersao            String?
+  aceiteEm                DateTime?
+  aceitePorId             String?
+  avisoLimiteClientesEm   DateTime?
+  avisoPagamentoEm        DateTime?
+  toleranciaAte           DateTime?
+  fimAcessoEm             DateTime?
+  consultaExportacaoAte   DateTime?
+  reajusteAvisadoEm       DateTime?
+  reajusteEfetivoEm       DateTime?
+  reajustePrecoCentavos   Int?
+  createdAt               DateTime                @default(now())
+  updatedAt               DateTime                @updatedAt
+
+  barbearia     Barbearia                           @relation(fields: [barbeariaId], references: [id], onDelete: Restrict)
+  aceitePor     Usuario?                            @relation("AceiteAssinaturaUsuario", fields: [aceitePorId], references: [id], onDelete: Restrict)
+  mudancas      MudancaAssinatura[]
+  cancelamentos SolicitacaoCancelamentoAssinatura[]
+
+  @@index([status, proximaCobrancaEm])
+  @@map("assinaturas_saas")
+}
+
+model MudancaAssinatura {
+  id                     String                  @id @default(uuid())
+  assinaturaId           String
+  solicitadoPorId        String
+  tipo                   TipoMudancaAssinatura
+  status                 StatusMudancaAssinatura @default(SOLICITADA)
+  planoOrigem            PlanoAssinatura
+  planoDestino           PlanoAssinatura
+  periodicidadeOrigem    PeriodicidadeAssinatura
+  periodicidadeDestino   PeriodicidadeAssinatura
+  valorAdicionalCentavos Int                     @default(0)
+  efetivarEm             DateTime?
+  chaveIdempotencia      String                  @unique
+  checkoutExternoId      String?                 @unique
+  checkoutUrl            String?
+  checkoutExpiraEm       DateTime?
+  ofertaVersao           String
+  aceiteEm               DateTime
+  createdAt              DateTime                @default(now())
+  updatedAt              DateTime                @updatedAt
+
+  assinatura    AssinaturaSaas @relation(fields: [assinaturaId], references: [id], onDelete: Restrict)
+  solicitadoPor Usuario        @relation("SolicitanteMudancaAssinatura", fields: [solicitadoPorId], references: [id], onDelete: Restrict)
+
+  @@index([assinaturaId, status])
+  @@map("mudancas_assinatura")
+}
+
+model EventoWebhookAsaas {
+  id                String                   @id @default(uuid())
+  eventoExternoId   String                   @unique
+  tipo              String
+  recursoTipo       String?
+  recursoExternoId  String?
+  referenciaExterna String?
+  resumo            Json
+  status            StatusEventoWebhookAsaas @default(PENDENTE)
+  tentativas        Int                      @default(0)
+  recebidoEm        DateTime                 @default(now())
+  ocorridoEm        DateTime?
+  processadoEm      DateTime?
+  ultimoErro        String?
+  createdAt         DateTime                 @default(now())
+  updatedAt         DateTime                 @updatedAt
+
+  @@index([status, recebidoEm])
+  @@index([referenciaExterna])
+  @@index([recursoExternoId])
+  @@map("eventos_webhook_asaas")
+}
+
+model SolicitacaoCancelamentoAssinatura {
+  id                       String                       @id @default(uuid())
+  barbeariaId              String
+  solicitadoPorId          String
+  solicitadoPorEmail       String
+  canal                    CanalCancelamentoAssinatura  @default(SISTEMA)
+  status                   StatusCancelamentoAssinatura @default(PROCESSAMENTO_PENDENTE)
+  chaveIdempotencia        String                       @unique
+  aberta                   Boolean?                     @default(true)
+  recebidoEm               DateTime                     @default(now())
+  updatedAt                DateTime                     @updatedAt
+  provedor                 String                       @default("ASAAS")
+  assinaturaExternaId      String?
+  assinaturaId             String?
+  tentativasProvedor       Int                          @default(0)
+  ultimaTentativaEm        DateTime?
+  ultimoErroProvedor       String?
+  cancelamentoConfirmadoEm DateTime?
+  fimAcessoEm              DateTime?
+  motivo                   String?
+
+  barbearia     Barbearia       @relation(fields: [barbeariaId], references: [id], onDelete: Restrict)
+  solicitadoPor Usuario         @relation(fields: [solicitadoPorId], references: [id], onDelete: Restrict)
+  assinatura    AssinaturaSaas? @relation(fields: [assinaturaId], references: [id], onDelete: Restrict)
+
+  // Em PostgreSQL, valores NULL não colidem. Assim há uma solicitação aberta por
+  // barbearia e o histórico encerrado pode ser preservado com aberta = NULL.
+  @@unique([barbeariaId, aberta])
+  @@index([barbeariaId, status])
+  @@map("solicitacoes_cancelamento_assinatura")
 }
 
 model ConfiguracaoFidelidade {
@@ -608,22 +862,22 @@ model ItemAtendimento {
   // a exclusão mútua de (agendamentoId vs lancamentoId) pois o Prisma não modela CHECK nativamente,
   // o que causaria conflitos e falhas no comando `db push` rodado no boot em produção.
   // A garantia de vínculo único é feita pela inserção aninhada e transacionada no código.
-  id             String   @id @default(uuid())
-  barbeariaId    String?
+  id          String  @id @default(uuid())
+  barbeariaId String?
 
-  agendamentoId  String?
-  lancamentoId   String?
+  agendamentoId String?
+  lancamentoId  String?
 
-  servicoId      String?  
+  servicoId      String?
   nome           String
-  preco          Decimal  @db.Decimal(10, 2)
+  preco          Decimal @db.Decimal(10, 2)
   duracaoMinutos Int
-  ordem          Int      @default(0)
+  ordem          Int     @default(0)
 
-  agendamento  Agendamento?          @relation(fields: [agendamentoId], references: [id], onDelete: Cascade)
-  lancamento   LancamentoFinanceiro? @relation(fields: [lancamentoId], references: [id], onDelete: Cascade)
-  servico      Servico?              @relation(fields: [servicoId], references: [id], onDelete: SetNull)
-  barbearia    Barbearia?            @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
+  agendamento Agendamento?          @relation(fields: [agendamentoId], references: [id], onDelete: Cascade)
+  lancamento  LancamentoFinanceiro? @relation(fields: [lancamentoId], references: [id], onDelete: Cascade)
+  servico     Servico?              @relation(fields: [servicoId], references: [id], onDelete: SetNull)
+  barbearia   Barbearia?            @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
 
   @@index([barbeariaId])
   @@index([agendamentoId])

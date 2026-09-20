@@ -1,8 +1,10 @@
 // Serviço de clientes — CRUD + dados agregados por barbearia
 import { prisma } from '../lib/prisma';
 import { validarSaldoParaResgate } from './saldoFidelidade.util';
+import { normalizarDataNascimento } from '../utils/dataNascimento.util';
 import { CATEGORIA_VENDA_PRODUTO } from '../lib/constantes';
 import { resumirPontos } from '../utils/extratoPontos.util';
+import { executarSerializavel, validarVagaCliente } from './limitesAssinatura.service';
 
 const categoriasProduto = [CATEGORIA_VENDA_PRODUTO, 'VENDA_PRODUTO'];
 const comprasAtivas = {
@@ -49,7 +51,7 @@ export class ClienteService {
     const filtroBarbearia = {
       OR: [
         { barbeariaId },
-        { clientesBarbearias: { some: { barbeariaId } } },
+        { clientesBarbearias: { some: { barbeariaId, ativo: true } } },
       ],
     };
 
@@ -246,7 +248,7 @@ export class ClienteService {
       }
     });
 
-    if (!vinculadoDiretamente && !vinculoJunction) {
+    if (!vinculadoDiretamente && !vinculoJunction?.ativo) {
       throw new Error('Cliente não pertence a esta barbearia');
     }
 
@@ -360,7 +362,7 @@ export class ClienteService {
       where: {
         OR: [
           { barbeariaId },
-          { clientesBarbearias: { some: { barbeariaId } } }
+          { clientesBarbearias: { some: { barbeariaId, ativo: true } } }
         ],
         dataNascimento: { not: null },
       },
@@ -388,7 +390,7 @@ export class ClienteService {
       where: {
         OR: [
           { barbeariaId },
-          { clientesBarbearias: { some: { barbeariaId } } }
+          { clientesBarbearias: { some: { barbeariaId, ativo: true } } }
         ],
       }
     });
@@ -475,29 +477,34 @@ export class ClienteService {
   }
 
   /** Cria um novo cliente (com usuário) */
-  static async criar(dados: DadosCliente) {
+  static async criar(dados: DadosCliente, barbeariaId: string) {
     const bcrypt = await import('bcryptjs');
     const senhaHash = await bcrypt.hash(dados.senha, 10);
 
-    return prisma.cliente.create({
-      data: {
-        telefone: dados.telefone,
-        dataNascimento: dados.dataNascimento ? new Date(dados.dataNascimento) : null,
-        observacoes: dados.observacoes,
-        usuario: {
-          create: {
-            nome: dados.nome,
-            email: dados.email,
-            senha: senhaHash,
-            papel: 'CLIENTE' as any,
-          } as any,
+    return executarSerializavel(async (tx) => {
+      await validarVagaCliente(tx, barbeariaId);
+      return tx.cliente.create({
+        data: {
+          barbearia: { connect: { id: barbeariaId } },
+          telefone: dados.telefone,
+          dataNascimento: dados.dataNascimento ? normalizarDataNascimento(dados.dataNascimento) : null,
+          observacoes: dados.observacoes,
+          usuario: {
+            create: {
+              nome: dados.nome,
+              email: dados.email,
+              senha: senhaHash,
+              papel: 'CLIENTE' as any,
+              barbearia: { connect: { id: barbeariaId } },
+            } as any,
+          },
         },
-      },
-      include: {
-        usuario: {
-          select: { id: true, nome: true, email: true },
+        include: {
+          usuario: {
+            select: { id: true, nome: true, email: true },
+          },
         },
-      },
+      });
     });
   }
 
@@ -511,7 +518,7 @@ export class ClienteService {
       where: { clienteId_barbeariaId: { clienteId: id, barbeariaId } }
     });
 
-    if (!vinculadoDiretamente && !vinculoJunction) {
+    if (!vinculadoDiretamente && !vinculoJunction?.ativo) {
       throw new Error('Cliente não pertence a esta barbearia');
     }
 
@@ -519,7 +526,7 @@ export class ClienteService {
       where: { id },
       data: {
         ...dados,
-        dataNascimento: dados.dataNascimento ? new Date(dados.dataNascimento) : undefined,
+        dataNascimento: dados.dataNascimento ? normalizarDataNascimento(dados.dataNascimento) : undefined,
       } as any,
       include: {
         usuario: {
@@ -529,7 +536,7 @@ export class ClienteService {
     });
   }
 
-  /** Remove um cliente */
+  /** Arquiva apenas o vínculo desta unidade, preservando conta global e histórico. */
   static async remover(id: string, barbeariaId: string) {
     const cliente = await prisma.cliente.findUnique({ where: { id } });
     if (!cliente) throw new Error('Cliente não encontrado');
@@ -539,11 +546,24 @@ export class ClienteService {
       where: { clienteId_barbeariaId: { clienteId: id, barbeariaId } }
     });
 
-    if (!vinculadoDiretamente && !vinculoJunction) {
+    if (!vinculadoDiretamente && !vinculoJunction?.ativo) {
       throw new Error('Cliente não pertence a esta barbearia');
     }
 
-    await prisma.cliente.delete({ where: { id } });
-    await prisma.usuario.delete({ where: { id: cliente.usuarioId } });
+    await prisma.$transaction(async (tx) => {
+      await tx.clienteBarbearia.upsert({
+        where: { clienteId_barbeariaId: { clienteId: id, barbeariaId } },
+        create: { clienteId: id, barbeariaId, ativo: false, arquivadoEm: new Date() },
+        update: { ativo: false, arquivadoEm: new Date() },
+      });
+
+      if (vinculadoDiretamente) {
+        await tx.cliente.update({ where: { id }, data: { barbeariaId: null } });
+        await tx.usuario.updateMany({
+          where: { id: cliente.usuarioId, papel: 'CLIENTE', barbeariaId },
+          data: { barbeariaId: null },
+        });
+      }
+    });
   }
 }

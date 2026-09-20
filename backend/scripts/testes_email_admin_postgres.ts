@@ -18,7 +18,7 @@ const email = `${nome}@example.invalid`;
 async function main() {
   const { AuthService } = await import('../src/services/auth.service');
   try {
-    const dados = { nome, email, senha: randomUUID(), papel: 'ADMIN' as const };
+    const dados = { nome, email, senha: randomUUID(), aceiteDocumentos: { aceito: true, termosVersao: '2026-09-15', privacidadeVersao: '2026-09-15' }, papel: 'ADMIN' as const };
     const resultados = await Promise.allSettled([
       AuthService.registrar(dados),
       AuthService.registrar({ ...dados, email: ` ${email.toUpperCase()} ` }),

@@ -1,3 +1,4 @@
+import { LinksDocumentos } from '../../components/AceiteDocumentos';
 import { useState } from 'react';
 import { Envelope as Mail, Lock, WarningCircle as AlertCircle, UserPlus, Eye, EyeSlash as EyeOff } from '@phosphor-icons/react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -178,6 +179,7 @@ export function AdminLogin() {
             Entrar como administrador
           </Botao>
         </form>
+        <LinksDocumentos />
 
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 'var(--espaco-2)', marginTop: 'var(--espaco-4)' }}>
           <UserPlus size={14} style={{ color: 'var(--texto-secundario)' }} />

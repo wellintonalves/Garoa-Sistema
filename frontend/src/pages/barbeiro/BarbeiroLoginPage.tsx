@@ -1,3 +1,4 @@
+import { LinksDocumentos } from '../../components/AceiteDocumentos';
 import { useState } from 'react';
 import { Envelope as Mail, Lock, WarningCircle as AlertCircle, Eye, EyeSlash as EyeOff } from '@phosphor-icons/react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -208,6 +209,7 @@ export function BarbeiroLoginPage() {
             Entrar como barbeiro
           </Botao>
         </form>
+        <LinksDocumentos />
 
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: 'var(--espaco-4)' }}>
           <button

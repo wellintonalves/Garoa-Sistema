@@ -40,7 +40,7 @@ export class AuthController {
       }
 
       // Usuário e eventual nova barbearia são criados juntos, sem cadastros órfãos.
-      const resultado = await AuthService.registrar({ nome, email, senha, papel, barbeariaId });
+      const resultado = await AuthService.registrar({ nome, email, senha, papel, barbeariaId, aceiteDocumentos: req.body.aceiteDocumentos });
 
       // Envia o código de verificação após criar o usuário
       await VerificacaoService.enviarCodigo(resultado.usuario.id, resultado.usuario.email, resultado.usuario.nome);

@@ -41,6 +41,10 @@ const pendingRequests = new Map<string, Promise<any>>();
 const originalGet = api.get;
 
 api.get = function (url: string, config?: any) {
+  // Cada consumidor com AbortSignal possui seu próprio ciclo de vida.
+  // Compartilhar a promise faria um efeito remontado herdar o abort anterior.
+  if (config?.signal) return originalGet.apply(this, [url, config]);
+
   const key = `get:${url}:${JSON.stringify(config?.params || {})}`;
 
   if (pendingRequests.has(key)) {

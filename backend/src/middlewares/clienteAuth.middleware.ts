@@ -3,6 +3,7 @@ import { Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { authConfig } from '../config/auth';
 import { ClienteAuthRequest, ClienteJWT } from '../types';
+import { validarEscritaAssinatura } from '../services/acessoAssinatura.service';
 
 /** Verifica se o token JWT do cliente é válido */
 export function clienteAuthMiddleware(req: ClienteAuthRequest, res: Response, next: NextFunction): void {
@@ -35,7 +36,9 @@ export function clienteAuthMiddleware(req: ClienteAuthRequest, res: Response, ne
 
     if (barbeariaId && typeof barbeariaId === 'string') {
       const { tenantStorage } = require('../lib/als');
-      tenantStorage.run({ barbeariaId }, () => next());
+      validarEscritaAssinatura(barbeariaId, req.method, req.originalUrl)
+        .then(() => tenantStorage.run({ barbeariaId }, () => next()))
+        .catch(next);
     } else {
       next();
     }
