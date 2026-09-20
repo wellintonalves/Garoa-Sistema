@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { VerPlanosButton } from './VerPlanosButton';
 import api from '../api/client';
+import { FaixaCobrancaFutura } from './FaixaCobrancaFutura';
+import { AvisoCobrancaFuturaModal } from './AvisoCobrancaFuturaModal';
 
 export interface TransicaoLegado {
   legada: boolean;
@@ -57,11 +59,11 @@ export function TransicaoLegadoBanner() {
     <VerPlanosButton />
   </section>;
   if (!transicao?.legada || ['NAO_APLICAVEL', 'MIGRADA'].includes(transicao.status)) return null;
+  if (transicao.status === 'AGUARDANDO_DISPONIBILIDADE') return <><FaixaCobrancaFutura /><AvisoCobrancaFuturaModal /></>;
   return <section className="mb-5 rounded-xl bg-[var(--aviso-fundo)] p-4 sm:p-5 text-sm text-[var(--texto-principal)] flex flex-col lg:flex-row lg:items-center gap-4" aria-label="Transição para assinatura">
     <div className="min-w-0 flex-1 space-y-2">
       <h2 className="font-semibold text-base">Escolha um plano para continuar com sua barbearia</h2>
-      {transicao.status === 'AGUARDANDO_DISPONIBILIDADE' ? <p>A contratação ainda não está disponível. Seu acesso permanece como está; o prazo de transição ainda não começou.</p> :
-        transicao.status === 'AGUARDANDO_AVISO' ? <p>Você terá cinco dias corridos a partir deste aviso para contratar um plano. A data limite será confirmada ao registrar o aviso.</p> :
+      {transicao.status === 'AGUARDANDO_AVISO' ? <p>Você terá cinco dias corridos a partir deste aviso para contratar um plano. A data limite será confirmada ao registrar o aviso.</p> :
         transicao.status === 'PRAZO_MIGRACAO' ? <p>Contrate até {data(transicao.prazoAte)} para manter o acesso completo. Depois, ficam disponíveis apenas consulta e exportação por trinta dias.</p> :
         transicao.status === 'CONSULTA_EXPORTACAO' ? <p>O prazo de transição terminou. Você pode consultar e exportar seus dados até {data(transicao.consultaExportacaoAte)}.</p> :
         <p>O período de consulta e exportação terminou. Entre em contato com o suporte para verificar sua conta.</p>}
