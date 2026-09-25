@@ -21,6 +21,7 @@ import { CheckoutLocal } from './pages/dev/CheckoutLocal';
 const Dashboard = lazy(() => import('./pages/Dashboard').then(m => ({ default: m.Dashboard })));
 const Agenda = lazy(() => import('./pages/Agenda').then(m => ({ default: m.Agenda })));
 const Barbeiros = lazy(() => import('./pages/Barbeiros').then(m => ({ default: m.Barbeiros })));
+const ProducaoBarbeiro = lazy(() => import('./pages/ProducaoBarbeiro').then(m => ({ default: m.ProducaoBarbeiro })));
 const Servicos = lazy(() => import('./pages/Servicos').then(m => ({ default: m.Servicos })));
 const Clientes = lazy(() => import('./pages/Clientes').then(m => ({ default: m.Clientes })));
 const Financeiro = lazy(() => import('./pages/Financeiro').then(m => ({ default: m.Financeiro })));
@@ -145,7 +146,8 @@ export function App() {
                   <Route path="/admin" element={<RotaProtegida><DashboardLayout /></RotaProtegida>}>
                     <Route index element={<Dashboard />} />
                     <Route path="agenda" element={<Agenda />} />
-                    <Route path="barbeiros" element={<Barbeiros />} />
+                    <Route path="barbeiros" element={<ErrorBoundary><Barbeiros /></ErrorBoundary>} />
+                    <Route path="barbeiros/:barbeiroId/producao" element={<ErrorBoundary><ProducaoBarbeiro /></ErrorBoundary>} />
                     <Route path="servicos" element={<Servicos />} />
                     <Route path="clientes" element={<Clientes />} />
                     <Route path="financeiro" element={<Financeiro />} />

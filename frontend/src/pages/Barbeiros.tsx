@@ -1,13 +1,14 @@
 // Página de Barbeiros — listagem com cards + seção de comissões por período
 import { useEffect, useState } from 'react';
-import { Star, Plus, CurrencyDollar, TrendUp as TrendingUp, Calendar, PencilSimple, Trash, Power, Clock } from '@phosphor-icons/react';
+import { Link, useSearchParams } from 'react-router-dom';
+import { Star, Plus, CurrencyDollar, PencilSimple, Trash, Power, Clock } from '@phosphor-icons/react';
 import { Modal } from '../components/Modal';
 import { Botao } from '../components/ui/Botao';
 import { ImageCropperModal } from '../components/ImageCropperModal';
 
-import { SkeletonPage, SkeletonCard } from '../components/Skeleton';
-import { useNavigate } from 'react-router-dom';
-import { dataBrasilia, hojeBrasilia } from '../utils/datas';
+import { SkeletonPage } from '../components/Skeleton';
+import { ProducaoBarbeiros } from '../components/ProducaoBarbeiros';
+import { ErrorBoundary } from '../components/ErrorBoundary';
 import api from '../api/client';
 import { CORES_REFERENCIA } from '../styles/tokens';
 import { BarbeiroHorariosCard, type DiaConfig } from './barbeiro/BarbeiroHorariosCard';
@@ -27,12 +28,6 @@ interface Barbeiro {
   };
 }
 
-interface ComissaoBarbeiro {
-  nome: string;
-  bruto: number;
-  comissao: number;
-  liquido: number;
-}
 
 export function Barbeiros() {
   const [barbeiros, setBarbeiros] = useState<Barbeiro[]>([]);
@@ -46,38 +41,19 @@ export function Barbeiros() {
   const [configurandoJornada, setConfigurandoJornada] = useState<Barbeiro | null>(null);
   const [nomeConfirmacao, setNomeConfirmacao] = useState('');
   const [form, setForm] = useState({ nome: '', email: '', senha: '', foto: '', especialidades: '', comissaoPercent: '50', cor: CORES_REFERENCIA.corPadraoBarbeiro });
-  const navigate = useNavigate();
+  const [producaoParams] = useSearchParams();
+  const [erroLista, setErroLista] = useState('');
 
-  // Seção de comissões
-  const dataHoje = hojeBrasilia();
-  const [year, month] = dataHoje.split('-').map(Number);
-  const dataPrimeiroDia = dataBrasilia(new Date(year, month - 1, 1, 12, 0, 0));
-  const [comissaoInicio, setComissaoInicio] = useState(dataPrimeiroDia);
-  const [comissaoFim, setComissaoFim] = useState(dataHoje);
-  const [comissoes, setComissoes] = useState<Record<string, ComissaoBarbeiro>>({});
-  const [carregandoComissoes, setCarregandoComissoes] = useState(true);
-
-  async function carregar() {
+  async function carregar(signal?: AbortSignal) {
+    setErroLista('');
     try {
-      const res = await api.get<Barbeiro[]>('/barbeiros?todos=true');
-      setBarbeiros(res.data);
-    } catch (err) { console.error(err); }
-    finally { setCarregando(false); }
+      const res = await api.get<Barbeiro[]>('/barbeiros?todos=true', { signal });
+      if (!signal?.aborted) setBarbeiros(res.data ?? []);
+    } catch (err) { if (!signal?.aborted) setErroLista(err instanceof Error ? err.message : 'Não foi possível carregar os barbeiros.'); }
+    finally { if (!signal?.aborted) setCarregando(false); }
   }
 
-  async function carregarComissoes() {
-    setCarregandoComissoes(true);
-    try {
-      const res = await api.get('/financeiro/relatorio', {
-        params: { inicio: comissaoInicio, fim: comissaoFim, barbeiroId: 'todos' }
-      });
-      setComissoes(res.data.consolidado.porBarbeiro || {});
-    } catch (err) { console.error(err); }
-    finally { setCarregandoComissoes(false); }
-  }
-
-  useEffect(() => { carregar(); }, []);
-  useEffect(() => { carregarComissoes(); }, []);
+  useEffect(() => { const controller = new AbortController(); carregar(controller.signal); return () => controller.abort(); }, []);
 
   function abrirModalNovo() {
     setEditandoId(null);
@@ -161,7 +137,6 @@ export function Barbeiros() {
     }
   }
 
-  const fmt = (v: number) => Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
   // Pega iniciais do nome para avatar
   function getIniciais(nome: string) {
@@ -169,6 +144,7 @@ export function Barbeiros() {
   }
 
   if (carregando) return <SkeletonPage />;
+  if (erroLista) return <div role="alert"><p>{erroLista}</p><button className="btn-primary min-h-[48px]" onClick={() => carregar()}>Tentar novamente</button></div>;
 
   return (
     <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
@@ -188,14 +164,13 @@ export function Barbeiros() {
         </button>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '12px' }}>
-        {barbeiros.map(b => {
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 280px), 1fr))', gap: '12px' }}>
+        {(barbeiros ?? []).map(b => {
           const totalHistorico = b._count ? b._count.agendamentos + (b._count.lancamentos || 0) : 0;
           return (
           <div
             key={b.id}
-            className="card min-w-0"
-            style={{ borderLeft: b.ativo ? '2px solid var(--amber)' : '2px solid var(--border)' }}
+            className="card barbeiro-perfil min-w-0"
           >
             <div className="flex items-start gap-4 mb-4">
               {/* Avatar com iniciais ou foto */}
@@ -330,7 +305,7 @@ export function Barbeiros() {
               )}
             </div>
             <div className="flex flex-wrap gap-1.5 mb-3">
-              {b.especialidades.map((e, i) => (
+              {(b.especialidades ?? []).map((e, i) => (
                 <span
                   key={i}
                   className="badge"
@@ -347,9 +322,9 @@ export function Barbeiros() {
               <div className="flex items-center gap-1.5" style={{ color: 'var(--cor-icone)', fontFamily: 'var(--fonte-interface)', fontSize: '11px', letterSpacing: '0.04em' }}>
                 <Star size={14} /> <span>Comissão: {b.comissaoPercent}%</span>
               </div>
-              <button
-                onClick={() => navigate(`/relatorios?barbeiroId=${b.id}`)}
-                className="flex items-center gap-1 transition-colors"
+              <Link
+                to={`/admin/barbeiros/${b.id}/producao?${producaoParams.toString()}`} target="_blank" rel="noopener noreferrer"
+                className="flex items-center gap-1 transition-colors min-h-[48px]"
                 style={{
                   fontFamily: 'var(--fonte-interface)',
                   fontSize: '11px',
@@ -362,96 +337,17 @@ export function Barbeiros() {
                 }}
                 onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--amber)'; }}
                 onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--texto-secundario)'; }}
-                title="Ver comissões"
+                title="Ver comissões em nova aba"
               >
                 <CurrencyDollar size={14} /> Ver comissões
-              </button>
+              </Link>
             </div>
           </div>
           );
         })}
       </div>
 
-      {/* Seção de Comissões por Período */}
-      <div className="card">
-        <div style={{ paddingBottom: '1.25rem', borderBottom: '1px solid var(--border)', marginBottom: '1.25rem' }}>
-          <div className="flex flex-wrap items-end gap-4">
-            <div className="flex items-center gap-2">
-              <TrendingUp size={16} style={{ color: 'var(--cor-icone)' }} />
-              <h2
-                style={{
-                  fontFamily: 'var(--fonte-interface)',
-                  fontSize: '16px',
-                  fontWeight: 700,
-                  color: 'var(--text-primary)',
-                }}
-              >
-                Comissões por Barbeiro
-              </h2>
-            </div>
-            <div className="flex flex-wrap items-end gap-2 mt-3 sm:mt-0 sm:ml-auto">
-              <div>
-                <label className="input-label">De</label>
-                <input type="date" value={comissaoInicio} onChange={e => setComissaoInicio(e.target.value)} className="ds-input" style={{ width: '138px' }} />
-              </div>
-              <div>
-                <label className="input-label">Até</label>
-                <input type="date" value={comissaoFim} onChange={e => setComissaoFim(e.target.value)} className="ds-input" style={{ width: '138px' }} />
-              </div>
-              <button onClick={carregarComissoes} className="btn-primary flex items-center justify-center gap-1 px-4">
-                <Calendar size={13} /> Buscar
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div>
-          {carregandoComissoes ? (
-            <SkeletonCard />
-          ) : Object.keys(comissoes).length > 0 ? (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '12px' }}>
-              {Object.entries(comissoes).map(([id, b]) => (
-                <div key={id} className="card-featured">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div
-                      className="flex items-center justify-center"
-                      style={{
-                        width: '36px',
-                        height: '36px',
-                        background: 'rgba(var(--cor-primaria-rgb), 0.10)',
-                        fontFamily: 'var(--fonte-interface)',
-                        fontSize: '16px',
-                        color: 'rgba(var(--cor-primaria-rgb), 0.15)',
-                      }}
-                    >
-                      {getIniciais(b.nome)}
-                    </div>
-                    <p style={{ fontFamily: 'var(--fonte-interface)', fontWeight: 700, color: 'var(--text-primary)', fontSize: '13px' }}>{b.nome}</p>
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '13px' }}>
-                    <div className="flex justify-between items-center">
-                      <span style={{ color: 'var(--texto-secundario)', fontFamily: 'var(--fonte-interface)', fontSize: '11px', letterSpacing: '0.02em' }}>Produzido</span>
-                      <span style={{ color: 'var(--text-primary)', fontFamily: 'var(--fonte-numeros)', fontSize: '0.8125rem' }}>{fmt(b.bruto)}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span style={{ color: 'var(--texto-secundario)', fontFamily: 'var(--fonte-interface)', fontSize: '11px', letterSpacing: '0.02em' }}>Comissão</span>
-                      <span style={{ color: 'var(--cor-icone)', fontFamily: 'var(--fonte-numeros)', fontSize: '0.8125rem', fontWeight: 500 }}>{fmt(b.comissao)}</span>
-                    </div>
-                    <div className="flex justify-between items-center" style={{ borderTop: '1px solid var(--border)', paddingTop: '8px', marginTop: '4px' }}>
-                      <span style={{ color: 'var(--texto-secundario)', fontFamily: 'var(--fonte-interface)', fontSize: '11px', letterSpacing: '0.02em' }}>Líquido</span>
-                      <span style={{ color: 'var(--sucesso)', fontFamily: 'var(--fonte-numeros)', fontSize: '0.8125rem', fontWeight: 500 }}>{fmt(b.liquido)}</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p style={{ textAlign: 'center', color: 'var(--texto-secundario)', fontFamily: 'var(--fonte-interface)', fontSize: '11px', padding: '2rem 0' }}>
-              Nenhuma comissão encontrada para o período selecionado.
-            </p>
-          )}
-        </div>
-      </div>
+      <ErrorBoundary><ProducaoBarbeiros /></ErrorBoundary>
 
       <Modal aberto={modalAberto} onFechar={() => setModalAberto(false)} titulo={editandoId ? "Editar Barbeiro" : "Novo Barbeiro"}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>

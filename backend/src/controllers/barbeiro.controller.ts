@@ -2,8 +2,23 @@
 import { Response } from 'express';
 import { BarbeiroService } from '../services/barbeiro.service';
 import { AuthRequest } from '../types';
+import { obterProducaoBarbeiros } from '../services/producaoBarbeiro.service';
+import { ErroDeNegocio } from '../lib/erros';
 
 export class BarbeiroController {
+  static async producao(req: AuthRequest, res: Response): Promise<void> {
+    try {
+      const inicio = typeof req.query.inicio === 'string' ? req.query.inicio : '';
+      const fim = typeof req.query.fim === 'string' ? req.query.fim : '';
+      if (['pagamento', 'barbeiroId'].some(campo => req.query[campo] !== undefined && typeof req.query[campo] !== 'string')) throw new ErroDeNegocio('Filtros inválidos.', 400);
+      res.json(await obterProducaoBarbeiros(req.usuario?.barbeariaId || '', inicio, fim, {
+        pagamento: req.query.pagamento as string | undefined,
+        barbeiroId: req.query.barbeiroId as string | undefined,
+      }));
+    } catch (error) {
+      res.status(error instanceof ErroDeNegocio ? error.status : 500).json({ erro: error instanceof ErroDeNegocio ? error.message : 'Não foi possível carregar a produção.' });
+    }
+  }
   /** GET /barbeiros */
   static async listar(req: AuthRequest, res: Response): Promise<void> {
     try {

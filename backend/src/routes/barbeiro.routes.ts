@@ -7,6 +7,7 @@ import { roleMiddleware } from '../middlewares/role.middleware';
 const router = Router();
 
 router.use(authMiddleware);
+router.get('/producao', roleMiddleware('ADMIN'), BarbeiroController.producao);
 
 router.get('/', roleMiddleware('ADMIN', 'BARBEIRO'), BarbeiroController.listar);
 router.get('/:id', roleMiddleware('ADMIN', 'BARBEIRO'), BarbeiroController.buscar);

@@ -6,6 +6,7 @@
     "node": ">=20.0.0"
   },
   "scripts": {
+    "test:producao-barbeiro": "tsx scripts/testes_producao_barbeiro.ts",
     "test:regularizacao": "tsx scripts/testes_regularizacao_asaas.ts",
     "test:reversoes-postgres": "tsx scripts/testes_reversoes_postgres_local.ts",
     "check:cobranca": "tsx scripts/verificar_prontidao_cobranca.ts",
