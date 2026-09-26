@@ -9,6 +9,7 @@ interface Usuario {
   nome: string;
   email: string;
   papel: 'ADMIN' | 'BARBEIRO' | 'CLIENTE';
+  barbeariaId?: string | null;
 }
 
 interface AuthContextData {

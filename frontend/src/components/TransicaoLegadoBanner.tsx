@@ -1,9 +1,11 @@
-import { useEffect, useRef, useState } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { VerPlanosButton } from './VerPlanosButton';
 import api from '../api/client';
 import { FaixaCobrancaFutura } from './FaixaCobrancaFutura';
 import { AvisoCobrancaFuturaModal } from './AvisoCobrancaFuturaModal';
+import { AuthContext } from '../contexts/AuthContext';
+import { agendarLimiteAvisoHSousa, H_SOUSA_ATIVA_ID, ocultarAvisoContratacaoHSousa } from './avisoContratacaoHSousa';
 
 export interface TransicaoLegado {
   legada: boolean;
@@ -20,6 +22,9 @@ function data(valor: string | null) {
 }
 
 export function TransicaoLegadoBanner() {
+  const { usuario } = useContext(AuthContext);
+  const barbeariaId = usuario?.barbeariaId;
+  const [agora, setAgora] = useState(Date.now);
   const { pathname } = useLocation();
   const [transicao, setTransicao] = useState<TransicaoLegado | null>(null);
   const [assinatura, setAssinatura] = useState<{ status: string; testeFim: string | null } | null>(null);
@@ -27,6 +32,21 @@ export function TransicaoLegadoBanner() {
   const [erro, setErro] = useState(false);
   const [tentativa, setTentativa] = useState(0);
   const registrando = useRef(false);
+  useEffect(() => {
+    if (barbeariaId !== H_SOUSA_ATIVA_ID) return;
+    const atualizar = () => {
+      setAgora(Date.now());
+      setTentativa(valor => valor + 1);
+    };
+    const cancelar = agendarLimiteAvisoHSousa(agora, atualizar);
+    window.addEventListener('focus', atualizar);
+    document.addEventListener('visibilitychange', atualizar);
+    return () => {
+      cancelar();
+      window.removeEventListener('focus', atualizar);
+      document.removeEventListener('visibilitychange', atualizar);
+    };
+  }, [barbeariaId, agora]);
   useEffect(() => {
     const controller = new AbortController();
     setErro(false);
@@ -54,6 +74,7 @@ export function TransicaoLegadoBanner() {
   }, [transicao, tentativa, erro]);
 
   if (erro) return <div role="alert" className="mb-5 rounded-xl bg-[var(--aviso-fundo)] p-4 text-sm text-[var(--texto-principal)] flex flex-col sm:flex-row gap-3 sm:items-center justify-between"><span>Não foi possível consultar os avisos da assinatura.</span><button type="button" onClick={() => setTentativa(valor => valor + 1)} className="btn-secondary !min-h-12 shrink-0">Tentar novamente</button></div>;
+  if (ocultarAvisoContratacaoHSousa(barbeariaId, transicao, assinatura, agora)) return null;
   if (consultado && !transicao?.legada && (!assinatura || ['PRE_CADASTRO', 'TESTE'].includes(assinatura.status))) return <section aria-label="Aviso de assinatura" className="mb-5 rounded-xl bg-[var(--aviso-fundo)] p-4 text-sm text-[var(--texto-principal)] flex flex-col sm:flex-row sm:items-center gap-3">
     <p className="min-w-0 flex-1">{assinatura?.status === 'TESTE' ? `Seu período de teste termina em ${data(assinatura.testeFim)}. Consulte seu plano e as opções de assinatura.` : assinatura?.status === 'PRE_CADASTRO' ? 'Conclua a contratação para ativar sua assinatura.' : 'Escolha uma assinatura para sua barbearia. Compare os planos e as opções mensal e anual.'}</p>
     <VerPlanosButton />
