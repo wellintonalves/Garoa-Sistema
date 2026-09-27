@@ -38,6 +38,7 @@ function PainelAssistente({ api, caminho, avatarUrl = avatarValeria, posicao = '
   const [carregando, setCarregando] = useState(false);
   const [mensagem, setMensagem] = useState('');
   const [enviando, setEnviando] = useState(false);
+  const [animarIndicador, setAnimarIndicador] = useState(true);
   const [erroEnvio, setErroEnvio] = useState('');
   const [historico, setHistorico] = useState<{ id: string; autor: string; texto: string; enviadaEm?: string }[]>([]);
   const [conversaId] = useState(() => crypto.randomUUID());
@@ -138,9 +139,12 @@ function PainelAssistente({ api, caminho, avatarUrl = avatarValeria, posicao = '
             {item.enviadaEm && <time className="ia-hora" dateTime={item.enviadaEm}>{horaMensagem.format(new Date(item.enviadaEm))}</time>}
           </div>)}
         </div>
-        {enviando && <div className="ia-mensagem ia-mensagem--valeria ia-digitando" role="status" aria-atomic="true">
-          <span className="ia-label-acessivel">Valéria está respondendo</span>
+        {enviando && <div className={`ia-mensagem ia-mensagem--valeria ia-digitando${animarIndicador ? '' : ' ia-digitando--pausada'}`}>
+          <span className="ia-label-acessivel" role="status" aria-atomic="true">Valéria está respondendo</span>
           <span className="ia-bolinhas" aria-hidden="true"><span /><span /><span /></span>
+          <button className="ia-digitando-controle" type="button" onClick={() => setAnimarIndicador(v => !v)}
+            aria-label={animarIndicador ? 'Pausar animação de resposta' : 'Animar indicador de resposta'}
+            title={animarIndicador ? 'Pausar animação' : 'Animar indicador'} />
         </div>}
       </div>
       <form className="ia-compositor" onSubmit={enviar}>
