@@ -37,6 +37,7 @@ function PainelAssistente({ api, caminho, avatarUrl = avatarValeria, posicao = '
   const [enviando, setEnviando] = useState(false);
   const [erroEnvio, setErroEnvio] = useState('');
   const [historico, setHistorico] = useState<{ id: string; autor: string; texto: string }[]>([]);
+  const [conversaId] = useState(() => crypto.randomUUID());
   const [pendente, setPendente] = useState<{ chave: string; mensagem: string } | null>(null);
   const envioEmCurso = useRef(false);
   const envioAtual = useRef<AbortController | null>(null);
@@ -70,7 +71,7 @@ function PainelAssistente({ api, caminho, avatarUrl = avatarValeria, posicao = '
     setPendente(pedido);
     if (!pendente) setHistorico(atual => [...atual, { id: pedido.chave, autor: 'Você', texto: pedido.mensagem }]);
     try {
-      const resposta = await api.post<{ estado: string; texto: string }>(`${caminho}/mensagens`, { mensagem: pedido.mensagem }, {
+      const resposta = await api.post<{ estado: string; texto: string }>(`${caminho}/mensagens`, { mensagem: pedido.mensagem, conversaId }, {
         headers: { 'Idempotency-Key': pedido.chave }, signal: controller.signal, timeout: 40_000,
       });
       if (controller.signal.aborted) return;

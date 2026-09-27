@@ -72,11 +72,11 @@ export function criarRotasIa(resolver: Resolver) {
   });
   router.post('/mensagens', async (req, res, next) => {
     try {
-      if (typeof req.body?.mensagem !== 'string' || Object.keys(req.body).some(key => key !== 'mensagem')) {
-        throw new ErroDeNegocio('Informe somente a mensagem para a assistente.');
+      if (typeof req.body?.mensagem !== 'string' || Object.keys(req.body).some(key => !['mensagem', 'conversaId'].includes(key))) {
+        throw new ErroDeNegocio('Informe somente a mensagem e o identificador da conversa.');
       }
       const chave = req.header('Idempotency-Key') || '';
-      const resultado = await conversarIa(prisma, res.locals.contextoIa as ContextoIa, chave, req.body.mensagem);
+      const resultado = await conversarIa(prisma, res.locals.contextoIa as ContextoIa, chave, req.body.mensagem, process.env, undefined, req.body.conversaId);
       res.status(resultado.estado === 'PENDENTE' ? 202 : 200).json(resultado);
     } catch (erro) { next(erro); }
   });

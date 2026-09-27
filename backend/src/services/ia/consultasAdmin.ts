@@ -4,28 +4,35 @@ import { ErroDeNegocio } from '../../lib/erros';
 import { inicioDiaBrasilia, fimDiaBrasilia, diaBrasiliaStr } from '../../lib/timezone';
 import { ehAtendimentoFinanceiro } from '../../utils/atendimentoFinanceiro.util';
 import { CATEGORIA_ESTORNO_PRODUTO } from '../../lib/constantes';
+import { montarProducao, selectProducao } from '../producaoBarbeiro.service';
+import { periodoRelativoIa, referenciaTemporalIa } from './tempo';
 
-const tipos = ['PRODUCAO', 'RECEBIMENTOS', 'PRODUTOS', 'PRECOS'] as const;
+const tipos = ['PRODUCAO', 'RANKING_PRODUCAO', 'RECEBIMENTOS', 'PRODUTOS', 'PRECOS'] as const;
 const pagamentos = ['TODOS', 'DINHEIRO', 'PIX', 'CARTAO', 'CARTAO_CREDITO', 'CARTAO_DEBITO'] as const;
 type Filtros = { consulta: typeof tipos[number]; inicio: string; fim: string; barbeiro: string | null;
-  produto: string | null; pagamento: typeof pagamentos[number]; criterio: 'QUANTIDADE' | 'RECEITA' };
+  produto: string | null; pagamento: typeof pagamentos[number]; criterio: 'QUANTIDADE' | 'RECEITA'; periodoRelativo?: 'HOJE' | 'ESTE_MES' | 'ESTA_SEMANA' | null };
 export const ferramentaAdmin = {
   type: 'function', name: 'consultar_dados_administrativos', strict: true,
-  description: 'Consulta agregados reais da barbearia autenticada. PRODUCAO: agendamentos concluídos por data do atendimento e lançamentos de serviços/comissão histórica por data financeira. RECEBIMENTOS: caixa por meio registrado. PRODUTOS: ranking e margem bruta com custo histórico. PRECOS: preços praticados nas vendas, não histórico de tabela. Use nomes exatos, peça período se não informado; máximo 366 dias.',
+  description: 'Consulta agregados reais da barbearia. RANKING_PRODUCAO responde quem mais produziu: todos os barbeiros, sem pedir nome, padrão criterio=RECEITA. Reutiliza o relatório de produção de serviços após descontos, antes da comissão, por data financeira, incluindo manuais consistentes. QUANTIDADE compara atendimentos/manuais. PRODUCAO detalha totais de agendamentos e financeiro separados. RECEBIMENTOS consulta caixa; PRODUTOS consulta ranking/margem bruta; PRECOS consulta preços praticados. Datas relativas são calculadas pelo servidor, máximo 366 dias.',
   parameters: { type: 'object', additionalProperties: false,
-    properties: { consulta: { type: 'string', enum: tipos }, inicio: { type: 'string', description: 'YYYY-MM-DD inclusivo em America/Sao_Paulo' },
-      fim: { type: 'string', description: 'YYYY-MM-DD inclusivo em America/Sao_Paulo' }, barbeiro: { type: ['string', 'null'], description: 'Nome exato ou null para todos' },
+    properties: { consulta: { type: 'string', enum: tipos }, inicio: { type: ['string', 'null'], description: 'YYYY-MM-DD inclusivo; null quando usar periodoRelativo' },
+      fim: { type: ['string', 'null'], description: 'YYYY-MM-DD inclusivo; null quando usar periodoRelativo' }, barbeiro: { type: ['string', 'null'], description: 'Nome exato ou null para todos. No ranking sempre null.' },
       produto: { type: ['string', 'null'], description: 'Nome exato do produto ou null para todos' }, pagamento: { type: 'string', enum: pagamentos },
-      criterio: { type: 'string', enum: ['QUANTIDADE', 'RECEITA'] } },
-    required: ['consulta', 'inicio', 'fim', 'barbeiro', 'produto', 'pagamento', 'criterio'] },
+      criterio: { type: 'string', enum: ['QUANTIDADE', 'RECEITA'], description: 'Ranking de produção: RECEITA por padrão; QUANTIDADE só quando a pessoa pedir quantidade.' },
+      periodoRelativo: { type: ['string', 'null'], enum: ['HOJE', 'ESTE_MES', 'ESTA_SEMANA', null], description: 'Este mês = dia 1 até agora. Esta semana = domingo até agora. Use null para datas explícitas.' } },
+    required: ['consulta', 'inicio', 'fim', 'barbeiro', 'produto', 'pagamento', 'criterio', 'periodoRelativo'] },
 };
 
-function validar(valor: unknown): Filtros {
+function validar(valor: unknown, agora: Date): Filtros {
   if (!valor || typeof valor !== 'object' || Array.isArray(valor)) throw new ErroDeNegocio('Filtros inválidos.');
-  const f = valor as Filtros;
+  const f = { ...valor } as Filtros;
   const campos = ferramentaAdmin.parameters.required;
-  if (Object.keys(f).length !== campos.length || Object.keys(f).some(k => !campos.includes(k)) ||
+  if (campos.filter(k => k !== 'periodoRelativo').some(k => !(k in f)) || Object.keys(f).some(k => !campos.includes(k)) ||
     !tipos.includes(f.consulta) || !pagamentos.includes(f.pagamento) || !['QUANTIDADE', 'RECEITA'].includes(f.criterio)) throw new ErroDeNegocio('Filtros inválidos.');
+  if (f.periodoRelativo !== undefined && f.periodoRelativo !== null) {
+    if (!['HOJE', 'ESTE_MES', 'ESTA_SEMANA'].includes(f.periodoRelativo) || f.inicio !== null || f.fim !== null) throw new ErroDeNegocio('Use período relativo com início e fim nulos.');
+    const periodo = periodoRelativoIa(f.periodoRelativo, agora); f.inicio = periodo.inicio; f.fim = periodo.fim;
+  }
   for (const d of [f.inicio, f.fim]) {
     if (typeof d !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(d) || d < '2000-01-01' || d > '2100-12-31' ||
       !Number.isFinite(inicioDiaBrasilia(d).getTime()) || diaBrasiliaStr(inicioDiaBrasilia(d)) !== d) throw new ErroDeNegocio('Informe datas válidas no formato YYYY-MM-DD.');
@@ -34,6 +41,7 @@ function validar(valor: unknown): Filtros {
   if (dias < 0 || dias > 365) throw new ErroDeNegocio('Escolha um período de até 366 dias, com início anterior ao fim.');
   for (const n of [f.barbeiro, f.produto]) if (n !== null && (typeof n !== 'string' || !n.trim() || n.length > 100)) throw new ErroDeNegocio('Nome de filtro inválido.');
   if ((f.consulta === 'PRODUCAO' && (f.produto || f.pagamento !== 'TODOS')) ||
+    (f.consulta === 'RANKING_PRODUCAO' && (f.barbeiro || f.produto || f.pagamento !== 'TODOS')) ||
     (f.consulta === 'RECEBIMENTOS' && f.produto) || (['PRODUTOS', 'PRECOS'].includes(f.consulta) && f.barbeiro) ||
     (f.consulta === 'PRECOS' && !f.produto)) throw new ErroDeNegocio('Filtros incompatíveis. Produção não filtra meio de pagamento; preços exigem um produto.');
   return f;
@@ -46,10 +54,10 @@ const reais = (v: number) => {
 };
 
 /** Sem SQL livre, sem dados individuais de clientes e sem depender apenas de RLS/ALS. */
-export async function consultarAdmin(db: PrismaClient, c: ContextoIa, argumentos: unknown, signal?: AbortSignal) {
+export async function consultarAdmin(db: PrismaClient, c: ContextoIa, argumentos: unknown, signal?: AbortSignal, agora = new Date(Date.now())) {
   signal?.throwIfAborted();
   if (c.papel !== 'ADMIN' || !c.barbeariaId || !c.usuarioId) throw new ErroDeNegocio('Consulta exclusiva de administradores.', 403);
-  const f = validar(argumentos);
+  const f = validar(argumentos, agora);
   return db.$transaction(async tx => {
     const autorizado = await tx.usuario.findFirst({ where: { id: c.usuarioId, barbeariaId: c.barbeariaId, papel: 'ADMIN', barbearia: { ativo: true } }, select: { id: true } });
     if (!autorizado) throw new ErroDeNegocio('Consulta não autorizada.', 403);
@@ -59,10 +67,31 @@ export async function consultarAdmin(db: PrismaClient, c: ContextoIa, argumentos
       if (encontrados.length !== 1) throw new ErroDeNegocio(encontrados.length ? 'Há barbeiros com o mesmo nome. Use o relatório para selecionar a pessoa.' : 'Barbeiro não encontrado nesta barbearia. Confirme o nome completo.');
       barbeiroId = encontrados[0].id;
     }
-    const data = { gte: inicioDiaBrasilia(f.inicio), lte: fimDiaBrasilia(f.fim) };
+    const data = { gte: inicioDiaBrasilia(f.inicio), lte: new Date(Math.min(fimDiaBrasilia(f.fim).getTime(), agora.getTime())) };
     const formaPagamento = f.pagamento === 'TODOS' ? undefined : f.pagamento === 'CARTAO'
       ? { in: ['CARTAO_CREDITO', 'CARTAO_DEBITO'] as ('CARTAO_CREDITO' | 'CARTAO_DEBITO')[] } : f.pagamento;
-    const base = { filtros: f, fuso: 'America/Sao_Paulo', moeda: 'BRL', valores: 'Reais decimais calculados no servidor', consultadoEm: new Date(Date.now()).toISOString() };
+    const base = { filtros: f, fuso: 'America/Sao_Paulo', moeda: 'BRL', valores: 'Reais decimais calculados no servidor', consultadoEm: agora.toISOString(),
+      intervalo: { inicioInclusivo: data.gte.toISOString(), fimInclusivo: data.lte.toISOString() }, referenciaTemporal: referenciaTemporalIa(agora) };
+    if (f.consulta === 'RANKING_PRODUCAO') {
+      const barbeiros = await tx.barbeiro.findMany({ where: { barbeariaId: c.barbeariaId, usuario: { barbeariaId: c.barbeariaId } }, select: { id: true, usuario: { select: { nome: true } } }, take: 501 });
+      if (barbeiros.length > 500) throw new ErroDeNegocio('O ranking ultrapassa o limite de 500 barbeiros.');
+      const linhas = limitar(await tx.lancamentoFinanceiro.findMany({ where: { barbeariaId: c.barbeariaId, tipo: 'ENTRADA', categoria: { not: 'Venda de Produto' }, barbeiroId: { not: null }, data }, select: selectProducao, take: 5001 }));
+      signal?.throwIfAborted();
+      const producao = montarProducao(linhas, barbeiros, c.barbeariaId);
+      const comparados = producao.map(p => ({ nome: p.nome.slice(0, 100), produzido: Math.round(p.produzido * 100), quantidade: p.atendimentos + p.manuais, manuais: p.manuais }));
+      const valor = (p: typeof comparados[number]) => f.criterio === 'QUANTIDADE' ? p.quantidade : p.produzido;
+      const ordenados = comparados.sort((a, b) => valor(b) - valor(a) || a.nome.localeCompare(b.nome));
+      const temDados = ordenados.some(p => p.quantidade > 0);
+      const lideres = temDados ? ordenados.filter(p => valor(p) === valor(ordenados[0])) : [];
+      const serializar = (p: typeof comparados[number]) => ({ nome: p.nome, valorProduzido: reais(p.produzido), quantidade: p.quantidade, lancamentosManuais: p.manuais });
+      const dias = producao.flatMap(p => p.dias.map(d => d.dia)).sort();
+      return { ...base, fonte: 'Relatório de produção por barbeiro', criterio: f.criterio,
+        metrica: f.criterio === 'QUANTIDADE' ? 'Quantidade de atendimentos concluídos e lançamentos manuais consistentes' : 'Valor de serviços lançados após descontos e antes de comissão, pela data financeira',
+        estado: temDados ? lideres.length > 1 ? 'EMPATE' : 'LIDER' : 'SEM_DADOS', barbeirosComparados: barbeiros.length,
+        lideres: lideres.map(serializar), ranking: ordenados.slice(0, 10).map(serializar), primeiraProducaoRegistrada: dias[0] ?? null,
+        registrosIgnorados: producao.reduce((s, p) => s + p.ignorados, 0),
+        limites: ['Mesmas regras do relatório: exclui produtos, cancelados, fechamentos duplicados e lançamentos inconsistentes. Inclui manuais válidos e barbeiros inativos com histórico.', 'Não é recebimento bancário nem comissão. Não soma valores de agenda aos lançamentos.', 'A janela da semana começa domingo; dias sem produção permanecem sem registros. Ausência de registro não comprova fechamento da barbearia.'] };
+    }
     if (f.consulta === 'PRODUCAO' || f.consulta === 'RECEBIMENTOS') {
       const rows = limitar(await tx.lancamentoFinanceiro.findMany({ where: { barbeariaId: c.barbeariaId, data, ...(barbeiroId ? { barbeiroId } : {}), ...(formaPagamento ? { formaPagamento } : {}) },
         select: { tipo: true, categoria: true, valor: true, formaPagamento: true, barbeiroId: true, servicoId: true, agendamentoId: true, valorComissao: true } , take: 5001 }));

@@ -66,10 +66,10 @@ export class RepositorioCotasPrisma {
     });
   }
 
-  async reservarTexto(c: ContextoIa, chave: string, mensagem: string) {
+  async reservarTexto(c: ContextoIa, chave: string, mensagem: string, conversaId?: string) {
     if (!mensagem.trim() || mensagem.length > 4000) throw new ErroDeNegocio('Escreva uma mensagem de até 4.000 caracteres.');
     const custo = calcularCustoIa(TOKENS_ENTRADA_RESERVA, TOKENS_SAIDA_MAXIMOS, this.config);
-    return this.reservar(c, chave, mensagem, 'TEXTO', 0, custo.creditos);
+    return this.reservar(c, chave, conversaId ? JSON.stringify([conversaId, mensagem]) : mensagem, 'TEXTO', 0, custo.creditos);
   }
 
   // Sem rota pública de voz: a futura integração deve comprovar limite duro

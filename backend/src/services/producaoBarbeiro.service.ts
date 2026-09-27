@@ -16,7 +16,7 @@ export function validarPeriodoProducao(inicio: string, fim: string) {
   if (fimDiaBrasilia(fim).getTime() - inicioDiaBrasilia(inicio).getTime() > 93 * 86400000) throw new ErroDeNegocio('Selecione até 93 dias por consulta.', 400);
 }
 
-const selectProducao = {
+export const selectProducao = {
   id: true, barbeariaId: true, barbeiroId: true, data: true, valor: true, valorComissao: true, valorLiquido: true,
   percentualComissao: true, baseComissaoAplicada: true, formaPagamento: true, agendamentoId: true,
   servico: { select: { nome: true, barbeariaId: true } },
