@@ -53,9 +53,14 @@
 .ia-campo-envio textarea { min-height: 64px; margin: 0; padding: 18px 116px 18px 12px; }
 .ia-painel .ia-enviar { width: 48px; height: 48px; padding: 0; border-radius: 50%; background: var(--cor-primaria); color: var(--texto-sobre-primaria); }
 .ia-painel .ia-enviar:disabled { background: var(--cor-primaria); color: var(--texto-sobre-primaria); opacity: 0.5; }
-.ia-enviando { animation: ia-girar 1s linear infinite; }
-@keyframes ia-girar { to { transform: rotate(360deg); } }
-@media (prefers-reduced-motion: reduce) { .ia-enviando { animation: none; } }
+.ia-hora { display: block; margin-top: 6px; text-align: right; font-family: var(--fonte-mono); font-size: 11px; line-height: 1.4; font-variant-numeric: tabular-nums; color: inherit; }
+.ia-digitando { display: flex; align-items: center; min-height: 44px; }
+.ia-bolinhas { display: flex; align-items: center; gap: 5px; height: 20px; padding: 0 2px; }
+.ia-bolinhas > span { width: 6px; height: 6px; border-radius: 50%; background: currentColor; animation: ia-responder 1s ease-in-out infinite; }
+.ia-bolinhas > span:nth-child(2) { animation-delay: 120ms; }
+.ia-bolinhas > span:nth-child(3) { animation-delay: 240ms; }
+@keyframes ia-responder { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-4px); } }
+@media (prefers-reduced-motion: reduce) { .ia-bolinhas > span { animation: none; } }
 
 .ia-controles-envio { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); display: flex; align-items: center; gap: 0; }
 .ia-painel .ia-voz { width: 48px; height: 48px; padding: 0; border-radius: 50%; background: transparent; }

@@ -1,0 +1,9 @@
+# Espera e horários da conversa
+
+Durante a requisição da mensagem, a Valéria mostra uma bolha com três pontos em movimento. O indicador usa o estado da requisição, sem temporizador de digitação ou atraso na resposta. Ele desaparece em sucesso, erro, cancelamento e desmontagem. Fechar o painel aborta a espera do navegador, mas preserva o pedido para consulta idempotente; não cancela retroativamente uma geração já enviada pelo servidor.
+
+O status acessível anuncia “Valéria está respondendo”, fora da região que anuncia as mensagens. Os pontos ficam ocultos da árvore acessível. Com prefers-reduced-motion, os pontos são estáticos. A seta de envio permanece visível e desabilitada durante a espera; a voz mantém o ícone de ondas e seu bloqueio atual.
+
+Cada balão exibe HH:mm em America/Sao_Paulo. A hora do usuário é capturada no primeiro envio. A hora da resposta é capturada quando o navegador a recebe, pois a API não fornece um timestamp próprio. O valor não é recalculado ao renderizar ou reabrir. Retry mantém o envio original; uma resposta idêntica mantém sua hora, e uma resposta final que substitui um resultado pendente recebe a hora de chegada. Histórico sem timestamp não ganha data inventada. Não houve mudança de schema ou persistência.
+
+Verificação em 27/09/2026: interface React real em instância local isolada, com proxy exclusivo de teste e OpenAI bloqueada. Foram conferidos 375×812, 768×900 e 1920×1080, espera, sucesso, erro, retry, fechamento/reabertura e desmontagem. Não houve overflow nem sobreposição com o compositor. A hora original foi preservada no retry, os horários correspondiam ao fuso de São Paulo e os balões não foram duplicados. O contraste medido dos horários no tema usado foi 13,99:1 no balão do usuário e 4,55:1 no da Valéria. A regra de redução de movimento foi conferida no CSS carregado. As instâncias de teste foram encerradas; a demonstração manual permanece nas portas 5173/55440.

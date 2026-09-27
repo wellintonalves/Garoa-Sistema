@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
-import { ChatCircleDots, CircleNotch, Waveform, PaperPlaneTilt, X } from '@phosphor-icons/react';
+import { ChatCircleDots, Waveform, PaperPlaneTilt, X } from '@phosphor-icons/react';
 import type { AxiosInstance } from 'axios';
 import { isAxiosError } from 'axios';
 import { ErrorBoundary } from './ErrorBoundary';
 import './AssistenteIa.css';
 import avatarValeria from '../assets/valeria.png';
+
+const horaMensagem = new Intl.DateTimeFormat('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit' });
 
 interface StatusIa {
   mensagem: string;
@@ -28,6 +30,7 @@ export function AssistenteIa(props: { api: AxiosInstance; caminho: string; avata
 function PainelAssistente({ api, caminho, avatarUrl = avatarValeria, posicao = 'padrao' }: { api: AxiosInstance; caminho: string; avatarUrl?: string; posicao?: 'padrao' | 'navegacao' | 'cliente' | 'agendamento' | 'chat' }) {
   const dialogo = useRef<HTMLDialogElement>(null);
   const botao = useRef<HTMLButtonElement>(null);
+  const conteudo = useRef<HTMLDivElement>(null);
   const [aberto, setAberto] = useState(false);
   const [tentativa, setTentativa] = useState(0);
   const [status, setStatus] = useState<StatusIa | null>(null);
@@ -36,12 +39,15 @@ function PainelAssistente({ api, caminho, avatarUrl = avatarValeria, posicao = '
   const [mensagem, setMensagem] = useState('');
   const [enviando, setEnviando] = useState(false);
   const [erroEnvio, setErroEnvio] = useState('');
-  const [historico, setHistorico] = useState<{ id: string; autor: string; texto: string }[]>([]);
+  const [historico, setHistorico] = useState<{ id: string; autor: string; texto: string; enviadaEm?: string }[]>([]);
   const [conversaId] = useState(() => crypto.randomUUID());
-  const [pendente, setPendente] = useState<{ chave: string; mensagem: string } | null>(null);
+  const [pendente, setPendente] = useState<{ chave: string; mensagem: string; enviadaEm: string } | null>(null);
   const envioEmCurso = useRef(false);
   const envioAtual = useRef<AbortController | null>(null);
   useEffect(() => () => envioAtual.current?.abort(), []);
+  useEffect(() => {
+    if (aberto && conteudo.current) conteudo.current.scrollTop = conteudo.current.scrollHeight;
+  }, [aberto, historico, enviando]);
 
   useEffect(() => {
     if (!aberto) return;
@@ -63,20 +69,25 @@ function PainelAssistente({ api, caminho, avatarUrl = avatarValeria, posicao = '
     evento.preventDefault();
     if (envioEmCurso.current || enviando || (!pendente && (!status?.textoDisponivel || !mensagem.trim()))) return;
     envioEmCurso.current = true;
-    const pedido = pendente ?? { chave: crypto.randomUUID(), mensagem: mensagem.trim() };
+    const pedido = pendente ?? { chave: crypto.randomUUID(), mensagem: mensagem.trim(), enviadaEm: new Date(Date.now()).toISOString() };
     const controller = new AbortController();
     envioAtual.current = controller;
     setEnviando(true);
     setErroEnvio('');
     setPendente(pedido);
-    if (!pendente) setHistorico(atual => [...atual, { id: pedido.chave, autor: 'Você', texto: pedido.mensagem }]);
+    if (!pendente) setHistorico(atual => [...atual, { id: pedido.chave, autor: 'Você', texto: pedido.mensagem, enviadaEm: pedido.enviadaEm }]);
     try {
       const resposta = await api.post<{ estado: string; texto: string }>(`${caminho}/mensagens`, { mensagem: pedido.mensagem, conversaId }, {
         headers: { 'Idempotency-Key': pedido.chave }, signal: controller.signal, timeout: 40_000,
       });
       if (controller.signal.aborted) return;
-      setHistorico(atual => [...atual.filter(item => item.id !== `${pedido.chave}-resposta`),
-        { id: `${pedido.chave}-resposta`, autor: 'Valéria', texto: resposta.data.texto }]);
+      const recebidaEm = new Date(Date.now()).toISOString();
+      setHistorico(atual => {
+        const anterior = atual.find(item => item.id === `${pedido.chave}-resposta`);
+        return [...atual.filter(item => item.id !== `${pedido.chave}-resposta`),
+          { id: `${pedido.chave}-resposta`, autor: 'Valéria', texto: resposta.data.texto,
+            enviadaEm: anterior?.texto === resposta.data.texto ? anterior.enviadaEm : recebidaEm }];
+      });
       if (resposta.data.estado !== 'PENDENTE') { setPendente(null); setMensagem(''); }
       setTentativa(v => v + 1);
     } catch (e) {
@@ -89,8 +100,11 @@ function PainelAssistente({ api, caminho, avatarUrl = avatarValeria, posicao = '
         }
       }
     } finally {
-      envioEmCurso.current = false;
-      if (!controller.signal.aborted) setEnviando(false);
+      if (envioAtual.current === controller) {
+        envioEmCurso.current = false;
+        envioAtual.current = null;
+        if (!controller.signal.aborted) setEnviando(false);
+      }
     }
   }
 
@@ -101,12 +115,15 @@ function PainelAssistente({ api, caminho, avatarUrl = avatarValeria, posicao = '
       </button>
     </div>
     <dialog ref={dialogo} className="ia-painel" aria-labelledby="ia-titulo"
-      onClose={() => { setAberto(false); botao.current?.focus(); }}>
+      onClose={() => {
+        envioAtual.current?.abort(); envioAtual.current = null; envioEmCurso.current = false;
+        setEnviando(false); setAberto(false); botao.current?.focus();
+      }}>
       <div className="ia-cabecalho">
         <div className="ia-identidade"><img src={avatarUrl} className="ia-avatar" alt="" /><div><h2 id="ia-titulo">Valéria</h2></div></div>
         <button type="button" onClick={fechar} aria-label="Fechar Valéria, assistente de IA"><X size={24} /></button>
       </div>
-      <div className="ia-conteudo" aria-busy={carregando}>
+      <div ref={conteudo} className="ia-conteudo" aria-busy={carregando}>
         {carregando && <div role="status" aria-label="Carregando saldo da assistente">
           <div className="ia-skeleton" /><div className="ia-skeleton" /><div className="ia-skeleton" />
         </div>}
@@ -116,8 +133,15 @@ function PainelAssistente({ api, caminho, avatarUrl = avatarValeria, posicao = '
           {historico.length === 0 && <p>{status.textoDisponivel ? 'Olá! Como posso ajudar?' : 'A conversa aparecerá aqui quando a assistente estiver disponível.'}</p>}
         </>}
         <div aria-live="polite" aria-label="Conversa com Valéria, assistente de IA">
-          {(historico ?? []).map(item => <div key={item.id} className={`ia-mensagem ia-mensagem--${item.autor === 'Você' ? 'usuario' : 'valeria'}`} aria-label={item.autor}><p>{item.texto}</p></div>)}
+          {(historico ?? []).map(item => <div key={item.id} className={`ia-mensagem ia-mensagem--${item.autor === 'Você' ? 'usuario' : 'valeria'}`} aria-label={item.autor}>
+            <p>{item.texto}</p>
+            {item.enviadaEm && <time className="ia-hora" dateTime={item.enviadaEm}>{horaMensagem.format(new Date(item.enviadaEm))}</time>}
+          </div>)}
         </div>
+        {enviando && <div className="ia-mensagem ia-mensagem--valeria ia-digitando" role="status" aria-atomic="true">
+          <span className="ia-label-acessivel">Valéria está respondendo</span>
+          <span className="ia-bolinhas" aria-hidden="true"><span /><span /><span /></span>
+        </div>}
       </div>
       <form className="ia-compositor" onSubmit={enviar}>
         <label className="ia-label-acessivel" htmlFor="ia-mensagem">Mensagem para Valéria</label>
@@ -138,7 +162,7 @@ function PainelAssistente({ api, caminho, avatarUrl = avatarValeria, posicao = '
         </button>
         <button className="ia-enviar" type="submit" aria-label={enviando ? 'Enviando mensagem' : pendente ? 'Consultar pedido' : 'Enviar mensagem'}
           disabled={enviando || (!pendente && (!status?.textoDisponivel || !mensagem.trim()))}>
-          {enviando ? <CircleNotch className="ia-enviando" size={24} aria-hidden="true" /> : <PaperPlaneTilt size={24} aria-hidden="true" />}
+          <PaperPlaneTilt size={24} aria-hidden="true" />
         </button>
         </div>
         </div>
