@@ -14,6 +14,7 @@
 .ia-saldo { background: var(--fundo-superficie-2); padding: 16px; border-radius: 12px; margin-bottom: 20px; }
 .ia-saldo span { font-variant-numeric: tabular-nums; font-family: var(--fonte-mono); }
 .ia-compositor { min-width: 0; padding-bottom: env(safe-area-inset-bottom, 0px); }
+.ia-aviso { margin: 8px 0 0; color: var(--texto-secundario); font-size: 12px; line-height: 1.5; text-align: center; }
 .ia-compositor label { display: block; margin-bottom: 8px; }
 .ia-compositor textarea { width: 100%; box-sizing: border-box; resize: none; padding: 12px; border-radius: 12px; background: var(--fundo-superficie-2); color: var(--texto-principal); border: 1px solid var(--borda-sutil); margin-bottom: 8px; }
 .ia-skeleton { height: 48px; background: var(--fundo-superficie-2); margin-bottom: 12px; border-radius: 12px; }

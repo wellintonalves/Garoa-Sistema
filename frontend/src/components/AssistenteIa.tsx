@@ -170,6 +170,7 @@ function PainelAssistente({ api, caminho, avatarUrl = avatarValeria, posicao = '
         </button>
         </div>
         </div>
+        <p className="ia-aviso">Valéria é uma IA e pode cometer erros.</p>
         {erroEnvio && <p role="alert">{erroEnvio}</p>}
         {pendente && !enviando && <p>Consultar reutiliza o mesmo pedido, sem gerar outra resposta paga.</p>}
       </form>
