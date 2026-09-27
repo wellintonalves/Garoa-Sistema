@@ -165,6 +165,17 @@ export class RepositorioCotasPrisma {
     }, false);
   }
 
+  /** Uso interno: somente quando o adaptador comprova que NÃO criou socket. */
+  async liberarVozNaoConectada(c: ContextoIa, id: string) {
+    return this.transacao(c, async tx => {
+      const r = await this.obter(tx, c, id);
+      const s = await tx.iaSessaoVoz.findUnique({ where: { barbeariaId_reservaId: { barbeariaId: c.barbeariaId, reservaId: id } } });
+      if (r.canal !== 'VOZ' || !['RESERVADA', 'ENVIANDO'].includes(r.estado) || !s || s.estado !== 'PREPARANDO' || s.provedorSessaoId)
+        throw indisponivel('Não é possível liberar uma sessão que pode ter conectado.');
+      await this.liberar(tx, r);
+    }, false);
+  }
+
   /** Somente eventos do adaptador de voz validado podem chamar estes métodos.
    * Não há rota HTTP que aceite ids/timestamps/uso do navegador.
    */

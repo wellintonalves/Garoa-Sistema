@@ -12,6 +12,7 @@
     "test:ia-contexto": "tsx scripts/testes_ia_contexto.ts",
     "test:ia-ajuda": "tsx scripts/testes_ia_ajuda.ts",
     "test:ia-comissoes": "tsx scripts/testes_ia_comissoes.ts",
+    "test:ia-voz": "tsx scripts/testes_ia_voz.ts && tsx scripts/testes_ia_voz_postgres.ts",
     "test:backup-tls": "tsx scripts/testes_backup_tls.ts",
     "test:producao-barbeiro": "tsx scripts/testes_producao_barbeiro.ts",
     "test:regularizacao": "tsx scripts/testes_regularizacao_asaas.ts",

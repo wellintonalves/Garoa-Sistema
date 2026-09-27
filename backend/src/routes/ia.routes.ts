@@ -15,6 +15,7 @@ import { obterConfiguracaoConsumo, calcularCustoIa, TOKENS_ENTRADA_RESERVA, TOKE
 import { configuracaoResultado } from '../services/ia/resultado';
 import { conversarIa } from '../services/ia/conversa';
 import { ErroDeNegocio } from '../lib/erros';
+import { criarTicketVozLocal, statusVozLocal } from '../services/ia/vozLocal';
 
 type Resolver = (req: Request) => Promise<ContextoIa | null>;
 
@@ -64,6 +65,7 @@ export function criarRotasIa(resolver: Resolver) {
         }
       }
       res.json({ ...statusIa(assinatura?.plano ?? null), ...consumo,
+        ...(assinatura?.plano === 'PRO' ? statusVozLocal(contexto) : {}),
         periodoAssinatura: periodo.estado === 'IDENTIFICADO'
           ? { estado: periodo.estado, inicio: periodo.inicio.toISOString(), fim: periodo.fim.toISOString() }
           : periodo,
@@ -80,9 +82,14 @@ export function criarRotasIa(resolver: Resolver) {
       res.status(resultado.estado === 'PENDENTE' ? 202 : 200).json(resultado);
     } catch (erro) { next(erro); }
   });
-  // Sem transporte supervisionado validado: nenhuma sessão paga é aberta.
-  router.post('/voz/sessoes', (_req, res) => {
-    res.status(503).json({ codigo: 'IA_EM_PREPARACAO', erro: 'A assistente ainda não está disponível para consumo.' });
+  router.post('/voz/sessoes', async (req, res, next) => {
+    try {
+      if (!statusVozLocal(res.locals.contextoIa as ContextoIa).vozDisponivel) {
+        res.status(503).json({ codigo: 'IA_EM_PREPARACAO', erro: 'A conversa de voz não está disponível ou o saldo não cobre o teste.' }); return;
+      }
+      if (!req.body || Object.keys(req.body).some(k => k !== 'conversaId')) throw new ErroDeNegocio('Pedido de voz inválido.');
+      res.json(await criarTicketVozLocal(res.locals.contextoIa as ContextoIa, req.body.conversaId));
+    } catch (erro) { next(erro); }
   });
   return router;
 }

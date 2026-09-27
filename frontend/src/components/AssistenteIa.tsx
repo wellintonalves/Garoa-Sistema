@@ -5,6 +5,7 @@ import { isAxiosError } from 'axios';
 import { ErrorBoundary } from './ErrorBoundary';
 import './AssistenteIa.css';
 import avatarValeria from '../assets/valeria.png';
+import { useVozValeria } from './useVozValeria';
 
 const horaMensagem = new Intl.DateTimeFormat('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit' });
 
@@ -19,6 +20,7 @@ interface StatusIa {
   mensagensRestantes: number | null;
   vozSegundosRestantes: number | null;
   renovaEm?: string | null;
+  vozTeste?: { segundos: number; reservaUsd: number };
 }
 
 export function AssistenteIa(props: { api: AxiosInstance; caminho: string; avatarUrl?: string; posicao?: 'padrao' | 'navegacao' | 'cliente' | 'agendamento' | 'chat' }) {
@@ -42,6 +44,10 @@ function PainelAssistente({ api, caminho, avatarUrl = avatarValeria, posicao = '
   const [erroEnvio, setErroEnvio] = useState('');
   const [historico, setHistorico] = useState<{ id: string; autor: string; texto: string; enviadaEm?: string }[]>([]);
   const [conversaId] = useState(() => crypto.randomUUID());
+  const [mostrarVoz, setMostrarVoz] = useState(false);
+  const voz = useVozValeria(api, caminho, conversaId, texto => {
+    setHistorico(h => [...h, { id: crypto.randomUUID(), autor: 'Valéria', texto, enviadaEm: new Date(Date.now()).toISOString() }]);
+  }, () => setTentativa(v => v + 1));
   const [pendente, setPendente] = useState<{ chave: string; mensagem: string; enviadaEm: string } | null>(null);
   const envioEmCurso = useRef(false);
   const envioAtual = useRef<AbortController | null>(null);
@@ -68,7 +74,7 @@ function PainelAssistente({ api, caminho, avatarUrl = avatarValeria, posicao = '
 
   async function enviar(evento: React.FormEvent) {
     evento.preventDefault();
-    if (envioEmCurso.current || enviando || (!pendente && (!status?.textoDisponivel || !mensagem.trim()))) return;
+    if (voz.ativa || envioEmCurso.current || enviando || (!pendente && (!status?.textoDisponivel || !mensagem.trim()))) return;
     envioEmCurso.current = true;
     const pedido = pendente ?? { chave: crypto.randomUUID(), mensagem: mensagem.trim(), enviadaEm: new Date(Date.now()).toISOString() };
     const controller = new AbortController();
@@ -117,6 +123,7 @@ function PainelAssistente({ api, caminho, avatarUrl = avatarValeria, posicao = '
     </div>
     <dialog ref={dialogo} className="ia-painel" aria-labelledby="ia-titulo"
       onClose={() => {
+        voz.parar(); setMostrarVoz(false);
         envioAtual.current?.abort(); envioAtual.current = null; envioEmCurso.current = false;
         setEnviando(false); setAberto(false); botao.current?.focus();
       }}>
@@ -148,6 +155,12 @@ function PainelAssistente({ api, caminho, avatarUrl = avatarValeria, posicao = '
         </div>}
       </div>
       <form className="ia-compositor" onSubmit={enviar}>
+        {mostrarVoz && <div className="ia-voz-teste">
+          <p>{voz.ativa ? voz.estado : voz.estado || `Teste de até ${status?.vozTeste?.segundos ?? 90} segundos. Reserva máxima de US$ 0,09; pode terminar antes ao atingir o limite de respostas.`}</p>
+          {voz.erro && <p role="alert">{voz.erro}</p>}
+          {voz.ativa ? <button type="button" onClick={voz.parar}>Encerrar conversa</button>
+            : <button type="button" disabled={!status?.vozDisponivel} onClick={() => void voz.iniciar()}>Iniciar conversa</button>}
+        </div>}
         <label className="ia-label-acessivel" htmlFor="ia-mensagem">Mensagem para Valéria</label>
         <div className="ia-campo-envio">
         <textarea id="ia-mensagem" value={mensagem} onChange={e => setMensagem(e.target.value)} maxLength={4000}
@@ -157,15 +170,16 @@ function PainelAssistente({ api, caminho, avatarUrl = avatarValeria, posicao = '
               e.currentTarget.form?.requestSubmit();
             }
           }}
-          disabled={!status?.textoDisponivel || enviando || Boolean(pendente)} placeholder={status?.textoDisponivel ? 'Escreva sua mensagem' : 'Aguardando liberação da assistente'} rows={Math.min(4, mensagem.split('\n').length)} />
+          disabled={voz.ativa || !status?.textoDisponivel || enviando || Boolean(pendente)} placeholder={status?.textoDisponivel ? 'Escreva sua mensagem' : 'Aguardando liberação da assistente'} rows={Math.min(4, mensagem.split('\n').length)} />
         <div className="ia-controles-envio">
-        <button className="ia-voz" type="button" disabled={!status?.vozDisponivel || !status.vozNoPlano || (status.vozSegundosRestantes ?? 0) <= 0 || enviando}
-          aria-label="Conversa por voz indisponível"
-          title={!status?.vozNoPlano ? 'Conversa por voz exclusiva do plano Pro' : 'Conversa por voz ainda indisponível'}>
+        <button className="ia-voz" type="button" disabled={voz.ativa || !status?.vozDisponivel || !status.vozNoPlano || (status.vozSegundosRestantes ?? 0) <= 0 || enviando || Boolean(pendente)}
+          onClick={() => setMostrarVoz(v => !v)}
+          aria-label={status?.vozDisponivel ? 'Conversar por voz com Valéria' : 'Conversa por voz indisponível'}
+          title={!status?.vozNoPlano ? 'Conversa por voz exclusiva do plano Pro' : status.vozDisponivel ? 'Conversar por voz' : 'Conversa por voz ainda indisponível'}>
           <Waveform size={24} weight="regular" aria-hidden="true" />
         </button>
         <button className="ia-enviar" type="submit" aria-label={enviando ? 'Enviando mensagem' : pendente ? 'Consultar pedido' : 'Enviar mensagem'}
-          disabled={enviando || (!pendente && (!status?.textoDisponivel || !mensagem.trim()))}>
+          disabled={voz.ativa || enviando || (!pendente && (!status?.textoDisponivel || !mensagem.trim()))}>
           <PaperPlaneTilt size={24} aria-hidden="true" />
         </button>
         </div>
