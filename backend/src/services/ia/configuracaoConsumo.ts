@@ -1,8 +1,9 @@
 import { configuracaoIa } from './politica';
 import { ErroDeNegocio } from '../../lib/erros';
 
-export const TOKENS_ENTRADA_RESERVA = 20_000;
-export const TOKENS_SAIDA_MAXIMOS = 512;
+export const TOKENS_ENTRADA_RESERVA = 40_000;
+export const TOKENS_SAIDA_POR_CHAMADA = 512;
+export const TOKENS_SAIDA_MAXIMOS = 2 * TOKENS_SAIDA_POR_CHAMADA;
 export interface ConfiguracaoConsumoIa {
   mensagens: { BASICO: number; PRO: number };
   creditos: { BASICO: number; PRO: number };

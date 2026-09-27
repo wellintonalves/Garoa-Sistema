@@ -55,7 +55,8 @@ export function criarRotasIa(resolver: Resolver) {
             mensagem: saldo.bloqueado ? 'A franquia aguarda reconciliação ou revisão do plano.'
               : !ativa ? 'O controle de saldo está pronto. A integração ainda não foi ativada.'
                 : saldo.mensagensRestantes === 0 || saldo.creditosRestantes < envelope ? 'Saldo insuficiente para um novo pedido. Reservas pendentes também ocupam saldo.'
-                  : 'Envie uma mensagem. Nesta fase, a assistente ainda não consulta agenda nem realiza lançamentos.',
+                  : contexto.papel === 'ADMIN' ? 'Valéria pode consultar produção, recebimentos e vendas de produtos. Informe o período e os filtros. Ela não altera registros.'
+                    : 'Envie uma mensagem. Nesta fase, a Valéria orienta, mas não consulta sua agenda nem realiza lançamentos.',
           };
         } catch (erro) {
           if (!(erro instanceof ErroDeNegocio)) throw erro;

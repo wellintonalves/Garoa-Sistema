@@ -3,7 +3,8 @@ import { ErroDeNegocio } from '../../lib/erros';
 import { ContextoIa } from './cotas';
 import { obterConfiguracaoConsumo } from './configuracaoConsumo';
 import { RepositorioCotasPrisma } from './repositorioCotasPrisma';
-import { responderTextoOpenAI } from './openaiTexto';
+import { responderTextoOpenAI, ErroProvedorIa } from './openaiTexto';
+import { consultarAdmin } from './consultasAdmin';
 import { cifrarResultado, configuracaoResultado, decifrarResultado } from './resultado';
 
 export async function conversarIa(db: PrismaClient, contexto: ContextoIa, chave: string, mensagem: string,
@@ -23,7 +24,9 @@ export async function conversarIa(db: PrismaClient, contexto: ContextoIa, chave:
   try {
     // A vida da chamada não depende da conexão do navegador. Resultado é salvo
     // para retry idempotente; abort/timeout do provedor não libera a reserva.
-    const resposta = await provedor(mensagem, { chave: env.OPENAI_API_KEY, modelo: reserva.modelo }, AbortSignal.timeout(30_000));
+    const resposta = await provedor(mensagem, { chave: env.OPENAI_API_KEY, modelo: reserva.modelo,
+      ...(contexto.papel === 'ADMIN' ? { consultarAdmin: (args: unknown, signal: AbortSignal) => consultarAdmin(db, contexto, args, signal) } : {}),
+    }, AbortSignal.timeout(30_000));
     const texto = resposta.concluida ? resposta.texto : 'A resposta não foi concluída. A mensagem foi liberada; o custo do processamento foi contabilizado.';
     const liquidada = await repo.liquidar(contexto, reserva.id, {
       respostaProvedorId: resposta.respostaId, tokensEntrada: resposta.tokensEntrada, tokensSaida: resposta.tokensSaida,
@@ -32,8 +35,8 @@ export async function conversarIa(db: PrismaClient, contexto: ContextoIa, chave:
     });
     return liquidada.estado === 'CONCLUIDA' ? { estado: 'CONCLUIDA', texto }
       : { estado: 'PENDENTE', texto: 'O consumo deste pedido precisa de reconciliação. A reserva foi preservada.' };
-  } catch {
+  } catch (erro) {
     await repo.marcarIncerta(contexto, reserva.id);
-    return { estado: 'PENDENTE', texto: 'Não foi possível confirmar o resultado. A reserva foi preservada; tentar novamente não repete a geração.' };
+    return { estado: 'PENDENTE', ...(erro instanceof ErroProvedorIa ? { codigo: erro.categoria } : {}), texto: 'Não foi possível confirmar o resultado. A reserva foi preservada; tentar novamente não repete a geração.' };
   }
 }
