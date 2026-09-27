@@ -22,12 +22,18 @@ const assert = require('node:assert/strict');
         const { default: ReactDOM } = await import('/node_modules/.vite/deps/react-dom_client.js');
         const { AssistenteIa } = await import('/src/components/AssistenteIa.tsx');
         await import('/src/index.css');
-        window.fixtureMode = 'ok';
+        window.fixtureMode = 'ok'; window.fixtureEnabled = false; window.fixtureRequests = [];
         const api = { get: async () => {
           await new Promise(r => setTimeout(r, 350));
           if (window.fixtureMode === 'erro') throw new Error('Não foi possível conectar ao servidor. Verifique sua conexão.');
-          return { data: { mensagem: 'A assistente está em preparação.', textoDisponivel: false, vozDisponivel: false,
+          return { data: { mensagem: 'A assistente está em preparação.', textoDisponivel: window.fixtureEnabled, vozDisponivel: false,
             vozNoPlano: true, mensagensMensais: 200, mensagensRestantes: null, creditosMensais: null, creditosRestantes: null, vozSegundosRestantes: null } };
+        }, post: async (url, body, config) => {
+          window.fixtureRequests.push({ url, body, key: config.headers['Idempotency-Key'] });
+          await new Promise(r => setTimeout(r, 100));
+          if (window.fixtureRequests.length === 1) throw new Error('Falha de conexão simulada');
+          if (window.fixtureRequests.length === 2) return { data: { estado: 'PENDENTE', texto: 'Pedido pendente fixture' } };
+          return { data: { estado: 'CONCLUIDA', texto: 'Resposta fixture concluída' } };
         }};
         ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(AssistenteIa, { api, caminho: '/fixture' }));
       </script></body></html>` }));
@@ -57,6 +63,20 @@ const assert = require('node:assert/strict');
       await page.getByText('A assistente está em preparação.', { exact: true }).waitFor();
       await page.screenshot({ path: `node_modules/ia-${largura}.png` });
       await page.getByRole('button', { name: 'Fechar assistente' }).click();
+      await page.evaluate(() => { window.fixtureEnabled = true; });
+      await abrir.click();
+      const campo = page.getByLabel('Mensagem para a assistente');
+      await campo.fill('Teste de envio');
+      await page.getByRole('button', { name: 'Enviar', exact: true }).click();
+      await page.getByText('Falha de conexão simulada').waitFor();
+      await page.getByRole('button', { name: 'Consultar pedido', exact: true }).click();
+      await page.getByText('Pedido pendente fixture').waitFor();
+      await page.getByRole('button', { name: 'Consultar pedido', exact: true }).click();
+      await page.getByText('Resposta fixture concluída').waitFor();
+      const pedidos = await page.evaluate(() => window.fixtureRequests);
+      assert.equal(pedidos.length, 3);
+      assert.equal(new Set(pedidos.map(p => p.key)).size, 1, 'retry não cria outra cobrança');
+      assert.equal(await campo.inputValue(), '');
       console.log(`IA UI ${largura}px: abertura, skeleton, erro/retry, dimensões e foco passaram.`);
     }
     assert.deepEqual(erros, []);

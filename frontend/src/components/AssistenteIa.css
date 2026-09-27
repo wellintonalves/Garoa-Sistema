@@ -18,3 +18,5 @@
 .ia-compositor textarea { width: 100%; box-sizing: border-box; resize: none; padding: 12px; border-radius: 12px; background: var(--fundo-superficie-2); color: var(--texto-principal); border: 1px solid var(--borda-sutil); margin-bottom: 8px; }
 .ia-skeleton { height: 48px; background: var(--fundo-superficie-2); margin-bottom: 12px; border-radius: 12px; }
 .ia-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
+.ia-mensagem { min-width: 0; padding: 12px; margin-bottom: 12px; border-radius: 12px; background: var(--fundo-superficie-2); white-space: pre-wrap; overflow-wrap: anywhere; }
+.ia-acoes { flex-wrap: wrap; }

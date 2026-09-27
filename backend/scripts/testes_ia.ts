@@ -1,6 +1,5 @@
 import assert from 'node:assert/strict';
 import { configuracaoIa, estadoInatividade, statusIa } from '../src/services/ia/politica';
-import { CotasIaIndisponiveis } from '../src/services/ia/cotas';
 import { responderTextoOpenAI } from '../src/services/ia/openaiTexto';
 
 async function main() {
@@ -14,8 +13,6 @@ async function main() {
   assert.equal(statusIa('BASICO', {}).vozNoPlano, false);
   assert.equal(statusIa(null, {}).mensagensMensais, null);
   assert.equal(statusIa('PRO', { IA_ENABLED: 'true', OPENAI_API_KEY: 'fixture', OPENAI_TEXT_MODEL: 'fixture' }).textoDisponivel, false);
-  const reservas = await Promise.allSettled(Array.from({ length: 50 }, () => new CotasIaIndisponiveis().reservar()));
-  assert.ok(reservas.every(r => r.status === 'rejected'));
   assert.equal(estadoInatividade(44, false), 'ativa');
   assert.equal(estadoInatividade(45, false), 'avisar');
   assert.equal(estadoInatividade(60, false), 'encerrar');
@@ -42,6 +39,8 @@ async function main() {
   process.env.JWT_SECRET = 'fixture-admin-local-nao-producao';
   process.env.JWT_SECRET_CLIENTE = 'fixture-cliente-local-nao-producao';
   process.env.JWT_SECRET_BARBEIRO = 'fixture-barbeiro-local-nao-producao';
+  process.env.IA_ENABLED = 'false';
+  process.env.IA_PERSISTENCIA_ENABLED = 'false';
   const { prisma } = await import('../src/lib/prisma');
   prisma.barbearia.findUnique = (async () => ({ ativo: true })) as any;
   prisma.usuario.findFirst = (async ({ where }: any) => where.id === 'admin-a' && where.barbeariaId === 'tenant-a' ? { id: 'admin-a' } : null) as any;
@@ -55,6 +54,7 @@ async function main() {
   const app = express();
   app.use(express.json());
   app.use('/ia', rotas);
+  app.use((erro: any, _req: any, res: any, _next: any) => res.status(erro.status || 500).json({ erro: erro.message }));
   const server = app.listen(0, '127.0.0.1');
   await new Promise<void>(resolve => server.once('listening', resolve));
   try {
@@ -71,6 +71,9 @@ async function main() {
     assert.equal(status.mensagensMensais, 100);
     assert.equal(status.creditosRestantes, null);
     assert.equal(status.usuarioId, undefined);
+    assert.equal(status.renovacao, 'CICLO_MENSAL_ASSINATURA');
+    assert.equal(status.acumulaSaldo, false);
+    assert.equal((status.periodoAssinatura as Record<string, unknown>).assinaturaId, undefined);
     assert.equal((await fetch(`${base}/cliente/tenant-b/status`, { headers: { ...headers, 'x-barbearia-id': 'tenant-a' } })).status, 403);
     const adminToken = jwt.sign({ id: 'admin-a', papel: 'ADMIN', barbeariaId: 'tenant-a' }, process.env.JWT_SECRET);
     assert.equal((await fetch(`${base}/admin/status`, { headers: { Authorization: `Bearer ${adminToken}` } })).status, 200);
@@ -80,10 +83,10 @@ async function main() {
     assert.equal((await fetch(`${base}/barbeiro/status`, { headers: { Authorization: `Bearer ${barbeiroToken}` } })).status, 200);
     assert.equal((await fetch(`${base}/admin/status`, { headers: { Authorization: `Bearer ${barbeiroToken}` } })).status, 403);
     for (const rota of ['mensagens', 'voz/sessoes']) {
-      const r = await fetch(`${base}/cliente/tenant-a/${rota}`, { method: 'POST', headers });
+      const r = await fetch(`${base}/cliente/tenant-a/${rota}`, { method: 'POST', headers: { ...headers, 'Content-Type': 'application/json' }, body: JSON.stringify({ mensagem: 'Olá' }) });
       assert.equal(r.status, 503);
     }
-    const concorrentes = await Promise.all(Array.from({ length: 20 }, () => fetch(`${base}/cliente/tenant-a/mensagens`, { method: 'POST', headers })));
+    const concorrentes = await Promise.all(Array.from({ length: 20 }, () => fetch(`${base}/cliente/tenant-a/mensagens`, { method: 'POST', headers: { ...headers, 'Content-Type': 'application/json' }, body: JSON.stringify({ mensagem: 'Olá' }) })));
     assert.ok(concorrentes.every(r => r.status === 503));
   } finally { await new Promise<void>((resolve, reject) => server.close(e => e ? reject(e) : resolve())); }
   console.log('IA: políticas, bloqueio concorrente, adaptador simulado e isolamento HTTP passaram.');

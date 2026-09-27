@@ -60,7 +60,7 @@ export function BarbeiroLayout() {
 
       <div className="flex-1 flex flex-col min-w-0 h-[100dvh] overflow-y-auto relative pb-[76px] md:pb-0">
         <div style={{ maxWidth: '1280px', width: '100%', margin: '0 auto', paddingLeft: 'var(--espaco-5, 1.25rem)', paddingRight: 'var(--espaco-5, 1.25rem)' }}>
-          {barbeiro && <AssistenteIa api={barbeiroApi} caminho="/ia/barbeiro" />}
+          {barbeiro && <AssistenteIa key={`${barbeiro.usuarioId}:${barbeiro.barbeariaId}`} api={barbeiroApi} caminho="/ia/barbeiro" />}
           <Outlet context={{ barbeiro }} />
         </div>
       </div>

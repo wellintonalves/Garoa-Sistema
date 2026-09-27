@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { ChatCircleDots, Microphone, PaperPlaneTilt, X } from '@phosphor-icons/react';
 import type { AxiosInstance } from 'axios';
+import { isAxiosError } from 'axios';
 import { ErrorBoundary } from './ErrorBoundary';
 import './AssistenteIa.css';
 
@@ -14,6 +15,7 @@ interface StatusIa {
   mensagensMensais: number | null;
   mensagensRestantes: number | null;
   vozSegundosRestantes: number | null;
+  renovaEm?: string | null;
 }
 
 export function AssistenteIa(props: { api: AxiosInstance; caminho: string; avatarUrl?: string }) {
@@ -30,6 +32,13 @@ function PainelAssistente({ api, caminho, avatarUrl }: { api: AxiosInstance; cam
   const [status, setStatus] = useState<StatusIa | null>(null);
   const [erro, setErro] = useState('');
   const [carregando, setCarregando] = useState(false);
+  const [mensagem, setMensagem] = useState('');
+  const [enviando, setEnviando] = useState(false);
+  const [erroEnvio, setErroEnvio] = useState('');
+  const [historico, setHistorico] = useState<{ id: string; autor: string; texto: string }[]>([]);
+  const [pendente, setPendente] = useState<{ chave: string; mensagem: string } | null>(null);
+  const envioAtual = useRef<AbortController | null>(null);
+  useEffect(() => () => envioAtual.current?.abort(), []);
 
   useEffect(() => {
     if (!aberto) return;
@@ -46,6 +55,39 @@ function PainelAssistente({ api, caminho, avatarUrl }: { api: AxiosInstance; cam
 
   function abrir() { dialogo.current?.showModal(); setAberto(true); }
   function fechar() { dialogo.current?.close(); }
+
+  async function enviar(evento: React.FormEvent) {
+    evento.preventDefault();
+    if (enviando || (!pendente && (!status?.textoDisponivel || !mensagem.trim()))) return;
+    const pedido = pendente ?? { chave: crypto.randomUUID(), mensagem: mensagem.trim() };
+    const controller = new AbortController();
+    envioAtual.current = controller;
+    setEnviando(true);
+    setErroEnvio('');
+    setPendente(pedido);
+    if (!pendente) setHistorico(atual => [...atual, { id: pedido.chave, autor: 'Você', texto: pedido.mensagem }]);
+    try {
+      const resposta = await api.post<{ estado: string; texto: string }>(`${caminho}/mensagens`, { mensagem: pedido.mensagem }, {
+        headers: { 'Idempotency-Key': pedido.chave }, signal: controller.signal, timeout: 40_000,
+      });
+      if (controller.signal.aborted) return;
+      setHistorico(atual => [...atual.filter(item => item.id !== `${pedido.chave}-resposta`),
+        { id: `${pedido.chave}-resposta`, autor: 'Assistente', texto: resposta.data.texto }]);
+      if (resposta.data.estado !== 'PENDENTE') { setPendente(null); setMensagem(''); }
+      setTentativa(v => v + 1);
+    } catch (e) {
+      if (!controller.signal.aborted) {
+        setErroEnvio(e instanceof Error ? e.message : 'Não foi possível enviar a mensagem.');
+        if (isAxiosError(e) && [400, 403, 409, 429].includes(e.response?.status ?? 0)) {
+          setPendente(null);
+          setHistorico(atual => atual.filter(item => item.id !== pedido.chave));
+          setTentativa(v => v + 1);
+        }
+      }
+    } finally {
+      if (!controller.signal.aborted) setEnviando(false);
+    }
+  }
 
   return <>
     <div className="ia-acesso">
@@ -72,19 +114,29 @@ function PainelAssistente({ api, caminho, avatarUrl }: { api: AxiosInstance; cam
             <p>Créditos por mês: <span>{status.creditosMensais ?? 'A definir'}</span></p>
             <p>{status.vozNoPlano ? `Voz: ${status.vozSegundosRestantes === null ? 'saldo ainda não disponível' : `${Math.floor(status.vozSegundosRestantes / 60)} min disponíveis`} (limite mensal de 30 min)` : 'Voz ao vivo exclusiva do plano Pro.'}</p>
             <p>O saldo é compartilhado por toda a barbearia.</p>
+            <p>Renovação junto à mensalidade, sem acúmulo.</p>
+            {status.renovaEm && <p>Fim do período: {new Intl.DateTimeFormat('pt-BR', { timeZone: 'America/Sao_Paulo', dateStyle: 'short', timeStyle: 'short' }).format(new Date(status.renovaEm))}</p>}
           </section>
           <p role="status">{status.mensagem}</p>
-          <p>A conversa aparecerá aqui quando a assistente estiver disponível.</p>
+          {historico.length === 0 && <p>{status.textoDisponivel ? 'Escreva sua primeira mensagem para começar.' : 'A conversa aparecerá aqui quando a assistente estiver disponível.'}</p>}
         </>}
-      </div>
-      <div className="ia-compositor">
-        <label htmlFor="ia-mensagem">Mensagem para a assistente</label>
-        <textarea id="ia-mensagem" disabled placeholder="Aguardando liberação da assistente" rows={2} />
-        <div className="ia-acoes">
-          <button type="button" disabled><Microphone size={20} /> Voz ao vivo</button>
-          <button type="button" disabled><PaperPlaneTilt size={20} /> Enviar</button>
+        <div aria-live="polite" aria-label="Conversa com a assistente">
+          {(historico ?? []).map(item => <div key={item.id} className="ia-mensagem"><strong>{item.autor}</strong><p>{item.texto}</p></div>)}
         </div>
       </div>
+      <form className="ia-compositor" onSubmit={enviar}>
+        <label htmlFor="ia-mensagem">Mensagem para a assistente</label>
+        <textarea id="ia-mensagem" value={mensagem} onChange={e => setMensagem(e.target.value)} maxLength={4000}
+          disabled={!status?.textoDisponivel || enviando || Boolean(pendente)} placeholder={status?.textoDisponivel ? 'Escreva sua mensagem' : 'Aguardando liberação da assistente'} rows={2} />
+        {erroEnvio && <p role="alert">{erroEnvio}</p>}
+        <div className="ia-acoes">
+          <button type="button" disabled><Microphone size={20} /> Voz ao vivo</button>
+          <button type="submit" disabled={enviando || (!pendente && (!status?.textoDisponivel || !mensagem.trim()))}>
+            <PaperPlaneTilt size={20} /> {enviando ? 'Aguarde…' : pendente ? 'Consultar pedido' : 'Enviar'}
+          </button>
+        </div>
+        {pendente && !enviando && <p>Consultar reutiliza o mesmo pedido, sem gerar outra resposta paga.</p>}
+      </form>
     </dialog>
   </>;
 }

@@ -1,3 +1,4 @@
+import { RENOVACAO_IA } from './periodo';
 export type PlanoIa = 'BASICO' | 'PRO';
 export const VOZ_SEGUNDOS_MENSAIS = 30 * 60;
 
@@ -13,7 +14,8 @@ export function configuracaoIa(env: NodeJS.ProcessEnv = process.env) {
     mensagens: { BASICO: inteiro(env.IA_MENSAGENS_BASICO ?? '100'), PRO: inteiro(env.IA_MENSAGENS_PRO ?? '200') },
     // Inteiros em microunidades de USD evitam arredondamentos monetários binários.
     custoCreditoMicrousd: inteiro(env.IA_CUSTO_CREDITO_MICROUSD),
-    renovacao: ['MES_CALENDARIO', 'ANIVERSARIO_ASSINATURA'].includes(env.IA_RENOVACAO || '') ? env.IA_RENOVACAO : null,
+    renovacao: RENOVACAO_IA,
+    acumulaSaldo: false as const,
     vozNosCreditos: ['TODOS_CUSTOS', 'APENAS_BACKEND'].includes(env.IA_VOZ_CREDITOS || '') ? env.IA_VOZ_CREDITOS : null,
   };
 }
@@ -33,6 +35,8 @@ export function statusIa(plano: PlanoIa | null, env: NodeJS.ProcessEnv = process
     vozSegundosMensais: plano === 'PRO' ? VOZ_SEGUNDOS_MENSAIS : 0,
     vozSegundosRestantes: null,
     renovaEm: null,
+    renovacao: config.renovacao,
+    acumulaSaldo: config.acumulaSaldo,
     compartilhado: true,
   };
 }

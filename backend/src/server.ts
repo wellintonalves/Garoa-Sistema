@@ -5,6 +5,7 @@ import { copiarBanco } from './lib/dbSync';
 import { agendarBackupDiario } from './lib/backupJob';
 import { corrigirDados } from './lib/fixOrphans';
 import { agendarProcessosAssinatura } from './lib/assinaturaJob';
+import { agendarLimpezaResultadosIa } from './services/ia/manutencao';
 
 process.on('uncaughtException', (err) => {
   console.error('❌ uncaughtException:', err);
@@ -53,6 +54,7 @@ async function start() {
   }
 
   agendarProcessosAssinatura();
+  agendarLimpezaResultadosIa(prisma);
 
   app.listen(PORT, () => {
     console.log(`🏪 Servidor da barbearia rodando na porta ${PORT}`);

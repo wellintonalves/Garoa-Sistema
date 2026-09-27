@@ -191,6 +191,7 @@ model Barbearia {
   avaliacoes                         Avaliacao[]
   solicitacoesCancelamentoAssinatura SolicitacaoCancelamentoAssinatura[]
   assinaturaSaas                     AssinaturaSaas?
+  iaPeriodos                         IaPeriodo[]
   preferenciasPromocionais           PreferenciaPromocional[]
 
   @@map("barbearias")
@@ -220,6 +221,7 @@ model Usuario {
   solicitacoesCancelamentoAssinatura SolicitacaoCancelamentoAssinatura[]
   aceitesAssinatura                  AssinaturaSaas[]                    @relation("AceiteAssinaturaUsuario")
   mudancasAssinaturaSolicitadas      MudancaAssinatura[]                 @relation("SolicitanteMudancaAssinatura")
+  iaReservas                        IaReserva[]
 
   @@unique([email, barbeariaId])
   @@map("usuarios")
@@ -606,7 +608,9 @@ model AssinaturaSaas {
   aceitePor     Usuario?                            @relation("AceiteAssinaturaUsuario", fields: [aceitePorId], references: [id], onDelete: Restrict)
   mudancas      MudancaAssinatura[]
   cancelamentos SolicitacaoCancelamentoAssinatura[]
+  iaPeriodos    IaPeriodo[]
 
+  @@unique([barbeariaId, id])
   @@index([status, proximaCobrancaEm])
   @@map("assinaturas_saas")
 }
@@ -884,4 +888,132 @@ model ItemAtendimento {
   @@index([lancamentoId])
   @@index([servicoId])
   @@map("itens_atendimento")
+}
+
+// IA: estruturas aprovadas; migration ainda não aplicada em produção.
+enum IaEstadoReserva {
+  RESERVADA
+  ENVIANDO
+  INCERTA
+  CONCLUIDA
+  FALHA_CONFIRMADA
+}
+
+enum IaCanal {
+  TEXTO
+  VOZ
+}
+
+enum IaEstadoSessaoVoz {
+  PREPARANDO
+  ATIVA
+  ENCERRANDO
+  ENCERRADA
+  INCERTA
+}
+
+model IaPeriodo {
+  id                     String @id @default(uuid())
+  barbeariaId            String
+  assinaturaId           String
+  inicio                 DateTime @db.Timestamptz(3)
+  fim                    DateTime @db.Timestamptz(3)
+  plano                  PlanoAssinatura
+  politicaVersao         String
+  tarifaVersao           String
+  mensagensLimite        Int
+  mensagensReservadas    Int @default(0)
+  mensagensConsumidas    Int @default(0)
+  vozSegundosLimite       Int
+  vozSegundosReservados   Int @default(0)
+  vozSegundosConsumidos   Int @default(0)
+  creditosLimite         Int
+  creditosReservados     Int @default(0)
+  creditosConsumidos     Int @default(0)
+  bloqueado              Boolean @default(false)
+  criadoEm               DateTime @default(now()) @db.Timestamptz(3)
+  barbearia              Barbearia @relation(fields: [barbeariaId], references: [id], onDelete: Restrict)
+  assinatura             AssinaturaSaas @relation(fields: [barbeariaId, assinaturaId], references: [barbeariaId, id], onDelete: Restrict)
+  reservas               IaReserva[]
+  @@unique([barbeariaId, inicio])
+  @@unique([barbeariaId, id])
+  @@index([fim])
+  @@map("ia_periodos")
+}
+
+model IaReserva {
+  id                     String @id @default(uuid())
+  barbeariaId            String
+  periodoId              String
+  usuarioId              String
+  papel                  Papel
+  canal                  IaCanal
+  chaveIdempotencia      String @db.VarChar(128)
+  pedidoHash             String @db.VarChar(64)
+  estado                 IaEstadoReserva @default(RESERVADA)
+  mensagensMaximas       Int
+  vozSegundosMaximos      Int
+  creditosMaximos        Int
+  custoCreditoMicrousd   Int
+  modelo                 String
+  tarifaEntradaMicrousd  Int
+  tarifaSaidaMicrousd    Int
+  criadaEm               DateTime @default(now()) @db.Timestamptz(3)
+  enviarAte              DateTime @db.Timestamptz(3)
+  atualizadaEm           DateTime @updatedAt @db.Timestamptz(3)
+  respostaCifrada        String?
+  resultadoExpiraEm      DateTime? @db.Timestamptz(3)
+  periodo                IaPeriodo @relation(fields: [barbeariaId, periodoId], references: [barbeariaId, id], onDelete: Restrict)
+  usuario                Usuario @relation(fields: [usuarioId], references: [id], onDelete: Restrict)
+  usos                   IaUso[]
+  sessaoVoz              IaSessaoVoz?
+  @@unique([barbeariaId, chaveIdempotencia])
+  @@unique([barbeariaId, id])
+  @@index([estado, enviarAte])
+  @@index([barbeariaId, usuarioId, criadaEm])
+  @@map("ia_reservas")
+}
+
+model IaUso {
+  id                   String @id @default(uuid())
+  barbeariaId          String
+  reservaId            String
+  chaveEvento          String @unique
+  respostaProvedorId    String
+  tokensEntrada        Int
+  tokensSaida          Int
+  mensagens            Int
+  vozSegundos          Int
+  creditos             Int
+  custoMicrousd        BigInt
+  registradoEm         DateTime @default(now()) @db.Timestamptz(3)
+  reserva              IaReserva @relation(fields: [barbeariaId, reservaId], references: [barbeariaId, id], onDelete: Restrict)
+  @@unique([barbeariaId, reservaId])
+  @@index([barbeariaId, registradoEm])
+  @@map("ia_usos")
+}
+
+model IaSessaoVoz {
+  id                       String @id @default(uuid())
+  barbeariaId              String
+  reservaId                String
+  provedorSessaoId          String? @unique
+  estado                   IaEstadoSessaoVoz @default(PREPARANDO)
+  iniciadaEm               DateTime? @db.Timestamptz(3)
+  ultimaAtividadeEm        DateTime? @db.Timestamptz(3)
+  ocupadaAte               DateTime? @db.Timestamptz(3)
+  encerrarAte              DateTime @db.Timestamptz(3)
+  fechamentoSolicitadoEm   DateTime? @db.Timestamptz(3)
+  fechamentoConfirmadoEm   DateTime? @db.Timestamptz(3)
+  motivoEncerramento       String?
+  segundosFaturados        Int?
+  leaseAte                 DateTime? @db.Timestamptz(3)
+  leaseVersao              Int @default(0)
+  criadaEm                 DateTime @default(now()) @db.Timestamptz(3)
+  atualizadaEm             DateTime @updatedAt @db.Timestamptz(3)
+  reserva                  IaReserva @relation(fields: [barbeariaId, reservaId], references: [barbeariaId, id], onDelete: Restrict)
+  @@unique([barbeariaId, reservaId])
+  @@index([estado, encerrarAte])
+  @@index([estado, leaseAte])
+  @@map("ia_sessoes_voz")
 }

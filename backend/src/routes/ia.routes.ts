@@ -9,6 +9,12 @@ import { validarEscritaAssinatura } from '../services/acessoAssinatura.service';
 import { tenantStorage } from '../lib/als';
 import { statusIa } from '../services/ia/politica';
 import { ContextoIa } from '../services/ia/cotas';
+import { identificarPeriodoIa } from '../services/ia/periodo';
+import { RepositorioCotasPrisma } from '../services/ia/repositorioCotasPrisma';
+import { obterConfiguracaoConsumo, calcularCustoIa, TOKENS_ENTRADA_RESERVA, TOKENS_SAIDA_MAXIMOS } from '../services/ia/configuracaoConsumo';
+import { configuracaoResultado } from '../services/ia/resultado';
+import { conversarIa } from '../services/ia/conversa';
+import { ErroDeNegocio } from '../lib/erros';
 
 type Resolver = (req: Request) => Promise<ContextoIa | null>;
 
@@ -29,14 +35,52 @@ export function criarRotasIa(resolver: Resolver) {
     try {
       const contexto = res.locals.contextoIa as ContextoIa;
       const assinatura = await prisma.assinaturaSaas.findUnique({
-        where: { barbeariaId: contexto.barbeariaId }, select: { plano: true },
+        where: { barbeariaId: contexto.barbeariaId },
+        select: { id: true, barbeariaId: true, plano: true, periodicidade: true, status: true,
+          cicloInicio: true, cicloFim: true, fimAcessoEm: true },
       });
-      res.json(statusIa(assinatura?.plano ?? null));
+      // Apenas comparação de instantes; calendário do ciclo é o persistido
+      // pelo domínio financeiro, calculado em America/Sao_Paulo.
+      const periodo = identificarPeriodoIa(assinatura, new Date(Date.now()));
+      let consumo = {};
+      if (process.env.IA_PERSISTENCIA_ENABLED === 'true') {
+        try {
+          const config = obterConfiguracaoConsumo();
+          configuracaoResultado();
+          const saldo = await new RepositorioCotasPrisma(prisma, config).saldo(contexto);
+          const envelope = calcularCustoIa(TOKENS_ENTRADA_RESERVA, TOKENS_SAIDA_MAXIMOS, config).creditos;
+          const ativa = process.env.IA_ENABLED === 'true' && Boolean(process.env.OPENAI_API_KEY?.trim());
+          consumo = { ...saldo, estado: ativa ? 'DISPONIVEL' : 'EM_PREPARACAO',
+            textoDisponivel: ativa && !saldo.bloqueado && saldo.mensagensRestantes > 0 && saldo.creditosRestantes >= envelope,
+            mensagem: saldo.bloqueado ? 'A franquia aguarda reconciliação ou revisão do plano.'
+              : !ativa ? 'O controle de saldo está pronto. A integração ainda não foi ativada.'
+                : saldo.mensagensRestantes === 0 || saldo.creditosRestantes < envelope ? 'Saldo insuficiente para um novo pedido. Reservas pendentes também ocupam saldo.'
+                  : 'Envie uma mensagem. Nesta fase, a assistente ainda não consulta agenda nem realiza lançamentos.',
+          };
+        } catch (erro) {
+          if (!(erro instanceof ErroDeNegocio)) throw erro;
+          consumo = { mensagem: erro.message };
+        }
+      }
+      res.json({ ...statusIa(assinatura?.plano ?? null), ...consumo,
+        periodoAssinatura: periodo.estado === 'IDENTIFICADO'
+          ? { estado: periodo.estado, inicio: periodo.inicio.toISOString(), fim: periodo.fim.toISOString() }
+          : periodo,
+      });
     } catch (erro) { next(erro); }
   });
-  // Bloqueio incondicional: nem configuração completa contorna a falta de ledger.
-  // Não emitir tokens efêmeros nem abrir conexões faturáveis de voz nesta etapa.
-  router.post(['/mensagens', '/voz/sessoes'], (_req, res) => {
+  router.post('/mensagens', async (req, res, next) => {
+    try {
+      if (typeof req.body?.mensagem !== 'string' || Object.keys(req.body).some(key => key !== 'mensagem')) {
+        throw new ErroDeNegocio('Informe somente a mensagem para a assistente.');
+      }
+      const chave = req.header('Idempotency-Key') || '';
+      const resultado = await conversarIa(prisma, res.locals.contextoIa as ContextoIa, chave, req.body.mensagem);
+      res.status(resultado.estado === 'PENDENTE' ? 202 : 200).json(resultado);
+    } catch (erro) { next(erro); }
+  });
+  // Sem transporte supervisionado validado: nenhuma sessão paga é aberta.
+  router.post('/voz/sessoes', (_req, res) => {
     res.status(503).json({ codigo: 'IA_EM_PREPARACAO', erro: 'A assistente ainda não está disponível para consumo.' });
   });
   return router;
