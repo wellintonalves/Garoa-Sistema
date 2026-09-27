@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { ChatCircleDots, Microphone, PaperPlaneTilt, X } from '@phosphor-icons/react';
+import { ChatCircleDots, CircleNotch, Microphone, PaperPlaneTilt, X } from '@phosphor-icons/react';
 import type { AxiosInstance } from 'axios';
 import { isAxiosError } from 'axios';
 import { ErrorBoundary } from './ErrorBoundary';
@@ -19,13 +19,13 @@ interface StatusIa {
   renovaEm?: string | null;
 }
 
-export function AssistenteIa(props: { api: AxiosInstance; caminho: string; avatarUrl?: string }) {
+export function AssistenteIa(props: { api: AxiosInstance; caminho: string; avatarUrl?: string; posicao?: 'padrao' | 'navegacao' | 'cliente' | 'agendamento' | 'chat' }) {
   return <ErrorBoundary fallback={<p role="alert">Não foi possível abrir a assistente. Recarregue a página para tentar novamente.</p>}>
     <PainelAssistente key={props.caminho} {...props} />
   </ErrorBoundary>;
 }
 
-function PainelAssistente({ api, caminho, avatarUrl = avatarValeria }: { api: AxiosInstance; caminho: string; avatarUrl?: string }) {
+function PainelAssistente({ api, caminho, avatarUrl = avatarValeria, posicao = 'padrao' }: { api: AxiosInstance; caminho: string; avatarUrl?: string; posicao?: 'padrao' | 'navegacao' | 'cliente' | 'agendamento' | 'chat' }) {
   const dialogo = useRef<HTMLDialogElement>(null);
   const botao = useRef<HTMLButtonElement>(null);
   const [aberto, setAberto] = useState(false);
@@ -38,6 +38,7 @@ function PainelAssistente({ api, caminho, avatarUrl = avatarValeria }: { api: Ax
   const [erroEnvio, setErroEnvio] = useState('');
   const [historico, setHistorico] = useState<{ id: string; autor: string; texto: string }[]>([]);
   const [pendente, setPendente] = useState<{ chave: string; mensagem: string } | null>(null);
+  const envioEmCurso = useRef(false);
   const envioAtual = useRef<AbortController | null>(null);
   useEffect(() => () => envioAtual.current?.abort(), []);
 
@@ -59,7 +60,8 @@ function PainelAssistente({ api, caminho, avatarUrl = avatarValeria }: { api: Ax
 
   async function enviar(evento: React.FormEvent) {
     evento.preventDefault();
-    if (enviando || (!pendente && (!status?.textoDisponivel || !mensagem.trim()))) return;
+    if (envioEmCurso.current || enviando || (!pendente && (!status?.textoDisponivel || !mensagem.trim()))) return;
+    envioEmCurso.current = true;
     const pedido = pendente ?? { chave: crypto.randomUUID(), mensagem: mensagem.trim() };
     const controller = new AbortController();
     envioAtual.current = controller;
@@ -86,20 +88,21 @@ function PainelAssistente({ api, caminho, avatarUrl = avatarValeria }: { api: Ax
         }
       }
     } finally {
+      envioEmCurso.current = false;
       if (!controller.signal.aborted) setEnviando(false);
     }
   }
 
   return <>
-    <div className="ia-acesso">
+    <div className={`ia-acesso ia-acesso--${posicao}`}>
       <button ref={botao} type="button" className="ia-balao" onClick={abrir} aria-haspopup="dialog" aria-label="Valéria, assistente de IA">
-        {avatarUrl ? <img src={avatarUrl} className="ia-avatar" alt="" /> : <ChatCircleDots size={24} weight="regular" aria-hidden="true" />} Valéria
+        {avatarUrl ? <img src={avatarUrl} className="ia-avatar" alt="" /> : <ChatCircleDots size={24} weight="regular" aria-hidden="true" />}
       </button>
     </div>
     <dialog ref={dialogo} className="ia-painel" aria-labelledby="ia-titulo"
       onClose={() => { setAberto(false); botao.current?.focus(); }}>
       <div className="ia-cabecalho">
-        <div className="ia-identidade"><img src={avatarUrl} className="ia-avatar" alt="" /><div><h2 id="ia-titulo">Valéria</h2><p>Assistente de IA</p></div></div>
+        <div className="ia-identidade"><img src={avatarUrl} className="ia-avatar" alt="" /><div><h2 id="ia-titulo">Valéria</h2></div></div>
         <button type="button" onClick={fechar} aria-label="Fechar Valéria, assistente de IA"><X size={24} /></button>
       </div>
       <div className="ia-conteudo" aria-busy={carregando}>
@@ -108,34 +111,37 @@ function PainelAssistente({ api, caminho, avatarUrl = avatarValeria }: { api: Ax
         </div>}
         {erro && <div role="alert"><p>{erro}</p><button type="button" onClick={() => setTentativa(v => v + 1)}>Tentar novamente</button></div>}
         {status && <>
-          <section aria-label="Saldo de IA" className="ia-saldo">
-            <p>Mensagens por mês: <span>{status.mensagensMensais ?? 'A definir'}</span></p>
-            <p>Mensagens restantes: <span>{status.mensagensRestantes ?? 'Ainda não disponível'}</span></p>
-            <p>Créditos disponíveis: <span>{status.creditosRestantes ?? 'Ainda não disponível'}</span></p>
-            <p>Créditos por mês: <span>{status.creditosMensais ?? 'A definir'}</span></p>
-            <p>{status.vozNoPlano ? `Voz: ${status.vozSegundosRestantes === null ? 'saldo ainda não disponível' : `${Math.floor(status.vozSegundosRestantes / 60)} min disponíveis`} (limite mensal de 30 min)` : 'Voz ao vivo exclusiva do plano Pro.'}</p>
-            <p>O saldo é compartilhado por toda a barbearia.</p>
-            <p>Renovação junto à mensalidade, sem acúmulo.</p>
-            {status.renovaEm && <p>Fim do período: {new Intl.DateTimeFormat('pt-BR', { timeZone: 'America/Sao_Paulo', dateStyle: 'short', timeStyle: 'short' }).format(new Date(status.renovaEm))}</p>}
-          </section>
-          <p role="status">{status.mensagem}</p>
-          {historico.length === 0 && <p>{status.textoDisponivel ? 'Olá! Sou a Valéria, assistente de IA do Valen Barber. Como posso ajudar?' : 'A conversa aparecerá aqui quando a assistente estiver disponível.'}</p>}
+          {!status.textoDisponivel && <p role="status">{status.mensagem}</p>}
+          {historico.length === 0 && <p>{status.textoDisponivel ? 'Olá! Como posso ajudar?' : 'A conversa aparecerá aqui quando a assistente estiver disponível.'}</p>}
         </>}
         <div aria-live="polite" aria-label="Conversa com Valéria, assistente de IA">
-          {(historico ?? []).map(item => <div key={item.id} className="ia-mensagem"><strong>{item.autor}</strong><p>{item.texto}</p></div>)}
+          {(historico ?? []).map(item => <div key={item.id} className={`ia-mensagem ia-mensagem--${item.autor === 'Você' ? 'usuario' : 'valeria'}`} aria-label={item.autor}><p>{item.texto}</p></div>)}
         </div>
       </div>
       <form className="ia-compositor" onSubmit={enviar}>
-        <label htmlFor="ia-mensagem">Mensagem para Valéria</label>
+        <label className="ia-label-acessivel" htmlFor="ia-mensagem">Mensagem para Valéria</label>
+        <div className="ia-campo-envio">
         <textarea id="ia-mensagem" value={mensagem} onChange={e => setMensagem(e.target.value)} maxLength={4000}
-          disabled={!status?.textoDisponivel || enviando || Boolean(pendente)} placeholder={status?.textoDisponivel ? 'Escreva sua mensagem' : 'Aguardando liberação da assistente'} rows={2} />
-        {erroEnvio && <p role="alert">{erroEnvio}</p>}
-        <div className="ia-acoes">
-          <button type="button" disabled><Microphone size={20} /> Voz ao vivo</button>
-          <button type="submit" disabled={enviando || (!pendente && (!status?.textoDisponivel || !mensagem.trim()))}>
-            <PaperPlaneTilt size={20} /> {enviando ? 'Aguarde…' : pendente ? 'Consultar pedido' : 'Enviar'}
-          </button>
+          onKeyDown={e => {
+            if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing && e.keyCode !== 229) {
+              e.preventDefault();
+              e.currentTarget.form?.requestSubmit();
+            }
+          }}
+          disabled={!status?.textoDisponivel || enviando || Boolean(pendente)} placeholder={status?.textoDisponivel ? 'Escreva sua mensagem' : 'Aguardando liberação da assistente'} rows={Math.min(4, mensagem.split('\n').length)} />
+        <div className="ia-controles-envio">
+        <button className="ia-voz" type="button" disabled={!status?.vozDisponivel || !status.vozNoPlano || (status.vozSegundosRestantes ?? 0) <= 0 || enviando}
+          aria-label="Conversa por voz indisponível"
+          title={!status?.vozNoPlano ? 'Conversa por voz exclusiva do plano Pro' : 'Conversa por voz ainda indisponível'}>
+          <Microphone size={24} aria-hidden="true" />
+        </button>
+        <button className="ia-enviar" type="submit" aria-label={enviando ? 'Enviando mensagem' : pendente ? 'Consultar pedido' : 'Enviar mensagem'}
+          disabled={enviando || (!pendente && (!status?.textoDisponivel || !mensagem.trim()))}>
+          {enviando ? <CircleNotch className="ia-enviando" size={24} aria-hidden="true" /> : <PaperPlaneTilt size={24} aria-hidden="true" />}
+        </button>
         </div>
+        </div>
+        {erroEnvio && <p role="alert">{erroEnvio}</p>}
         {pendente && !enviando && <p>Consultar reutiliza o mesmo pedido, sem gerar outra resposta paga.</p>}
       </form>
     </dialog>

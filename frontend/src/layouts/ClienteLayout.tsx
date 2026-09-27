@@ -176,8 +176,8 @@ export function ClienteLayout() {
       {/* Conteúdo Principal — Largura máx 1280px com gutter var(--espaco-5) */}
       <main className="flex-1 flex flex-col h-[100dvh] overflow-hidden relative">
         <div className="flex-1 overflow-y-auto" style={{ paddingBottom: 'calc(80px + env(safe-area-inset-bottom, 0px))' }}>
-          <div style={{ maxWidth: '1280px', margin: '0 auto', paddingLeft: 'var(--espaco-5, 1.25rem)', paddingRight: 'var(--espaco-5, 1.25rem)' }}>
-            {cliente && barbeariaId && <AssistenteIa key={`${cliente.usuarioId}:${barbeariaId}`} api={clienteApi} caminho={`/ia/cliente/${encodeURIComponent(barbeariaId)}`} />}
+          <div className="ia-layout-cliente" style={{ maxWidth: '1280px', margin: '0 auto', paddingLeft: 'var(--espaco-5, 1.25rem)', paddingRight: 'var(--espaco-5, 1.25rem)' }}>
+            {cliente && barbeariaId && <AssistenteIa key={`${cliente.usuarioId}:${barbeariaId}`} api={clienteApi} caminho={`/ia/cliente/${encodeURIComponent(barbeariaId)}`} posicao={location.pathname.endsWith('/chat') ? 'chat' : location.pathname.includes('/agendar') ? 'agendamento' : 'cliente'} />}
             <Outlet context={{ barbearia, barbeariaId }} />
           </div>
         </div>

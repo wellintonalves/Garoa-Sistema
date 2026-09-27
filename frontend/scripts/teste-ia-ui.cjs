@@ -52,7 +52,7 @@ const assert = require('node:assert/strict');
         const dimensao = await b.boundingBox();
         assert.ok(dimensao.height >= 48 && dimensao.width >= 48);
       }
-      assert.equal(await page.getByRole('button', { name: 'Enviar', exact: true }).isDisabled(), true);
+      assert.equal(await page.getByRole('button', { name: 'Enviar mensagem', exact: true }).isDisabled(), true);
       await page.keyboard.press('Escape');
       assert.equal(await abrir.evaluate(el => el === document.activeElement), true);
       await page.evaluate(() => { window.fixtureMode = 'erro'; });
@@ -67,7 +67,7 @@ const assert = require('node:assert/strict');
       await abrir.click();
       const campo = page.getByLabel('Mensagem para Valéria');
       await campo.fill('Teste de envio');
-      await page.getByRole('button', { name: 'Enviar', exact: true }).click();
+      await page.getByRole('button', { name: 'Enviar mensagem', exact: true }).click();
       await page.getByText('Falha de conexão simulada').waitFor();
       await page.getByRole('button', { name: 'Consultar pedido', exact: true }).click();
       await page.getByText('Pedido pendente fixture').waitFor();

@@ -1,6 +1,6 @@
-/* O acesso ocupa uma faixa própria: não cobre CTA, conteúdo ou chat humano. */
-.ia-acesso { position: sticky; top: 0; z-index: 20; display: flex; justify-content: flex-end; min-width: 0; padding: 8px 0; background: var(--fundo-pagina); }
-.ia-balao { border-radius: 28px; background: var(--cor-primaria); color: var(--texto-sobre-primaria); }
+/* Avatar fixo; os layouts reservam espaço ao final do conteúdo rolável. */
+.ia-acesso { position: fixed; right: max(20px, env(safe-area-inset-right, 0px)); bottom: calc(24px + env(safe-area-inset-bottom, 0px)); z-index: 40; }
+.ia-acesso .ia-balao { width: 56px; height: 56px; padding: 0; overflow: hidden; border-radius: 50%; background: var(--cor-primaria); color: var(--texto-sobre-primaria); box-shadow: var(--elevacao-2); }
 .ia-painel { position: fixed; inset: 0 0 0 auto; margin: 0; box-sizing: border-box; width: min(100%, 420px); max-width: 100vw; height: 100dvh; max-height: 100dvh; padding: 20px; border: none; background: var(--fundo-superficie); color: var(--texto-principal); font-family: var(--fonte-interface); }
 .ia-painel[open] { display: flex; flex-direction: column; gap: 16px; }
 .ia-painel::backdrop { background: var(--fundo-overlay); }
@@ -26,3 +26,38 @@
 .ia-identidade .ia-avatar { width: 48px; height: 48px; }
 .ia-identidade h2, .ia-identidade p { margin: 0; }
 .ia-identidade p { color: var(--texto-secundario); font-size: 14px; }
+
+.ia-balao .ia-avatar { width: 100%; height: 100%; }
+.ia-balao:focus-visible { outline: 3px solid var(--cor-primaria); outline-offset: 4px; }
+.ia-acesso--cliente, .ia-acesso--agendamento { bottom: calc(92px + env(safe-area-inset-bottom, 0px)); }
+.ia-acesso--chat { bottom: calc(164px + env(safe-area-inset-bottom, 0px)); }
+.ia-layout { padding-bottom: 104px; }
+.ia-layout-cliente { padding-bottom: 172px; }
+@media (max-width: 767px) {
+  .ia-acesso { right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); }
+  .ia-acesso--navegacao { bottom: calc(80px + env(safe-area-inset-bottom, 0px)); }
+  .ia-acesso--cliente { bottom: calc(144px + env(safe-area-inset-bottom, 0px)); }
+  .ia-acesso--agendamento { bottom: calc(240px + env(safe-area-inset-bottom, 0px)); }
+  .ia-acesso--chat { bottom: calc(164px + env(safe-area-inset-bottom, 0px)); }
+  .ia-layout-cliente { padding-bottom: 240px; }
+}
+
+.ia-label-acessivel { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px !important; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.ia-mensagem { width: fit-content; max-width: 85%; box-sizing: border-box; border-radius: 16px; }
+.ia-mensagem p { margin: 0; }
+.ia-mensagem--usuario { margin-left: auto; border-bottom-right-radius: 4px; background: var(--fundo-superficie-2); color: var(--texto-principal); }
+.ia-mensagem--valeria { margin-right: auto; border-bottom-left-radius: 4px; background: var(--cor-primaria); color: var(--texto-sobre-primaria); }
+.ia-acoes { justify-content: flex-end; }
+
+.ia-campo-envio { position: relative; }
+.ia-campo-envio textarea { min-height: 64px; margin: 0; padding: 18px 116px 18px 12px; }
+.ia-painel .ia-enviar { width: 48px; height: 48px; padding: 0; border-radius: 50%; background: var(--cor-primaria); color: var(--texto-sobre-primaria); }
+.ia-painel .ia-enviar:disabled { background: var(--cor-primaria); color: var(--texto-sobre-primaria); opacity: 0.5; }
+.ia-enviando { animation: ia-girar 1s linear infinite; }
+@keyframes ia-girar { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .ia-enviando { animation: none; } }
+
+.ia-controles-envio { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); display: flex; align-items: center; gap: 0; }
+.ia-painel .ia-voz { width: 48px; height: 48px; padding: 0; border-radius: 50%; background: transparent; }
+
+.ia-voz svg { transform: translateX(4px); }

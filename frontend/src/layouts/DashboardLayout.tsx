@@ -1,7 +1,7 @@
 // Layout principal responsivo
 import { useState, useEffect, useContext } from 'react';
 import { AuthContext } from '../contexts/AuthContext';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import { Sidebar } from '../components/Sidebar';
 import { List } from '@phosphor-icons/react';
 import api from '../api/client';
@@ -11,6 +11,7 @@ import { PlanosAssinaturaModal } from '../components/PlanosAssinaturaModal';
 import { AssistenteIa } from '../components/AssistenteIa';
 export function DashboardLayout() {
   const { usuario } = useContext(AuthContext);
+  const location = useLocation();
   const isAdmin = usuario?.papel === 'ADMIN';
   const [mobileOpen, setMobileOpen] = useState(false);
   const [sidebarRecolhida, setSidebarRecolhida] = useState(false);
@@ -75,12 +76,12 @@ export function DashboardLayout() {
         }`}
       >
         <div 
-          className="w-full min-w-0 p-4 md:p-6"
+          className="w-full min-w-0 p-4 md:p-6 ia-layout"
           style={{ paddingLeft: 'var(--espaco-5, 1.25rem)', paddingRight: 'var(--espaco-5, 1.25rem)' }}
         >
           {isAdmin && <TransicaoLegadoBanner />}
           {isAdmin && <AvisoPagamentoBanner />}
-          {isAdmin && <AssistenteIa key={usuario?.id} api={api} caminho="/ia/admin" />}
+          {isAdmin && <AssistenteIa key={usuario?.id} api={api} caminho="/ia/admin" posicao={location.pathname.endsWith('/chat') ? 'chat' : 'padrao'} />}
           <Outlet />
         </div>
       </main>
