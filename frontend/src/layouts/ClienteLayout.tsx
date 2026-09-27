@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import clienteApi from '../api/clienteApi';
 import { useClienteAuth } from '../hooks/useClienteAuth';
 import { useNaoLidasCliente } from '../hooks/useNaoLidasCliente';
+import { AssistenteIa } from '../components/AssistenteIa';
 
 interface BarbeariaInfo {
   id: string;
@@ -176,6 +177,7 @@ export function ClienteLayout() {
       <main className="flex-1 flex flex-col h-[100dvh] overflow-hidden relative">
         <div className="flex-1 overflow-y-auto" style={{ paddingBottom: 'calc(80px + env(safe-area-inset-bottom, 0px))' }}>
           <div style={{ maxWidth: '1280px', margin: '0 auto', paddingLeft: 'var(--espaco-5, 1.25rem)', paddingRight: 'var(--espaco-5, 1.25rem)' }}>
+            {cliente && barbeariaId && <AssistenteIa key={barbeariaId} api={clienteApi} caminho={`/ia/cliente/${encodeURIComponent(barbeariaId)}`} />}
             <Outlet context={{ barbearia, barbeariaId }} />
           </div>
         </div>

@@ -6,6 +6,7 @@
     "node": ">=20.0.0"
   },
   "scripts": {
+    "test:ia": "tsx scripts/testes_ia.ts",
     "test:backup-tls": "tsx scripts/testes_backup_tls.ts",
     "test:producao-barbeiro": "tsx scripts/testes_producao_barbeiro.ts",
     "test:regularizacao": "tsx scripts/testes_regularizacao_asaas.ts",

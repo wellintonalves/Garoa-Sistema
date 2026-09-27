@@ -8,6 +8,7 @@ import api from '../api/client';
 import { TransicaoLegadoBanner } from '../components/TransicaoLegadoBanner';
 import { AvisoPagamentoBanner } from '../components/AvisoPagamentoBanner';
 import { PlanosAssinaturaModal } from '../components/PlanosAssinaturaModal';
+import { AssistenteIa } from '../components/AssistenteIa';
 export function DashboardLayout() {
   const { usuario } = useContext(AuthContext);
   const isAdmin = usuario?.papel === 'ADMIN';
@@ -79,6 +80,7 @@ export function DashboardLayout() {
         >
           {isAdmin && <TransicaoLegadoBanner />}
           {isAdmin && <AvisoPagamentoBanner />}
+          {isAdmin && <AssistenteIa key={usuario?.id} api={api} caminho="/ia/admin" />}
           <Outlet />
         </div>
       </main>

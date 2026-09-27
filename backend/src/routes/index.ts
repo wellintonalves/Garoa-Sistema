@@ -21,8 +21,10 @@ import chatRoutes from './chat.routes';
 import aprovacaoRoutes from './aprovacao.routes';
 import { bloqueioRoutes } from './bloqueio.routes';
 import assinaturaRoutes from './assinatura.routes';
+import iaRoutes from './ia.routes';
 
 const router = Router();
+router.use('/ia', iaRoutes);
 
 // Rotas públicas e multi-tenant
 router.use('/publico', publicoRoutes);

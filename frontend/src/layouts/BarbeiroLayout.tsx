@@ -3,6 +3,8 @@ import { Outlet, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { Clock, Calendar, CurrencyDollar, User } from '@phosphor-icons/react';
 import { useBarbeiroAuth } from '../hooks/useBarbeiroAuth';
 import { AprovacoesPopup } from '../components/AprovacoesPopup';
+import { AssistenteIa } from '../components/AssistenteIa';
+import barbeiroApi from '../api/barbeiroApi';
 
 export function BarbeiroLayout() {
   const navigate = useNavigate();
@@ -58,6 +60,7 @@ export function BarbeiroLayout() {
 
       <div className="flex-1 flex flex-col min-w-0 h-[100dvh] overflow-y-auto relative pb-[76px] md:pb-0">
         <div style={{ maxWidth: '1280px', width: '100%', margin: '0 auto', paddingLeft: 'var(--espaco-5, 1.25rem)', paddingRight: 'var(--espaco-5, 1.25rem)' }}>
+          {barbeiro && <AssistenteIa api={barbeiroApi} caminho="/ia/barbeiro" />}
           <Outlet context={{ barbeiro }} />
         </div>
       </div>
