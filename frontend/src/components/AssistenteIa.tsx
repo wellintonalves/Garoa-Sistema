@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { ChatCircleDots, CircleNotch, Microphone, PaperPlaneTilt, X } from '@phosphor-icons/react';
+import { ChatCircleDots, CircleNotch, Waveform, PaperPlaneTilt, X } from '@phosphor-icons/react';
 import type { AxiosInstance } from 'axios';
 import { isAxiosError } from 'axios';
 import { ErrorBoundary } from './ErrorBoundary';
@@ -133,7 +133,7 @@ function PainelAssistente({ api, caminho, avatarUrl = avatarValeria, posicao = '
         <button className="ia-voz" type="button" disabled={!status?.vozDisponivel || !status.vozNoPlano || (status.vozSegundosRestantes ?? 0) <= 0 || enviando}
           aria-label="Conversa por voz indisponível"
           title={!status?.vozNoPlano ? 'Conversa por voz exclusiva do plano Pro' : 'Conversa por voz ainda indisponível'}>
-          <Microphone size={24} aria-hidden="true" />
+          <Waveform size={24} weight="regular" aria-hidden="true" />
         </button>
         <button className="ia-enviar" type="submit" aria-label={enviando ? 'Enviando mensagem' : pendente ? 'Consultar pedido' : 'Enviar mensagem'}
           disabled={enviando || (!pendente && (!status?.textoDisponivel || !mensagem.trim()))}>
