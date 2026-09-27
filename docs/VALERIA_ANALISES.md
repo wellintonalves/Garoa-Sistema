@@ -17,7 +17,7 @@ O avatar usa uma cópia PNG da imagem fornecida, em `frontend/src/assets/valeria
 
 As consultas usam as definições existentes de atendimento financeiro, categoria de venda/estorno, snapshots de venda e utilitários de fuso. O retorno contém apenas agregados e nomes necessários, sem nomes, contatos ou registros individuais de clientes. Toda execução revalida o administrador e tenant no banco. Clientes e barbeiros não recebem a ferramenta; uma chamada forjada também é negada no backend.
 
-Uma operação pode fazer até duas gerações de no máximo 512 tokens cada, com uma consulta intermediária de leitura. Entrada reservada: 40.000 tokens no total; saída: 1.024. Há limite conservador de corpo UTF-8 e verificação do envelope restante antes de nova geração. Tokens e IDs das respostas são agregados antes de liquidar uma única mensagem concluída. Falha após qualquer etapa mantém a reserva incerta, sem retry pago automático. Não há histórico de conversa enviado: cada mensagem precisa conter os filtros necessários. Tarifas e franquias comerciais continuam sem definição.
+Uma operação pode fazer até duas gerações de no máximo 512 tokens cada, com uma consulta intermediária de leitura. Entrada reservada: 40.000 tokens no total; saída: 1.024. Há limite conservador de corpo UTF-8 e verificação do envelope restante antes de nova geração. Tokens e IDs das respostas são agregados antes de liquidar uma única mensagem concluída. Falha após qualquer etapa mantém a reserva incerta, sem retry pago automático. O contexto recente é recuperado pelo servidor conforme VALERIA_CONTEXTO.md; a ajuda por perfil está descrita em VALERIA_AJUDA.md. Tarifas e franquias comerciais continuam sem definição.
 
 ## Evidência de testes em 27/09/2026
 

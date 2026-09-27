@@ -5,6 +5,7 @@ import { obterConfiguracaoConsumo } from './configuracaoConsumo';
 import { RepositorioCotasPrisma } from './repositorioCotasPrisma';
 import { responderTextoOpenAI, ErroProvedorIa } from './openaiTexto';
 import { consultarAdmin } from './consultasAdmin';
+import { consultarAjuda, ferramentaAjuda } from './ajudaSistema';
 import { cifrarResultado, configuracaoResultado, decifrarResultado } from './resultado';
 import { carregarContexto, empacotarContexto, lerContexto, validarConversaId } from './contextoConversa';
 
@@ -29,6 +30,7 @@ export async function conversarIa(db: PrismaClient, contexto: ContextoIa, chave:
     // A vida da chamada não depende da conexão do navegador. Resultado é salvo
     // para retry idempotente; abort/timeout do provedor não libera a reserva.
     const resposta = await provedor(mensagem, { chave: env.OPENAI_API_KEY, modelo: reserva.modelo, historico, agora,
+      ajuda: { ferramenta: ferramentaAjuda(contexto.papel), consultar: (args, signal) => consultarAjuda(db, contexto, args, signal) },
       ...(contexto.papel === 'ADMIN' ? { consultarAdmin: (args: unknown, signal: AbortSignal) => consultarAdmin(db, contexto, args, signal, agora) } : {}),
     }, AbortSignal.timeout(30_000));
     const texto = resposta.concluida ? resposta.texto : 'A resposta não foi concluída. A mensagem foi liberada; o custo do processamento foi contabilizado.';
