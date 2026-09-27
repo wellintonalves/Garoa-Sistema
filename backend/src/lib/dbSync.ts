@@ -1,18 +1,15 @@
-import { Client } from 'pg';
 import { createHash } from 'node:crypto';
 import { filtrarReintroducaoEmRestauracao, MarcadorExclusao } from '../domain/privacidade/retencaoBackup';
+import { criarConexaoBackup, conectarBancoBackup } from './backupConnection';
 
 const ident = (s: string) => '"' + s.replace(/"/g, '""') + '"';
-function connection(url: string) {
-  const parsed = new URL(url);
-  const local = ['127.0.0.1', 'localhost', '[::1]'].includes(parsed.hostname);
-  return new Client({ connectionString: url, ssl: local || parsed.hostname.endsWith('.railway.internal') ? false : { rejectUnauthorized: true } });
-}
 function sameDatabase(a: string, b: string) {
   const x = new URL(a), y = new URL(b);
   return x.hostname === y.hostname && x.port === y.port && x.pathname === y.pathname;
 }
-const digest = (rows: unknown[]) => createHash('sha256').update(rows.map(row => JSON.stringify(row)).sort().join('\n')).digest('hex');
+const digest = (rows: Record<string, unknown>[]) => createHash('sha256')
+  .update(rows.map(row => JSON.stringify(Object.fromEntries(Object.keys(row).sort().map(key => [key, row[key]])))).sort().join('\n'))
+  .digest('hex');
 
 /** Destinos devem ter schema previamente migrado. Nunca executa DDL nem lê .env. */
 export async function copiarBanco(sourceUrl: string, targetUrl: string,
@@ -22,18 +19,18 @@ export async function copiarBanco(sourceUrl: string, targetUrl: string,
     throw new Error('Restauração exige ledger atual independente do backup e do destino; operação bloqueada.');
   }
   const inicio = Date.now();
-  const origem = connection(sourceUrl), destino = connection(targetUrl);
-  const ledger = opcoes.ledgerAtualUrl ? connection(opcoes.ledgerAtualUrl) : undefined;
+  const origem = criarConexaoBackup(sourceUrl, 'origem'), destino = criarConexaoBackup(targetUrl, 'destino');
+  const ledger = opcoes.ledgerAtualUrl ? criarConexaoBackup(opcoes.ledgerAtualUrl, 'ledger') : undefined;
   let origemTx = false, destinoTx = false;
   try {
-    await origem.connect(); await destino.connect();
+    await conectarBancoBackup(origem, 'origem'); await conectarBancoBackup(destino, 'destino');
     await origem.query('BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY'); origemTx = true;
     await destino.query('BEGIN'); destinoTx = true;
     // Uma cópia por destino; outras transações não veem dados parcialmente restaurados.
     await destino.query("SELECT pg_advisory_xact_lock(hashtext('valen-backup-copy'))");
     const schemaSQL = `SELECT table_name, column_name, udt_name, is_nullable, column_default
       FROM information_schema.columns WHERE table_schema='public' AND table_name <> '_prisma_migrations'
-      ORDER BY table_name, ordinal_position`;
+      ORDER BY table_name, column_name`;
     const schema = (await origem.query(schemaSQL)).rows;
     const alvoSchema = (await destino.query(schemaSQL)).rows;
     if (JSON.stringify(schema) !== JSON.stringify(alvoSchema)) throw new Error('Schema do destino difere da origem; aplique a migração revisada antes da cópia.');
@@ -51,7 +48,7 @@ export async function copiarBanco(sourceUrl: string, targetUrl: string,
     let marcadores: MarcadorExclusao[] = [];
     let ledgerRows: any[] | undefined;
     if (opcoes.modo === 'RESTAURACAO') {
-      await ledger!.connect();
+      await conectarBancoBackup(ledger!, 'ledger');
       await ledger!.query('BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY');
       ledgerRows = (await ledger!.query('SELECT * FROM "exclusoes_dados_auditaveis"')).rows;
       marcadores = ledgerRows as MarcadorExclusao[];

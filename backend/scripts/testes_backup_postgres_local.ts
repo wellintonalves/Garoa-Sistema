@@ -20,12 +20,16 @@ async function main() {
   try {
     for (const db of dbs) { await db.connect(); await db.query(schema); await db.query('TRUNCATE pais, filhos, exclusoes_dados_auditaveis'); }
     const [origem, destino, ledger] = dbs;
-    await origem.query("INSERT INTO pais VALUES ('p','Nome correto'); INSERT INTO filhos VALUES ('f','p')");
-    await destino.query("INSERT INTO pais VALUES ('antigo','Preservar se falhar')");
+    // Mesmas colunas em posições físicas diferentes após atualização do destino.
+    await origem.query('ALTER TABLE pais ADD COLUMN IF NOT EXISTS extra_a text, ADD COLUMN IF NOT EXISTS extra_b text');
+    await destino.query('ALTER TABLE pais ADD COLUMN IF NOT EXISTS extra_b text, ADD COLUMN IF NOT EXISTS extra_a text');
+    await origem.query("INSERT INTO pais (id,nome,extra_a,extra_b) VALUES ('p','Nome correto','a','b'); INSERT INTO filhos VALUES ('f','p')");
+    await destino.query("INSERT INTO pais (id,nome) VALUES ('antigo','Preservar se falhar')");
     // DIRECT_URL inválida prova que cópia não executa DDL nem consulta essa variável.
     process.env.DIRECT_URL = 'postgresql://invalid@127.0.0.1:1/nao_usar';
     await copiarBanco(base + nomes[0], base + nomes[1]);
     assert.equal((await destino.query('SELECT nome FROM pais')).rows[0].nome, 'Nome correto');
+    assert.deepEqual((await destino.query('SELECT extra_a,extra_b FROM pais')).rows[0], { extra_a: 'a', extra_b: 'b' });
     await assert.rejects(copiarBanco(base + nomes[0], base + nomes[1], { modo: 'RESTAURACAO' }), /ledger atual/);
     await ledger.query("INSERT INTO exclusoes_dados_auditaveis VALUES ('m','pais','p',now(),false)");
     // Filho sobrevivente impediria FK: deve falhar e reverter todo o destino.
