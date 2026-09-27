@@ -4,6 +4,7 @@ import type { AxiosInstance } from 'axios';
 import { isAxiosError } from 'axios';
 import { ErrorBoundary } from './ErrorBoundary';
 import './AssistenteIa.css';
+import avatarValeria from '../assets/valeria.png';
 
 interface StatusIa {
   mensagem: string;
@@ -24,7 +25,7 @@ export function AssistenteIa(props: { api: AxiosInstance; caminho: string; avata
   </ErrorBoundary>;
 }
 
-function PainelAssistente({ api, caminho, avatarUrl }: { api: AxiosInstance; caminho: string; avatarUrl?: string }) {
+function PainelAssistente({ api, caminho, avatarUrl = avatarValeria }: { api: AxiosInstance; caminho: string; avatarUrl?: string }) {
   const dialogo = useRef<HTMLDialogElement>(null);
   const botao = useRef<HTMLButtonElement>(null);
   const [aberto, setAberto] = useState(false);
@@ -72,7 +73,7 @@ function PainelAssistente({ api, caminho, avatarUrl }: { api: AxiosInstance; cam
       });
       if (controller.signal.aborted) return;
       setHistorico(atual => [...atual.filter(item => item.id !== `${pedido.chave}-resposta`),
-        { id: `${pedido.chave}-resposta`, autor: 'Assistente', texto: resposta.data.texto }]);
+        { id: `${pedido.chave}-resposta`, autor: 'Valéria', texto: resposta.data.texto }]);
       if (resposta.data.estado !== 'PENDENTE') { setPendente(null); setMensagem(''); }
       setTentativa(v => v + 1);
     } catch (e) {
@@ -91,15 +92,15 @@ function PainelAssistente({ api, caminho, avatarUrl }: { api: AxiosInstance; cam
 
   return <>
     <div className="ia-acesso">
-      <button ref={botao} type="button" className="ia-balao" onClick={abrir} aria-haspopup="dialog">
-        {avatarUrl ? <img src={avatarUrl} className="ia-avatar" alt="" /> : <ChatCircleDots size={24} weight="regular" aria-hidden="true" />} Assistente IA
+      <button ref={botao} type="button" className="ia-balao" onClick={abrir} aria-haspopup="dialog" aria-label="Valéria, assistente de IA">
+        {avatarUrl ? <img src={avatarUrl} className="ia-avatar" alt="" /> : <ChatCircleDots size={24} weight="regular" aria-hidden="true" />} Valéria
       </button>
     </div>
     <dialog ref={dialogo} className="ia-painel" aria-labelledby="ia-titulo"
       onClose={() => { setAberto(false); botao.current?.focus(); }}>
       <div className="ia-cabecalho">
-        <h2 id="ia-titulo">Assistente IA</h2>
-        <button type="button" onClick={fechar} aria-label="Fechar assistente"><X size={24} /></button>
+        <div className="ia-identidade"><img src={avatarUrl} className="ia-avatar" alt="" /><div><h2 id="ia-titulo">Valéria</h2><p>Assistente de IA</p></div></div>
+        <button type="button" onClick={fechar} aria-label="Fechar Valéria, assistente de IA"><X size={24} /></button>
       </div>
       <div className="ia-conteudo" aria-busy={carregando}>
         {carregando && <div role="status" aria-label="Carregando saldo da assistente">
@@ -118,14 +119,14 @@ function PainelAssistente({ api, caminho, avatarUrl }: { api: AxiosInstance; cam
             {status.renovaEm && <p>Fim do período: {new Intl.DateTimeFormat('pt-BR', { timeZone: 'America/Sao_Paulo', dateStyle: 'short', timeStyle: 'short' }).format(new Date(status.renovaEm))}</p>}
           </section>
           <p role="status">{status.mensagem}</p>
-          {historico.length === 0 && <p>{status.textoDisponivel ? 'Escreva sua primeira mensagem para começar.' : 'A conversa aparecerá aqui quando a assistente estiver disponível.'}</p>}
+          {historico.length === 0 && <p>{status.textoDisponivel ? 'Olá! Sou a Valéria, assistente de IA do Valen Barber. Como posso ajudar?' : 'A conversa aparecerá aqui quando a assistente estiver disponível.'}</p>}
         </>}
-        <div aria-live="polite" aria-label="Conversa com a assistente">
+        <div aria-live="polite" aria-label="Conversa com Valéria, assistente de IA">
           {(historico ?? []).map(item => <div key={item.id} className="ia-mensagem"><strong>{item.autor}</strong><p>{item.texto}</p></div>)}
         </div>
       </div>
       <form className="ia-compositor" onSubmit={enviar}>
-        <label htmlFor="ia-mensagem">Mensagem para a assistente</label>
+        <label htmlFor="ia-mensagem">Mensagem para Valéria</label>
         <textarea id="ia-mensagem" value={mensagem} onChange={e => setMensagem(e.target.value)} maxLength={4000}
           disabled={!status?.textoDisponivel || enviando || Boolean(pendente)} placeholder={status?.textoDisponivel ? 'Escreva sua mensagem' : 'Aguardando liberação da assistente'} rows={2} />
         {erroEnvio && <p role="alert">{erroEnvio}</p>}

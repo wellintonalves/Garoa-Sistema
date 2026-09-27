@@ -40,7 +40,7 @@ const assert = require('node:assert/strict');
     for (const largura of [375, 768, 1920]) {
       await page.setViewportSize({ width: largura, height: 900 });
       await page.goto('http://127.0.0.1:5173/__ia_fixture');
-      const abrir = page.getByRole('button', { name: 'Assistente IA', exact: true });
+      const abrir = page.getByRole('button', { name: 'Valéria, assistente de IA', exact: true });
       try { await abrir.click({ timeout: 10000 }); } catch (erro) { console.error(await page.locator('body').innerText()); throw erro; }
       await page.getByRole('status', { name: 'Carregando saldo da assistente' }).waitFor();
       await page.getByText('A assistente está em preparação.', { exact: true }).waitFor();
@@ -62,10 +62,10 @@ const assert = require('node:assert/strict');
       await page.getByRole('button', { name: 'Tentar novamente' }).click();
       await page.getByText('A assistente está em preparação.', { exact: true }).waitFor();
       await page.screenshot({ path: `node_modules/ia-${largura}.png` });
-      await page.getByRole('button', { name: 'Fechar assistente' }).click();
+      await page.getByRole('button', { name: 'Fechar Valéria, assistente de IA' }).click();
       await page.evaluate(() => { window.fixtureEnabled = true; });
       await abrir.click();
-      const campo = page.getByLabel('Mensagem para a assistente');
+      const campo = page.getByLabel('Mensagem para Valéria');
       await campo.fill('Teste de envio');
       await page.getByRole('button', { name: 'Enviar', exact: true }).click();
       await page.getByText('Falha de conexão simulada').waitFor();
