@@ -82,6 +82,8 @@ async function main() {
     }, new AbortController().signal, async (_url, init) => {
       const body = JSON.parse(String(init?.body)); etapa++;
       assert.match(body.instructions, /guia atual prevalece/);
+      assert.match(body.instructions, /não exiba caminhos técnicos crus/);
+      assert.match(body.instructions, /somente quando a pessoa pedir explicitamente/);
       assert.ok(Buffer.byteLength(String(init?.body)) <= 18000);
       if (etapa === 1) {
         assert.deepEqual(body.tool_choice,{type:'function',name:'consultar_ajuda_sistema'});
@@ -92,7 +94,8 @@ async function main() {
       return new Response(JSON.stringify({id:randomUUID(),status:'completed',usage:{input_tokens:150,output_tokens:10},output:[{type:'message',content:[{type:'output_text',text:evidencia.passos.join(' ')}]}]}));
     });
     assert.equal(etapa,2); assert.equal(r.concluida,true);
-    assert.ok(r.texto.endsWith(`Caminho: ${rota}`));
+    assert.equal(r.texto, ajuda.passos.join(' '), 'não acrescentar rodapé técnico nem alterar o texto útil');
+    assert.ok(!r.texto.includes('Caminho:'));
   }
   assert.equal(pedeOrientacaoSistema('Qual barbeiro mais produziu este mês?'),false);
   assert.equal(pedeOrientacaoSistema('Como você está?'),false);
@@ -115,7 +118,7 @@ async function main() {
     await assert.rejects(consultarAjuda(db, ator, { assunto, barbeariaId: outra.id }), /inválido/);
     if (ator.papel !== 'ADMIN') await assert.rejects(consultarAjuda(db, ator, { assunto: 'CAIXA' }), /perfil/);
     let chamadas = 0;
-    const resultado = await responderTextoOpenAI('Onde encontro essa função e como uso?', {
+    const resultado = await responderTextoOpenAI('Onde encontro essa função e como uso? Envie o link.', {
       chave: 'fixture', modelo: 'fixture', ajuda: { ferramenta: ferramentaAjuda(ator.papel), consultar: (args, signal) => consultarAjuda(db, ator, args, signal) },
     }, new AbortController().signal, async (_url, init) => {
       chamadas++;
