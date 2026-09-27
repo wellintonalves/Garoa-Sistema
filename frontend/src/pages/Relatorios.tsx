@@ -1,12 +1,15 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Funnel, CurrencyDollar, Users, Scissors, TrendUp as TrendingUp, WarningCircle, PencilSimple, X, Trash, Plus } from '@phosphor-icons/react';
+import { CurrencyDollar, Users, Scissors, TrendUp as TrendingUp, WarningCircle, PencilSimple, X, Trash, Plus } from '@phosphor-icons/react';
 import { Modal } from '../components/Modal';
 import { Botao } from '../components/ui/Botao';
 import { SkeletonTable } from '../components/Skeleton';
 import { StatCard } from '../components/StatCard';
 import api from '../api/client';
+import { validarPeriodoRelatorio } from '../utils/periodoRelatorio';
 import { dataBrasilia, hojeBrasilia } from '../utils/datas';
+
+type Natureza = 'todos' | 'produtos' | 'servicos';
 
 interface Consolidado {
   totalBruto: number;
@@ -35,6 +38,7 @@ interface Lancamento {
 }
 
 interface RelatorioData {
+  produtosSemDetalhamento?: number;
   consolidado: Consolidado;
   lancamentos: Lancamento[];
 }
@@ -48,9 +52,13 @@ const FORMA_PAGAMENTO_LABELS: Record<string, string> = {
 
 export function Relatorios() {
   const [searchParams] = useSearchParams();
-  const [carregando, setCarregando] = useState(false);
+  const [carregando, setCarregando] = useState(true);
   const [barbeiros, setBarbeiros] = useState<any[]>([]);
   const [servicos, setServicos] = useState<any[]>([]);
+  const [produtos, setProdutos] = useState<{ id: string; nome: string }[]>([]);
+  const [erroProdutos, setErroProdutos] = useState(false);
+  const [carregandoProdutos, setCarregandoProdutos] = useState(true);
+  const [revisaoProdutos, setRevisaoProdutos] = useState(0);
   const [erro, setErro] = useState<string | null>(null);
 
   const dataHoje = hojeBrasilia();
@@ -58,7 +66,23 @@ export function Relatorios() {
   const dataPrimeiroDia = dataBrasilia(new Date(year, month - 1, 1, 12, 0, 0));
 
   const barbeiroIdUrl = searchParams.get('barbeiroId') || 'todos';
-  const [filtros, setFiltros] = useState({ inicio: dataPrimeiroDia, fim: dataHoje, barbeiroId: barbeiroIdUrl });
+  const [filtros, setFiltros] = useState({ inicio: dataPrimeiroDia, fim: dataHoje, barbeiroId: barbeiroIdUrl, natureza: 'todos' as Natureza, pagamento: 'todos', produtoId: 'todos' });
+  const periodoAnterior = useRef(`${filtros.inicio}|${filtros.fim}`);
+  const [revisao, setRevisao] = useState(0);
+  const buscarRelatorio = () => {
+    setRevisao(valor => valor + 1);
+  };
+  const [versaoPeriodo, setVersaoPeriodo] = useState(0);
+  const limparFiltros = () => {
+    setFiltros({ inicio: '', fim: '', natureza: 'todos', barbeiroId: 'todos', produtoId: 'todos', pagamento: 'todos' });
+    // O campo nativo pode manter segmentos digitados mesmo com value vazio.
+    setVersaoPeriodo(valor => valor + 1);
+  };
+  const erroPeriodo = validarPeriodoRelatorio(filtros.inicio, filtros.fim);
+  const chaveConsulta = JSON.stringify([filtros, revisao]);
+  const [chaveConcluida, setChaveConcluida] = useState('');
+  const atualizando = !erroPeriodo && (carregando || chaveConcluida !== chaveConsulta);
+  const temFiltros = !!(filtros.inicio || filtros.fim || filtros.natureza !== 'todos' || filtros.barbeiroId !== 'todos' || filtros.produtoId !== 'todos' || filtros.pagamento !== 'todos');
   const [relatorio, setRelatorio] = useState<RelatorioData | null>(null);
 
   // Estados para edição de lançamento
@@ -69,63 +93,91 @@ export function Relatorios() {
   const [confirmandoExclusao, setConfirmandoExclusao] = useState<string | null>(null);
 
   useEffect(() => {
+    const controller = new AbortController();
+    setCarregandoProdutos(true);
+    setErroProdutos(false);
+    api.get('/financeiro/relatorio/produtos', { signal: controller.signal })
+      .then(res => { if (!controller.signal.aborted) setProdutos(res.data ?? []); })
+      .catch(() => { if (!controller.signal.aborted) setErroProdutos(true); })
+      .finally(() => { if (!controller.signal.aborted) setCarregandoProdutos(false); });
+    return () => controller.abort();
+  }, [revisaoProdutos]);
+
+  useEffect(() => {
+    const controller = new AbortController();
     async function carregar() {
       try {
-        const res = await api.get('/barbeiros?todos=true');
-        const resS = await api.get('/servicos');
-        setServicos(resS.data.filter((s: any) => s.ativo));
+        const res = await api.get('/barbeiros?todos=true', { signal: controller.signal });
+        const resS = await api.get('/servicos', { signal: controller.signal });
+        if (controller.signal.aborted) return;
+        setServicos((resS.data ?? []).filter((s: any) => s.ativo));
         setBarbeiros(res.data);
       } catch (e) {
-        console.error('Erro ao carregar barbeiros:', e);
+        if (!controller.signal.aborted) console.error('Erro ao carregar barbeiros:', e);
       }
     }
     carregar();
+    return () => controller.abort();
   }, []);
 
-  const buscarRelatorio = useCallback(async () => {
+  useEffect(() => {
+    const controller = new AbortController();
+    const periodo = `${filtros.inicio}|${filtros.fim}`;
+    const dataAlterada = periodoAnterior.current !== periodo;
+    periodoAnterior.current = periodo;
+    if (erroPeriodo) {
+      setCarregando(false);
+      setRelatorio(null);
+      setErro(null);
+      return () => controller.abort();
+    }
     setCarregando(true);
     setErro(null);
-    try {
-      const params: Record<string, string> = {
-        inicio: filtros.inicio,
-        fim: filtros.fim,
-      };
-      // Só envia barbeiroId se não for "todos"
-      if (filtros.barbeiroId && filtros.barbeiroId !== 'todos') {
-        params.barbeiroId = filtros.barbeiroId;
-      }
+    async function carregarRelatorio() {
+      setCarregando(true);
+      setErro(null);
+      try {
+        const params: Record<string, string> = {
 
-      const res = await api.get('/financeiro/relatorio', { params });
-      
-      if (res.data && res.data.consolidado && Array.isArray(res.data.lancamentos)) {
-        setRelatorio(res.data);
-      } else {
-        console.error('Resposta inesperada da API:', res.data);
-        setErro('A API retornou dados em formato inesperado.');
+          natureza: filtros.natureza,
+          pagamento: filtros.pagamento,
+        };
+        if (filtros.inicio && filtros.fim) {
+          params.inicio = filtros.inicio;
+          params.fim = filtros.fim;
+        }
+        // Só envia barbeiroId se não for "todos"
+        if (filtros.natureza !== 'produtos' && filtros.barbeiroId && filtros.barbeiroId !== 'todos') {
+          params.barbeiroId = filtros.barbeiroId;
+        }
+
+        if (filtros.natureza === 'produtos' && filtros.produtoId !== 'todos') params.produtoId = filtros.produtoId;
+
+        const res = await api.get('/financeiro/relatorio', { params, signal: controller.signal });
+        if (controller.signal.aborted) return;
+
+        if (res.data && res.data.consolidado && Array.isArray(res.data.lancamentos)) {
+          setRelatorio(res.data);
+        } else {
+          console.error('Resposta inesperada da API:', res.data);
+          setErro('A API retornou dados em formato inesperado.');
+          setRelatorio(null);
+        }
+      } catch (e: any) {
+        if (controller.signal.aborted) return;
+        setErro(e?.message || 'Não foi possível carregar o relatório. Tente novamente.');
         setRelatorio(null);
+      } finally {
+        if (!controller.signal.aborted) {
+          setCarregando(false);
+          setChaveConcluida(chaveConsulta);
+        }
       }
-    } catch (e: any) {
-      console.error('Erro ao buscar relatório:', e);
-      let mensagem: string;
-      if (e?.response?.status === 404) {
-        mensagem = 'Endpoint de relatório não encontrado no servidor. O backend pode estar desatualizado — aguarde o redeploy ou entre em contato com o administrador.';
-      } else if (e?.response?.data?.erro) {
-        mensagem = e.response.data.erro;
-      } else if (e?.code === 'ERR_NETWORK') {
-        mensagem = 'Não foi possível conectar ao servidor. Verifique se o backend está rodando.';
-      } else {
-        mensagem = e?.message || 'Erro desconhecido ao buscar relatório.';
-      }
-      setErro(mensagem);
-      setRelatorio(null);
-    } finally {
-      setCarregando(false);
     }
-  }, [filtros]);
-
-  useEffect(() => {
-    buscarRelatorio();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    // Agrupa a digitação das datas; seleções e limpar são aplicados sem espera perceptível.
+    const timer = window.setTimeout(() => { void carregarRelatorio(); }, dataAlterada && filtros.inicio && filtros.fim ? 300 : 0);
+    return () => { window.clearTimeout(timer); controller.abort(); };
+  }, [filtros, revisao, erroPeriodo, chaveConsulta]);
 
     const handleEditar = (l: Lancamento) => {
     setLancamentoEditando(l);
@@ -164,7 +216,7 @@ export function Relatorios() {
       if (valoresEdit.servicoId) payload.servicoId = valoresEdit.servicoId;
 
       const res = await api.put(`/financeiro/${lancamentoEditando.id}`, payload);
-      
+
       // Adicionar serviços extras
       for (const servicoExtra of servicosAdicionais) {
         if (!servicoExtra.servicoId) continue;
@@ -201,10 +253,10 @@ export function Relatorios() {
     return num.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   };
 
-  const entradas = relatorio?.lancamentos.filter((l) => l.tipo === 'ENTRADA') || [];
+  const entradas = (relatorio?.lancamentos ?? []).filter((l) => l.tipo === 'ENTRADA' || l.categoria === 'Estorno de Produto');
 
   return (
-    <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+    <div className="animate-fade-in min-w-0" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
       <h1
         style={{
           fontFamily: 'var(--fonte-interface)',
@@ -217,32 +269,61 @@ export function Relatorios() {
       </h1>
 
       {/* Filtros */}
-      <div className="card" style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', alignItems: 'flex-end' }}>
-        <div>
-          <label className="input-label">Data inicial</label>
-          <input type="date" value={filtros.inicio} onChange={e => setFiltros({...filtros, inicio: e.target.value})} className="ds-input" />
+      <form onSubmit={e => e.preventDefault()} aria-label="Filtros do relatório" className="card grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6 items-end">
+        <div className="min-w-0">
+          <label htmlFor="relatorio-inicio" className="input-label">Data inicial</label>
+          <input key={`inicio-${versaoPeriodo}`} id="relatorio-inicio" type="date" aria-invalid={!!erroPeriodo} aria-describedby={erroPeriodo ? 'relatorio-periodo' : undefined} value={filtros.inicio} onChange={e => setFiltros({...filtros, inicio: e.target.value})} className="ds-input min-h-12 w-full min-w-0" />
         </div>
-        <div>
-          <label className="input-label">Data final</label>
-          <input type="date" value={filtros.fim} onChange={e => setFiltros({...filtros, fim: e.target.value})} className="ds-input" />
+        <div className="min-w-0">
+          <label htmlFor="relatorio-fim" className="input-label">Data final</label>
+          <input key={`fim-${versaoPeriodo}`} id="relatorio-fim" type="date" aria-invalid={!!erroPeriodo} aria-describedby={erroPeriodo ? 'relatorio-periodo' : undefined} value={filtros.fim} onChange={e => setFiltros({...filtros, fim: e.target.value})} className="ds-input min-h-12 w-full min-w-0" />
         </div>
-        <div>
-          <label className="input-label">Barbeiro</label>
-          <select value={filtros.barbeiroId} onChange={e => setFiltros({...filtros, barbeiroId: e.target.value})} className="ds-select" style={{ minWidth: '200px' }}>
-            <option value="todos">Todos os barbeiros</option>
-            {barbeiros.map(b => <option key={b.id} value={b.id}>{b.usuario.nome}</option>)}
+        <div className="min-w-0">
+          <label htmlFor="relatorio-natureza" className="input-label">Tipo de lançamento</label>
+          <select id="relatorio-natureza" className="ds-select min-h-12 w-full min-w-0" value={filtros.natureza} onChange={e => setFiltros({ ...filtros, natureza: e.target.value as Natureza, barbeiroId: 'todos', produtoId: 'todos' })}>
+            <option value="todos">Todos</option>
+            <option value="produtos">Produtos</option>
+            <option value="servicos">Serviços</option>
           </select>
         </div>
-        <button onClick={buscarRelatorio} className="btn-primary" disabled={carregando}>
-          <Funnel size={18} /> {carregando ? 'Buscando...' : 'Filtrar'}
-        </button>
-      </div>
+        <div className="min-w-0">
+          {filtros.natureza === 'produtos' ? <>
+            <label htmlFor="relatorio-produto" className="input-label">Produto</label>
+            <select id="relatorio-produto" value={filtros.produtoId} onChange={e => setFiltros({ ...filtros, produtoId: e.target.value })} disabled={carregandoProdutos || erroProdutos} className="ds-select min-h-12 w-full min-w-0">
+              <option value="todos">{carregandoProdutos ? 'Carregando produtos…' : 'Todos os produtos'}</option>
+              {(produtos ?? []).map(p => <option key={p.id} value={p.id}>{p.nome}</option>)}
+            </select>
+            {erroProdutos && <p role="alert" className="text-sm mt-2">Não foi possível carregar os produtos. <button type="button" className="btn-secondary min-h-12" style={{ minHeight: 48 }} onClick={() => setRevisaoProdutos(v => v + 1)}>Tentar novamente</button></p>}
+          </> : <>
+            <label htmlFor="relatorio-barbeiro" className="input-label">Barbeiro</label>
+            <select id="relatorio-barbeiro" value={filtros.barbeiroId} onChange={e => setFiltros({ ...filtros, barbeiroId: e.target.value })} className="ds-select min-h-12 w-full min-w-0">
+              <option value="todos">Todos os barbeiros</option>
+              {(barbeiros ?? []).map(b => <option key={b.id} value={b.id}>{b.usuario.nome}</option>)}
+            </select>
+          </>}
+        </div>
+        <div className="min-w-0">
+          <label htmlFor="relatorio-pagamento" className="input-label">Forma de pagamento</label>
+          <select id="relatorio-pagamento" className="ds-select min-h-12 w-full min-w-0" value={filtros.pagamento} onChange={e => setFiltros({ ...filtros, pagamento: e.target.value })}>
+            <option value="todos">Todos</option>
+            <option value="PIX">Pix</option>
+            <option value="DINHEIRO">Dinheiro</option>
+            <option value="CARTAO">Cartão (crédito e débito)</option>
+            <option value="CARTAO_CREDITO">Crédito</option>
+            <option value="CARTAO_DEBITO">Débito</option>
+          </select>
+        </div>
+        <div className="flex justify-end min-w-0">
+          <button type="button" className="btn-secondary" style={{ minHeight: 48 }} onClick={limparFiltros} disabled={!temFiltros}>Limpar filtros</button>
+        </div>
+        {erroPeriodo && <p id="relatorio-periodo" role="alert" className="col-span-full text-sm text-[var(--texto-secundario)] min-w-0">{erroPeriodo}</p>}
+      </form>
 
       {/* Estado de carregamento */}
-      {carregando && <SkeletonTable rows={5} cols={4} />}
+      {atualizando && <SkeletonTable rows={5} cols={4} />}
 
       {/* Estado de erro */}
-      {!carregando && erro && (
+      {!erroPeriodo && !atualizando && erro && (
         <div
           className="card"
           style={{
@@ -261,27 +342,31 @@ export function Relatorios() {
             <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '13px', color: 'var(--texto-secundario)', marginTop: '4px' }}>
               {erro}
             </p>
+            <button className="btn-secondary min-h-12 mt-3" style={{ minHeight: 48 }} onClick={buscarRelatorio}>Tentar novamente</button>
           </div>
         </div>
       )}
 
       {/* Resultado do relatório */}
-      {!carregando && !erro && relatorio && (
+      {!erroPeriodo && !atualizando && !erro && relatorio && (
         <>
+          {!!relatorio.produtosSemDetalhamento && filtros.natureza !== 'servicos' && <p role="status" className="text-sm text-[var(--texto-secundario)]">
+            {relatorio.produtosSemDetalhamento} lançamento(s) de produtos sem detalhamento suficiente para separar por produto. Esses valores aparecem em Todos os produtos, mas não na seleção de um produto individual.
+          </p>}
           {/* Cards de Totais */}
           <div className="dashboard-grid">
-            <StatCard
+            {filtros.natureza !== 'produtos' && <StatCard
               titulo="Receita de serviços (bruto)"
               valor={fmt(relatorio.consolidado.totalBruto)}
               icone={Scissors}
               subtexto="Soma de serviços prestados"
-            />
-            <StatCard
+            />}
+            {filtros.natureza !== 'servicos' && <StatCard
               titulo="Receita de produtos"
               valor={fmt(relatorio.consolidado.totalProdutos)}
               icone={CurrencyDollar}
-              subtexto="Soma de produtos vendidos"
-            />
+              subtexto="Vendas de produtos menos estornos"
+            />}
             <StatCard
               titulo="Comissões pagas"
               valor={fmt(relatorio.consolidado.totalComissoes)}
@@ -292,17 +377,17 @@ export function Relatorios() {
               titulo="Lucro líquido"
               valor={fmt(relatorio.consolidado.totalLiquido)}
               icone={TrendingUp}
-              subtexto="Serviços + Produtos − Comissões"
+              subtexto={filtros.natureza === 'produtos' ? 'Produtos menos estornos' : filtros.natureza === 'servicos' ? 'Serviços menos comissões' : 'Serviços + produtos − estornos − comissões'}
             />
           </div>
 
           {/* Resumo por Barbeiro (quando "Todos" está selecionado) */}
-          {filtros.barbeiroId === 'todos' && Object.keys(relatorio.consolidado.porBarbeiro).length > 0 && (
+          {filtros.natureza !== 'produtos' && filtros.barbeiroId === 'todos' && Object.keys(relatorio.consolidado.porBarbeiro).length > 0 && (
             <div className="card">
               <h3 style={{ fontFamily: 'var(--fonte-interface)', fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '16px' }}>
                 Resumo por barbeiro
               </h3>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(240px, 100%), 1fr))', gap: '16px' }}>
                 {Object.values(relatorio.consolidado.porBarbeiro).map((b, i) => (
                   <div key={i} style={{ padding: '16px', background: 'var(--bg-surface2)', border: '1px solid var(--border)' }}>
                     <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '12px' }}>{b.nome}</p>
@@ -333,7 +418,7 @@ export function Relatorios() {
                 <thead>
                   <tr>
                     <th style={{ fontSize: '13px' }}>Data</th>
-                    <th style={{ fontSize: '13px' }}>Barbeiro / serviço</th>
+                    <th style={{ fontSize: '13px' }}>Barbeiro / lançamento</th>
                     <th style={{ fontSize: '13px' }}>Forma de pagamento</th>
                     <th style={{ fontSize: '13px', textAlign: 'center' }}>Valor total</th>
                     <th style={{ fontSize: '13px', textAlign: 'center' }}>Comissão</th>
@@ -349,7 +434,9 @@ export function Relatorios() {
                       </td>
                         <td>
                           <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '16px', fontWeight: 500, color: 'var(--text-primary)' }}>
-                            {l.itens && l.itens.length > 0
+                            {(l.categoria === 'Venda de Produto' || l.categoria === 'Estorno de Produto')
+                              ? `${l.categoria}${l.descricao ? ': ' + l.descricao : ''}`
+                              : l.itens && l.itens.length > 0
                               ? l.itens.map((i: any) => i.nome).join(' + ')
                               : (l.servico ? l.servico.nome : l.categoria)}
                           </p>
@@ -365,11 +452,11 @@ export function Relatorios() {
                           {FORMA_PAGAMENTO_LABELS[l.formaPagamento] || l.formaPagamento}
                         </span>
                       </td>
-                      <td style={{ textAlign: 'center', fontFamily: 'var(--fonte-numeros)', fontSize: '16px', fontWeight: 600, fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap', color: 'var(--text-primary)' }}>{fmt(l.valor)}</td>
+                      <td style={{ textAlign: 'center', fontFamily: 'var(--fonte-numeros)', fontSize: '16px', fontWeight: 600, fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap', color: 'var(--text-primary)' }}>{fmt(l.tipo === 'SAIDA' ? -Number(l.valor) : l.valor)}</td>
                       <td style={{ textAlign: 'center', fontFamily: 'var(--fonte-numeros)', fontSize: '16px', fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap', color: 'var(--text-primary)' }}>{l.valorComissao ? fmt(l.valorComissao) : '—'}</td>
-                      <td style={{ textAlign: 'center', fontFamily: 'var(--fonte-numeros)', fontSize: '16px', fontWeight: 600, fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap', color: 'var(--text-primary)' }}>{l.valorLiquido ? fmt(l.valorLiquido) : fmt(l.valor)}</td>
+                      <td style={{ textAlign: 'center', fontFamily: 'var(--fonte-numeros)', fontSize: '16px', fontWeight: 600, fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap', color: 'var(--text-primary)' }}>{fmt(l.tipo === 'SAIDA' ? -Number(l.valor) : Number(l.valor) - Number(l.valorComissao ?? 0))}</td>
                       <td style={{ width: '100px', textAlign: 'center', verticalAlign: 'middle' }}>
-                        <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', alignItems: 'center' }}>
+                        {l.categoria === 'Venda de Produto' || l.categoria === 'Estorno de Produto' ? <span className="text-sm text-[var(--texto-secundario)]">Gerenciado no estoque</span> : <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', alignItems: 'center' }}>
                           <button
                             onClick={() => handleEditar(l)}
                             style={{ width: '40px', height: '40px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--texto-secundario)' }}
@@ -386,14 +473,14 @@ export function Relatorios() {
                           >
                             <Trash size={18} />
                           </button>
-                        </div>
+                        </div>}
                       </td>
                     </tr>
                   ))}
                   {entradas.length === 0 && (
                     <tr>
                       <td colSpan={7} style={{ padding: '2rem', textAlign: 'center', color: 'var(--texto-secundario)', fontFamily: 'var(--fonte-interface)', fontSize: '13px' }}>
-                        Nenhum lançamento de entrada encontrado para o período selecionado.
+                        {filtros.natureza === 'produtos' ? 'Não há vendas ou estornos de produtos para os filtros selecionados.' : filtros.natureza === 'servicos' ? 'Não há serviços para os filtros selecionados.' : 'Não há lançamentos para os filtros selecionados.'}
                       </td>
                     </tr>
                   )}
@@ -418,11 +505,11 @@ export function Relatorios() {
                 <X size={20} />
               </button>
             </div>
-            
+
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                             <div>
                 <label className="input-label">Serviço Realizado</label>
-                <select 
+                <select
                   className="ds-select"
                   value={valoresEdit.servicoId}
                   onChange={e => setValoresEdit({...valoresEdit, servicoId: e.target.value})}
@@ -434,22 +521,22 @@ export function Relatorios() {
 
               <div>
                 <label className="input-label">Valor Total (R$)</label>
-                <input 
-                  type="number" 
+                <input
+                  type="number"
                   step="0.01"
-                  className="ds-input" 
-                  value={valoresEdit.valor} 
+                  className="ds-input"
+                  value={valoresEdit.valor}
                   onChange={e => setValoresEdit({...valoresEdit, valor: e.target.value})}
                 />
               </div>
-              
+
               <div>
                 <label className="input-label">Comissão atual (R$)</label>
-                <input 
-                  type="number" 
+                <input
+                  type="number"
                   step="0.01"
-                  className="ds-input" 
-                  value={valoresEdit.comissao} 
+                  className="ds-input"
+                  value={valoresEdit.comissao}
                   readOnly
                   aria-describedby="comissao-automatica"
                 />
@@ -458,7 +545,7 @@ export function Relatorios() {
 
               <div>
                 <label className="input-label">Forma de Pagamento</label>
-                <select 
+                <select
                   className="ds-select"
                   value={valoresEdit.formaPagamento}
                   onChange={e => setValoresEdit({...valoresEdit, formaPagamento: e.target.value})}
@@ -481,7 +568,7 @@ export function Relatorios() {
                     }} style={{ background: 'transparent', border: 'none', color: 'var(--error-text)', fontSize: '0.8125rem', cursor: 'pointer' }}>Remover</button>
                   </div>
                   <div style={{ display: 'flex', gap: '8px' }}>
-                    <select 
+                    <select
                       className="ds-select"
                       value={srv.servicoId}
                       onChange={e => {
@@ -496,7 +583,7 @@ export function Relatorios() {
                       <option value="">Selecione...</option>
                       {servicos.map(s => <option key={s.id} value={s.id}>{s.nome}</option>)}
                     </select>
-                    <input 
+                    <input
                       type="number"
                       placeholder="Valor"
                       className="ds-input"
@@ -512,8 +599,8 @@ export function Relatorios() {
                 </div>
               ))}
 
-              <button 
-                className="btn-secondary" 
+              <button
+                className="btn-secondary"
                 style={{ fontSize: '0.8125rem', padding: '8px', borderStyle: 'dashed' }}
                 onClick={() => setServicosAdicionais([...servicosAdicionais, { servicoId: '', valor: '' }])}
               >
@@ -521,15 +608,15 @@ export function Relatorios() {
               </button>
 
               <div style={{ display: 'flex', gap: '12px', marginTop: '8px' }}>
-                <button 
-                  className="btn-secondary" 
+                <button
+                  className="btn-secondary"
                   style={{ flex: 1 }}
                   onClick={() => setLancamentoEditando(null)}
                 >
                   Cancelar
                 </button>
-                <button 
-                  className="btn-primary" 
+                <button
+                  className="btn-primary"
                   style={{ flex: 1 }}
                   onClick={salvarEdicao}
                   disabled={salvandoEdicao}

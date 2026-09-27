@@ -10,6 +10,7 @@ router.use(authMiddleware);
 router.use(roleMiddleware('ADMIN'));
 
 router.get('/', FinanceiroController.listar);
+router.get('/relatorio/produtos', FinanceiroController.produtosRelatorio);
 router.get('/relatorio', FinanceiroController.relatorio);
 router.get('/dashboard', FinanceiroController.dashboardResumo);
 router.get('/resumo-dia', FinanceiroController.resumoDia);

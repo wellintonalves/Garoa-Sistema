@@ -534,9 +534,27 @@ export class FinanceiroService {
     return resultado;
   }
 
+  /** Catálogo e nomes históricos, restritos à barbearia autenticada. */
+  static async produtosRelatorio() {
+    const barbeariaId = tenantStorage.getStore()?.barbeariaId;
+    if (!barbeariaId) throw new ErroDeNegocio('Barbearia não identificada.', 403);
+    const [catalogo, historico] = await Promise.all([
+      prisma.estoque.findMany({ where: { barbeariaId }, select: { id: true, nome: true } }),
+      prisma.vendaProduto.findMany({ where: { barbeariaId }, distinct: ['estoqueId', 'nomeProduto'], select: { estoqueId: true, nomeProduto: true } }),
+    ]);
+    const opcoes = new Map(catalogo.map(p => [`estoque:${p.id}`, p.nome]));
+    for (const p of historico) {
+      const chave = p.estoqueId ? `estoque:${p.estoqueId}` : `historico:${p.nomeProduto}`;
+      if (!opcoes.has(chave)) opcoes.set(chave, `${p.nomeProduto} (histórico)`);
+    }
+    return Array.from(opcoes, ([id, nome]) => ({ id, nome })).sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+  }
+
   /** Relatório detalhado financeiro */
-  static async relatorio(filtros: { inicio: string; fim: string; barbeiroId?: string }) {
-    const where: any = {};
+  static async relatorio(filtros: { inicio?: string; fim?: string; barbeiroId?: string; natureza?: 'todos' | 'produtos' | 'servicos'; pagamento?: 'todos' | 'CARTAO' | FormaPagamento; produtoId?: string }) {
+    const barbeariaId = tenantStorage.getStore()?.barbeariaId;
+    if (!barbeariaId) throw new ErroDeNegocio('Barbearia não identificada.', 403);
+    const where: Prisma.LancamentoFinanceiroWhereInput = { barbeariaId };
     
     if (filtros.inicio || filtros.fim) {
       where.data = {};
@@ -544,19 +562,50 @@ export class FinanceiroService {
       if (filtros.fim) where.data.lte = fimDiaBrasilia(filtros.fim);
     }
 
-    if (filtros.barbeiroId && filtros.barbeiroId !== 'todos') {
+    if (filtros.natureza !== 'produtos' && filtros.barbeiroId && filtros.barbeiroId !== 'todos') {
       where.barbeiroId = filtros.barbeiroId;
     }
 
-    const lancamentos = await prisma.lancamentoFinanceiro.findMany({
+    const registros = await prisma.lancamentoFinanceiro.findMany({
       where,
       include: {
         barbeiro: { include: { usuario: { select: { nome: true } } } },
         servico: { select: { nome: true } },
         agendamento: { select: { valorBruto: true } },
-        itens: { orderBy: { ordem: 'asc' } }
+        itens: { orderBy: { ordem: 'asc' } },
+        vendaEstoque: { include: { itens: true } },
+        estornoVendaEstoque: { include: { itens: true } }
       },
       orderBy: { data: 'desc' }
+    });
+
+    // A mesma seleção alimenta os detalhes e todos os consolidados.
+    const selecionados = registros.filter(l => {
+      if (filtros.pagamento === 'CARTAO' && l.formaPagamento !== 'CARTAO_CREDITO' && l.formaPagamento !== 'CARTAO_DEBITO') return false;
+      if (filtros.pagamento && filtros.pagamento !== 'todos' && filtros.pagamento !== 'CARTAO' && l.formaPagamento !== filtros.pagamento) return false;
+      const produto = l.categoria === CATEGORIA_VENDA_PRODUTO || l.categoria === CATEGORIA_ESTORNO_PRODUTO;
+      if (filtros.natureza === 'produtos') return produto;
+      if (filtros.natureza === 'servicos') return !produto;
+      return true;
+    });
+
+    let produtosSemDetalhamento = 0;
+    const lancamentos = selecionados.flatMap(l => {
+      const produto = l.categoria === CATEGORIA_VENDA_PRODUTO || l.categoria === CATEGORIA_ESTORNO_PRODUTO;
+      if (!produto) return [l];
+      const venda = l.vendaEstoque ?? l.estornoVendaEstoque;
+      const itens = venda?.itens ?? [];
+      // Não ratear novamente descontos nem inferir produtos pela descrição livre.
+      const totalItens = itens.reduce((soma, item) => soma + Math.round(Number(item.precoVenda) * item.quantidade * 100) - Math.round(Number(item.descontoRateado ?? 0) * 100), 0);
+      const detalhado = itens.length > 0 && Math.abs(totalItens - Math.round(Number(l.valor) * 100)) <= 1;
+      if (!detalhado) produtosSemDetalhamento++;
+      if (filtros.natureza !== 'produtos' || !filtros.produtoId || filtros.produtoId === 'todos') return [l];
+      if (!detalhado) return [];
+      const escolhidos = itens.filter(item => (item.estoqueId ? `estoque:${item.estoqueId}` : `historico:${item.nomeProduto}`) === filtros.produtoId);
+      if (!escolhidos.length) return [];
+      const centavos = escolhidos.reduce((soma, item) => soma + Math.round(Number(item.precoVenda) * item.quantidade * 100) - Math.round(Number(item.descontoRateado ?? 0) * 100), 0);
+      return [{ ...l, valor: new Prisma.Decimal(centavos).div(100), valorComissao: null, valorLiquido: null,
+        descricao: escolhidos.map(item => `${item.quantidade}x ${item.nomeProduto}`).join(', ') }];
     });
 
     const consolidado = {
@@ -584,7 +633,7 @@ export class FinanceiroService {
           if (l.barbeiroId && l.barbeiro) {
             const nomeBarbeiro = l.barbeiro.usuario.nome;
             const comissao = Number(l.valorComissao) || 0;
-            const liquido = l.valorLiquido != null ? Number(l.valorLiquido) : valor - comissao;
+            const liquido = valor - comissao;
             
             consolidado.totalComissoes += comissao;
             consolidado.totalLiquido += liquido;
@@ -615,7 +664,8 @@ export class FinanceiroService {
       }
     });
 
-    return { consolidado, lancamentos };
+    consolidado.totalLiquido = consolidado.totalBruto + consolidado.totalProdutos - consolidado.totalComissoes;
+    return { consolidado, lancamentos, produtosSemDetalhamento };
   }
 
   /** Resumo para o Dashboard — aceita período customizável e comparação contextual */
