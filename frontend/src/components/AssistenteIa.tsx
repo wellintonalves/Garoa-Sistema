@@ -173,7 +173,9 @@ function PainelAssistente({ api, caminho, avatarUrl = avatarValeria, posicao = '
               e.currentTarget.form?.requestSubmit();
             }
           }}
-          disabled={voz.ativa || !status?.textoDisponivel || enviando || Boolean(pendente)} placeholder={status?.textoDisponivel ? 'Escreva sua mensagem' : 'Aguardando liberação da assistente'} rows={Math.min(4, mensagem.split('\n').length)} />
+          disabled={voz.ativa || !status?.textoDisponivel || enviando || Boolean(pendente)}
+          placeholder={carregando ? 'Consultando disponibilidade…' : erro ? 'Falha na conexão. Tente novamente.' : status?.textoDisponivel ? 'Escreva sua mensagem' : 'Assistente indisponível. Confira o aviso acima.'}
+          rows={Math.min(4, mensagem.split('\n').length)} />
         <div className="ia-controles-envio">
         <button className="ia-voz" type="button" disabled={voz.ativa || !status?.vozDisponivel || !status.vozNoPlano || (status.vozSegundosRestantes ?? 0) <= 0 || enviando || Boolean(pendente)}
           onClick={() => { setMostrarVoz(true); void voz.iniciar(); }}
