@@ -39,6 +39,14 @@ async function main() {
   assert.equal(normal.enviados.filter(e => e.type === 'response.create').length, 6);
   assert.equal(normal.usos.length, 1); assert.equal((normal.usos[0] as any).custo, 3504);
   assert.match(normal.clientes.at(-1)?.texto, /90 segundos/);
+  // O relógio pode avançar entre leituras enquanto o áudio ainda está tocando.
+  let relogio = 100000;
+  const reproduzindo = fixture({ agora: () => relogio++ }); await pronta(reproduzindo);
+  await reproduzindo.c.evento({ type: 'input_audio_buffer.committed' });
+  await reproduzindo.c.evento({ type: 'response.output_audio.delta', delta: Buffer.alloc(48000).toString('base64') });
+  await reproduzindo.c.evento(done('falando'));
+  reproduzindo.c.tick();
+  assert.equal(reproduzindo.fechamentos(), 0, 'Reprodução ativa não deve ser confundida com estado inválido ou silêncio.');
   const limiteCusto = fixture(); await pronta(limiteCusto);
   const caro = { input_tokens: 1500, output_tokens: 256,
     input_token_details: { text_tokens: 0, audio_tokens: 1500 },

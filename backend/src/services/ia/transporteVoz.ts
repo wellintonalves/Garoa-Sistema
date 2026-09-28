@@ -130,13 +130,19 @@ export class TransporteVoz {
 
   tick() {
     if (this.terminada) return;
-    if (this.fechando) { if (this.agora() >= this.prazoFechamento) this.d.fecharProvedor(); return; }
-    const fala = this.agora() < this.falaAte;
-    const decisao = decidirSupervisaoVoz({ agoraMs: this.agora(), encerrarAteMs: this.encerrarAte,
-      ultimaAtividadeMs: Math.min(this.atividade, this.agora()), ocupada: this.ocupada || fala || this.usuarioFalando, conexaoPerdida: false });
-    if (decisao.acao === 'encerrar') return this.encerrar(false, this.agora() >= this.encerrarAte
-      ? 'A conversa atingiu o limite de 90 segundos.' : 'Conversa encerrada após 60 segundos sem atividade.');
-    if (!this.pronta && this.agora() - this.inicioMs > 15000) return this.encerrar(true);
+    // Use o mesmo instante em toda a decisão. A atividade pode apontar para
+    // o fim futuro da reprodução; duas leituras geravam falso estado inválido.
+    const agora = this.agora();
+    if (this.fechando) { if (agora >= this.prazoFechamento) this.d.fecharProvedor(); return; }
+    const fala = agora < this.falaAte;
+    const decisao = decidirSupervisaoVoz({ agoraMs: agora, encerrarAteMs: this.encerrarAte,
+      ultimaAtividadeMs: Math.min(this.atividade, agora), ocupada: this.ocupada || fala || this.usuarioFalando, conexaoPerdida: false });
+    if (decisao.acao === 'encerrar') {
+      if (decisao.motivo === 'LIMITE_RESERVADO') return this.encerrar(false, 'A conversa atingiu o limite de 90 segundos.');
+      if (decisao.motivo === 'INATIVIDADE') return this.encerrar(false, 'Conversa encerrada após 60 segundos sem atividade.');
+      return this.encerrar(true);
+    }
+    if (!this.pronta && agora - this.inicioMs > 15000) return this.encerrar(true);
     if (this.custo + ENVELOPE_VOZ_MICROUSD > VOZ_LOCAL.reservaMicrousd && !this.ocupada && !fala)
       return this.encerrar(false, 'A conversa atingiu o limite de custo deste teste.');
     if (decisao.acao === 'avisar' && !this.avisou) { this.avisou = true; this.d.enviarCliente({ tipo: 'aviso', texto: 'A conversa será encerrada em 15 segundos sem atividade.' }); }
