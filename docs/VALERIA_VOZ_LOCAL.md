@@ -1,6 +1,6 @@
 # Teste local de voz da Valéria
 
-Implementação de áudio nativo bidirecional pela OpenAI Realtime, com `gpt-realtime-mini-2025-12-15` e voz sintética `coral`, orientada a falar com animação, espontaneidade e pausas naturais. Não usa ditado, síntese do navegador, clonagem ou ElevenLabs. O microfone só é solicitado no clique do ícone de voz, sem câmera e sem confirmação intermediária. Esse clique abre a nuvem flutuante com o estado da conexão e o botão para encerrar. Fechar o painel ou encerrar a conversa interrompe a captura e pede o fechamento do provedor.
+Implementação de áudio nativo bidirecional pela OpenAI Realtime, com `gpt-realtime-mini-2025-12-15` e voz sintética `cedar`, orientada a falar em ritmo de conversa, com espontaneidade e pausas naturais, sem forçar animação. Não usa ditado, síntese do navegador, clonagem ou ElevenLabs. O microfone só é solicitado no clique do ícone de voz, sem câmera e sem confirmação intermediária. Esse clique abre a nuvem flutuante com o estado da conexão e o botão para encerrar. Fechar o painel ou encerrar a conversa interrompe a captura e pede o fechamento do provedor.
 
 O transporte está restrito ao harness local, ao PostgreSQL `valen_ia_test` em loopback e à identidade fictícia configurada pelo servidor. Produção continua desabilitada: `server.ts` não instala esse transporte. A conta fictícia foi colocada no cenário Pro, mantendo os contadores de mensagens, crédito e consumo; o registro anterior está em um arquivo de auditoria ignorado pelo Git. Nenhum plano comercial, schema ou migration foi alterado.
 
