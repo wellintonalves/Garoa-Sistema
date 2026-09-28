@@ -9,14 +9,22 @@
 .ia-painel button:disabled { cursor: not-allowed; color: var(--texto-secundario); }
 .ia-cabecalho, .ia-acoes { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-width: 0; }
 .ia-cabecalho h2 { font-family: var(--fonte-serif); font-size: 24px; min-width: 0; }
+.ia-cabecalho { padding-bottom: 16px; border-bottom: 1px solid var(--borda-sutil); }
 .ia-conteudo { min-height: 0; min-width: 0; flex: 1; overflow-y: auto; overflow-wrap: anywhere; }
 .ia-conteudo p { margin: 0 0 12px; }
 .ia-saldo { background: var(--fundo-superficie-2); padding: 16px; border-radius: 12px; margin-bottom: 20px; }
 .ia-saldo span { font-variant-numeric: tabular-nums; font-family: var(--fonte-mono); }
 .ia-compositor { min-width: 0; padding-bottom: env(safe-area-inset-bottom, 0px); }
 .ia-aviso { margin: 8px 0 0; color: var(--texto-secundario); font-size: 12px; line-height: 1.5; text-align: center; }
-.ia-voz-teste { margin-bottom: 12px; padding: 12px; border-radius: 12px; background: var(--fundo-superficie-2); color: var(--texto-principal); font-size: 14px; }
-.ia-voz-teste p { margin: 0 0 8px; }
+.ia-voz-flutuante { min-width: 0; min-height: 0; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; overflow-y: auto; text-align: center; }
+.ia-voz-flutuante p { margin: 0; max-width: 100%; overflow-wrap: anywhere; }
+.ia-nuvem { position: relative; width: min(60vw, 200px); aspect-ratio: 1; flex-shrink: 0; overflow: hidden; border-radius: 48% 52% 54% 46%; background: var(--fundo-superficie-2); box-shadow: var(--elevacao-2); }
+.ia-nuvem span { position: absolute; inset: 8%; border-radius: 46% 54% 42% 58%; background: radial-gradient(circle at 35% 30%, var(--texto-sobre-primaria), var(--cor-primaria) 60%, var(--fundo-superficie-2)); opacity: 0.8; }
+.ia-nuvem span:nth-child(2) { inset: 20% -10% -15% 20%; opacity: 0.5; transform: rotate(110deg); }
+.ia-nuvem span:nth-child(3) { inset: -15% 35% 35% -15%; opacity: 0.4; }
+.ia-voz-flutuante--ativa .ia-nuvem { animation: ia-nuvem-flutuar 4s ease-in-out infinite; }
+@keyframes ia-nuvem-flutuar { 50% { transform: translateY(-8px); border-radius: 54% 46% 48% 52%; } }
+@media (prefers-reduced-motion: reduce) { .ia-voz-flutuante--ativa .ia-nuvem { animation: none; } }
 .ia-compositor label { display: block; margin-bottom: 8px; }
 .ia-compositor textarea { width: 100%; box-sizing: border-box; resize: none; padding: 12px; border-radius: 12px; background: var(--fundo-superficie-2); color: var(--texto-principal); border: 1px solid var(--borda-sutil); margin-bottom: 8px; }
 .ia-skeleton { height: 48px; background: var(--fundo-superficie-2); margin-bottom: 12px; border-radius: 12px; }

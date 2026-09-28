@@ -131,7 +131,16 @@ function PainelAssistente({ api, caminho, avatarUrl = avatarValeria, posicao = '
         <div className="ia-identidade"><img src={avatarUrl} className="ia-avatar" alt="" /><div><h2 id="ia-titulo">Valéria</h2></div></div>
         <button type="button" onClick={fechar} aria-label="Fechar Valéria, assistente de IA"><X size={24} /></button>
       </div>
-      <div ref={conteudo} className="ia-conteudo" aria-busy={carregando}>
+      {mostrarVoz && <div className={`ia-voz-flutuante${voz.ativa ? ' ia-voz-flutuante--ativa' : ''}`}>
+        <div className="ia-nuvem" aria-hidden="true"><span /><span /><span /></div>
+        <p role="status" aria-live="polite">{voz.estado || (voz.erro ? 'Não foi possível iniciar a conversa' : 'Conversa encerrada')}</p>
+        {voz.erro && <p role="alert">{voz.erro}</p>}
+        {!voz.ativa && voz.erro && <button type="button" disabled={!status?.vozDisponivel} onClick={() => void voz.iniciar()}>Tentar novamente</button>}
+        <button type="button" onClick={() => { voz.parar(); setMostrarVoz(false); }}> {voz.ativa ? 'Encerrar conversa' : 'Voltar à conversa'} </button>
+        <p className="ia-aviso">Teste de até {status?.vozTeste?.segundos ?? 90} segundos, com reserva máxima de US$ 0,09.</p>
+        <p className="ia-aviso">Valéria é uma IA e pode cometer erros.</p>
+      </div>}
+      <div ref={conteudo} className="ia-conteudo" hidden={mostrarVoz} aria-busy={carregando}>
         {carregando && <div role="status" aria-label="Carregando saldo da assistente">
           <div className="ia-skeleton" /><div className="ia-skeleton" /><div className="ia-skeleton" />
         </div>}
@@ -154,13 +163,7 @@ function PainelAssistente({ api, caminho, avatarUrl = avatarValeria, posicao = '
             title={animarIndicador ? 'Pausar animação' : 'Animar indicador'} />
         </div>}
       </div>
-      <form className="ia-compositor" onSubmit={enviar}>
-        {mostrarVoz && <div className="ia-voz-teste">
-          <p>{voz.ativa ? voz.estado : voz.estado || `Teste de até ${status?.vozTeste?.segundos ?? 90} segundos. Reserva máxima de US$ 0,09; pode terminar antes ao atingir o limite de respostas.`}</p>
-          {voz.erro && <p role="alert">{voz.erro}</p>}
-          {voz.ativa ? <button type="button" onClick={voz.parar}>Encerrar conversa</button>
-            : <button type="button" disabled={!status?.vozDisponivel} onClick={() => void voz.iniciar()}>Iniciar conversa</button>}
-        </div>}
+      <form className="ia-compositor" onSubmit={enviar} hidden={mostrarVoz}>
         <label className="ia-label-acessivel" htmlFor="ia-mensagem">Mensagem para Valéria</label>
         <div className="ia-campo-envio">
         <textarea id="ia-mensagem" value={mensagem} onChange={e => setMensagem(e.target.value)} maxLength={4000}
@@ -173,7 +176,7 @@ function PainelAssistente({ api, caminho, avatarUrl = avatarValeria, posicao = '
           disabled={voz.ativa || !status?.textoDisponivel || enviando || Boolean(pendente)} placeholder={status?.textoDisponivel ? 'Escreva sua mensagem' : 'Aguardando liberação da assistente'} rows={Math.min(4, mensagem.split('\n').length)} />
         <div className="ia-controles-envio">
         <button className="ia-voz" type="button" disabled={voz.ativa || !status?.vozDisponivel || !status.vozNoPlano || (status.vozSegundosRestantes ?? 0) <= 0 || enviando || Boolean(pendente)}
-          onClick={() => setMostrarVoz(v => !v)}
+          onClick={() => { setMostrarVoz(true); void voz.iniciar(); }}
           aria-label={status?.vozDisponivel ? 'Conversar por voz com Valéria' : 'Conversa por voz indisponível'}
           title={!status?.vozNoPlano ? 'Conversa por voz exclusiva do plano Pro' : status.vozDisponivel ? 'Conversar por voz' : 'Conversa por voz ainda indisponível'}>
           <Waveform size={24} weight="regular" aria-hidden="true" />
