@@ -5,7 +5,7 @@ import { statusVozLocal, criarTicketVozLocal } from '../src/services/ia/vozLocal
 
 globalThis.fetch = async () => { throw new Error('Teste não permite rede.'); };
 const usage = { input_tokens: 110, output_tokens: 30, input_token_details: { text_tokens: 100, audio_tokens: 10, image_tokens: 0 }, output_token_details: { text_tokens: 10, audio_tokens: 20 } };
-const session = { max_output_tokens: 256, truncation: { token_limits: { post_instructions: 1500 } }, audio: { input: { turn_detection: { create_response: false }, transcription: null }, output: { voice: 'marin' } } };
+const session = { max_output_tokens: 256, truncation: { token_limits: { post_instructions: 1500 } }, audio: { input: { turn_detection: { create_response: false }, transcription: null }, output: { voice: VOZ_LOCAL.voz } } };
 function fixture(overrides: Partial<DependenciasVoz> = {}) {
   let agora = 100000, fechamentos = 0;
   const enviados: Record<string, any>[] = [], clientes: Record<string, any>[] = [], usos: unknown[] = [];

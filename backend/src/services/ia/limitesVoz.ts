@@ -4,7 +4,7 @@
  * Não usa desconto de cache. Nunca aceitar estes limites do navegador.
  */
 export const VOZ_LOCAL = Object.freeze({
-  modelo: 'gpt-realtime-mini-2025-12-15', voz: 'marin', segundos: 90,
+  modelo: 'gpt-realtime-mini-2025-12-15', voz: 'coral', segundos: 90,
   saidaTokens: 256, contextoTokens: 1500,
   instrucoesBytes: 14000, reservaMicrousd: 90000,
 });
