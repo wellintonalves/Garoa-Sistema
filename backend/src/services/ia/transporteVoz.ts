@@ -1,4 +1,4 @@
-import { VOZ_LOCAL, custoRespostaVoz } from './limitesVoz';
+import { VOZ_LOCAL, ENVELOPE_VOZ_MICROUSD, custoRespostaVoz } from './limitesVoz';
 import { decidirSupervisaoVoz } from './supervisaoVoz';
 
 type Evento = Record<string, any>;
@@ -35,6 +35,7 @@ export class TransporteVoz {
   private bytesSaida = 0;
   private prazoFechamento = 0;
   private avisou = false;
+  private motivo = 'Conversa encerrada.';
 
   constructor(private d: DependenciasVoz, private configuracao: Evento, private encerrarAte: number) {
     this.agora = d.agora ?? Date.now; this.inicioMs = this.agora(); this.atividade = this.inicioMs;
@@ -53,7 +54,9 @@ export class TransporteVoz {
 
   private async responder(aposFerramenta = false) {
     if (this.fechando || this.ocupada) return;
-    if (this.geracoes >= VOZ_LOCAL.geracoes || this.agora() >= this.encerrarAte) return this.encerrar();
+    if (this.agora() >= this.encerrarAte) return this.encerrar(false, 'A conversa atingiu o limite de 90 segundos.');
+    if (this.custo + ENVELOPE_VOZ_MICROUSD > VOZ_LOCAL.reservaMicrousd)
+      return this.encerrar(false, 'A conversa atingiu o limite de custo deste teste.');
     await this.d.autorizar();
     if (this.fechando) return;
     this.geracoes++; this.ocupada = true; this.bytesSaida = 0;
@@ -82,7 +85,7 @@ export class TransporteVoz {
     } else if (e.type === 'input_audio_buffer.committed') {
       this.atividade = this.agora(); await this.responder();
     } else if (e.type === 'response.created') {
-      if (!this.ocupada || this.geracoes > VOZ_LOCAL.geracoes) throw new Error('Geração inesperada.');
+      if (!this.ocupada) throw new Error('Geração inesperada.');
     } else if (e.type === 'response.output_audio.delta') {
       if (!this.ocupada || typeof e.delta !== 'string' || e.delta.length > 100000) throw new Error('Áudio inválido.');
       this.bytesSaida += Buffer.from(e.delta, 'base64').length;
@@ -104,7 +107,7 @@ export class TransporteVoz {
       if (this.fechando) { this.d.fecharProvedor(); return; }
       const chamadas = (r.output ?? []).filter((item: Evento) => item.type === 'function_call');
       if (chamadas.length) {
-        if (r.status !== 'completed' || chamadas.length !== 1 || this.geracoes >= VOZ_LOCAL.geracoes) return this.encerrar();
+        if (r.status !== 'completed' || chamadas.length !== 1) return this.encerrar();
         const call = chamadas[0];
         if (typeof call.call_id !== 'string' || typeof call.arguments !== 'string' || call.arguments.length > 4000) throw new Error('Consulta inválida.');
         this.ocupada = true;
@@ -131,16 +134,19 @@ export class TransporteVoz {
     const fala = this.agora() < this.falaAte;
     const decisao = decidirSupervisaoVoz({ agoraMs: this.agora(), encerrarAteMs: this.encerrarAte,
       ultimaAtividadeMs: Math.min(this.atividade, this.agora()), ocupada: this.ocupada || fala || this.usuarioFalando, conexaoPerdida: false });
-    if (decisao.acao === 'encerrar') return this.encerrar();
+    if (decisao.acao === 'encerrar') return this.encerrar(false, this.agora() >= this.encerrarAte
+      ? 'A conversa atingiu o limite de 90 segundos.' : 'Conversa encerrada após 60 segundos sem atividade.');
     if (!this.pronta && this.agora() - this.inicioMs > 15000) return this.encerrar(true);
-    if (this.geracoes >= VOZ_LOCAL.geracoes && !this.ocupada && !fala) return this.encerrar();
+    if (this.custo + ENVELOPE_VOZ_MICROUSD > VOZ_LOCAL.reservaMicrousd && !this.ocupada && !fala)
+      return this.encerrar(false, 'A conversa atingiu o limite de custo deste teste.');
     if (decisao.acao === 'avisar' && !this.avisou) { this.avisou = true; this.d.enviarCliente({ tipo: 'aviso', texto: 'A conversa será encerrada em 15 segundos sem atividade.' }); }
     if (this.pronta && !this.ocupada && !fala) this.d.enviarCliente({ tipo: 'estado', estado: 'ouvindo' });
   }
 
-  encerrar(incerta = false) {
+  encerrar(incerta = false, motivo = 'Conversa encerrada.') {
     this.incerta ||= incerta;
     if (this.fechando || this.terminada) return;
+    this.motivo = motivo;
     this.fechando = true; this.prazoFechamento = this.agora() + 2000;
     this.d.enviarCliente({ tipo: 'estado', estado: 'encerrando' });
     if (this.ocupada) this.d.enviarProvedor({ type: 'response.cancel' });
@@ -153,6 +159,6 @@ export class TransporteVoz {
     const confirmado = codigo === 1000 && !this.incerta && this.concluidas.size === this.geracoes && Boolean(this.sessao);
     await this.d.finalizar({ confirmado, custo: this.custo, sessao: this.sessao,
       segundos: Math.min(VOZ_LOCAL.segundos, Math.ceil((this.agora() - this.inicioMs) / 1000)) });
-    this.d.enviarCliente({ tipo: 'fim', texto: confirmado ? 'Conversa encerrada.' : 'Conversa encerrada. O consumo aguarda confirmação; a reserva foi preservada.' });
+    this.d.enviarCliente({ tipo: 'fim', texto: confirmado ? this.motivo : 'Conversa encerrada. O consumo aguarda confirmação; a reserva foi preservada.' });
   }
 }

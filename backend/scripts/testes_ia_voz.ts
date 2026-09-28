@@ -20,7 +20,7 @@ async function pronta(f: ReturnType<typeof fixture>) {
 }
 const done = (id: string, output: unknown[] = []) => ({ type: 'response.done', response: { id, status: 'completed', usage, output } });
 async function main() {
-  assert.equal(ENVELOPE_VOZ_MICROUSD, 89160); assert.ok(ENVELOPE_VOZ_MICROUSD < VOZ_LOCAL.reservaMicrousd);
+  assert.equal(ENVELOPE_VOZ_MICROUSD, 29720); assert.ok(ENVELOPE_VOZ_MICROUSD < VOZ_LOCAL.reservaMicrousd);
   assert.equal(custoRespostaVoz(usage), 584);
   assert.throws(() => custoRespostaVoz({ ...usage, input_tokens: 1 }));
   assert.throws(() => custoRespostaVoz({ ...usage, output_token_details: { text_tokens: -1, audio_tokens: 31 } }));
@@ -29,13 +29,30 @@ async function main() {
   await assert.rejects(criarTicketVozLocal(ctx, undefined), /não está disponível/);
   const normal = fixture(); await pronta(normal);
   normal.c.audio(Buffer.alloc(4096)); assert.equal(normal.enviados.at(-1)?.type, 'input_audio_buffer.append');
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < 6; i++) {
     await normal.c.evento({ type: 'input_audio_buffer.committed' });
     await normal.c.evento(done(`r${i}`)); await normal.c.evento(done(`r${i}`));
   }
-  normal.c.tick(); await normal.c.fechou(1000); await normal.c.fechou(1000);
-  assert.equal(normal.enviados.filter(e => e.type === 'response.create').length, 3);
-  assert.equal(normal.usos.length, 1); assert.equal((normal.usos[0] as any).custo, 1752);
+  normal.c.tick(); assert.equal(normal.fechamentos(), 0);
+  normal.avancar(90000); normal.c.tick(); assert.equal(normal.fechamentos(), 1);
+  await normal.c.fechou(1000); await normal.c.fechou(1000);
+  assert.equal(normal.enviados.filter(e => e.type === 'response.create').length, 6);
+  assert.equal(normal.usos.length, 1); assert.equal((normal.usos[0] as any).custo, 3504);
+  assert.match(normal.clientes.at(-1)?.texto, /90 segundos/);
+  const limiteCusto = fixture(); await pronta(limiteCusto);
+  const caro = { input_tokens: 1500, output_tokens: 256,
+    input_token_details: { text_tokens: 0, audio_tokens: 1500 },
+    output_token_details: { text_tokens: 0, audio_tokens: 256 } };
+  for (let i = 0; i < 3; i++) {
+    await limiteCusto.c.evento({ type: 'input_audio_buffer.committed' });
+    await limiteCusto.c.evento({ type: 'response.done', response: { id: `caro${i}`, status: 'completed', usage: caro, output: [] } });
+  }
+  await limiteCusto.c.evento({ type: 'input_audio_buffer.committed' });
+  assert.equal(limiteCusto.enviados.filter(e => e.type === 'response.create').length, 3);
+  assert.equal(limiteCusto.fechamentos(), 1);
+  await limiteCusto.c.fechou(1000);
+  assert.match(limiteCusto.clientes.at(-1)?.texto, /limite de custo/);
+  assert.ok((limiteCusto.usos[0] as any).custo < VOZ_LOCAL.reservaMicrousd);
   const idle = fixture(); await pronta(idle); idle.avancar(45000); idle.c.tick();
   assert.ok(idle.clientes.some(e => e.tipo === 'aviso')); idle.avancar(15000); idle.c.tick(); assert.equal(idle.fechamentos(), 1);
   const ocupada = fixture(); await pronta(ocupada); await ocupada.c.evento({ type: 'input_audio_buffer.committed' });

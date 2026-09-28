@@ -5,14 +5,15 @@
  */
 export const VOZ_LOCAL = Object.freeze({
   modelo: 'gpt-realtime-mini-2025-12-15', voz: 'marin', segundos: 90,
-  geracoes: 3, saidaTokens: 256, contextoTokens: 1500,
+  saidaTokens: 256, contextoTokens: 1500,
   instrucoesBytes: 14000, reservaMicrousd: 90000,
 });
 
 // Instruções + ferramentas: um token por byte UTF-8, mais 2.000 de framing.
 // Todo o contexto pós-instruções é orçado como áudio (a tarifa mais cara).
 // Toda saída também é orçada como áudio. O provedor aplica os dois limites.
-export const ENVELOPE_VOZ_MICROUSD = VOZ_LOCAL.geracoes * (
+// Reserva conservadora para a próxima resposta, somada ao uso já confirmado.
+export const ENVELOPE_VOZ_MICROUSD = (
   Math.ceil((VOZ_LOCAL.instrucoesBytes + 2000) * 0.6)
   + VOZ_LOCAL.contextoTokens * 10 + VOZ_LOCAL.saidaTokens * 20
 );
