@@ -6,12 +6,12 @@ import { statusVozLocal, criarTicketVozLocal } from '../src/services/ia/vozLocal
 globalThis.fetch = async () => { throw new Error('Teste não permite rede.'); };
 const usage = { input_tokens: 110, output_tokens: 30, input_token_details: { text_tokens: 100, audio_tokens: 10, image_tokens: 0 }, output_token_details: { text_tokens: 10, audio_tokens: 20 } };
 const session = { max_output_tokens: 256, truncation: { token_limits: { post_instructions: 1500 } }, audio: { input: { turn_detection: { create_response: false }, transcription: null }, output: { voice: VOZ_LOCAL.voz } } };
-function fixture(overrides: Partial<DependenciasVoz> = {}) {
+function fixture(overrides: Partial<DependenciasVoz> = {}, reservaMicrousd = VOZ_LOCAL.reservaMicrousd as number) {
   let agora = 100000, fechamentos = 0;
   const enviados: Record<string, any>[] = [], clientes: Record<string, any>[] = [], usos: unknown[] = [];
   const c = new TransporteVoz({ agora: () => agora, enviarProvedor: e => enviados.push(e), enviarCliente: e => clientes.push(e),
     fecharProvedor: () => fechamentos++, autorizar: async () => {}, consultar: async () => ({ percentual: 37.5 }), inicio: async () => {},
-    finalizar: async u => { usos.push(u); }, ...overrides }, session, 190000);
+    finalizar: async u => { usos.push(u); }, ...overrides }, session, 190000, reservaMicrousd);
   return { c, enviados, clientes, usos, avancar: (n: number) => { agora += n; }, fechamentos: () => fechamentos };
 }
 async function pronta(f: ReturnType<typeof fixture>) {
@@ -61,6 +61,13 @@ async function main() {
   await limiteCusto.c.fechou(1000);
   assert.match(limiteCusto.clientes.at(-1)?.texto, /limite de custo/);
   assert.ok((limiteCusto.usos[0] as any).custo < VOZ_LOCAL.reservaMicrousd);
+  const reservaMenor = fixture({}, 45000); await pronta(reservaMenor);
+  await reservaMenor.c.evento({ type: 'input_audio_buffer.committed' });
+  await reservaMenor.c.evento({ type: 'response.done', response: { id: 'menor', status: 'completed', usage: caro, output: [] } });
+  await reservaMenor.c.evento({ type: 'input_audio_buffer.committed' });
+  assert.equal(reservaMenor.enviados.filter(e => e.type === 'response.create').length, 1);
+  assert.equal(reservaMenor.fechamentos(), 1);
+  assert.throws(() => fixture({}, 20000), /Reserva/);
   const idle = fixture(); await pronta(idle); idle.avancar(45000); idle.c.tick();
   assert.ok(idle.clientes.some(e => e.tipo === 'aviso')); idle.avancar(15000); idle.c.tick(); assert.equal(idle.fechamentos(), 1);
   const ocupada = fixture(); await pronta(ocupada); await ocupada.c.evento({ type: 'input_audio_buffer.committed' });

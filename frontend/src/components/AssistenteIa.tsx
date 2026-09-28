@@ -13,6 +13,8 @@ interface StatusIa {
   mensagem: string;
   textoDisponivel: boolean;
   vozDisponivel: boolean;
+  vozOcupada?: boolean;
+  vozIndisponivelMotivo?: string;
   vozNoPlano: boolean;
   creditosMensais: number | null;
   creditosRestantes: number | null;
@@ -68,6 +70,12 @@ function PainelAssistente({ api, caminho, avatarUrl = avatarValeria, posicao = '
       .finally(() => { if (!controller.signal.aborted) setCarregando(false); });
     return () => controller.abort();
   }, [aberto, api, caminho, tentativa]);
+
+  useEffect(() => {
+    if (!aberto || voz.ativa || !status?.vozOcupada) return;
+    const timer = window.setTimeout(() => setTentativa(v => v + 1), 1500);
+    return () => window.clearTimeout(timer);
+  }, [aberto, voz.ativa, status]);
 
   function abrir() { dialogo.current?.showModal(); setAberto(true); }
   function fechar() { dialogo.current?.close(); }
@@ -147,6 +155,7 @@ function PainelAssistente({ api, caminho, avatarUrl = avatarValeria, posicao = '
         {erro && <div role="alert"><p>{erro}</p><button type="button" onClick={() => setTentativa(v => v + 1)}>Tentar novamente</button></div>}
         {status && <>
           {!status.textoDisponivel && <p role="status">{status.mensagem}</p>}
+          {!status.vozDisponivel && status.vozIndisponivelMotivo && <p role="status">{status.vozIndisponivelMotivo}</p>}
           {historico.length === 0 && <p>{status.textoDisponivel ? 'Olá! Como posso ajudar?' : 'A conversa aparecerá aqui quando a assistente estiver disponível.'}</p>}
         </>}
         <div aria-live="polite" aria-label="Conversa com Valéria, assistente de IA">
@@ -180,7 +189,7 @@ function PainelAssistente({ api, caminho, avatarUrl = avatarValeria, posicao = '
         <button className="ia-voz" type="button" disabled={voz.ativa || !status?.vozDisponivel || !status.vozNoPlano || (status.vozSegundosRestantes ?? 0) <= 0 || enviando || Boolean(pendente)}
           onClick={() => { setMostrarVoz(true); void voz.iniciar(); }}
           aria-label={status?.vozDisponivel ? 'Conversar por voz com Valéria' : 'Conversa por voz indisponível'}
-          title={!status?.vozNoPlano ? 'Conversa por voz exclusiva do plano Pro' : status.vozDisponivel ? 'Conversar por voz' : 'Conversa por voz ainda indisponível'}>
+          title={!status?.vozNoPlano ? 'Conversa por voz exclusiva do plano Pro' : status.vozDisponivel ? 'Conversar por voz' : status.vozIndisponivelMotivo ?? 'Conversa por voz indisponível. Confira o saldo e a franquia.'}>
           <Waveform size={24} weight="regular" aria-hidden="true" />
         </button>
         <button className="ia-enviar" type="submit" aria-label={enviando ? 'Enviando mensagem' : pendente ? 'Consultar pedido' : 'Enviar mensagem'}

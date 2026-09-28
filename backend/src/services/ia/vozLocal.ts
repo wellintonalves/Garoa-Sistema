@@ -29,7 +29,12 @@ let emUso = false;
 const permitida = (c: ContextoIa) => ambiente && c.papel === 'ADMIN' && c.usuarioId === ambiente.usuarioId && c.barbeariaId === ambiente.barbeariaId;
 
 export function statusVozLocal(c: ContextoIa) {
-  return { vozDisponivel: Boolean(permitida(c) && !emUso && ambiente!.saldo() >= VOZ_LOCAL.reservaMicrousd),
+  const autorizada = Boolean(permitida(c));
+  const suficiente = autorizada && ambiente!.saldo() >= ENVELOPE_VOZ_MICROUSD;
+  return { vozDisponivel: autorizada && !emUso && suficiente,
+    vozOcupada: autorizada && emUso,
+    vozIndisponivelMotivo: !autorizada ? undefined : emUso ? 'Aguarde a chamada anterior terminar de encerrar.'
+      : !suficiente ? 'Saldo do teste insuficiente para outra chamada de voz. Reservas pendentes também ocupam saldo.' : undefined,
     vozTeste: permitida(c) ? { segundos: VOZ_LOCAL.segundos, reservaUsd: VOZ_LOCAL.reservaMicrousd / 1e6 } : undefined };
 }
 
@@ -38,7 +43,7 @@ export async function criarTicketVozLocal(c: ContextoIa, conversaId: unknown) {
   if (!statusVozLocal(c).vozDisponivel) throw new ErroDeNegocio('O teste de voz não está disponível ou o saldo não cobre a reserva.', 503);
   const a = ambiente!;
   const saldo = await new RepositorioCotasPrisma(a.db, obterConfiguracaoConsumo()).saldo(c);
-  if (saldo.bloqueado || saldo.vozSegundosRestantes < VOZ_LOCAL.segundos || saldo.creditosRestantes < VOZ_LOCAL.reservaMicrousd)
+  if (saldo.bloqueado || saldo.vozSegundosRestantes < VOZ_LOCAL.segundos || saldo.creditosRestantes < ENVELOPE_VOZ_MICROUSD)
     throw new ErroDeNegocio('O teste exige plano Pro e saldo disponível.', 403);
   for (const [k, v] of tickets) if (v.expira < Date.now()) tickets.delete(k);
   if (tickets.size >= 10) throw new ErroDeNegocio('Aguarde antes de iniciar outra conexão.', 429);
@@ -104,6 +109,7 @@ function conectar(cliente: WebSocket, a: Ambiente, criarProvedor: () => WebSocke
     emUso = true;
     let reservaId = '';
     let orçamentoReservado = false;
+    let reservaMicrousd = 0;
     const config = obterConfiguracaoConsumo();
     const repo = new RepositorioCotasPrisma(a.db, { ...config, modelo: VOZ_LOCAL.modelo,
       tarifaEntradaMicrousd: 600000, tarifaSaidaMicrousd: 2400000 });
@@ -126,10 +132,13 @@ function conectar(cliente: WebSocket, a: Ambiente, criarProvedor: () => WebSocke
         audio: { input: { format: { type: 'audio/pcm', rate: 24000 }, transcription: null,
           turn_detection: { type: 'server_vad', threshold: 0.5, prefix_padding_ms: 300, silence_duration_ms: 600, create_response: false, interrupt_response: false } },
         output: { format: { type: 'audio/pcm', rate: 24000 }, voice: VOZ_LOCAL.voz } } };
-      const reserva = await repo.reservarVoz(t.c, randomUUID(), VOZ_LOCAL.segundos, VOZ_LOCAL.reservaMicrousd);
+      const saldoAtual = await repo.saldo(t.c);
+      reservaMicrousd = Math.min(VOZ_LOCAL.reservaMicrousd, a.saldo(), saldoAtual.creditosRestantes);
+      if (reservaMicrousd < ENVELOPE_VOZ_MICROUSD) throw new Error('Saldo insuficiente para a próxima resposta.');
+      const reserva = await repo.reservarVoz(t.c, randomUUID(), VOZ_LOCAL.segundos, reservaMicrousd);
       reservaId = reserva.id;
       // Nenhuma conexão externa antes de ambas as reservas persistirem.
-      a.reservar(reservaId, VOZ_LOCAL.reservaMicrousd); orçamentoReservado = true;
+      a.reservar(reservaId, reservaMicrousd); orçamentoReservado = true;
       if (cliente.readyState !== WebSocket.OPEN || !await repo.marcarEnvio(t.c, reservaId)) throw new Error();
       if (cliente.readyState !== WebSocket.OPEN) throw new Error();
       controle = new TransporteVoz({
@@ -151,11 +160,11 @@ function conectar(cliente: WebSocket, a: Ambiente, criarProvedor: () => WebSocke
             else {
               await repo.liquidar(t.c, reservaId, { respostaProvedorId: uso.sessao, tokensEntrada: 0, tokensSaida: 0,
                 mensagens: 0, segundosVoz: uso.segundos, custoVozMicrousd: BigInt(uso.custo) });
-              a.liquidar(reservaId, VOZ_LOCAL.reservaMicrousd, uso.custo);
+              a.liquidar(reservaId, reservaMicrousd, uso.custo);
             }
           } finally { emUso = false; }
         },
-      }, session, reserva.enviarAte.getTime());
+      }, session, reserva.enviarAte.getTime(), reservaMicrousd);
       provedor = criarProvedor();
       provedor.on('open', () => controle!.abrir());
       provedor.on('message', bytes => {
@@ -177,7 +186,7 @@ function conectar(cliente: WebSocket, a: Ambiente, criarProvedor: () => WebSocke
       // Se não chegamos a abrir socket, não houve consumo no provedor.
       // A reserva no banco só expira automaticamente se comprovadamente não enviada.
       if (reservaId && !provedor) {
-        if (orçamentoReservado) a.liquidar(reservaId, VOZ_LOCAL.reservaMicrousd, 0);
+        if (orçamentoReservado) a.liquidar(reservaId, reservaMicrousd, 0);
         await repo.liberarVozNaoConectada(t.c, reservaId);
       }
       emUso = false; throw erro;

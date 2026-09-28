@@ -4,7 +4,7 @@ import { createServer } from 'node:http';
 import { EventEmitter } from 'node:events';
 import WebSocket from 'ws';
 import { PrismaClient } from '@prisma/client';
-import { instalarVozLocal, criarTicketVozLocal } from '../src/services/ia/vozLocal';
+import { instalarVozLocal, criarTicketVozLocal, statusVozLocal } from '../src/services/ia/vozLocal';
 import { RepositorioCotasPrisma } from '../src/services/ia/repositorioCotasPrisma';
 import { obterConfiguracaoConsumo } from '../src/services/ia/configuracaoConsumo';
 import { calcularFimCiclo } from '../src/domain/assinatura/regrasAssinatura';
@@ -33,6 +33,7 @@ async function main() {
   await assert.rejects(criarTicketVozLocal(c, undefined), /Pro/);
   await db.assinaturaSaas.update({ where: { id: assinatura.id }, data: { plano: 'PRO' } });
   await assert.rejects(criarTicketVozLocal({ ...c, usuarioId: randomUUID() }, undefined));
+  async function chamar() {
   const ticket = await criarTicketVozLocal(c, undefined);
   const ws = new WebSocket('ws://127.0.0.1:55443/ia/voz/conexao', { origin: 'http://127.0.0.1:5173' });
   await new Promise<void>((resolve, reject) => {
@@ -44,7 +45,19 @@ async function main() {
       if (e.tipo === 'fim') { clearTimeout(timeout); assert.match(e.texto, /Conversa encerrada/); resolve(); }
     }); ws.on('error', reject);
   });
+  }
+  await chamar();
   assert.equal(conexoes, 1); assert.equal(saldo, 97000);
+  saldo = 45000;
+  await chamar(); await chamar();
+  assert.equal(conexoes, 3); assert.equal(saldo, 45000);
+  assert.equal(statusVozLocal(c).vozDisponivel, true);
+  const ultimaReserva = await db.iaReserva.findFirstOrThrow({ where: { barbeariaId: b.id }, orderBy: { criadaEm: 'desc' } });
+  assert.equal(ultimaReserva.creditosMaximos, 45000);
+  saldo = 20000;
+  assert.equal(statusVozLocal(c).vozDisponivel, false);
+  await assert.rejects(criarTicketVozLocal(c, undefined), /saldo/);
+  saldo = 45000;
   const period = await db.iaPeriodo.findFirstOrThrow({ where: { barbeariaId: b.id } });
   assert.equal(period.mensagensLimite, 200); assert.equal(period.mensagensConsumidas, 0); assert.equal(period.creditosReservados, 0);
   const sessao = await db.iaSessaoVoz.findFirstOrThrow({ where: { barbeariaId: b.id } }); assert.equal(sessao.estado, 'ENCERRADA');

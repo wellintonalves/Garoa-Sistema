@@ -37,7 +37,10 @@ export class TransporteVoz {
   private avisou = false;
   private motivo = 'Conversa encerrada.';
 
-  constructor(private d: DependenciasVoz, private configuracao: Evento, private encerrarAte: number) {
+  constructor(private d: DependenciasVoz, private configuracao: Evento, private encerrarAte: number,
+    private reservaMicrousd: number = VOZ_LOCAL.reservaMicrousd) {
+    if (!Number.isSafeInteger(reservaMicrousd) || reservaMicrousd < ENVELOPE_VOZ_MICROUSD || reservaMicrousd > VOZ_LOCAL.reservaMicrousd)
+      throw new Error('Reserva de voz inválida.');
     this.agora = d.agora ?? Date.now; this.inicioMs = this.agora(); this.atividade = this.inicioMs;
   }
 
@@ -55,7 +58,7 @@ export class TransporteVoz {
   private async responder(aposFerramenta = false) {
     if (this.fechando || this.ocupada) return;
     if (this.agora() >= this.encerrarAte) return this.encerrar(false, 'A conversa atingiu o limite de 90 segundos.');
-    if (this.custo + ENVELOPE_VOZ_MICROUSD > VOZ_LOCAL.reservaMicrousd)
+    if (this.custo + ENVELOPE_VOZ_MICROUSD > this.reservaMicrousd)
       return this.encerrar(false, 'A conversa atingiu o limite de custo deste teste.');
     await this.d.autorizar();
     if (this.fechando) return;
@@ -102,7 +105,7 @@ export class TransporteVoz {
       if (this.concluidas.has(r.id)) return;
       if (!this.ocupada) throw new Error('Resposta sem geração autorizada.');
       this.custo += custoRespostaVoz(r.usage); this.concluidas.add(r.id); this.ocupada = false;
-      if (this.custo > VOZ_LOCAL.reservaMicrousd) throw new Error('Uso excedeu a reserva.');
+      if (this.custo > this.reservaMicrousd) throw new Error('Uso excedeu a reserva.');
       this.atividade = Math.max(this.agora(), Math.ceil(this.falaAte));
       if (this.fechando) { this.d.fecharProvedor(); return; }
       const chamadas = (r.output ?? []).filter((item: Evento) => item.type === 'function_call');
@@ -143,7 +146,7 @@ export class TransporteVoz {
       return this.encerrar(true);
     }
     if (!this.pronta && agora - this.inicioMs > 15000) return this.encerrar(true);
-    if (this.custo + ENVELOPE_VOZ_MICROUSD > VOZ_LOCAL.reservaMicrousd && !this.ocupada && !fala)
+    if (this.custo + ENVELOPE_VOZ_MICROUSD > this.reservaMicrousd && !this.ocupada && !fala)
       return this.encerrar(false, 'A conversa atingiu o limite de custo deste teste.');
     if (decisao.acao === 'avisar' && !this.avisou) { this.avisou = true; this.d.enviarCliente({ tipo: 'aviso', texto: 'A conversa será encerrada em 15 segundos sem atividade.' }); }
     if (this.pronta && !this.ocupada && !fala) this.d.enviarCliente({ tipo: 'estado', estado: 'ouvindo' });
