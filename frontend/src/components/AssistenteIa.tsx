@@ -6,6 +6,7 @@ import { ErrorBoundary } from './ErrorBoundary';
 import './AssistenteIa.css';
 import avatarValeria from '../assets/valeria.png';
 import { useVozValeria } from './useVozValeria';
+import { LancamentoValeria } from './LancamentoValeria';
 
 const horaMensagem = new Intl.DateTimeFormat('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit' });
 
@@ -23,15 +24,16 @@ interface StatusIa {
   vozSegundosRestantes: number | null;
   renovaEm?: string | null;
   vozTeste?: { segundos: number; reservaUsd: number };
+  vozLimiteSegundos?: number;
 }
 
-export function AssistenteIa(props: { api: AxiosInstance; caminho: string; avatarUrl?: string; posicao?: 'padrao' | 'navegacao' | 'cliente' | 'agendamento' | 'chat' }) {
+export function AssistenteIa(props: { api: AxiosInstance; caminho: string; identidade?: string; avatarUrl?: string; posicao?: 'padrao' | 'navegacao' | 'cliente' | 'agendamento' | 'chat' }) {
   return <ErrorBoundary fallback={<p role="alert">Não foi possível abrir a assistente. Recarregue a página para tentar novamente.</p>}>
     <PainelAssistente key={props.caminho} {...props} />
   </ErrorBoundary>;
 }
 
-function PainelAssistente({ api, caminho, avatarUrl = avatarValeria, posicao = 'padrao' }: { api: AxiosInstance; caminho: string; avatarUrl?: string; posicao?: 'padrao' | 'navegacao' | 'cliente' | 'agendamento' | 'chat' }) {
+function PainelAssistente({ api, caminho, identidade, avatarUrl = avatarValeria, posicao = 'padrao' }: { api: AxiosInstance; caminho: string; identidade?: string; avatarUrl?: string; posicao?: 'padrao' | 'navegacao' | 'cliente' | 'agendamento' | 'chat' }) {
   const dialogo = useRef<HTMLDialogElement>(null);
   const botao = useRef<HTMLButtonElement>(null);
   const conteudo = useRef<HTMLDivElement>(null);
@@ -128,6 +130,7 @@ function PainelAssistente({ api, caminho, avatarUrl = avatarValeria, posicao = '
       <button ref={botao} type="button" className="ia-balao" onClick={abrir} aria-haspopup="dialog" aria-label="Valéria, assistente de IA">
         {avatarUrl ? <img src={avatarUrl} className="ia-avatar" alt="" /> : <ChatCircleDots size={24} weight="regular" aria-hidden="true" />}
       </button>
+      {identidade && <LancamentoValeria api={api} caminho={caminho} identidade={identidade} botao={botao} chatAberto={aberto} abrirChat={abrir} />}
     </div>
     <dialog ref={dialogo} className="ia-painel" aria-labelledby="ia-titulo"
       onClose={() => {
@@ -145,7 +148,7 @@ function PainelAssistente({ api, caminho, avatarUrl = avatarValeria, posicao = '
         {voz.erro && <p role="alert">{voz.erro}</p>}
         {!voz.ativa && voz.erro && <button type="button" disabled={!status?.vozDisponivel} onClick={() => void voz.iniciar()}>Tentar novamente</button>}
         <button type="button" onClick={() => { voz.parar(); setMostrarVoz(false); }}> {voz.ativa ? 'Encerrar conversa' : 'Voltar à conversa'} </button>
-        <p className="ia-aviso">Teste de até {status?.vozTeste?.segundos ?? 90} segundos, com reserva máxima de US$ 0,09.</p>
+        <p className="ia-aviso">{status?.vozTeste ? `Teste de até ${status.vozTeste.segundos} segundos, com reserva máxima de US$ 0,09.` : `Chamada de até ${status?.vozLimiteSegundos ?? 90} segundos, conforme saldo e franquia disponíveis.`}</p>
         <p className="ia-aviso">Valéria é uma IA e pode cometer erros.</p>
       </div>}
       <div ref={conteudo} className="ia-conteudo" hidden={mostrarVoz} aria-busy={carregando}>

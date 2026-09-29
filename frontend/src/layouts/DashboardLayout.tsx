@@ -81,7 +81,7 @@ export function DashboardLayout() {
         >
           {isAdmin && <TransicaoLegadoBanner />}
           {isAdmin && <AvisoPagamentoBanner />}
-          {isAdmin && <AssistenteIa key={usuario?.id} api={api} caminho="/ia/admin" posicao={location.pathname.endsWith('/chat') ? 'chat' : 'padrao'} />}
+          {isAdmin && <AssistenteIa key={usuario?.id} identidade={`${usuario?.id}:${usuario?.barbeariaId}`} api={api} caminho="/ia/admin" posicao={location.pathname.endsWith('/chat') ? 'chat' : 'padrao'} />}
           <Outlet />
         </div>
       </main>

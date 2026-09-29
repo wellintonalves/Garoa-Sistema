@@ -1,0 +1,11 @@
+.valeria-lancamento { inset: 0; margin: auto; padding: 0; width: min(960px, calc(100vw - 24px)); max-width: calc(100vw - 24px); max-height: calc(100dvh - 24px); overflow-y: auto; border: none; border-radius: 20px; background: var(--fundo-superficie); color: var(--texto-principal); box-shadow: var(--elevacao-2); font-family: var(--fonte-interface); }
+.valeria-lancamento::backdrop { background: var(--fundo-overlay); }
+.valeria-lancamento header { display: flex; align-items: center; justify-content: space-between; gap: 12px; position: sticky; top: 0; z-index: 1; padding: 8px 12px 8px 20px; background: var(--fundo-superficie); }
+.valeria-lancamento h2 { font-family: var(--fonte-serif); font-size: clamp(20px, 3vw, 28px); margin: 0; min-width: 0; }
+.valeria-lancamento button, .valeria-dica button { display: inline-flex; align-items: center; justify-content: center; min-width: 48px; min-height: 48px; border: none; border-radius: 12px; background: var(--fundo-superficie-2); color: var(--texto-principal); cursor: pointer; font: inherit; }
+.valeria-lancamento img { display: block; width: 100%; height: auto; }
+.valeria-lancamento p { padding: 16px 20px; margin: 0; font-size: 14px; line-height: 1.5; }
+.valeria-lancamento button:focus-visible, .valeria-dica button:focus-visible { outline: 2px solid var(--cor-primaria); outline-offset: 2px; }
+.valeria-dica { position: absolute; bottom: calc(100% + 16px); right: 0; display: flex; align-items: center; width: max-content; max-width: min(300px, calc(100vw - 40px)); gap: 4px; padding: 8px; border-radius: 16px; background: var(--fundo-superficie); color: var(--texto-principal); box-shadow: var(--elevacao-2); font-size: 14px; }
+.valeria-dica .valeria-dica-abrir { padding: 8px; min-width: 0; text-align: left; }
+.valeria-dica-seta { position: absolute; right: 22px; top: 100%; width: 0; height: 0; border: 9px solid transparent; border-top-color: var(--fundo-superficie); }
