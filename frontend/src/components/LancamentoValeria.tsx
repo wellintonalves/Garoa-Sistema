@@ -24,23 +24,25 @@ export function LancamentoValeria({ api, caminho, identidade, botao, chatAberto,
   // Rearma uma revisão específica sem apagar preferências ou repetir o anúncio para outros usuários.
   const revisao = identidade === import.meta.env.VITE_VALERIA_REVISAO_IDENTIDADE
     ? import.meta.env.VITE_VALERIA_REVISAO_VERSAO?.trim() : '';
+  // Link de revisão reutilizável, restrito à identidade configurada.
+  const revisaoSolicitada = Boolean(revisao && new URLSearchParams(window.location.search).get('valeria') === 'apresentacao');
   const chave = `${chaveVersao}:${identidade}:${caminho}${revisao ? `:revisao:${revisao}` : ''}`;
   useEffect(() => {
-    if (import.meta.env.VITE_VALERIA_LANCAMENTO_ENABLED !== 'true' || leu(chave)) return;
+    if (import.meta.env.VITE_VALERIA_LANCAMENTO_ENABLED !== 'true' || (leu(chave) && !revisaoSolicitada)) return;
     const controller = new AbortController();
     api.get<{ textoDisponivel: boolean; vozDisponivel: boolean }>(`${caminho}/status`, { signal: controller.signal })
       .then(({ data }) => {
         if (!controller.signal.aborted && (data.textoDisponivel || data.vozDisponivel)) setMostrar(true);
       }).catch(() => { /* Falha de disponibilidade não bloqueia a página. */ });
     return () => controller.abort();
-  }, [api, caminho, chave]);
+  }, [api, caminho, chave, revisaoSolicitada]);
   useEffect(() => {
-    if (mostrar && !chatAberto && !leu(chave)) {
+    if (mostrar && !chatAberto && (!leu(chave) || revisaoSolicitada)) {
       modal.current?.showModal();
       // Não reapresentar a cada navegação, mesmo se ela desmontar o modal.
       marcar(chave);
     }
-  }, [mostrar, chatAberto, chave]);
+  }, [mostrar, chatAberto, chave, revisaoSolicitada]);
   useEffect(() => { if (chatAberto) setDica(false); }, [chatAberto]);
   useEffect(() => {
     if (!dica) return;
