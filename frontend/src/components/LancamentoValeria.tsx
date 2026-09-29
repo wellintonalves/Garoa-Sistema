@@ -21,7 +21,10 @@ export function LancamentoValeria({ api, caminho, identidade, botao, chatAberto,
   const modal = useRef<HTMLDialogElement>(null);
   const [mostrar, setMostrar] = useState(false);
   const [dica, setDica] = useState(false);
-  const chave = `${chaveVersao}:${identidade}:${caminho}`;
+  // Rearma uma revisão específica sem apagar preferências ou repetir o anúncio para outros usuários.
+  const revisao = identidade === import.meta.env.VITE_VALERIA_REVISAO_IDENTIDADE
+    ? import.meta.env.VITE_VALERIA_REVISAO_VERSAO?.trim() : '';
+  const chave = `${chaveVersao}:${identidade}:${caminho}${revisao ? `:revisao:${revisao}` : ''}`;
   useEffect(() => {
     if (import.meta.env.VITE_VALERIA_LANCAMENTO_ENABLED !== 'true' || leu(chave)) return;
     const controller = new AbortController();

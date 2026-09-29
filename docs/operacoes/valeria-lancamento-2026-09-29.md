@@ -52,7 +52,9 @@ O modal publicado foi conferido em 375×812, 768×1024 e 1920×1080, com largura
 
 Identificação: **Valéria · validação de lançamento (teste)**. Acesso público: `https://valenbarber.com.br/admin/login`. Sem cobrança, sem renovação e sem identificadores de cobrança externos. O teto de US$ 0,10 foi aplicado somente ao período dessa conta de teste; os planos comerciais permanecem com US$ 2 / US$ 6.
 
-Após validar o anúncio, o período de IA da conta isolada foi bloqueado às 18:19 UTC, mantendo barbearia e login ativos para revisão. Nenhum registro de consumo foi apagado. A sessão do navegador permanece aberta no modal; uma nova navegação não terá consumo de IA liberado e, por depender de disponibilidade, não repetirá o anúncio nessa conta bloqueada.
+Após validar o anúncio, o período de IA da conta isolada foi bloqueado às 18:19 UTC. Esse bloqueio impediu o teste solicitado e também a apresentação do anúncio em novos navegadores. Foi removido às 19:39 UTC, somente nessa conta: teto de 100.000 microUSD, consumo preservado de 5.078, reserva zero e saldo de 94.922 microUSD. Login e status confirmaram texto e voz disponíveis, sem novas chamadas pagas. A assinatura comercial não foi alterada.
+
+Para reapresentar o onboarding já visto na validação, o frontend aceita `VITE_VALERIA_REVISAO_IDENTIDADE` (`usuarioId:barbeariaId`) e `VITE_VALERIA_REVISAO_VERSAO`. A versão muda somente a chave de apresentação dessa identidade; não limpa armazenamento, histórico ou preferências e não reapresenta o anúncio aos demais usuários. Configuração de produção restrita à conta isolada, versão `revisao-liberada-20260929`. A revisão aparece uma vez por navegador e, ao fechar, mostra a dica da Valéria.
 
 Email e senha estão em `acesso-revisao.txt` dentro do diretório local protegido informado acima. Não foram publicados em mensagens, logs ou URLs. Não usar recuperação por email: o endereço de teste usa `example.invalid` e não recebe mensagens.
 
