@@ -50,14 +50,11 @@ export function LancamentoValeria({ api, caminho, identidade, botao, chatAberto,
   }, [dica]);
   function fechar() { modal.current?.close(); }
   return <>
-    <dialog ref={modal} className="valeria-lancamento" aria-labelledby="valeria-lancamento-titulo"
+    <dialog ref={modal} className="valeria-lancamento" aria-label="Conheça a Valéria"
       onCancel={e => { e.preventDefault(); fechar(); }}
       onClose={() => { setMostrar(false); setDica(true); botao.current?.focus(); }}>
-      <header><h2 id="valeria-lancamento-titulo">Conheça a Valéria</h2>
-        <button type="button" autoFocus aria-label="Fechar apresentação da Valéria" onClick={fechar}><X size={24} /></button>
-      </header>
+      <button className="valeria-lancamento-fechar" type="button" autoFocus aria-label="Fechar apresentação da Valéria" onClick={fechar}><X size={24} /></button>
       <img src={arte} alt="Valéria, assistente do Valen Barber. Mais praticidade para cuidar da sua barbearia." />
-      <p>Nesta versão, a Valéria consulta informações permitidas ao seu perfil e orienta sobre o sistema. Ela não altera registros nem faz agendamentos.</p>
     </dialog>
     {dica && !chatAberto && <div className="valeria-dica" role="region" aria-label="Dica da Valéria">
       <button type="button" className="valeria-dica-abrir" onClick={() => { setDica(false); abrirChat(); }}>Fale com a Valéria aqui</button>
