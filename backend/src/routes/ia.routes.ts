@@ -15,7 +15,7 @@ import { obterConfiguracaoConsumo, calcularCustoIa, TOKENS_ENTRADA_RESERVA, TOKE
 import { configuracaoResultado } from '../services/ia/resultado';
 import { conversarIa } from '../services/ia/conversa';
 import { ErroDeNegocio } from '../lib/erros';
-import { criarTicketVozLocal, statusVozLocal } from '../services/ia/vozLocal';
+import { criarTicketVozLocal, statusVoz } from '../services/ia/voz';
 
 type Resolver = (req: Request) => Promise<ContextoIa | null>;
 
@@ -65,7 +65,7 @@ export function criarRotasIa(resolver: Resolver) {
         }
       }
       res.json({ ...statusIa(assinatura?.plano ?? null), ...consumo,
-        ...(assinatura?.plano === 'PRO' ? statusVozLocal(contexto) : {}),
+        ...(assinatura?.plano === 'PRO' && process.env.IA_PERSISTENCIA_ENABLED === 'true' ? await statusVoz(contexto) : {}),
         periodoAssinatura: periodo.estado === 'IDENTIFICADO'
           ? { estado: periodo.estado, inicio: periodo.inicio.toISOString(), fim: periodo.fim.toISOString() }
           : periodo,
@@ -84,8 +84,8 @@ export function criarRotasIa(resolver: Resolver) {
   });
   router.post('/voz/sessoes', async (req, res, next) => {
     try {
-      if (!statusVozLocal(res.locals.contextoIa as ContextoIa).vozDisponivel) {
-        res.status(503).json({ codigo: 'IA_EM_PREPARACAO', erro: 'A conversa de voz não está disponível ou o saldo não cobre o teste.' }); return;
+      if (!(await statusVoz(res.locals.contextoIa as ContextoIa)).vozDisponivel) {
+        res.status(503).json({ codigo: 'IA_EM_PREPARACAO', erro: 'A conversa de voz não está disponível. Confira saldo e plano.' }); return;
       }
       if (!req.body || Object.keys(req.body).some(k => k !== 'conversaId')) throw new ErroDeNegocio('Pedido de voz inválido.');
       res.json(await criarTicketVozLocal(res.locals.contextoIa as ContextoIa, req.body.conversaId));

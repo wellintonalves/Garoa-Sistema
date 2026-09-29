@@ -72,13 +72,18 @@ export class RepositorioCotasPrisma {
     return this.reservar(c, chave, conversaId ? JSON.stringify([conversaId, mensagem]) : mensagem, 'TEXTO', 0, custo.creditos);
   }
 
-  // Sem rota pública de voz: a futura integração deve comprovar limite duro
-  // do provedor e calcular o envelope de custo antes de usar este método.
-  async reservarVoz(c: ContextoIa, chave: string, segundos: number, creditosMaximos: number) {
-    return this.reservar(c, chave, String(segundos), 'VOZ', segundos, creditosMaximos);
+  // A voz pública coordena ocupação e reserva entre réplicas pelo PostgreSQL.
+  async vozEmAndamento(c: ContextoIa) {
+    return this.transacao(c, async (tx, agora) => Boolean(await tx.iaReserva.findFirst({ where: {
+      barbeariaId: c.barbeariaId, usuarioId: c.usuarioId, canal: 'VOZ', estado: { in: ['RESERVADA', 'ENVIANDO'] }, enviarAte: { gt: agora },
+    }, select: { id: true } })));
   }
 
-  private async reservar(c: ContextoIa, chave: string, conteudo: string, canal: 'TEXTO' | 'VOZ', segundos: number, creditos: number) {
+  async reservarVoz(c: ContextoIa, chave: string, segundos: number, creditosMaximos: number, exclusiva = false) {
+    return this.reservar(c, chave, String(segundos), 'VOZ', segundos, creditosMaximos, exclusiva);
+  }
+
+  private async reservar(c: ContextoIa, chave: string, conteudo: string, canal: 'TEXTO' | 'VOZ', segundos: number, creditos: number, exclusiva = false) {
     if (!/^[a-zA-Z0-9_-]{16,128}$/.test(chave)) throw new ErroDeNegocio('Identificador do pedido inválido.');
     if (!Number.isInteger(segundos) || segundos < 0 || segundos > 1800 || (canal === 'VOZ' && segundos === 0) ||
         !Number.isSafeInteger(creditos) || creditos <= 0 || creditos > 2_147_483_647) throw new ErroDeNegocio('Reserva inválida.');
@@ -91,6 +96,9 @@ export class RepositorioCotasPrisma {
       }
       const { assinatura, ciclo } = await this.ciclo(tx, c, agora);
       if (canal === 'VOZ' && assinatura.plano !== 'PRO') throw new ErroDeNegocio('Voz ao vivo exclusiva do plano Pro.', 403);
+      if (exclusiva && await tx.iaReserva.findFirst({ where: { barbeariaId: c.barbeariaId, usuarioId: c.usuarioId,
+        canal: 'VOZ', estado: { in: ['RESERVADA', 'ENVIANDO'] }, enviarAte: { gt: agora } }, select: { id: true } }))
+        throw indisponivel('Aguarde a chamada anterior terminar de encerrar.');
       const mensagens = canal === 'TEXTO' ? 1 : 0;
       let periodo = await tx.iaPeriodo.findUnique({ where: { barbeariaId_inicio: { barbeariaId: c.barbeariaId, inicio: ciclo.inicio } } });
       if (!periodo) {
@@ -162,6 +170,8 @@ export class RepositorioCotasPrisma {
     return this.transacao(c, async (tx) => {
       const r = await this.obter(tx, c, id);
       if (r.estado === 'ENVIANDO') await tx.iaReserva.update({ where: { barbeariaId_id: { barbeariaId: c.barbeariaId, id } }, data: { estado: 'INCERTA' } });
+      if (r.canal === 'VOZ') await tx.iaSessaoVoz.updateMany({ where: { barbeariaId: c.barbeariaId, reservaId: id, estado: { not: 'ENCERRADA' } },
+        data: { estado: 'INCERTA', motivoEncerramento: 'CONSUMO_NAO_CONFIRMADO' } });
     }, false);
   }
 

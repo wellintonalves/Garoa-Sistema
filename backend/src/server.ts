@@ -1,5 +1,7 @@
 // Entry point do servidor
 import app from './app';
+import { createServer } from 'node:http';
+import { instalarVozProducao } from './services/ia/voz';
 import { prisma } from './lib/prisma';
 import { copiarBanco } from './lib/dbSync';
 import { agendarBackupDiario } from './lib/backupJob';
@@ -56,7 +58,13 @@ async function start() {
   agendarProcessosAssinatura();
   agendarLimpezaResultadosIa(prisma);
 
-  app.listen(PORT, () => {
+  const servidor = createServer(app);
+  const encerrarVoz = instalarVozProducao(servidor, prisma);
+  process.once('SIGTERM', () => {
+    encerrarVoz(); servidor.close();
+    setTimeout(() => process.exit(0), 5000).unref();
+  });
+  servidor.listen(PORT, () => {
     console.log(`🏪 Servidor da barbearia rodando na porta ${PORT}`);
     console.log(`📋 Health check: http://localhost:${PORT}/health`);
 

@@ -44,8 +44,10 @@ export function useVozValeria(api: AxiosInstance, caminho: string, conversaId: s
       setEstado('Conectando');
       const { data } = await api.post<{ ticket: string; url: string }>(`${caminho}/voz/sessoes`, { conversaId }, { signal: controller.signal });
       if (atual !== geracao.current || finalizou) return;
-      // Esta primeira etapa é exclusiva da demonstração local.
-      if (data.url !== 'ws://127.0.0.1:55440/ia/voz/conexao') throw new Error('Endereço de voz local inválido.');
+      const destino = new URL(data.url);
+      const local = import.meta.env.DEV && destino.protocol === 'ws:' && ['localhost', '127.0.0.1'].includes(destino.hostname);
+      if ((!local && destino.protocol !== 'wss:') || destino.pathname !== '/ia/voz/conexao' || destino.search || destino.hash || destino.username || destino.password)
+        throw new Error('Endereço da conversa de voz inválido.');
       ws = new WebSocket(data.url);
       ws.onopen = () => ws!.send(JSON.stringify({ ticket: data.ticket }));
       source = audio.createMediaStreamSource(stream); node = new AudioWorkletNode(audio, 'valeria-pcm');
