@@ -1,5 +1,7 @@
 # Valéria: integração e condições para lançamento
 
+**Atualização:** a operação foi autorizada e concluída em produção em 29/09/2026. Os bloqueios e propostas abaixo registram a preparação anterior. O resultado, deployments, snapshots, valores aprovados e acesso de revisão estão em [Lançamento em produção](operacoes/valeria-lancamento-2026-09-29.md).
+
 Verificação local e consulta somente leitura ao Railway em 29/09/2026. Base desta entrega: `da541cc`, na branch `codex/base-agente-ia`. A base já contém 24 commits posteriores a `origin/main` (`3b57fd9`). Integrar somente os commits novos não leva toda a Valéria para a main. Implementação em `207adeb` e `2047cf9`.
 
 ## Entregue no código
