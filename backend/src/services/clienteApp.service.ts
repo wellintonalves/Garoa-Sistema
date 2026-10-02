@@ -49,19 +49,6 @@ export class ClienteAppService {
     const aceite = registrarAceiteDocumentos(dados.aceiteDocumentos, 'CADASTRO_CLIENTE');
     dados.email = dados.email.trim().toLowerCase();
     const dataNascimento = normalizarDataNascimento(dados.dataNascimento);
-    // Bônus: Limpeza automática de registros pendentes antigos (> 24h)
-    const dataLimite = new Date(Date.now() - 24 * 60 * 60 * 1000);
-    try {
-      await prisma.usuario.deleteMany({
-        where: {
-          papel: 'CLIENTE',
-          emailVerificado: false,
-          createdAt: { lt: dataLimite },
-        },
-      });
-    } catch (e) {
-      console.error('[Registro Cliente] Erro na limpeza de pendentes antigos:', e);
-    }
     // Verifica se email já existe como cliente global (barbeariaId null)
     const existente = await prisma.usuario.findFirst({
       where: { email: dados.email, barbeariaId: null, papel: 'CLIENTE' },
