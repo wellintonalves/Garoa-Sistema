@@ -43,7 +43,7 @@ export class AuthController {
       const resultado = await AuthService.registrar({ nome, email, senha, papel, barbeariaId, aceiteDocumentos: req.body.aceiteDocumentos });
 
       // Envia o código de verificação após criar o usuário
-      await VerificacaoService.enviarCodigo(resultado.usuario.id, resultado.usuario.email, resultado.usuario.nome);
+      await VerificacaoService.enviarCodigo(resultado.usuario.id);
 
       res.status(201).json(resultado);
     } catch (error) {

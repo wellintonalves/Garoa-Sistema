@@ -128,6 +128,12 @@ export function BarbeiroLoginPage() {
               <span className="bb-muted">Escolha onde deseja trabalhar.</span>
             </label>
           )}
+          <Link
+            to={`/recuperar-senha?perfil=barbeiro${shop ? `&barbeariaSlug=${encodeURIComponent(shops.find(s => s.id === shop)?.slug || '')}` : ''}`}
+            style={{ color: 'var(--texto-secundario)', minHeight: '48px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'underline' }}
+          >
+            Esqueci minha senha
+          </Link>
           <Botao type="submit" disabled={busy}>
             {busy ? "Entrando…" : "Entrar como barbeiro"}
           </Botao>

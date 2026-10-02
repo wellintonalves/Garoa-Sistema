@@ -26,7 +26,7 @@ export class ClienteAppController {
 
       // Tenta enviar o email mas não bloqueia o cadastro se falhar
       try {
-        await VerificacaoService.enviarCodigo(resultado.cliente.usuarioId, email, nome);
+        await VerificacaoService.enviarCodigo(resultado.cliente.usuarioId);
       } catch (emailErro) {
         console.error('[Registro Cliente] Erro ao enviar email de verificação:', emailErro);
       }

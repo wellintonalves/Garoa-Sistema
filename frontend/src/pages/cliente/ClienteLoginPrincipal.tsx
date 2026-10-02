@@ -166,7 +166,7 @@ export function ClienteLoginPrincipal() {
           <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
             <button
               type="button"
-              onClick={() => navigate('/recuperar-senha')}
+              onClick={() => navigate('/recuperar-senha?perfil=cliente')}
               style={{
                 background: 'none', border: 'none', cursor: 'pointer',
                 color: 'var(--texto-secundario)', fontSize: 'var(--texto-sm, 0.75rem)',

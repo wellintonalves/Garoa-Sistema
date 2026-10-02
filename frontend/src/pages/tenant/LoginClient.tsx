@@ -1,5 +1,5 @@
 import { LinksDocumentos } from '../../components/AceiteDocumentos';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useClientAuth } from '../../hooks/useClientAuth';
 import { useState, useEffect } from 'react';
 import { api } from '../../api';
@@ -39,6 +39,12 @@ export function LoginClient() {
         <input className='mb-6 p-2 rounded bg-[var(--superficie-2)] border-[var(--borda-forte)] border bg-[var(--superficie-2)] border-[var(--borda-forte)] text-[var(--texto-principal)]' type='password' placeholder='Senha' value={senha} onChange={e => setSenha(e.target.value)} required />
         <button type='submit' className='bg-orange-500 text-[var(--texto-principal)] p-2 rounded font-semibold'>Entrar</button>
       </form>
+      <Link
+        to={`/recuperar-senha?perfil=cliente&barbeariaSlug=${encodeURIComponent(slug || '')}`}
+        style={{ color: 'var(--texto-secundario)', fontSize: 'var(--texto-sm, 0.8125rem)', minHeight: '48px', display: 'inline-flex', alignItems: 'center', textDecoration: 'underline' }}
+      >
+        Esqueci minha senha
+      </Link>
         <LinksDocumentos />
 
       <ModalAlert 

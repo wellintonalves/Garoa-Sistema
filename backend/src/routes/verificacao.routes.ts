@@ -1,54 +1,43 @@
 import { Router, Request, Response } from 'express';
 import { VerificacaoService } from '../services/verificacao.service';
+import { codigoEnvioLimiter, codigoTentativaLimiter } from '../middlewares/rateLimit.middleware';
 
 const router = Router();
+const identificadorValido = (valor: unknown): valor is string =>
+  typeof valor === 'string' && valor.length > 0 && valor.length <= 100;
 
-// Enviar código — não precisa de autenticação
-router.post('/enviar', async (req: Request, res: Response) => {
-  try {
-    const { usuarioId, email, nome } = req.body;
-    if (!usuarioId || !email || !nome) {
-      res.status(400).json({ erro: 'usuarioId, email e nome são obrigatórios.' });
-      return;
-    }
-    await VerificacaoService.enviarCodigo(usuarioId, email, nome);
-    res.json({ mensagem: 'Código enviado para seu email.' });
-  } catch (error: any) {
-    res.status(500).json({ erro: error.message });
+async function enviar(req: Request, res: Response) {
+  if (!identificadorValido(req.body.usuarioId)) {
+    res.status(400).json({ erro: 'Confira os dados e tente novamente.' });
+    return;
   }
-});
-
-// Confirmar código — não precisa de autenticação
-router.post('/confirmar', async (req: Request, res: Response) => {
   try {
-    const { usuarioId, codigo } = req.body;
-    if (!usuarioId || !codigo) {
-      res.status(400).json({ erro: 'usuarioId e codigo são obrigatórios.' });
-      return;
-    }
-    const valido = await VerificacaoService.verificarCodigo(usuarioId, codigo);
-    if (!valido) {
+    // Campos legados email/nome são ignorados: o serviço resolve o destinatário.
+    await VerificacaoService.enviarCodigo(req.body.usuarioId);
+    res.json({ mensagem: 'Se a conta precisar de confirmação, o código será enviado ao email cadastrado.' });
+  } catch (error) {
+    console.error('[Verificação] Falha ao enviar código:', error);
+    res.status(500).json({ erro: 'Não foi possível enviar o código. Tente novamente em instantes.' });
+  }
+}
+
+router.post('/enviar', codigoEnvioLimiter, enviar);
+router.post('/reenviar', codigoEnvioLimiter, enviar);
+router.post('/confirmar', codigoTentativaLimiter, async (req: Request, res: Response) => {
+  const { usuarioId, codigo } = req.body;
+  if (!identificadorValido(usuarioId) || typeof codigo !== 'string' || !/^\d{6}$/.test(codigo)) {
+    res.status(400).json({ erro: 'Código inválido ou expirado.' });
+    return;
+  }
+  try {
+    if (!await VerificacaoService.verificarCodigo(usuarioId, codigo)) {
       res.status(400).json({ erro: 'Código inválido ou expirado.' });
       return;
     }
     res.json({ mensagem: 'Email verificado com sucesso!' });
-  } catch (error: any) {
-    res.status(500).json({ erro: error.message });
-  }
-});
-
-// Reenviar código — não precisa de autenticação
-router.post('/reenviar', async (req: Request, res: Response) => {
-  try {
-    const { usuarioId, email, nome } = req.body;
-    if (!usuarioId || !email || !nome) {
-      res.status(400).json({ erro: 'usuarioId, email e nome são obrigatórios.' });
-      return;
-    }
-    await VerificacaoService.enviarCodigo(usuarioId, email, nome);
-    res.json({ mensagem: 'Código reenviado com sucesso.' });
-  } catch (error: any) {
-    res.status(500).json({ erro: error.message });
+  } catch (error) {
+    console.error('[Verificação] Falha ao confirmar código:', error);
+    res.status(500).json({ erro: 'Não foi possível confirmar o email. Tente novamente em instantes.' });
   }
 });
 
