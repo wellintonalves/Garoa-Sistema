@@ -31,32 +31,47 @@ interface RespostaAuth {
 }
 
 export class AuthService {
-  /** Registra um novo usuário */
+  /** Cadastro público de proprietário: nunca ingressa em uma barbearia existente. */
   static async registrar(dados: DadosRegistro): Promise<RespostaAuth> {
-    const aceite = registrarAceiteDocumentos(dados.aceiteDocumentos, dados.papel === 'ADMIN' ? 'CADASTRO_ADMIN' : 'CADASTRO_TENANT');
-    const email = dados.email.trim().toLowerCase();
-    const papel = dados.papel ?? 'CLIENTE';
-    if (!email || !Object.values(Papel).includes(papel)) {
+    if (dados.barbeariaId !== undefined || (dados.papel !== undefined && dados.papel !== 'ADMIN')) {
       throw new ErroDeNegocio('Dados de cadastro inválidos', 400);
     }
-    if (!dados.barbeariaId && papel !== 'ADMIN') {
-      throw new ErroDeNegocio('Barbearia não informada', 400);
+    return this.registrarConta(dados, 'ADMIN');
+  }
+
+  /** Cadastro público de cliente em uma unidade resolvida pelo servidor. */
+  static async registrarCliente(dados: DadosRegistro & { barbeariaId: string }): Promise<RespostaAuth> {
+    if (!dados.barbeariaId || (dados.papel !== undefined && dados.papel !== 'CLIENTE')) {
+      throw new ErroDeNegocio('Dados de cadastro inválidos', 400);
+    }
+    return this.registrarConta(dados, 'CLIENTE', dados.barbeariaId);
+  }
+
+  private static async registrarConta(dados: DadosRegistro, papel: 'ADMIN' | 'CLIENTE', tenantId?: string): Promise<RespostaAuth> {
+    const aceite = registrarAceiteDocumentos(dados.aceiteDocumentos, papel === 'ADMIN' ? 'CADASTRO_ADMIN' : 'CADASTRO_TENANT');
+    const email = dados.email.trim().toLowerCase();
+    if (!email) {
+      throw new ErroDeNegocio('Dados de cadastro inválidos', 400);
     }
     const senhaHash = await bcrypt.hash(dados.senha, authConfig.saltRounds);
     const usuario = await prisma.$transaction(async tx => {
+      if (papel === 'CLIENTE') {
+        const barbearia = await tx.barbearia.findFirst({ where: { id: tenantId, ativo: true }, select: { id: true } });
+        if (!barbearia) throw new ErroDeNegocio('Barbearia não encontrada', 404);
+      }
       // SERIALIZABLE protege também dois cadastros simultâneos pelo aplicativo.
       // Clientes e barbeiros continuam podendo usar o mesmo email em outras unidades.
       const existentes = await tx.$queryRaw<{ id: string }[]>(Prisma.sql`
         SELECT id FROM usuarios
         WHERE lower(btrim(email)) = ${email}
           AND ((papel = 'ADMIN' AND ${papel} = 'ADMIN')
-            OR "barbeariaId" = ${dados.barbeariaId ?? null})
+            OR "barbeariaId" = ${tenantId ?? null})
         LIMIT 1
       `);
       if (existentes.length) {
         throw new ErroDeNegocio('Este email já está cadastrado para este acesso. Use outro email ou recupere sua conta.', 409);
       }
-      let barbeariaId = dados.barbeariaId;
+      let barbeariaId = tenantId;
       if (!barbeariaId) {
         const barbearia = await tx.barbearia.create({
           data: { nome: `Barbearia do ${dados.nome.trim().split(' ')[0]}`, slug: `barbearia-${randomUUID()}` },

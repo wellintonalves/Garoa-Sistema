@@ -31,7 +31,7 @@ async function main() {
     assert.equal(await db.barbearia.count({ where: { nome: `Barbearia do ${nome}` } }), 1);
     await assert.rejects(AuthService.registrar(dados), { status: 409 });
     const outra = await db.barbearia.create({ data: { nome: `Barbearia do ${nome}`, slug: `${nome}-cliente` } });
-    await AuthService.registrar({ ...dados, papel: 'CLIENTE', barbeariaId: outra.id });
+    await AuthService.registrarCliente({ ...dados, papel: 'CLIENTE', barbeariaId: outra.id });
     assert.equal(await db.usuario.count({ where: { email } }), 2);
     const login = await AuthService.login(dados);
     assert.equal(login.usuario.papel, 'ADMIN');
