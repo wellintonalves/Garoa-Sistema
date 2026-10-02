@@ -17,6 +17,7 @@ interface BarbeiroAuthContextData {
   carregando: boolean;
   login: (email: string, senha: string, barbeariaId?: string) => Promise<void>;
   logout: () => void;
+  atualizarNome: (nome: string) => void;
 }
 
 export const BarbeiroAuthContext = createContext<BarbeiroAuthContextData>({} as BarbeiroAuthContextData);
@@ -58,8 +59,17 @@ export function BarbeiroAuthProvider({ children }: { children: ReactNode }) {
     window.location.href = '/barbeiro/login';
   }, []);
 
+  const atualizarNome = useCallback((nome: string) => {
+    setBarbeiro(atual => {
+      if (!atual) return atual;
+      const atualizado = { ...atual, nome };
+      localStorage.setItem('@garoa:barbeiro_dados', JSON.stringify(atualizado));
+      return atualizado;
+    });
+  }, []);
+
   return (
-    <BarbeiroAuthContext.Provider value={{ barbeiro, carregando, login, logout }}>
+    <BarbeiroAuthContext.Provider value={{ barbeiro, carregando, login, logout, atualizarNome }}>
       {children}
     </BarbeiroAuthContext.Provider>
   );

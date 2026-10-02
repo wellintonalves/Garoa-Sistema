@@ -1,0 +1,54 @@
+[
+  {
+    "name": "Autenticação real, senha incorreta, token inválido e acesso sem token",
+    "status": "passed"
+  },
+  {
+    "name": "Isolamento de agenda, bloqueios e conclusão entre profissionais/unidades",
+    "status": "passed"
+  },
+  {
+    "name": "CORS permite PATCH usado na disponibilidade do barbeiro",
+    "status": "passed"
+  },
+  {
+    "name": "CRUD real de agendamento auxiliar, conflito e cancelamento persistido",
+    "status": "passed"
+  },
+  {
+    "name": "Login de navegador real e perfil/horários persistem após recarregar",
+    "status": "passed"
+  },
+  {
+    "name": "Disponibilidade real persiste com preflight do navegador",
+    "status": "passed"
+  },
+  {
+    "name": "Bloqueio criado/excluído pela interface persiste no PostgreSQL",
+    "status": "passed"
+  },
+  {
+    "name": "Checkout real: simulação, desconto/pontos, lançamento, comissão e repetição",
+    "status": "passed"
+  },
+  {
+    "name": "Rejeição de aprovação persiste e não altera lançamento",
+    "status": "passed"
+  },
+  {
+    "name": "Aprovação real atualiza pagamento e preserva valor financeiro",
+    "status": "passed"
+  },
+  {
+    "name": "Foto maior que 2MB bloqueada antes da API e erro de storage tratado",
+    "status": "passed"
+  },
+  {
+    "name": "Navegação rápida com API real",
+    "status": "passed"
+  },
+  {
+    "name": "Runtime integrado sem exceções não tratadas",
+    "status": "passed"
+  }
+]

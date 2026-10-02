@@ -1,0 +1,15 @@
+{
+  "status": "passed",
+  "realHttp": true,
+  "realAuthentication": true,
+  "realPostgres": true,
+  "storage": "local adapter, no cloud calls",
+  "checked": [
+    "multipart field file",
+    "PNG bytes and MIME",
+    "barbeiros bucket contract",
+    "200 response URL",
+    "profile persistence"
+  ],
+  "remoteUploadTested": false
+}

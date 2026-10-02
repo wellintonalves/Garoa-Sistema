@@ -1,0 +1,82 @@
+[
+  {
+    "path": "frontend/src/layouts/BarbeiroLayout.tsx",
+    "before": "84714e0ca728ffdb2df0aa830b6595da9fe7c618f0bb6d0101fd1625817f0c07",
+    "after": "aad01c587d2302434af3cabd639fadde8060a51272cd61109aab3c9d4afc0732"
+  },
+  {
+    "path": "frontend/src/contexts/BarbeiroAuthContext.tsx",
+    "before": "84d646cde5e2f81215089fb21f75747f3ef81e66300f05d8e329246602298184",
+    "after": "ba2a06fce685f8c4e1e30a7e584a9648f862876c3d45b4ce78e4ef268c1b6626"
+  },
+  {
+    "path": "frontend/src/components/AprovacoesPopup.tsx",
+    "before": "6c507cda984561bcc5f432eb7203293cb3a623df6f218fc363186ab4b8191274",
+    "after": "7063a05a1c79319ca65d5ba73d92752dc0dd5b0afb035d7dfa659b054628e012"
+  },
+  {
+    "path": "frontend/src/pages/barbeiro/BarbeiroHoje.tsx",
+    "before": "73c65b43b23085d49fedeaabcdc4cf42e71843d6f1a590d520f887935e881e46",
+    "after": "e149cd450be0c2063d0a8383c95d27d72be4c318a1851719d5b0b013ef40bb26"
+  },
+  {
+    "path": "frontend/src/pages/barbeiro/BarbeiroAgenda.tsx",
+    "before": "2da9867adb713cabf74044f59a914ed7370e45c5ba5761333499aa7c1112f719",
+    "after": "e95b86c834b7e5b583efeefa070d343b3c87b5e7796b30450a05426fe8f936ca"
+  },
+  {
+    "path": "frontend/src/pages/barbeiro/BarbeiroComissoes.tsx",
+    "before": "f2ab0f5c46ee0750ac6cfd9b6ece9bc8b5cad0fba5093869d702cd3025da5313",
+    "after": "67c9cda09057433abde1ffa7c6a72a6a0836907a412ac0e266c703ef2b30bfb9"
+  },
+  {
+    "path": "frontend/src/pages/barbeiro/BarbeiroPerfil.tsx",
+    "before": "fd8c619ae8664140134412e9eb890249f086f2976d3b42317c8a801dc39137e3",
+    "after": "b1bb9ed90c7f150e819615d8a097be635b15e04201eeb27b0000037a4e2e3593"
+  },
+  {
+    "path": "frontend/src/pages/barbeiro/BarbeiroHorariosCard.tsx",
+    "before": "15455403484573fa09654e4821379b2f37a04e25a4a2d9f73f7a046119ed3709",
+    "after": "c1ce72424b95b7c031433727c7c863ddfd7279ad0e7953a5b8836e26329536d3"
+  },
+  {
+    "path": "frontend/src/pages/barbeiro/BarbeiroLoginPage.tsx",
+    "before": "9e4a6b1d69148260b1b519908efdbc63cac500fc289e9ab42808f18f7e004bd2",
+    "after": "0470347aa174eb1cbedc251f851e383478d1fcefba97c8b6d61b396d30d1c4da"
+  },
+  {
+    "path": "frontend/src/components/barbeiro/AppointmentRow.tsx",
+    "before": null,
+    "after": "a389df98ce3b0115b6fc117ec3826464a5c4de6863893d23c42d267f8a2613d9"
+  },
+  {
+    "path": "frontend/src/components/barbeiro/barbeiro.css",
+    "before": null,
+    "after": "58890f7cb15dcc18be6faecb41664e3bd87681db8ba4bc15fabab6bb0f0ee3ef"
+  },
+  {
+    "path": "frontend/src/components/barbeiro/BarberCheckout.tsx",
+    "before": null,
+    "after": "af62bfa26f6f984387752ba75f1b0d65ef8643af06b7bc6d4c005ea9c885e833"
+  },
+  {
+    "path": "frontend/src/components/barbeiro/data.test.ts",
+    "before": null,
+    "after": "10b46e92c5345ade02ce30dc269f9273ba481b6e51521894c6e7d7874432ec02"
+  },
+  {
+    "path": "frontend/src/components/barbeiro/data.ts",
+    "before": null,
+    "after": "d2afb6836fb44f3facf0aaede9acf833510a8cd32b908159b616e084f3b4bad9"
+  },
+  {
+    "path": "frontend/src/components/barbeiro/ui.tsx",
+    "before": null,
+    "after": "b161b4224ba158cb96009155c84ce71720fd1dfbcf6ebbe203ed04ce94eb83ab"
+  },
+  {
+    "path": "backend/src/app.ts",
+    "before": "2d16f97bba47dba5caa8b035472b7ed52d96bc6878902438abf7ec1f8707e364",
+    "after": "88aeec61beead0f3e6ab81982e8f155d51f1e20bcf62aaa23029b569a3828f51"
+  }
+]

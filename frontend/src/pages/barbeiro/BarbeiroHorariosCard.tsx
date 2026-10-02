@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
-import { Clock, FloppyDisk as Save, Copy, Info } from '@phosphor-icons/react';
-import barbeiroApi from '../../api/barbeiroApi';
-
+import { useEffect, useRef, useState } from "react";
+import barbeiroApi from "../../api/barbeiroApi";
+import { Botao } from "../../components/ui";
+import { message } from "../../components/barbeiro/data";
+import { Notice } from "../../components/barbeiro/ui";
 export interface DiaConfig {
   fechado: boolean;
   abertura?: string;
@@ -10,186 +11,236 @@ export interface DiaConfig {
   almocoInicio?: string;
   almocoFim?: string;
 }
-
 interface Props {
-  horariosIniciais: any;
+  horariosIniciais: Record<string, DiaConfig> | null;
   onSuccess: () => void;
   mostrarErro: (msg: string) => void;
   mostrarSucesso: (msg: string) => void;
   onSalvar?: (horarios: Record<string, DiaConfig>) => Promise<void>;
   titulo?: string;
 }
-
-const DIAS_SEMANA = ['segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sabado', 'domingo'];
-const NOMES_DIAS: Record<string, string> = {
-  segunda: 'Segunda-feira',
-  terca: 'Terça-feira',
-  quarta: 'Quarta-feira',
-  quinta: 'Quinta-feira',
-  sexta: 'Sexta-feira',
-  sabado: 'Sábado',
-  domingo: 'Domingo'
-};
-
-const DEFAULT_DIA: DiaConfig = {
+const days = [
+  ["segunda", "Segunda-feira"],
+  ["terca", "Terça-feira"],
+  ["quarta", "Quarta-feira"],
+  ["quinta", "Quinta-feira"],
+  ["sexta", "Sexta-feira"],
+  ["sabado", "Sábado"],
+  ["domingo", "Domingo"],
+];
+const defaults: DiaConfig = {
   fechado: false,
-  abertura: '09:00',
-  fechamento: '18:00',
+  abertura: "09:00",
+  fechamento: "18:00",
   temAlmoco: false,
-  almocoInicio: '12:00',
-  almocoFim: '13:00'
+  almocoInicio: "12:00",
+  almocoFim: "13:00",
 };
-
+function initial(value: Props["horariosIniciais"]) {
+  return Object.fromEntries(
+    days.map(([day]) => [
+      day,
+      { ...defaults, ...(value?.[day] ?? { fechado: day === "domingo" }) },
+    ]),
+  ) as Record<string, DiaConfig>;
+}
 export function BarbeiroHorariosCard({
   horariosIniciais,
   onSuccess,
   mostrarErro,
   mostrarSucesso,
   onSalvar,
-  titulo = 'Seus horários de trabalho',
+  titulo = "Seus horários de trabalho",
 }: Props) {
-  const [horarios, setHorarios] = useState<Record<string, DiaConfig>>({});
-  const [salvando, setSalvando] = useState(false);
-
+  const [hours, setHours] = useState(() => initial(horariosIniciais));
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const lock = useRef(false);
+  const dirty = useRef(false);
   useEffect(() => {
-    // Inicializa com os dados do banco ou cria o default
-    const iniciais = horariosIniciais || {};
-    const novoHorarios: Record<string, DiaConfig> = {};
-    DIAS_SEMANA.forEach(dia => {
-      if (iniciais[dia]) {
-        novoHorarios[dia] = { ...iniciais[dia] };
-      } else {
-        novoHorarios[dia] = { ...DEFAULT_DIA, fechado: dia === 'domingo' };
-      }
-    });
-    setHorarios(novoHorarios);
+    if (!dirty.current) setHours(initial(horariosIniciais));
   }, [horariosIniciais]);
-
-  const handleChange = (dia: string, field: keyof DiaConfig, value: any) => {
-    setHorarios(prev => ({
-      ...prev,
-      [dia]: {
-        ...prev[dia],
-        [field]: value
+  function change(
+    day: string,
+    field: keyof DiaConfig,
+    value: string | boolean,
+  ) {
+    dirty.current = true;
+    setHours((prev) => ({ ...prev, [day]: { ...prev[day], [field]: value } }));
+  }
+  async function save(e: React.FormEvent) {
+    e.preventDefault();
+    if (lock.current) return;
+    for (const [day, name] of days) {
+      const h = hours[day];
+      if (
+        !h.fechado &&
+        (!h.abertura || !h.fechamento || h.abertura >= h.fechamento)
+      ) {
+        setError(`${name}: o fim do expediente deve ser posterior ao início.`);
+        return;
       }
-    }));
-  };
-
-  const copiarSegundaParaUteis = () => {
-    if (!horarios['segunda']) return;
-    const ref = { ...horarios['segunda'] };
-    setHorarios(prev => ({
-      ...prev,
-      terca: { ...ref },
-      quarta: { ...ref },
-      quinta: { ...ref },
-      sexta: { ...ref }
-    }));
-    mostrarSucesso('Horários da segunda copiados para terça a sexta.');
-  };
-
-  const salvar = async () => {
-    setSalvando(true);
-    try {
-      if (onSalvar) {
-        await onSalvar(horarios);
-      } else {
-        await barbeiroApi.put('/barbeiro/perfil', {
-          horariosTrabalho: horarios
-        });
+      if (
+        !h.fechado &&
+        h.temAlmoco &&
+        (!h.almocoInicio ||
+          !h.almocoFim ||
+          h.almocoInicio >= h.almocoFim ||
+          h.almocoInicio < h.abertura! ||
+          h.almocoFim > h.fechamento!)
+      ) {
+        setError(
+          `${name}: o intervalo deve estar dentro do expediente, com fim posterior ao início.`,
+        );
+        return;
       }
-      mostrarSucesso('Horários atualizados e aplicados à agenda!');
-      onSuccess();
-    } catch (err: any) {
-      mostrarErro(err.response?.data?.erro || 'Erro ao salvar horários');
-    } finally {
-      setSalvando(false);
     }
-  };
-
+    lock.current = true;
+    setBusy(true);
+    setError("");
+    try {
+      if (onSalvar) await onSalvar(hours);
+      else
+        await barbeiroApi.put("/barbeiro/perfil", { horariosTrabalho: hours });
+      dirty.current = false;
+      mostrarSucesso("Horários salvos e aplicados à agenda.");
+      onSuccess();
+    } catch (e) {
+      setError(message(e));
+      mostrarErro(message(e));
+    } finally {
+      lock.current = false;
+      setBusy(false);
+    }
+  }
   return (
-    <div className="p-6 rounded-2xl border flex flex-col gap-6 md:col-span-2" style={{ background: 'var(--bg-surface)', borderColor: 'var(--border)' }}>
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg" style={{ background: 'var(--bg-surface2)' }}>
-            <Clock size={16} style={{ color: 'var(--cor-primaria)' }} />
-          </div>
-          <div>
-            <h3 className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
-              {titulo}
-            </h3>
-            <p className="text-xs mt-1 flex items-center gap-1" style={{ color: 'var(--texto-secundario)' }}>
-              <Info size={12} /> Define a sua disponibilidade na agenda
-            </p>
-          </div>
-        </div>
-        
-        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-          <button onClick={copiarSegundaParaUteis} className="btn-secondary text-xs px-3 py-2 flex items-center gap-1 w-full sm:w-auto" title="Copiar segunda-feira para terça a sexta">
-            <Copy size={12} /> Copiar segunda-feira
-          </button>
-          <button onClick={salvar} disabled={salvando} className="btn-primary text-xs px-4 py-2 flex items-center gap-1 w-full sm:w-auto">
-            {salvando ? 'Salvando...' : <><Save size={12} /> Salvar</>}
-          </button>
-        </div>
-      </div>
-
-      <div className="flex flex-col gap-3">
-        {DIAS_SEMANA.map(dia => {
-          const conf = horarios[dia] || DEFAULT_DIA;
+    <form className="bb-hours" onSubmit={save}>
+      <h3>{titulo}</h3>
+      <p className="bb-muted">
+        Defina o expediente e os intervalos de cada dia.
+      </p>
+      {error && <Notice error>{error}</Notice>}
+      <fieldset disabled={busy}>
+        {days.map(([day, name]) => {
+          const h = hours[day];
           return (
-            <div key={dia} className="flex flex-col xl:flex-row xl:items-center gap-4 p-4 rounded-xl border transition-colors" style={{ borderColor: conf.fechado ? 'var(--border)' : 'var(--cor-primaria)', background: conf.fechado ? 'var(--bg-surface2)' : 'transparent', opacity: conf.fechado ? 0.7 : 1 }}>
-              
-              <div className="flex items-center justify-between xl:w-48">
-                <span className="font-semibold text-sm" style={{ color: 'var(--text-primary)' }}>
-                  {NOMES_DIAS[dia]}
-                </span>
-                <label className="flex items-center gap-2 cursor-pointer text-xs font-medium">
-                  <span style={{ color: conf.fechado ? 'var(--error-text)' : 'var(--sucesso)' }}>
-                    {conf.fechado ? 'Folga' : 'Trabalho'}
-                  </span>
-                  <input type="checkbox" className="hidden" checked={!conf.fechado} onChange={(e) => handleChange(dia, 'fechado', !e.target.checked)} />
-                  <div className={`w-8 h-4 rounded-full relative transition-colors ${conf.fechado ? 'bg-[var(--superficie-2)] border-[var(--borda)]' : ''}`} style={{ background: conf.fechado ? '' : 'var(--cor-primaria)' }}>
-                    <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-[var(--superficie)] transition-transform ${conf.fechado ? 'left-0.5' : 'translate-x-4'}`} />
-                  </div>
+            <div key={day} className="bb-hours-day">
+              <div className="bb-hours-heading">
+                <strong>{name}</strong>
+                <label className="bb-switch">
+                  <input
+                    type="checkbox"
+                    aria-label={`Trabalha ${name}`}
+                    checked={!h.fechado}
+                    onChange={(e) => change(day, "fechado", !e.target.checked)}
+                  />
+                  {h.fechado ? "Folga" : "Trabalho"}
                 </label>
               </div>
-
-              {!conf.fechado && (
-                <div className="flex flex-col sm:flex-row sm:items-center gap-4 flex-1">
-                  <div className="grid grid-cols-2 sm:flex sm:items-center gap-3 sm:gap-2 w-full sm:w-auto">
-                    <label className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 min-w-0">
-                      <span className="text-xs" style={{ color: 'var(--texto-secundario)' }}>Das</span>
-                      <input type="time" value={conf.abertura} onChange={e => handleChange(dia, 'abertura', e.target.value)} className="ds-input py-1 px-2 text-sm w-full sm:w-24 min-w-0" />
+              {!h.fechado && (
+                <>
+                  <div className="bb-hours-fields">
+                    <label className="bb-field">
+                      Início do expediente
+                      <input
+                        className="bb-input"
+                        aria-label={`Início ${name}`}
+                        type="time"
+                        required
+                        value={h.abertura}
+                        onChange={(e) =>
+                          change(day, "abertura", e.target.value)
+                        }
+                      />
                     </label>
-                    <label className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 min-w-0">
-                      <span className="text-xs" style={{ color: 'var(--texto-secundario)' }}>Até</span>
-                      <input type="time" value={conf.fechamento} onChange={e => handleChange(dia, 'fechamento', e.target.value)} className="ds-input py-1 px-2 text-sm w-full sm:w-24 min-w-0" />
+                    <label className="bb-field">
+                      Fim do expediente
+                      <input
+                        className="bb-input"
+                        aria-label={`Fim ${name}`}
+                        type="time"
+                        required
+                        value={h.fechamento}
+                        onChange={(e) =>
+                          change(day, "fechamento", e.target.value)
+                        }
+                      />
                     </label>
                   </div>
-
-                  <div className="w-[1px] h-6 hidden sm:block" style={{ background: 'var(--border)' }} />
-
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-                    <label className="flex items-center gap-2 cursor-pointer text-xs">
-                      <input type="checkbox" checked={conf.temAlmoco} onChange={e => handleChange(dia, 'temAlmoco', e.target.checked)} className="rounded text-orange-500 focus:ring-orange-500 border-[var(--borda-forte)]" />
-                      <span style={{ color: 'var(--text-primary)' }}>Tem intervalo?</span>
-                    </label>
-
-                    {conf.temAlmoco && (
-                      <div className="flex items-center gap-2">
-                        <input type="time" value={conf.almocoInicio} onChange={e => handleChange(dia, 'almocoInicio', e.target.value)} className="ds-input py-1 px-2 text-sm w-24" />
-                        <span className="text-xs" style={{ color: 'var(--texto-secundario)' }}>-</span>
-                        <input type="time" value={conf.almocoFim} onChange={e => handleChange(dia, 'almocoFim', e.target.value)} className="ds-input py-1 px-2 text-sm w-24" />
-                      </div>
-                    )}
-                  </div>
-                </div>
+                  <label className="bb-switch">
+                    <input
+                      type="checkbox"
+                      aria-label={`Intervalo ${name}`}
+                      checked={!!h.temAlmoco}
+                      onChange={(e) =>
+                        change(day, "temAlmoco", e.target.checked)
+                      }
+                    />
+                    Intervalo neste dia
+                  </label>
+                  {h.temAlmoco && (
+                    <div className="bb-hours-fields">
+                      <label className="bb-field">
+                        Início do intervalo
+                        <input
+                          className="bb-input"
+                          aria-label={`Início do intervalo ${name}`}
+                          type="time"
+                          required
+                          value={h.almocoInicio}
+                          onChange={(e) =>
+                            change(day, "almocoInicio", e.target.value)
+                          }
+                        />
+                      </label>
+                      <label className="bb-field">
+                        Fim do intervalo
+                        <input
+                          className="bb-input"
+                          aria-label={`Fim do intervalo ${name}`}
+                          type="time"
+                          required
+                          value={h.almocoFim}
+                          onChange={(e) =>
+                            change(day, "almocoFim", e.target.value)
+                          }
+                        />
+                      </label>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           );
         })}
+      </fieldset>
+      <div className="bb-actions">
+        <Botao
+          type="button"
+          variante="secundario"
+          disabled={busy}
+          onClick={() => {
+            dirty.current = true;
+            setHours((prev) => ({
+              ...prev,
+              ...Object.fromEntries(
+                ["terca", "quarta", "quinta", "sexta"].map((day) => [
+                  day,
+                  { ...prev.segunda },
+                ]),
+              ),
+            }));
+            mostrarSucesso(
+              "Segunda-feira copiada para terça a sexta. Salve para aplicar.",
+            );
+          }}
+        >
+          Copiar segunda-feira
+        </Botao>
+        <Botao type="submit" disabled={busy}>
+          {busy ? "Salvando…" : "Salvar horários"}
+        </Botao>
       </div>
-    </div>
+    </form>
   );
 }

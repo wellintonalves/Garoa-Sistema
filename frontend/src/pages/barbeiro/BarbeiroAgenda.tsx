@@ -1,276 +1,432 @@
-import { useState, useEffect } from 'react';
-import { Calendar as CalendarIcon, Clock, Prohibit as Ban } from '@phosphor-icons/react';
-import barbeiroApi from '../../api/barbeiroApi';
-import { hojeBrasilia } from '../../utils/datas';
-import { Modal } from '../../components/Modal';
-import { formatarNomeServico } from '../../utils/formato';
-import { ESCALA_HORA_PX, Z_INDEX } from '../../utils/constantes';
-
-interface AgendamentoAgenda {
-  id: string;
-  dataHora: string;
-  status: string;
-  servico: { nome: string; duracaoMinutos: number };
-  servicosAdicionais?: { id: string; nome: string; preco: string; duracaoMinutos: number }[];
-  cliente: { usuario: { nome: string } };
-  valorCobrado: string;
-}
-
-interface Bloqueio {
-  id: string;
-  dataInicio: string;
-  dataFim: string;
-  motivo?: string;
-}
-
+import { Fragment, useCallback, useRef, useState } from "react";
+import { CaretLeft, CaretRight, Prohibit } from "@phosphor-icons/react";
+import { useBarbeiroAuth } from "../../hooks/useBarbeiroAuth";
+import barbeiroApi from "../../api/barbeiroApi";
+import { Botao } from "../../components/ui";
+import {
+  PageHeader,
+  Notice,
+  Loading,
+  Empty,
+  Dialog,
+} from "../../components/barbeiro/ui";
+import { AppointmentRow } from "../../components/barbeiro/AppointmentRow";
+import {
+  type Appointment,
+  type Block,
+  dayKey,
+  dateLabel,
+  shiftDay,
+  time,
+  endTime,
+  message,
+  useBarberResource,
+  notifyBarberChange,
+} from "../../components/barbeiro/data";
+import { formatarNomeServico } from "../../utils/formato";
 export function BarbeiroAgenda() {
-  const [dataSel, setDataSel] = useState(hojeBrasilia());
-  const [agendamentos, setAgendamentos] = useState<AgendamentoAgenda[]>([]);
-  const [bloqueios, setBloqueios] = useState<Bloqueio[]>([]);
-  const [carregando, setCarregando] = useState(false);
-  
-  const [modalAberto, setModalAberto] = useState(false);
-  const [form, setForm] = useState({ data: '', horaInicio: '', horaFim: '', motivo: '' });
-  
-  const [sucessoMsg, setSucessoMsg] = useState('');
-  const [erroApi, setErroApi] = useState(false);
-
-  const mostrarSucesso = (msg: string) => { setSucessoMsg(msg); setTimeout(() => setSucessoMsg(''), 3000); };
-
-  function carregar() {
-    setCarregando(true);
-    setErroApi(false);
-    Promise.all([
-      barbeiroApi.get<AgendamentoAgenda[]>('/barbeiro/agenda', { params: { data: dataSel } }),
-      barbeiroApi.get<Bloqueio[]>('/bloqueios')
-    ]).then(([resAg, resBl]) => {
-      setAgendamentos(resAg.data);
-      setBloqueios(resBl.data.filter(b => b.dataInicio.startsWith(dataSel)));
-    })
-    .catch(() => setErroApi(true))
-    .finally(() => setCarregando(false));
-  }
-
-  useEffect(() => {
-    carregar();
-  }, [dataSel]);
-
-  async function criarBloqueio() {
-    if (!form.data || !form.horaInicio || !form.horaFim) {
-      alert('Preencha data e horários.');
+  const { barbeiro } = useBarbeiroAuth();
+  const [day, setDay] = useState(() => dayKey());
+  const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState("TODOS");
+  const loader = useCallback(
+    async (signal: AbortSignal) => {
+      const [a, b] = await Promise.all([
+        barbeiroApi.get<Appointment[]>("/barbeiro/agenda", {
+          signal,
+          params: { data: day },
+        }),
+        barbeiroApi.get<Block[]>("/bloqueios", { signal }),
+      ]);
+      const start = Date.parse(`${day}T00:00:00-03:00`),
+        end = Date.parse(`${shiftDay(day, 1)}T00:00:00-03:00`);
+      return {
+        appointments: a.data ?? [],
+        blocks: (b.data ?? []).filter(
+          (b) =>
+            Date.parse(b.dataInicio) < end && Date.parse(b.dataFim) > start,
+        ),
+      };
+    },
+    [day],
+  );
+  const { data, loading, error, reload } = useBarberResource(loader);
+  const [open, setOpen] = useState(false);
+  const [removing, setRemoving] = useState<Block | null>(null);
+  const [confirmation, setConfirmation] = useState("");
+  const [form, setForm] = useState({
+    data: day,
+    horaInicio: "",
+    horaFim: "",
+    motivo: "",
+  });
+  const [busy, setBusy] = useState(false);
+  const lock = useRef(false);
+  const [formError, setFormError] = useState("");
+  const [feedback, setFeedback] = useState("");
+  async function create(e: React.FormEvent) {
+    e.preventDefault();
+    if (lock.current) return;
+    const start = `${form.data}T${form.horaInicio}:00-03:00`,
+      end = `${form.data}T${form.horaFim}:00-03:00`;
+    if (Date.parse(end) <= Date.parse(start)) {
+      setFormError("O fim deve ser posterior ao início.");
       return;
     }
+    if (Date.parse(start) < Date.now()) {
+      setFormError("Escolha um horário que ainda não passou.");
+      return;
+    }
+    lock.current = true;
+    setBusy(true);
+    setFormError("");
     try {
-      const dataInicioStr = `${form.data}T${form.horaInicio}:00-03:00`;
-      const dataFimStr = `${form.data}T${form.horaFim}:00-03:00`;
-      const { barbeiroId } = JSON.parse(localStorage.getItem('@garoa:barbeiro_dados') || '{}');
-      await barbeiroApi.post('/bloqueios', { 
-        barbeiroId,
-        dataInicio: dataInicioStr,
-        dataFim: dataFimStr,
-        motivo: form.motivo 
+      await barbeiroApi.post("/bloqueios", {
+        barbeiroId: barbeiro?.barbeiroId,
+        dataInicio: start,
+        dataFim: end,
+        motivo: form.motivo.trim(),
       });
-      setModalAberto(false);
-      setForm({ data: '', horaInicio: '', horaFim: '', motivo: '' });
-      mostrarSucesso('Horário bloqueado com sucesso.');
-      carregar();
-    } catch (err: any) {
-      alert(err.response?.data?.erro || 'Erro ao bloquear horário');
+      setOpen(false);
+      setDay(form.data);
+      setFeedback("Horário bloqueado. Sua agenda foi atualizada.");
+      notifyBarberChange();
+    } catch (e) {
+      setFormError(message(e));
+    } finally {
+      lock.current = false;
+      setBusy(false);
     }
   }
-
-  async function removerBloqueio(id: string) {
-    if (!confirm('Remover este bloqueio?')) return;
+  async function remove(e: React.FormEvent) {
+    e.preventDefault();
+    if (
+      !removing ||
+      lock.current ||
+      confirmation !== (removing.motivo || "Bloqueio")
+    )
+      return;
+    lock.current = true;
+    setBusy(true);
+    setFormError("");
     try {
-      await barbeiroApi.delete(`/bloqueios/${id}`);
-      mostrarSucesso('Bloqueio removido.');
-      carregar();
-    } catch (err: any) {
-      alert(err.response?.data?.erro || 'Erro ao remover');
+      await barbeiroApi.delete(`/bloqueios/${removing.id}`);
+      setRemoving(null);
+      setFeedback("Bloqueio removido. Sua agenda foi atualizada.");
+      notifyBarberChange();
+    } catch (e) {
+      setFormError(message(e));
+    } finally {
+      lock.current = false;
+      setBusy(false);
     }
   }
-
-    
-  // Ordena eventos misturados (bloqueios e agendamentos) por hora para exibir em uma timeline simples
-  
-
-  const horarios = [
-    '08:00', '08:30', '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
-    '12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '15:00', '15:30',
-    '16:00', '16:30', '17:00', '17:30', '18:00', '18:30', '19:00', '19:30', '20:00'
-  ];
-  
-  const statusStyles: Record<string, { bg: string, color: string, border: string }> = {
-    'AGUARDANDO': { bg: 'var(--bg-surface2)', color: 'var(--cor-primaria)', border: 'var(--cor-primaria)' },
-    'CONFIRMADO': { bg: 'rgba(var(--info-rgb, 59, 130, 246), 0.15)', color: 'var(--info)', border: 'var(--info)' },
-    'CONCLUIDO': { bg: 'var(--sucesso-fundo)', color: 'var(--sucesso)', border: 'var(--sucesso)' },
-    'CANCELADO': { bg: 'var(--perigo-fundo)', color: 'var(--error-text)', border: 'var(--error-text)' },
-  };
-
-  const hoje = new Date();
-  const agoraStr = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}-${String(hoje.getDate()).padStart(2, '0')}`;
-  const isHoje = dataSel === agoraStr;
-
+  const events = [
+    ...(data?.appointments ?? []).map((a) => ({
+      id: a.id,
+      start: Date.parse(a.dataHora),
+      end: endTime(a),
+      appointment: a,
+      block: null as Block | null,
+    })),
+    ...(data?.blocks ?? []).map((b) => ({
+      id: b.id,
+      start: Date.parse(b.dataInicio),
+      end: Date.parse(b.dataFim),
+      appointment: null as Appointment | null,
+      block: b,
+    })),
+  ].sort((a, b) => a.start - b.start);
+  const query = search.trim().toLocaleLowerCase("pt-BR");
+  const visible = events.filter((e) => {
+    const text = e.appointment
+      ? `${e.appointment.cliente.usuario.nome} ${formatarNomeServico(e.appointment)}`
+      : e.block?.motivo || "Bloqueio";
+    return (
+      text.toLocaleLowerCase("pt-BR").includes(query) &&
+      (filter === "TODOS" ||
+        (filter === "BLOQUEIO" ? !!e.block : e.appointment?.status === filter))
+    );
+  });
+  let occupiedUntil = 0;
   return (
-    <div className="px-4 py-6 md:px-8 max-w-4xl mx-auto animate-fade-in" style={{ fontFamily: 'var(--fonte-interface)' }}>
-      {/* Feedbacks */}
-      {sucessoMsg && (
-        <div className="bg-[var(--sucesso-fundo)] text-[var(--sucesso)] p-3 rounded-lg mb-4 text-sm font-medium border border-[var(--sucesso)]">
-          {sucessoMsg}
+    <>
+      <PageHeader
+        title="Agenda"
+        subtitle="Seus atendimentos e bloqueios, em ordem de horário."
+      >
+        <Botao
+          onClick={() => {
+            setForm({ data: day, horaInicio: "", horaFim: "", motivo: "" });
+            setFormError("");
+            setOpen(true);
+          }}
+        >
+          <Prohibit size={18} aria-hidden />
+          Bloquear horário
+        </Botao>
+      </PageHeader>
+      {feedback && <Notice>{feedback}</Notice>}
+      <div className="bb-toolbar">
+        <div className="bb-date-controls">
+          <Botao
+            variante="fantasma"
+            aria-label="Dia anterior"
+            onClick={() => setDay(shiftDay(day, -1))}
+          >
+            <CaretLeft size={20} />
+          </Botao>
+          <label className="bb-field">
+            Data
+            <input
+              className="bb-input"
+              type="date"
+              value={day}
+              onChange={(e) => {
+                if (e.target.value) setDay(e.target.value);
+              }}
+            />
+          </label>
+          <Botao
+            variante="fantasma"
+            aria-label="Próximo dia"
+            onClick={() => setDay(shiftDay(day, 1))}
+          >
+            <CaretRight size={20} />
+          </Botao>
+          <Botao variante="secundario" onClick={() => setDay(dayKey())}>
+            Hoje
+          </Botao>
         </div>
-      )}
-
-
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl md:text-3xl font-semibold" style={{ color: 'var(--text-primary)' }}>
-          Sua Agenda
-        </h1>
-        <button onClick={() => { setForm({...form, data: dataSel}); setModalAberto(true); }} className="btn-primary flex items-center gap-2 px-3 py-2 text-xs">
-          <Ban size={14} /> <span className="hidden sm:inline">Bloquear Horário</span>
-        </button>
-      </div>
-
-      {/* Seletor de Data */}
-      <div className="mb-8 max-w-xs">
-        <label className="input-label flex items-center gap-1 mb-2"><CalendarIcon size={14} />Escolha a Data</label>
-        <div className="flex gap-2">
-          <input 
-            type="date" 
-            value={dataSel} 
-            onChange={(e) => setDataSel(e.target.value)}
-            className="ds-input flex-1" 
+        <label className="bb-field bb-search">
+          Buscar na agenda
+          <input
+            className="bb-input"
+            type="search"
+            placeholder="Cliente, serviço ou bloqueio"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
           />
-          <button onClick={() => setDataSel(hojeBrasilia())} className="btn-secondary whitespace-nowrap">
-            Ir para Hoje
-          </button>
-        </div>
+        </label>
+        <label className="bb-field bb-filter">
+          Exibir
+          <select
+            aria-label="Exibir"
+            className="bb-input"
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+          >
+            <option value="TODOS">Todos</option>
+            <option value="CONFIRMADO">Confirmados</option>
+            <option value="AGUARDANDO">Aguardando</option>
+            <option value="CONCLUIDO">Concluídos</option>
+            <option value="BLOQUEIO">Bloqueios</option>
+          </select>
+        </label>
       </div>
-
-      {/* Lista de Agendamentos e Bloqueios (Formato Calendário) */}
-      {carregando ? (
-        <div className="flex justify-center py-20" style={{ color: 'var(--texto-secundario)' }}>
-          <Clock className="animate-spin mr-2" /> Carregando agenda...
-        </div>
-      ) : erroApi ? (
-        <div className="flex flex-col items-center justify-center py-20" style={{ color: 'var(--texto-secundario)', border: '1px solid var(--border)', borderRadius: '8px', background: 'var(--bg-surface)' }}>
-          <Ban size={48} className="mb-4" style={{ color: 'var(--perigo)' }} />
-          <p className="mb-4">Não conseguimos carregar sua agenda agora. Tente novamente em instantes.</p>
-          <button onClick={carregar} className="btn-primary px-6 py-2">Tentar novamente</button>
-        </div>
+      <div className="bb-section-heading">
+        <h2>{dateLabel(day)}</h2>
+        <span className="bb-muted">Horário de Brasília</span>
+      </div>
+      {loading ? (
+        <Loading />
+      ) : error ? (
+        <Notice error onRetry={reload}>
+          {error}
+        </Notice>
+      ) : !events.length ? (
+        <Empty title="Sem eventos neste dia">
+          Os atendimentos e bloqueios deste dia aparecerão aqui. Use as setas
+          para consultar outras datas.
+        </Empty>
+      ) : !visible.length ? (
+        <Empty title="Nenhum evento corresponde aos filtros">
+          Tente outro cliente ou serviço, ou{" "}
+          <button
+            className="bb-text-button"
+            onClick={() => {
+              setSearch("");
+              setFilter("TODOS");
+            }}
+          >
+            limpe os filtros
+          </button>
+          .
+        </Empty>
       ) : (
-        <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', overflowX: 'hidden', width: '100%', position: 'relative' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: `60px 1fr`, borderBottom: '1px solid var(--border)' }}>
-            <div style={{ padding: '8px' }} />
-            <div className="text-center" style={{ padding: '12px', borderLeft: '1px solid var(--border)', background: isHoje ? 'rgba(var(--cor-primaria-rgb), 0.10)' : 'transparent' }}>
-              <p style={{ fontFamily: 'var(--fonte-interface)', fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-primary)' }}>Seus Agendamentos</p>
-            </div>
-          </div>
-          
-          {agendamentos.length === 0 && bloqueios.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-12 border-b border-[var(--border)]">
-              <p style={{ color: 'var(--text-primary)', fontWeight: 500 }}>Nenhum agendamento para este dia.</p>
-              <p style={{ color: 'var(--texto-secundario)', fontSize: '0.875rem', marginTop: '4px' }}>Aproveite para organizar seu espaço.</p>
-            </div>
-          )}
-
-          <div style={{ position: 'relative' }}>
-            {isHoje && horarios.length > 0 && (
-              <div style={{
-                position: 'absolute', left: '60px', right: 0,
-                top: `${((hoje.getHours() * 60 + hoje.getMinutes()) - (parseInt(horarios[0].split(':')[0], 10) * 60 + parseInt(horarios[0].split(':')[1], 10))) * ESCALA_HORA_PX}px`,
-                borderTop: '2px solid var(--cor-primaria)', zIndex: Z_INDEX.LINHA_TEMPO_ATUAL, pointerEvents: 'none'
-              }}>
-                <div style={{ position: 'absolute', left: '-4px', top: '-5px', width: '8px', height: '8px', borderRadius: '50%', background: 'var(--cor-primaria)' }} />
-              </div>
-            )}
-            
-            {horarios.map((horario) => {
-              const dtBase = `${dataSel}T${horario}:00-03:00`;
-              
-              const ags = agendamentos.filter(ag => {
-                const h = new Date(ag.dataHora).toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit' });
-                return h === horario;
-              });
-
-              const bls = bloqueios.filter(bl => {
-                const dtAtual = new Date(dtBase);
-                return dtAtual >= new Date(bl.dataInicio) && dtAtual < new Date(bl.dataFim);
-              });
-
-              return (
-                <div key={horario} style={{ display: 'grid', gridTemplateColumns: `60px 1fr`, borderBottom: '1px solid var(--border)' }}>
-                  <div className="text-right pr-3 pt-3" style={{ padding: '8px', fontFamily: 'var(--fonte-interface)', fontSize: '10px', color: 'var(--text-disabled)', letterSpacing: '0.04em', height: '48px' }}>
-                    {horario}
+        <div className="bb-list">
+          {visible.map((e) => {
+            const gap =
+              !query &&
+              filter === "TODOS" &&
+              occupiedUntil > 0 &&
+              e.start > occupiedUntil
+                ? { start: occupiedUntil, end: e.start }
+                : null;
+            occupiedUntil = Math.max(occupiedUntil, e.end);
+            return (
+              <Fragment key={e.id}>
+                {gap && (
+                  <div className="bb-gap">
+                    <span>
+                      {time(gap.start)}–{time(gap.end)}
+                    </span>
+                    <span>
+                      Sem eventos · {Math.round((gap.end - gap.start) / 60000)}{" "}
+                      min
+                    </span>
                   </div>
-                  <div style={{ borderLeft: '1px solid var(--border)', height: '48px', position: 'relative' }}>
-                    {bls.map((bl, idx) => (
-                      <div key={bl.id} className="cursor-pointer truncate" onClick={() => removerBloqueio(bl.id)}
-                        style={{
-                          padding: '4px 8px', background: 'repeating-linear-gradient(45deg, var(--bg-surface2), var(--bg-surface2) 10px, transparent 10px, transparent 20px)',
-                          borderLeft: `3px solid var(--texto-secundario)`, color: 'var(--texto-secundario)', fontFamily: 'var(--fonte-interface)', fontSize: '11px',
-                          borderRadius: '0 4px 4px 0', position: 'absolute', top: '2px', left: '2px', right: '2px', height: '44px', zIndex: Z_INDEX.BLOQUEIO_AGENDA + idx
-                        }}>
-                        <p className="truncate" style={{ fontWeight: 600 }}>Bloqueado: {bl.motivo || 'Indisponível'}</p>
+                )}
+                {e.appointment ? (
+                  <AppointmentRow appointment={e.appointment} />
+                ) : (
+                  e.block && (
+                    <article className="bb-appointment bb-block">
+                      <div className="bb-time">
+                        <strong>{time(e.start)}</strong>
+                        <span>{time(e.end)}</span>
                       </div>
-                    ))}
-                    {ags.map((ag, idx) => {
-                      const st = statusStyles[ag.status] || statusStyles['AGUARDANDO'];
-                      const isConcluido = ag.status === 'CONCLUIDO';
-                      const heightPx = Math.max(44, ((ag.servico.duracaoMinutos || 30) / 30) * (ESCALA_HORA_PX * 30) - 5);
-                      
-                      return (
-                        <div key={ag.id} className="cursor-pointer flex flex-col overflow-hidden shadow-sm"
-                          style={{
-                            padding: '6px 8px', background: st.bg, borderLeft: `3px solid ${st.border}`, color: 'var(--text-primary)', opacity: isConcluido ? 0.7 : 1,
-                            fontFamily: 'var(--fonte-interface)', fontSize: '11px', position: 'absolute', top: '2px', left: `${2 + (idx * 10)}px`, right: '2px',
-                            height: `${heightPx}px`, zIndex: Z_INDEX.EVENTO_AGENDA + idx, borderRadius: '0 4px 4px 0', lineHeight: 1.2
-                          }}>
-                          <div className="flex justify-between items-start mb-1.5">
-                            <p className="truncate pr-1" style={{ fontWeight: 600 }}>{ag.cliente.usuario.nome}</p>
-                          </div>
-                          <div>
-                            <p className="truncate" style={{ fontFamily: 'var(--fonte-interface)', fontSize: '11px' }}>
-                              {formatarNomeServico(ag, true)} ({ag.servico.duracaoMinutos} min)
-                            </p>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                      <div className="bb-client">
+                        <h3>{e.block.motivo || "Indisponível"}</h3>
+                        <p>
+                          Horário bloqueado
+                          {dayKey(new Date(e.start)) !== dayKey(new Date(e.end))
+                            ? " · mais de um dia"
+                            : ""}
+                        </p>
+                      </div>
+                      <Botao
+                        variante="fantasma"
+                        onClick={() => {
+                          setRemoving(e.block);
+                          setConfirmation("");
+                          setFormError("");
+                        }}
+                      >
+                        Remover bloqueio
+                      </Botao>
+                    </article>
+                  )
+                )}
+              </Fragment>
+            );
+          })}
         </div>
       )}
-
-      {/* Modal Bloqueio */}
-      <Modal aberto={modalAberto} onFechar={() => setModalAberto(false)} titulo="Bloquear Horário">
-        <div className="flex flex-col gap-4 p-1">
-          <div>
-            <label className="input-label">Data</label>
-            <input type="date" value={form.data} onChange={e => setForm({...form, data: e.target.value})} className="ds-input" />
-          </div>
-          <div className="flex gap-4">
-            <div className="flex-1">
-              <label className="input-label">Início</label>
-              <input type="time" value={form.horaInicio} onChange={e => setForm({...form, horaInicio: e.target.value})} className="ds-input" />
+      {open && (
+        <Dialog
+          title="Bloquear horário"
+          busy={busy}
+          onClose={() => setOpen(false)}
+        >
+          <form onSubmit={create} className="bb-form">
+            {formError && <Notice error>{formError}</Notice>}
+            <label className="bb-field">
+              Data do bloqueio
+              <input
+                className="bb-input"
+                type="date"
+                required
+                min={dayKey()}
+                value={form.data}
+                onChange={(e) => setForm({ ...form, data: e.target.value })}
+              />
+            </label>
+            <div className="bb-form-row">
+              <label className="bb-field">
+                Início
+                <input
+                  className="bb-input"
+                  type="time"
+                  required
+                  value={form.horaInicio}
+                  onChange={(e) =>
+                    setForm({ ...form, horaInicio: e.target.value })
+                  }
+                />
+              </label>
+              <label className="bb-field">
+                Fim
+                <input
+                  className="bb-input"
+                  type="time"
+                  required
+                  value={form.horaFim}
+                  onChange={(e) =>
+                    setForm({ ...form, horaFim: e.target.value })
+                  }
+                />
+              </label>
             </div>
-            <div className="flex-1">
-              <label className="input-label">Fim</label>
-              <input type="time" value={form.horaFim} onChange={e => setForm({...form, horaFim: e.target.value})} className="ds-input" />
+            <label className="bb-field">
+              Motivo (opcional)
+              <input
+                className="bb-input"
+                maxLength={200}
+                placeholder="Ex.: almoço ou compromisso pessoal"
+                value={form.motivo}
+                onChange={(e) => setForm({ ...form, motivo: e.target.value })}
+              />
+            </label>
+            <div className="bb-dialog-footer">
+              <Botao
+                type="button"
+                variante="secundario"
+                disabled={busy}
+                onClick={() => setOpen(false)}
+              >
+                Cancelar
+              </Botao>
+              <Botao type="submit" disabled={busy}>
+                {busy ? "Salvando…" : "Confirmar bloqueio"}
+              </Botao>
             </div>
-          </div>
-          <div>
-            <label className="input-label">Motivo (Opcional)</label>
-            <input type="text" placeholder="Ex: Almoço, Folga" value={form.motivo} onChange={e => setForm({...form, motivo: e.target.value})} className="ds-input" />
-          </div>
-          <div className="flex gap-3 mt-4">
-            <button onClick={() => setModalAberto(false)} className="btn-secondary flex-1 py-3">Cancelar</button>
-            <button onClick={criarBloqueio} className="btn-primary flex-1 py-3 justify-center">Confirmar</button>
-          </div>
-        </div>
-      </Modal>
-    </div>
+          </form>
+        </Dialog>
+      )}
+      {removing && (
+        <Dialog
+          title="Remover bloqueio"
+          busy={busy}
+          onClose={() => setRemoving(null)}
+        >
+          <p>
+            O intervalo {time(removing.dataInicio)}–{time(removing.dataFim)}{" "}
+            será liberado.
+          </p>
+          <form className="bb-form" onSubmit={remove}>
+            {formError && <Notice error>{formError}</Notice>}
+            <label className="bb-field">
+              Digite “{removing.motivo || "Bloqueio"}” para confirmar
+              <input
+                className="bb-input"
+                autoComplete="off"
+                value={confirmation}
+                onChange={(e) => setConfirmation(e.target.value)}
+              />
+            </label>
+            <div className="bb-dialog-footer">
+              <Botao
+                type="button"
+                variante="secundario"
+                disabled={busy}
+                onClick={() => setRemoving(null)}
+              >
+                Cancelar
+              </Botao>
+              <Botao
+                type="submit"
+                variante="destrutivo"
+                disabled={
+                  busy || confirmation !== (removing.motivo || "Bloqueio")
+                }
+              >
+                {busy ? "Removendo…" : "Remover bloqueio"}
+              </Botao>
+            </div>
+          </form>
+        </Dialog>
+      )}
+    </>
   );
 }

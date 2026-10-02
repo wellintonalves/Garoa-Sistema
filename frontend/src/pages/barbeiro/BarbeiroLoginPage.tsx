@@ -1,252 +1,142 @@
-import { LinksDocumentos } from '../../components/AceiteDocumentos';
-import { useState } from 'react';
-import { Envelope as Mail, Lock, WarningCircle as AlertCircle, Eye, EyeSlash as EyeOff } from '@phosphor-icons/react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import Lottie from 'lottie-react';
-import mustacheAnimation from '../../assets/animations/mustache-amber.json';
-import { useBarbeiroAuth } from '../../hooks/useBarbeiroAuth';
-import { Input, Select, Botao } from '../../components/ui';
-
-interface BarbeariaOpcao {
-  id: string;
-  nome: string;
-  slug: string;
-}
-
+import { useState } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { Eye, EyeSlash } from "@phosphor-icons/react";
+import { useBarbeiroAuth } from "../../hooks/useBarbeiroAuth";
+import { LinksDocumentos } from "../../components/AceiteDocumentos";
+import { Botao } from "../../components/ui";
+import { Brand, Notice, useBarberTitle } from "../../components/barbeiro/ui";
+import { message } from "../../components/barbeiro/data";
+import { isAxiosError } from "axios";
 export function BarbeiroLoginPage() {
-  const navigate = useNavigate();
+  useBarberTitle("Área do barbeiro");
   const { login } = useBarbeiroAuth();
-  const [email, setEmail] = useState('');
-  const [senha, setSenha] = useState('');
-  const [mostrarSenha, setMostrarSenha] = useState(false);
-  const [searchParams] = useSearchParams();
-  const expirado = searchParams.get('exp') === '1';
-  const [erro, setErro] = useState(expirado ? 'Sua sessão expirou. Entre novamente para continuar.' : '');
-  const [referencia, setReferencia] = useState('');
-  const [carregando, setCarregando] = useState(false);
-  const [barbearias, setBarbearias] = useState<BarbeariaOpcao[]>([]);
-  const [barbeariaId, setBarbeariaId] = useState('');
-
-  async function handleLogin(e: React.FormEvent) {
+  const navigate = useNavigate();
+  const [params] = useSearchParams();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [visible, setVisible] = useState(false);
+  const [error, setError] = useState(
+    params.get("exp") === "1"
+      ? "Sua sessão expirou. Entre novamente para continuar."
+      : "",
+  );
+  const [busy, setBusy] = useState(false);
+  const [shops, setShops] = useState<
+    Array<{ id: string; nome: string; slug: string }>
+  >([]);
+  const [shop, setShop] = useState("");
+  const [reference, setReference] = useState("");
+  async function submit(e: React.FormEvent) {
     e.preventDefault();
-    setErro('');
-    setReferencia('');
-    setCarregando(true);
+    if (busy) return;
+    setBusy(true);
+    setError("");
+    setReference("");
     try {
-      await login(email.trim(), senha, barbeariaId || undefined);
-      navigate('/barbeiro/hoje');
-    } catch (err: any) {
-      if (err?.response?.status === 409 && err?.response?.data?.codigo === 'ESCOLHER_BARBEARIA') {
-        const lista = err.response.data.barbearias || [];
-        setBarbearias(lista);
-        if (lista.length > 0 && !barbeariaId) {
-          setBarbeariaId(lista[0].id);
-        }
-        setErro('');
+      await login(email.trim().toLowerCase(), password, shop || undefined);
+      navigate("/barbeiro/hoje");
+    } catch (e) {
+      if (
+        isAxiosError(e) &&
+        e.response?.status === 409 &&
+        e.response.data.codigo === "ESCOLHER_BARBEARIA"
+      ) {
+        const choices = e.response.data.barbearias ?? [];
+        setShops(choices);
+        setShop(choices[0]?.id ?? "");
       } else {
-        setErro(err?.response?.data?.erro || 'Não foi possível conectar. Tente novamente em instantes.');
-        setReferencia(err?.response?.data?.referencia || '');
+        setError(message(e));
+        if (isAxiosError(e)) setReference(e.response?.data?.referencia ?? "");
       }
     } finally {
-      setCarregando(false);
+      setBusy(false);
     }
   }
-
-  function handleEmailChange(val: string) {
-    setEmail(val.trim().toLowerCase());
-    if (barbearias.length > 0) {
-      setBarbearias([]);
-      setBarbeariaId('');
-    }
-  }
-
-  function handleSenhaChange(val: string) {
-    setSenha(val);
-    if (barbearias.length > 0) {
-      setBarbearias([]);
-      setBarbeariaId('');
-    }
-  }
-
   return (
-    <div style={{
-      minHeight: '100dvh',
-      width: '100vw',
-      background: 'var(--fundo-pagina)',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: 'var(--espaco-4)',
-      boxSizing: 'border-box',
-      overflowY: 'auto'
-    }}>
-      <div style={{
-        width: '100%',
-        maxWidth: '420px',
-        background: 'var(--fundo-superficie)',
-        borderRadius: 'var(--raio-xl)',
-        padding: 'var(--espaco-6)',
-        border: '1px solid var(--borda-sutil)',
-        boxShadow: 'var(--elevacao-2)',
-        boxSizing: 'border-box',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center'
-      }}>
-        {/* Logo / Animação */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--espaco-2)', marginBottom: 'var(--espaco-4)' }}>
-          <div style={{
-            width: '36px', height: '36px', borderRadius: 'var(--raio-md)', background: 'var(--cor-primaria)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 'var(--texto-body, 0.875rem)', fontWeight: 700, color: 'var(--texto-sobre-primaria)', flexShrink: 0,
-          }}>V</div>
-          <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.1 }}>
-            <strong style={{ fontSize: 'var(--texto-h3, 1.25rem)', fontWeight: 700, color: 'var(--texto-principal)' }}>Valen</strong>
-            <span style={{ fontSize: 'var(--texto-detalhe, 0.75rem)', fontWeight: 400, color: 'var(--texto-secundario)', letterSpacing: '0.08em' }}>BARBER</span>
-          </div>
-        </div>
-
-        <div style={{ width: '120px', height: '120px', marginBottom: 'var(--espaco-2)' }}>
-          <Lottie
-            animationData={mustacheAnimation}
-            loop={true}
-            autoplay={true}
-            style={{ width: '100%', height: '100%' }}
-          />
-        </div>
-
-        <h1 style={{
-          fontFamily: 'var(--fonte-serif)',
-          fontSize: 'var(--texto-h1, 1.75rem)',
-          fontWeight: 400,
-          color: 'var(--texto-principal)',
-          margin: '0 0 var(--espaco-1)',
-          textAlign: 'center'
-        }}>
-          Área do barbeiro
-        </h1>
-        <p style={{ color: 'var(--texto-secundario)', fontSize: 'var(--texto-sm, 0.75rem)', margin: '0 0 var(--espaco-4)', textAlign: 'center' }}>
-          Acesse sua agenda e comissões
+    <div className="bb-login">
+      <div className="bb-login-inner">
+        <Brand />
+        <h1>Área do barbeiro</h1>
+        <p className="bb-login-intro">
+          Sua agenda, seus atendimentos e suas comissões.
         </p>
-
-        {/* Reserva de altura para alerta/erro */}
-        <div style={{ width: '100%', minHeight: '44px', marginBottom: 'var(--espaco-3)', display: 'flex', alignItems: 'center' }}>
-          {erro ? (
-            <div style={{
-              width: '100%', display: 'flex', alignItems: 'center', gap: 'var(--espaco-2)',
-              background: 'var(--erro-fundo)', border: '1px solid var(--erro)',
-              borderRadius: 'var(--raio-md)', padding: 'var(--espaco-2) var(--espaco-3)',
-              color: 'var(--erro)', fontSize: 'var(--texto-sm, 0.75rem)',
-            }} role="alert">
-              <AlertCircle size={16} style={{ flexShrink: 0 }} />
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                <span>{erro}</span>
-                {referencia && <span style={{ fontSize: '0.65rem', opacity: 0.8 }}>Cód: {referencia}</span>}
-              </div>
-            </div>
-          ) : null}
-        </div>
-
-        <form onSubmit={handleLogin} style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 'var(--espaco-4)' }}>
-          <Input
-            label="Email"
-            type="email"
-            value={email}
-            onChange={e => handleEmailChange(e.target.value)}
-            placeholder="seu@email.com"
-            required
-            iconeEsquerda={<Mail size={16} />}
-            inputMode="email"
-            autoCapitalize="none"
-            autoCorrect="off"
-            spellCheck={false}
-            autoComplete="email"
-          />
-
-          <Input
-            label="Senha"
-            type={mostrarSenha ? "text" : "password"}
-            value={senha}
-            onChange={e => handleSenhaChange(e.target.value)}
-            placeholder="••••••••"
-            required
-            iconeEsquerda={<Lock size={16} />}
-            iconeDireita={
+        {error && (
+          <Notice error>
+            {error}
+            {reference && <small> Referência: {reference}</small>}
+          </Notice>
+        )}
+        <form className="bb-form" onSubmit={submit}>
+          <label className="bb-field">
+            Email
+            <input
+              className="bb-input"
+              type="email"
+              required
+              autoComplete="email"
+              inputMode="email"
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                setShops([]);
+                setShop("");
+              }}
+            />
+          </label>
+          <label className="bb-field">
+            Senha
+            <div className="bb-password">
+              <input
+                className="bb-input"
+                type={visible ? "text" : "password"}
+                required
+                autoComplete="current-password"
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  setShops([]);
+                  setShop("");
+                }}
+              />
               <button
                 type="button"
-                onClick={() => setMostrarSenha(!mostrarSenha)}
-                aria-label={mostrarSenha ? "Ocultar senha" : "Mostrar senha"}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--texto-secundario)', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '44px', height: '44px', padding: 0 }}
+                aria-label={visible ? "Ocultar senha" : "Mostrar senha"}
+                onClick={() => setVisible(!visible)}
               >
-                {mostrarSenha ? <EyeOff size={18} /> : <Eye size={18} />}
+                {visible ? <EyeSlash size={20} /> : <Eye size={20} />}
               </button>
-            }
-          />
-
-          {barbearias.length > 0 && (
-            <Select
-              label="Barbearia"
-              value={barbeariaId}
-              onChange={(e) => setBarbeariaId(e.target.value)}
-              required
-              hint="Selecione a barbearia para continuar."
-            >
-              {barbearias.map((b) => (
-                <option key={b.id} value={b.id} style={{ background: 'var(--fundo-superficie)', color: 'var(--texto-principal)' }}>
-                  {b.nome} ({b.slug})
-                </option>
-              ))}
-            </Select>
+            </div>
+          </label>
+          {shops.length > 0 && (
+            <label className="bb-field">
+              Barbearia
+              <select
+                className="bb-input"
+                required
+                value={shop}
+                onChange={(e) => setShop(e.target.value)}
+              >
+                {shops.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.nome} ({s.slug})
+                  </option>
+                ))}
+              </select>
+              <span className="bb-muted">Escolha onde deseja trabalhar.</span>
+            </label>
           )}
-
-          <Botao
-            type="submit"
-            variante="primario"
-            loading={carregando}
-            style={{ width: '100%' }}
-          >
-            Entrar como barbeiro
+          <Botao type="submit" disabled={busy}>
+            {busy ? "Entrando…" : "Entrar como barbeiro"}
           </Botao>
         </form>
+        <div className="bb-login-links">
+          <Link to="/">Área do cliente</Link>
+          <Link to="/admin/login">Painel administrativo</Link>
+        </div>
         <LinksDocumentos />
-
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: 'var(--espaco-4)' }}>
-          <button
-            type="button"
-            onClick={() => navigate('/')}
-            style={{
-              background: 'none', border: 'none', cursor: 'pointer',
-              color: 'var(--texto-secundario)', fontSize: 'var(--texto-sm, 0.75rem)',
-              textDecoration: 'underline', minHeight: '44px', display: 'inline-flex',
-              alignItems: 'center', justifyContent: 'center', padding: '0 var(--espaco-2)'
-            }}
-          >
-            ← Voltar para área do cliente
-          </button>
-        </div>
-
-        <div style={{
-          width: '100%',
-          borderTop: '1px solid var(--borda-sutil)',
-          marginTop: 'var(--espaco-6)',
-          paddingTop: 'var(--espaco-4)',
-          display: 'flex',
-          justifyContent: 'center',
-          gap: 'var(--espaco-3)',
-        }}>
-          <button
-            type="button"
-            onClick={() => navigate('/admin/login')}
-            style={{
-              background: 'var(--fundo-superficie-2)', border: '1px solid var(--borda-sutil)', borderRadius: 'var(--raio-md)',
-              cursor: 'pointer', fontSize: 'var(--texto-sm, 0.75rem)', color: 'var(--texto-secundario)',
-              minHeight: '44px', padding: '0 var(--espaco-4)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s',
-            }}
-          >
-            Painel administrativo
-          </button>
-        </div>
       </div>
     </div>
   );

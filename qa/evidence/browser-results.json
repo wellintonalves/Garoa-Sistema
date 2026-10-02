@@ -1,0 +1,66 @@
+[
+  {
+    "name": "Responsividade e navegação em 360,375,390,768,1280,1440,1920",
+    "status": "passed"
+  },
+  {
+    "name": "Agenda inclui horários arbitrários e eventos fora de 08–20h",
+    "status": "passed"
+  },
+  {
+    "name": "Criar, cancelar e excluir bloqueio com confirmação, sem duplicar",
+    "status": "passed"
+  },
+  {
+    "name": "Checkout: token barbeiro, descontos, erro preservado e sucesso único",
+    "status": "passed"
+  },
+  {
+    "name": "Checkout cancela e bloqueia valor antigo durante nova simulação",
+    "status": "passed"
+  },
+  {
+    "name": "Perfil: cancelar descarta rascunho, salvar, upload e horários",
+    "status": "passed"
+  },
+  {
+    "name": "Comissões: intervalo inválido, filtro e semana secundária",
+    "status": "passed"
+  },
+  {
+    "name": "Aprovações: revisar, cancelar, rejeitar e atualizar",
+    "status": "passed"
+  },
+  {
+    "name": "Estados de erro/retry, vazio e loading das quatro telas",
+    "status": "passed"
+  },
+  {
+    "name": "Login, senha visível, erro de servidor e normalização de email",
+    "status": "passed"
+  },
+  {
+    "name": "Acessibilidade WCAG em desktop/mobile e temas",
+    "status": "passed"
+  },
+  {
+    "name": "Disponibilidade, sessão e aprovação de exclusão",
+    "status": "passed"
+  },
+  {
+    "name": "Conclusão futura exige confirmação e modal funciona em 375px",
+    "status": "passed"
+  },
+  {
+    "name": "Console e respostas HTTP sem falhas nos fluxos normais",
+    "status": "passed"
+  },
+  {
+    "name": "Login com vínculo em mais de uma barbearia",
+    "status": "passed"
+  },
+  {
+    "name": "Valéria preservada: abre, consulta status e fecha sem consumo",
+    "status": "passed"
+  }
+]

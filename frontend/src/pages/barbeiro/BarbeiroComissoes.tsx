@@ -1,139 +1,209 @@
-import { useState, useEffect } from 'react';
-import { CurrencyDollar as DollarSign, Calendar as CalendarIcon, TrendUp as TrendingUp, Scissors } from '@phosphor-icons/react';
-import barbeiroApi from '../../api/barbeiroApi';
-import { dataBrasilia, hojeBrasilia } from '../../utils/datas';
-
-interface ComissoesData {
-  totalAtendimentos: number;
-  valorBruto: number;
-  percentualComissao: number;
-  valorComissao: number;
-  lancamentos: Array<{ id: string; data: string; valor: number; valorComissao: number; servico: string; cliente: string }>;
+import { useCallback, useState } from "react";
+import barbeiroApi from "../../api/barbeiroApi";
+import { Botao } from "../../components/ui";
+import {
+  PageHeader,
+  Notice,
+  Loading,
+  Empty,
+} from "../../components/barbeiro/ui";
+import {
+  type Commissions,
+  dayKey,
+  money,
+  zone,
+  useBarberResource,
+} from "../../components/barbeiro/data";
+function monthRange() {
+  const today = dayKey();
+  const [year, month] = today.split("-").map(Number);
+  return {
+    inicio: `${today.slice(0, 7)}-01`,
+    fim: dayKey(new Date(Date.UTC(year, month, 0, 15))),
+  };
 }
-
 export function BarbeiroComissoes() {
-  const hoje = hojeBrasilia();
-  const [year, month] = hoje.split('-').map(Number);
-  const primeiroDia = dataBrasilia(new Date(year, month - 1, 1, 12, 0, 0));
-  const ultimoDia = dataBrasilia(new Date(year, month, 0, 12, 0, 0));
-
-  const [inicio, setInicio] = useState(primeiroDia);
-  const [fim, setFim] = useState(ultimoDia);
-  const [dados, setDados] = useState<ComissoesData | null>(null);
-  const [carregando, setCarregando] = useState(false);
-
-  useEffect(() => {
-    carregarComissoes();
-  }, [inicio, fim]);
-
-  async function carregarComissoes() {
-    setCarregando(true);
-    try {
-      const res = await barbeiroApi.get<ComissoesData>('/barbeiro/comissoes', { params: { inicio, fim } });
-      setDados(res.data);
-    } catch { /* empty */ }
-    finally { setCarregando(false); }
+  const [range, setRange] = useState(monthRange);
+  const [form, setForm] = useState(range);
+  const [invalid, setInvalid] = useState("");
+  const loader = useCallback(
+    async (signal: AbortSignal) =>
+      (
+        await barbeiroApi.get<Commissions>("/barbeiro/comissoes", {
+          signal,
+          params: range,
+        })
+      ).data,
+    [range],
+  );
+  const { data, loading, error, reload } = useBarberResource(loader);
+  const weekLoader = useCallback(
+    async (signal: AbortSignal) =>
+      (
+        await barbeiroApi.get<Array<{ data: string; atendimentos: number }>>(
+          "/barbeiro/resumo-semana",
+          { signal },
+        )
+      ).data,
+    [],
+  );
+  const week = useBarberResource(weekLoader);
+  function apply(e: React.FormEvent) {
+    e.preventDefault();
+    if (!form.inicio || !form.fim || form.inicio > form.fim) {
+      setInvalid("A data final deve ser igual ou posterior à inicial.");
+      return;
+    }
+    setInvalid("");
+    setRange({ ...form });
   }
-
-  const fmt = (v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-
   return (
-    <div className="px-4 py-6 md:px-8 max-w-4xl mx-auto animate-fade-in" style={{ fontFamily: 'var(--fonte-interface)' }}>
-      <h1 className="text-2xl md:text-3xl font-semibold mb-6" style={{ color: 'var(--text-primary)' }}>
-        Comissões
-      </h1>
-
-      {/* Filtros de data */}
-      <div className="grid grid-cols-2 gap-4 mb-8">
-        <div>
-          <label className="input-label flex items-center gap-1"><CalendarIcon size={14} />Início</label>
-          <input type="date" value={inicio} onChange={e => setInicio(e.target.value)} className="ds-input" />
-        </div>
-        <div>
-          <label className="input-label flex items-center gap-1"><CalendarIcon size={14} />Fim</label>
-          <input type="date" value={fim} onChange={e => setFim(e.target.value)} className="ds-input" />
-        </div>
-      </div>
-
-      {carregando ? (
-        <div className="flex justify-center py-20" style={{ color: 'var(--texto-secundario)' }}>
-          <TrendingUp className="animate-spin mr-2" /> Calculando...
-        </div>
-      ) : dados ? (
-        <div className="space-y-6">
-          {/* Card Principal */}
-          <div className="p-6 md:p-8 rounded-2xl border relative overflow-hidden" style={{
-            background: 'var(--bg-surface)',
-            borderColor: 'var(--cor-primaria)'
-          }}>
-            {/* Efeito de fundo */}
-            <div className="absolute top-0 right-0 w-32 h-32 opacity-10 rounded-bl-full pointer-events-none" style={{ background: 'var(--cor-primaria)' }}></div>
-            
-            <div className="flex items-center gap-3 mb-2 relative z-10">
-              <div className="p-2 rounded-lg" style={{ background: 'var(--bg-surface2)' }}>
-                <DollarSign size={20} style={{ color: 'var(--cor-primaria)' }} />
+    <>
+      <PageHeader
+        title="Comissões"
+        subtitle="Seus lançamentos e desempenho, por período."
+      />
+      <form className="bb-toolbar" onSubmit={apply}>
+        <label className="bb-field">
+          Início
+          <input
+            className="bb-input"
+            type="date"
+            required
+            value={form.inicio}
+            onChange={(e) => setForm({ ...form, inicio: e.target.value })}
+          />
+        </label>
+        <label className="bb-field">
+          Fim
+          <input
+            className="bb-input"
+            type="date"
+            required
+            value={form.fim}
+            onChange={(e) => setForm({ ...form, fim: e.target.value })}
+          />
+        </label>
+        <Botao type="submit" variante="secundario">
+          Aplicar período
+        </Botao>
+        <Botao
+          type="button"
+          variante="fantasma"
+          onClick={() => {
+            const r = monthRange();
+            setForm(r);
+            setRange(r);
+            setInvalid("");
+          }}
+        >
+          Este mês
+        </Botao>
+      </form>
+      {invalid && <Notice error>{invalid}</Notice>}
+      {loading ? (
+        <Loading />
+      ) : error ? (
+        <Notice error onRetry={reload}>
+          {error}
+        </Notice>
+      ) : (
+        data && (
+          <>
+            <dl className="bb-summary">
+              <div>
+                <dt>Comissão registrada</dt>
+                <dd>{money(data.valorComissao)}</dd>
               </div>
-              <span className="text-sm font-medium uppercase tracking-wider" style={{ color: 'var(--texto-secundario)' }}>
-                Sua Comissão ({dados.percentualComissao}%)
+              <div>
+                <dt>Valor dos lançamentos</dt>
+                <dd>{money(data.valorBruto)}</dd>
+              </div>
+              <div>
+                <dt>Atendimentos registrados</dt>
+                <dd>
+                  {data.totalAtendimentos}
+                  <small>Comissão padrão: {data.percentualComissao}%</small>
+                </dd>
+              </div>
+            </dl>
+            <div className="bb-section-heading">
+              <h2>Histórico do período</h2>
+              <span className="bb-muted">
+                {new Date(`${range.inicio}T12:00:00-03:00`).toLocaleDateString(
+                  "pt-BR",
+                  { timeZone: zone },
+                )}{" "}
+                a{" "}
+                {new Date(`${range.fim}T12:00:00-03:00`).toLocaleDateString(
+                  "pt-BR",
+                  { timeZone: zone },
+                )}
               </span>
             </div>
-            
-            <p className="text-4xl md:text-5xl font-bold mt-4 mb-8 relative z-10" style={{ color: 'var(--cor-primaria)' }}>
-              {fmt(dados.valorComissao)}
-            </p>
-            
-            <div className="grid grid-cols-2 gap-4 pt-6 border-t" style={{ borderColor: 'var(--border)' }}>
-              <div>
-                <p className="text-xs uppercase tracking-wide mb-1" style={{ color: 'var(--texto-secundario)' }}>Valor Bruto</p>
-                <p className="text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>{fmt(dados.valorBruto)}</p>
-              </div>
-              <div>
-                <p className="text-xs uppercase tracking-wide mb-1" style={{ color: 'var(--texto-secundario)' }}>Atendimentos</p>
-                <p className="text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>{dados.totalAtendimentos}</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Histórico */}
-          <div className="pt-4">
-            <h2 className="text-sm font-medium mb-4 flex items-center gap-2 uppercase tracking-wider" style={{ color: 'var(--texto-secundario)' }}>
-              <TrendingUp size={16} /> Histórico de Lançamentos
-            </h2>
-            
-            {dados.lancamentos.length === 0 ? (
-              <div className="p-10 rounded-2xl border text-center flex flex-col items-center justify-center" style={{ background: 'var(--bg-surface)', borderColor: 'var(--border)' }}>
-                <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4" style={{ background: 'var(--bg-surface2)' }}>
-                  <Scissors size={28} style={{ color: 'var(--texto-secundario)' }} />
-                </div>
-                <p className="font-medium" style={{ color: 'var(--text-primary)' }}>Nenhum lançamento no período.</p>
+            {(data.lancamentos ?? []).length ? (
+              <div className="bb-table-wrap">
+                <table className="bb-table">
+                  <thead>
+                    <tr>
+                      <th>Data</th>
+                      <th>Cliente e serviço</th>
+                      <th>Valor</th>
+                      <th>Comissão</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(data.lancamentos ?? []).map((l) => (
+                      <tr key={l.id}>
+                        <td>
+                          {new Date(l.data).toLocaleDateString("pt-BR", {
+                            timeZone: zone,
+                          })}
+                        </td>
+                        <td>
+                          {l.cliente}
+                          <small>{l.servico}</small>
+                        </td>
+                        <td>{money(l.valor)}</td>
+                        <td>{money(l.valorComissao)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             ) : (
-              <div className="flex flex-col gap-3">
-                {dados.lancamentos.map(l => (
-                  <div key={l.id} className="p-4 rounded-xl border flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 transition-colors hover:bg-[var(--superficie)]" style={{ background: 'var(--bg-surface)', borderColor: 'var(--border)' }}>
-                    <div>
-                      <p className="font-semibold text-base" style={{ color: 'var(--text-primary)' }}>
-                        {l.cliente}
-                      </p>
-                      <p className="text-sm mt-0.5" style={{ color: 'var(--texto-secundario)' }}>
-                        {l.servico}
-                      </p>
-                    </div>
-                    <div className="flex sm:flex-col justify-between items-center sm:items-end w-full sm:w-auto">
-                      <span className="font-semibold text-lg" style={{ color: 'var(--cor-primaria)' }}>
-                        +{fmt(l.valorComissao)}
-                      </span>
-                      <p className="text-xs font-mono" style={{ color: 'var(--texto-secundario)' }}>
-                        {new Date(l.data).toLocaleDateString('pt-BR')}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <Empty title="Sem lançamentos neste período">
+                Selecione outro período para consultar seu histórico de
+                comissões.
+              </Empty>
             )}
+          </>
+        )
+      )}
+      <details className="bb-subsection">
+        <summary>Atendimentos nos últimos 7 dias</summary>
+        {week.loading ? (
+          <Loading />
+        ) : week.error ? (
+          <Notice error onRetry={week.reload}>
+            {week.error}
+          </Notice>
+        ) : (
+          <div className="bb-week">
+            {(week.data ?? []).map((d) => (
+              <div key={d.data}>
+                <span>
+                  {new Date(`${d.data}T12:00:00-03:00`).toLocaleDateString(
+                    "pt-BR",
+                    { timeZone: zone, weekday: "short", day: "2-digit" },
+                  )}
+                </span>
+                <strong>{d.atendimentos}</strong>
+              </div>
+            ))}
           </div>
-        </div>
-      ) : null}
-    </div>
+        )}
+      </details>
+    </>
   );
 }
