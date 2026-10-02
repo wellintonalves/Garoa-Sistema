@@ -1,341 +1,125 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { prisma } from '../lib/prisma';
-import { ConfiguracaoService } from '../services/configuracao.service';
-import {
-  toBrasiliaDate,
-  inicioDiaBrasilia,
-  fimDiaBrasilia,
-  getHoraMinutoBrasilia,
-  criarDataHoraBrasilia,
-  formatarHorario,
-} from '../lib/timezone';
-import { HorariosUtil, injetarDuracaoTotalServicos } from '../services/horarios.util';
+import { tenantStorage } from '../lib/als';
+import { validarEscritaAssinatura } from '../services/acessoAssinatura.service';
+import { ErroDeNegocio } from '../lib/erros';
+import { ClienteAuthRequest } from '../types';
+import { ClienteAppService } from '../services/clienteApp.service';
+import { AgendamentoService } from '../services/agendamento.service';
+import { validarVinculoCliente } from '../services/acessoAgenda.service';
+import { objetoPermitido, texto, listaIds } from '../utils/entradaSegura.util';
+import { reciboAgendamento } from '../utils/agendamentoEntrada.util';
+import { toBrasiliaDate, diaBrasiliaStr, getHoraMinutoBrasilia } from '../lib/timezone';
+
+async function unidadeAtiva(id: unknown): Promise<string> {
+  const barbeariaId = texto(id);
+  const barbearia = await prisma.barbearia.findFirst({ where: { id: barbeariaId, ativo: true }, select: { id: true } });
+  if (!barbearia) throw new ErroDeNegocio('Barbearia não encontrada.', 404);
+  return barbearia.id;
+}
+
+async function clienteVerificado(req: ClienteAuthRequest): Promise<string> {
+  if (!req.cliente) throw new ErroDeNegocio('Entre na sua conta para continuar.', 401);
+  const cliente = await prisma.cliente.findFirst({
+    where: { id: req.cliente.clienteId, usuarioId: req.cliente.usuarioId, usuario: { papel: 'CLIENTE', emailVerificado: true } },
+    select: { id: true },
+  });
+  if (!cliente) throw new ErroDeNegocio('Entre na sua conta para continuar.', 401);
+  return cliente.id;
+}
 
 export class PublicoController {
-  /** GET /publico/barbearia/slug/:slug */
-  static async buscarBarbeariaPorSlug(req: Request, res: Response): Promise<void> {
+  static async buscarBarbeariaPorSlug(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { slug } = req.params;
-      const barbearia = await prisma.barbearia.findUnique({
-        where: { slug: slug as string },
-        select: {
-          id: true,
-          nome: true,
-          slug: true,
-          logo: true,
-          endereco: true,
-        },
+      const barbearia = await prisma.barbearia.findFirst({
+        where: { slug: texto(req.params.slug), ativo: true },
+        select: { id: true, nome: true, slug: true, logo: true, endereco: true },
       });
-
-      if (!barbearia) {
-        res.status(404).json({ erro: 'Barbearia não encontrada' });
-        return;
-      }
-
+      if (!barbearia) throw new ErroDeNegocio('Barbearia não encontrada.', 404);
       res.json(barbearia);
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ erro: 'Erro ao buscar barbearia' });
-    }
-  }
-  /** GET /publico/servicos */
-  static async listarServicos(_req: Request, res: Response): Promise<void> {
-    try {
-      const servicos = await prisma.servico.findMany({
-        where: { ativo: true },
-      });
-      res.json(servicos);
-    } catch (error) {
-      res.status(500).json({ erro: 'Erro ao listar serviços' });
-    }
+    } catch (error) { next(error); }
   }
 
-  /** GET /publico/barbeiros */
-  static async listarBarbeiros(_req: Request, res: Response): Promise<void> {
+  static async listarServicos(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
+      const barbeariaId = await unidadeAtiva(req.query.barbeariaId);
+      res.json(await prisma.servico.findMany({
+        where: { barbeariaId, ativo: true }, orderBy: { nome: 'asc' },
+        select: { id: true, nome: true, descricao: true, preco: true, duracaoMinutos: true, cor: true },
+      }));
+    } catch (error) { next(error); }
+  }
+
+  static async listarBarbeiros(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const barbeariaId = await unidadeAtiva(req.query.barbeariaId);
+      res.json(await prisma.barbeiro.findMany({
+        where: { barbeariaId, ativo: true },
+        select: { id: true, foto: true, especialidades: true, usuario: { select: { nome: true } } },
+      }));
+    } catch (error) { next(error); }
+  }
+
+  static async listarHorariosDisponiveis(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const barbeariaId = await unidadeAtiva(req.query.barbeariaId);
+      const data = texto(req.query.data, 10);
+      const servicoId = texto(req.query.servicoId);
+      const barbeiroId = req.query.barbeiroId === undefined ? 'sem_preferencia' : texto(req.query.barbeiroId);
       const barbeiros = await prisma.barbeiro.findMany({
-        where: { ativo: true },
-        include: { usuario: { select: { nome: true } } },
+        where: { barbeariaId, ativo: true, ...(barbeiroId !== 'sem_preferencia' ? { id: barbeiroId } : {}) }, select: { id: true },
       });
-      res.json(barbeiros);
-    } catch (error) {
-      res.status(500).json({ erro: 'Erro ao listar barbeiros' });
-    }
+      const horarios = new Set<string>();
+      for (const barbeiro of barbeiros) {
+        const slots = await ClienteAppService.horariosDisponiveis(barbeariaId, barbeiro.id, data, servicoId);
+        for (const slot of slots) if (slot.disponivel) horarios.add(slot.horario);
+      }
+      res.json([...horarios].sort());
+    } catch (error) { next(error); }
   }
 
-  /** GET /publico/horarios-disponiveis?barbeiroId=&data=&servicoId= */
-  static async listarHorariosDisponiveis(req: Request, res: Response): Promise<void> {
+  /** Compatibility alias: a phone or customer ID is never proof of identity. */
+  static async criarAgendamento(req: ClienteAuthRequest, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { barbeiroId, data, servicoId } = req.query;
-      if (!data || !servicoId) {
-        res.status(400).json({ erro: 'Parâmetros data e servicoId são obrigatórios' });
-        return;
-      }
-
-      const dataStr = data as string;
-      const dateObj = inicioDiaBrasilia(dataStr);
-      if (isNaN(dateObj.getTime())) {
-        res.status(400).json({ erro: 'Data inválida' });
-        return;
-      }
-
-      const barbearia = await prisma.barbearia.findFirst();
-
-      const servico = await prisma.servico.findUnique({ where: { id: servicoId as string } });
-      if (!servico) {
-        res.status(404).json({ erro: 'Serviço não encontrado' });
-        return;
-      }
-
-      const duracaoTotal = servico.duracaoMinutos;
-
-      const dataInicioDia = inicioDiaBrasilia(dataStr);
-      const dataFimDia = fimDiaBrasilia(dataStr);
-
-      let whereBarbeiro = {};
-      if (barbeiroId && barbeiroId !== 'sem_preferencia') {
-        whereBarbeiro = { barbeiroId: barbeiroId as string };
-      }
-
-      const agendamentosExistentes = await prisma.agendamento.findMany({
-        where: {
-          dataHora: { gte: dataInicioDia, lte: dataFimDia },
-          status: { notIn: ['CANCELADO', 'CONCLUIDO'] },
-          ...whereBarbeiro
-        },
-        include: { servico: true }
-      });
-
-      const barbeirosAtivos = await prisma.barbeiro.findMany({ where: { ativo: true } });
-      if (barbeirosAtivos.length === 0) {
-        res.json([]);
-        return;
-      }
-
-      const barbeirosAlvo = (barbeiroId && barbeiroId !== 'sem_preferencia') 
-        ? [{ id: barbeiroId as string }] 
-        : barbeirosAtivos;
-
-      const horariosLivresSet = new Set<string>();
-
-      for (const barb of barbeirosAlvo) {
-         const agendamentosDoBarbeiro = agendamentosExistentes.filter(ag => ag.barbeiroId === barb.id);
-         const bloqueiosDoBarbeiro = await prisma.bloqueioAgenda.findMany({
-            where: {
-              barbeiroId: barb.id,
-              dataInicio: { lte: dataFimDia },
-              dataFim: { gte: dataInicioDia }
-            }
-         });
-         
-         const configDiaBarbeiro = await HorariosUtil.getConfigDia(barbearia?.id, dataStr, barb.id);
-         if (configDiaBarbeiro.fechado) continue;
-
-         const slots = HorariosUtil.gerarSlotsDisponiveis({
-           dataStr,
-           configDia: configDiaBarbeiro,
-           duracaoMinutos: duracaoTotal,
-           agendamentos: agendamentosDoBarbeiro,
-           bloqueios: bloqueiosDoBarbeiro
-         });
-
-         for (const s of slots) {
-           if (s.disponivel) horariosLivresSet.add(s.horario);
-         }
-      }
-
-      const horariosLivres = Array.from(horariosLivresSet).sort();
-      res.json(horariosLivres);
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ erro: 'Erro ao calcular horários' });
-    }
-  }
-
-  /** POST /publico/agendamentos */
-  static async criarAgendamento(req: Request, res: Response): Promise<void> {
-    try {
-      const { nomeCliente, telefoneCliente, barbeiroId, servicoId, dataHora, observacoes } = req.body;
-
-      if (!nomeCliente || !telefoneCliente || !servicoId || !dataHora) {
-        res.status(400).json({ erro: 'Dados incompletos' });
-        return;
-      }
-
-      const servico = await prisma.servico.findUnique({ where: { id: servicoId } });
-      if (!servico) {
-        res.status(404).json({ erro: 'Serviço não encontrado' });
-        return;
-      }
-
-      // Procura ou cria o cliente pelo telefone
-      let cliente = await prisma.cliente.findFirst({
-        where: { telefone: telefoneCliente },
-      });
-
-      if (!cliente) {
-        // Como o Cliente requer um Usuario, criamos o usuario primeiro
-        const usuario = await prisma.usuario.create({
-          data: {
-            nome: nomeCliente,
-            email: `cliente_${telefoneCliente}@garoa.com.br`, // email fake pra satisfazer unique
-            senha: 'NO_PASSWORD',
-            papel: 'CLIENTE',
-          } as any
-        });
-
-        cliente = await prisma.cliente.create({
-          data: {
-            usuarioId: usuario.id,
-            telefone: telefoneCliente,
-          } as any
-        });
-      }
-
-      // Se não enviou barbeiro (sem preferencia), precisamos achar um livre
-      let barbeiroFinalId = barbeiroId;
-      if (!barbeiroFinalId || barbeiroFinalId === 'sem_preferencia') {
-        const barbeirosAtivos = await prisma.barbeiro.findMany({ where: { ativo: true } });
-        
-        const dataHoraBrasilia = toBrasiliaDate(dataHora);
-        const { hora, minuto } = getHoraMinutoBrasilia(dataHoraBrasilia);
-        const slotInicioM = hora * 60 + minuto;
-        const slotFimM = slotInicioM + servico.duracaoMinutos;
-
-        const dataStr = dataHora.split('T')[0];
-        const dataInicioDia = inicioDiaBrasilia(dataStr);
-        const dataFimDia = fimDiaBrasilia(dataStr);
-
-        for (const barb of barbeirosAtivos) {
-          // Checar conflito
-          let agendamentosDia = await prisma.agendamento.findMany({
-            where: {
-              barbeiroId: barb.id,
-              status: { notIn: ['CANCELADO', 'CONCLUIDO'] },
-              dataHora: { gte: dataInicioDia, lte: dataFimDia },
-            },
-            include: { servico: true }
-          });
-
-          agendamentosDia = await injetarDuracaoTotalServicos(agendamentosDia);
-
-          const conflito = agendamentosDia.some(ag => {
-            const agHM = getHoraMinutoBrasilia(new Date(ag.dataHora));
-            const agInicioM = agHM.hora * 60 + agHM.minuto;
-            const agFimM = agInicioM + (ag.servico?.duracaoMinutos ?? 0);
-            return slotInicioM < agFimM && slotFimM > agInicioM;
-          });
-
-          if (!conflito) {
-            barbeiroFinalId = barb.id;
-            break;
-          }
+      const clienteId = await clienteVerificado(req);
+      const dados = objetoPermitido(req.body, ['barbeariaId', 'barbeiroId', 'servicoId', 'servicosIds', 'dataHora', 'observacoes']);
+      const barbeariaId = await unidadeAtiva(dados.barbeariaId);
+      await validarVinculoCliente(clienteId, barbeariaId);
+      await validarEscritaAssinatura(barbeariaId, 'POST', '/publico/agendamentos');
+      const servicoId = texto(dados.servicoId);
+      const servicosIds = listaIds(dados.servicosIds ?? [servicoId]);
+      const dataHora = texto(dados.dataHora, 40);
+      const inicio = toBrasiliaDate(dataHora);
+      if (!Number.isFinite(inicio.getTime()) || inicio.getTime() <= Date.now()) throw new ErroDeNegocio('Escolha um horário futuro válido.');
+      let barbeiroId = dados.barbeiroId === undefined ? 'sem_preferencia' : texto(dados.barbeiroId);
+      if (barbeiroId === 'sem_preferencia') {
+        const barbeiros = await prisma.barbeiro.findMany({ where: { barbeariaId, ativo: true }, select: { id: true } });
+        const { hora, minuto } = getHoraMinutoBrasilia(inicio);
+        const horario = `${String(hora).padStart(2, '0')}:${String(minuto).padStart(2, '0')}`;
+        for (const barbeiro of barbeiros) {
+          const slots = await ClienteAppService.horariosDisponiveis(barbeariaId, barbeiro.id, diaBrasiliaStr(inicio), servicosIds.join(','), clienteId);
+          if (slots.some(slot => slot.disponivel && slot.horario === horario)) { barbeiroId = barbeiro.id; break; }
         }
-
-        // Se nenhum barbeiro livre, pega o primeiro (fallback)
-        if (!barbeiroFinalId || barbeiroFinalId === 'sem_preferencia') {
-          if (barbeirosAtivos.length > 0) {
-            barbeiroFinalId = barbeirosAtivos[0].id;
-          }
-        }
+        if (barbeiroId === 'sem_preferencia') throw new ErroDeNegocio('Horário indisponível. Escolha outro horário.', 409);
       }
-
-      // Converte para horário de Brasília
-      const dataHoraBrasilia = toBrasiliaDate(dataHora);
-
-      const { AgendamentoService } = require('../services/agendamento.service');
-      const agendamento = await AgendamentoService.criar({
-        barbeariaId: servico.barbeariaId,
-        clienteId: cliente.id,
-        barbeiroId: barbeiroFinalId,
-        servicoId: servico.id,
-        servicosIds: [servico.id],
-        dataHora: dataHoraBrasilia.toISOString(),
-        valorCobrado: 0, // Recalculado
-        observacoes,
-        origem: 'ONLINE',
-        status: 'CONFIRMADO' as import('@prisma/client').StatusAgendamento,
-      });
-
-      res.status(201).json(agendamento);
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ erro: 'Erro ao criar agendamento' });
-    }
+      const agendamento = await tenantStorage.run({ barbeariaId }, () => AgendamentoService.criar({
+        barbeariaId, clienteId, barbeiroId, servicoId, servicosIds, dataHora,
+        observacoes: dados.observacoes === undefined ? undefined : texto(dados.observacoes, 4000, true),
+        origem: 'ONLINE', status: 'CONFIRMADO',
+      }, { id: req.cliente!.usuarioId, papel: 'CLIENTE', barbeariaId }));
+      res.status(201).json(reciboAgendamento(agendamento));
+    } catch (error) { next(error); }
   }
 
-  /** GET /publico/fidelidade?telefone= */
-  static async checarFidelidade(req: Request, res: Response): Promise<void> {
+  /** Compatibility alias for the customer's own loyalty in one connected business. */
+  static async checarFidelidade(req: ClienteAuthRequest, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { telefone } = req.query;
-      if (!telefone) {
-        res.status(400).json({ erro: 'Telefone é obrigatório' });
-        return;
-      }
-
-      const cliente = await prisma.cliente.findFirst({
-        where: { telefone: telefone as string },
-        include: { usuario: { select: { nome: true } } }
-      });
-
-      if (!cliente) {
-        res.status(404).json({ erro: 'Cliente não encontrado' });
-        return;
-      }
-
-      // Historico de visitas concluidas
-      const historicoAgendamentos = await prisma.agendamento.findMany({
-        where: { 
-          clienteId: cliente.id,
-          status: 'CONCLUIDO'
-        },
-        include: { servico: true, barbeiro: { include: { usuario: true } } },
-      });
-
-      const historicoLancamentos = await prisma.lancamentoFinanceiro.findMany({
-        where: {
-          clienteId: cliente.id,
-          agendamentoId: null,
-          tipo: 'ENTRADA'
-        },
-        include: { servico: true, barbeiro: { include: { usuario: true } } }
-      });
-
-      const historico = [
-        ...historicoAgendamentos.map(h => ({
-          dataHora: h.dataHora,
-          servico: h.servico?.nome || 'Serviço',
-          barbeiro: h.barbeiro?.usuario?.nome || '—'
-        })),
-        ...historicoLancamentos.map(l => ({
-          dataHora: l.data,
-          servico: l.servico?.nome || (l.categoria === 'VENDA_PRODUTO' ? 'Produto' : 'Avulso'),
-          barbeiro: l.barbeiro?.usuario?.nome || '—'
-        }))
-      ].sort((a, b) => new Date(b.dataHora).getTime() - new Date(a.dataHora).getTime());
-
-      const config = await ConfiguracaoService.obter();
-      const regras = config.regrasFidelidade as any;
-      const meta = regras?.pontosParaRecompensa || 10;
-
-      const pontosAcumulados = historico.length;
-      const pontosFaltantes = Math.max(0, meta - (pontosAcumulados % meta));
-
-      res.json({
-        cliente: cliente.usuario.nome,
-        pontosAcumulados,
-        meta,
-        pontosFaltantes,
-        historico: historico.slice(0, 10).map(h => ({
-          data: h.dataHora,
-          servico: h.servico,
-          barbeiro: h.barbeiro
-        }))
-      });
-
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ erro: 'Erro ao checar fidelidade' });
-    }
+      const clienteId = await clienteVerificado(req);
+      objetoPermitido(req.query, ['barbeariaId']);
+      const barbeariaId = await unidadeAtiva(req.query.barbeariaId);
+      await validarVinculoCliente(clienteId, barbeariaId);
+      await validarEscritaAssinatura(barbeariaId, 'GET', '/publico/fidelidade');
+      res.json(await tenantStorage.run({ barbeariaId }, () => ClienteAppService.fidelidade(clienteId, barbeariaId)));
+    } catch (error) { next(error); }
   }
 }

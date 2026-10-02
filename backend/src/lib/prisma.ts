@@ -1,3 +1,4 @@
+import { versionarAtualizacaoUsuario } from './revogacaoSessao';
 import { PrismaClient } from '@prisma/client';
 import { tenantStorage } from './als';
 
@@ -14,11 +15,16 @@ export const prisma = basePrisma.$extends({
   query: {
     $allModels: {
       async $allOperations({ model, operation, args, query }) {
+        // Same SQL mutation as the credential/role change, including updateMany in recovery.
+        if (model === 'Usuario' && ['update', 'updateMany', 'upsert'].includes(operation)) {
+          versionarAtualizacaoUsuario(operation, args as unknown as Record<string, unknown>);
+        }
         const store = tenantStorage.getStore();
         const barbeariaId = store?.barbeariaId;
 
         // Modelos globais ou multi-tenant explícitos que não devem ter isolamento automático rígido
         const ignoredModels = [
+          'LimiteAutenticacao',
           'Barbearia',
           'Usuario',
           'Cliente',

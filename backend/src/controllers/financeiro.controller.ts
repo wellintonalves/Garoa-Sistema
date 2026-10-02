@@ -1,3 +1,4 @@
+import { registrarErroSeguro } from '../lib/logSeguro';
 // Controller financeiro
 import { FormaPagamento } from '@prisma/client';
 import { Response } from 'express';
@@ -34,10 +35,10 @@ export class FinanceiroController {
       }
 
       const lancamento = await FinanceiroService.criar(req.body);
-      console.log(`[Financeiro] Lançamento criado com sucesso: id=${lancamento.id} barbeariaId=${lancamento.barbeariaId} valor=${lancamento.valor}`);
+      console.log(JSON.stringify({ evento: 'financeiro_criado' }));
       res.status(201).json(lancamento);
     } catch (error) {
-      console.error('[Financeiro] Falha ao criar lançamento. Payload:', req.body, 'Erro:', error);
+      registrarErroSeguro('financeiro_criar_falha', error);
       const msg = error instanceof Error ? error.message : 'Erro ao criar lançamento';
       res.status(error instanceof ErroDeNegocio ? error.status : 400).json({ erro: msg });
     }
@@ -67,7 +68,7 @@ export class FinanceiroController {
       if (error instanceof ErroDeNegocio) {
         res.status(error.status).json({ erro: error.message });
       } else {
-        console.error('Erro ao atualizar lançamento:', error);
+        registrarErroSeguro('financeiro_atualizar_falha', error);
         res.status(500).json({ erro: 'Não foi possível atualizar o lançamento. Tente novamente.' });
       }
     }

@@ -167,7 +167,6 @@ export class HorariosUtil {
       
       const conflita = (reqInicioM < agFimM) && (agInicioM < reqFimM);
       
-      console.log(`[CONFLITO CHECK] Req: ${reqInicioM} - ${reqFimM} | Ag: ${agInicioM} - ${agFimM} | Conflita: ${conflita} | params.duracao: ${params.duracaoMinutos} | ag.duracao: ${ag.servico?.duracaoMinutos}`);
 
       if (conflita) {
         const nomeBarbeiro = ag.barbeiro?.usuario?.nome || 'outro barbeiro';

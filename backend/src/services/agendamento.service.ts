@@ -1,6 +1,6 @@
 // Serviço de agendamentos — CRUD + horários livres
 import { prisma } from '../lib/prisma';
-import { StatusAgendamento, FormaPagamento } from '@prisma/client';
+import { StatusAgendamento, FormaPagamento, Prisma } from '@prisma/client';
 import {
   toBrasiliaDate,
   inicioDiaBrasilia,
@@ -16,6 +16,10 @@ import { DescontoService, TipoDesconto } from './desconto.service';
 import { obterIdsServicosAgendamento } from '../utils/agendamento.util';
 import { validarSaldoParaResgate, tratarConflitoDeFechamento } from './saldoFidelidade.util';
 import { ErroDeNegocio } from '../lib/erros';
+import { AtorAgenda, escopoAgenda, validarVinculoCliente } from './acessoAgenda.service';
+import { validarAlteracaoAgendamento } from '../utils/agendamentoEntrada.util';
+import { listaIds, texto, opcao, objetoPermitido } from '../utils/entradaSegura.util';
+import { tenantStorage } from '../lib/als';
 interface DadosAgendamento {
   clienteId: string;
   barbeiroId: string;
@@ -23,18 +27,18 @@ interface DadosAgendamento {
   servicosIds?: string[];
   dataHora: string;
   observacoes?: string;
-  valorCobrado?: number;
-  barbeariaId?: string;
+  barbeariaId: string;
   origem?: string;
   status?: StatusAgendamento;
 }
 
 export class AgendamentoService {
   /** Lista agendamentos com filtros opcionais */
-  static async listarTodos(filtros?: { barbeiroId?: string; data?: string; dataInicio?: string; dataFim?: string; status?: StatusAgendamento }) {
-    const where: Record<string, unknown> = {};
+  static async listarTodos(filtros: { barbeiroId?: string; data?: string; dataInicio?: string; dataFim?: string; status?: StatusAgendamento }, ator: AtorAgenda) {
+    const escopo = await escopoAgenda(ator);
+    const where: Prisma.AgendamentoWhereInput = { ...escopo };
 
-    if (filtros?.barbeiroId) where.barbeiroId = filtros.barbeiroId;
+    if (filtros?.barbeiroId && !escopo.barbeiroId) where.barbeiroId = filtros.barbeiroId;
     if (filtros?.status) where.status = filtros.status;
 
     if (filtros?.data) {
@@ -71,9 +75,10 @@ export class AgendamentoService {
   }
 
   /** Busca agendamento por ID */
-  static async buscarPorId(id: string) {
-    const agendamento = await prisma.agendamento.findUnique({
-      where: { id },
+  static async buscarPorId(id: string, ator: AtorAgenda) {
+    const escopo = await escopoAgenda(ator);
+    const agendamento = await prisma.agendamento.findFirst({
+      where: { id, ...escopo },
       include: {
         cliente: { include: { usuario: { select: { nome: true, email: true } } } },
         barbeiro: { include: { usuario: { select: { nome: true } } } },
@@ -91,7 +96,7 @@ export class AgendamentoService {
       },
     });
 
-    if (!agendamento) throw new Error('Agendamento não encontrado');
+    if (!agendamento) throw new ErroDeNegocio('Agendamento não encontrado.', 404);
     const [ag] = await injetarDuracaoTotalServicos([agendamento]);
     return ag;
   }
@@ -164,23 +169,45 @@ export class AgendamentoService {
   }
 
   /** Cria um novo agendamento */
-  static async criar(dados: DadosAgendamento) {
-    // Suporte a múltiplos serviços — usa servicosIds se fornecido
-    const todosIds = obterIdsServicosAgendamento(dados as any);
-
-    // Busca todos os serviços selecionados para calcular duração total
-    const todosServicos = await prisma.servico.findMany({ where: { id: { in: todosIds } } });
-    if (todosServicos.length === 0) throw new Error('Serviço não encontrado');
-
-    // Usa o primeiro serviço como servicoId (compatibilidade)
-    const servico = todosServicos.find(s => s.id === dados.servicoId) || todosServicos[0];
+  static async criar(dados: DadosAgendamento, ator: AtorAgenda) {
+    objetoPermitido(dados, ['barbeariaId', 'clienteId', 'barbeiroId', 'servicoId', 'servicosIds', 'dataHora', 'observacoes', 'origem', 'status']);
+    const origem = dados.origem === undefined ? 'ONLINE' : opcao(dados.origem, ['ONLINE', 'SISTEMA', 'APP_CLIENTE'] as const);
+    const status = dados.status === undefined ? 'AGUARDANDO' : opcao(dados.status, ['AGUARDANDO', 'CONFIRMADO'] as const);
+    const barbeariaId = texto(dados.barbeariaId);
+    const clienteId = texto(dados.clienteId);
+    const barbeiroId = texto(dados.barbeiroId);
+    const servicoId = texto(dados.servicoId);
+    const todosIds = listaIds(dados.servicosIds ?? [servicoId]);
+    if (!todosIds.includes(servicoId)) throw new ErroDeNegocio('Seleção de serviços inválida.');
+    const contexto = tenantStorage.getStore()?.barbeariaId;
+    if (contexto && contexto !== barbeariaId) throw new ErroDeNegocio('Acesso não autorizado.', 403);
+    if (!ator?.id || ator.barbeariaId !== barbeariaId) throw new ErroDeNegocio('Acesso não autorizado.', 403);
+    if (ator.papel === 'CLIENTE') {
+      const identidade = await prisma.cliente.findFirst({
+        where: { id: clienteId, usuarioId: ator.id, usuario: { papel: 'CLIENTE', emailVerificado: true } }, select: { id: true },
+      });
+      if (!identidade) throw new ErroDeNegocio('Acesso não autorizado.', 403);
+    } else {
+      const escopo = await escopoAgenda(ator);
+      if (escopo.barbeariaId !== barbeariaId || (escopo.barbeiroId && escopo.barbeiroId !== barbeiroId)) {
+        throw new ErroDeNegocio('Acesso não autorizado.', 403);
+      }
+    }
+    const barbeiro = await prisma.barbeiro.findFirst({
+      where: { id: barbeiroId, barbeariaId, ativo: true, barbearia: { ativo: true } },
+    });
+    if (!barbeiro) throw new ErroDeNegocio('Barbeiro não disponível nesta barbearia.', 404);
+    await validarVinculoCliente(clienteId, barbeariaId);
+    const todosServicos = await prisma.servico.findMany({ where: { id: { in: todosIds }, barbeariaId, ativo: true } });
+    if (todosServicos.length !== todosIds.length) throw new ErroDeNegocio('Serviço não disponível nesta barbearia.', 404);
+    const servico = todosServicos.find(s => s.id === servicoId)!;
     const duracaoTotal = todosServicos.reduce((acc, s) => acc + s.duracaoMinutos, 0);
     const valorTotal = todosServicos.reduce((acc, s) => acc + Number(s.preco), 0);
-
-    const dataInicio = toBrasiliaDate(dados.dataHora);
-
-    const barbeiro = await prisma.barbeiro.findUnique({ where: { id: dados.barbeiroId }, include: { barbearia: true } });
-    if (!barbeiro) throw new Error('Barbeiro não encontrado');
+    const dataInicio = toBrasiliaDate(texto(dados.dataHora, 40));
+    if (!Number.isFinite(dataInicio.getTime()) || dataInicio.getTime() <= Date.now()) {
+      throw new ErroDeNegocio('Escolha um horário futuro válido.');
+    }
+    const observacoes = dados.observacoes === undefined ? undefined : texto(dados.observacoes, 4000, true);
 
     await this.validarAgendamento(
       barbeiro.barbeariaId!,
@@ -192,25 +219,25 @@ export class AgendamentoService {
 
     return prisma.agendamento.create({
       data: {
-        barbeariaId: dados.barbeariaId || barbeiro.barbeariaId,
+        barbeariaId,
         clienteId: dados.clienteId,
         barbeiroId: dados.barbeiroId,
         servicoId: servico.id,
         servicosIds: todosIds,
         dataHora: dataInicio,
-        observacoes: dados.observacoes,
+        observacoes,
         valorBruto: valorTotal,
         valorCobrado: valorTotal,
         valorLiquido: valorTotal,
-        origem: dados.origem || 'ONLINE',
-        status: dados.status || 'AGUARDANDO',
+        origem,
+        status,
         itens: {
           create: todosServicos.map((s, idx) => ({
             servicoId: s.id,
             nome: s.nome,
             preco: Number(s.preco),
             duracaoMinutos: s.duracaoMinutos,
-            barbeariaId: dados.barbeariaId || barbeiro.barbeariaId,
+            barbeariaId,
             ordem: idx
           }))
         }
@@ -224,63 +251,53 @@ export class AgendamentoService {
   }
 
   /** Atualiza status ou dados do agendamento */
-  static async atualizar(
-    id: string,
-    dados: Partial<
-      DadosAgendamento & {
-        status: StatusAgendamento;
-        formaPagamento?: FormaPagamento;
-      }
-    >,
-    usuarioAcaoId?: string
-  ) {
-    const { formaPagamento, tipoDesconto, pontosUsados, descontoPercentual, descontoReais, ...dadosAgendamento } = dados as any;
-
-    const agendamentoOriginal = await prisma.agendamento.findUnique({
-      where: { id },
+  static async atualizar(id: string, entrada: unknown, ator: AtorAgenda) {
+    const dados = validarAlteracaoAgendamento(entrada);
+    const { formaPagamento, tipoDesconto, pontosUsados, descontoPercentual, descontoReais, ...dadosAgendamento } = dados;
+    const escopo = await escopoAgenda(ator);
+    const usuarioAcaoId = ator.id;
+    const agendamentoOriginal = await prisma.agendamento.findFirst({
+      where: { id, ...escopo },
       include: { servico: true, itens: true },
     });
-
-    if (!agendamentoOriginal) {
-      throw new Error('Agendamento não encontrado');
-    }
-
+    if (!agendamentoOriginal) throw new ErroDeNegocio('Agendamento não encontrado.', 404);
     if (agendamentoOriginal.status === 'CONCLUIDO') {
-      const error: any = new Error('Este agendamento já foi concluído e não pode ser alterado.');
-      error.status = 409;
-      throw error;
+      throw new ErroDeNegocio('Este agendamento já foi concluído e não pode ser alterado.', 409);
     }
-
     const statusOriginal = agendamentoOriginal.status;
-
-    if (dadosAgendamento.dataHora || dadosAgendamento.servicoId || dadosAgendamento.barbeiroId) {
-      const novaDataHora = dadosAgendamento.dataHora
-        ? toBrasiliaDate(dadosAgendamento.dataHora)
-        : agendamentoOriginal.dataHora;
-      let novaDuracao = agendamentoOriginal.servico.duracaoMinutos;
-
-      if (dadosAgendamento.servicoId && dadosAgendamento.servicoId !== agendamentoOriginal.servicoId) {
-        const novoServico = await prisma.servico.findUnique({ where: { id: dadosAgendamento.servicoId } });
-        if (novoServico) novaDuracao = novoServico.duracaoMinutos;
-      }
-      
-      const novoBarbeiroId = dadosAgendamento.barbeiroId || agendamentoOriginal.barbeiroId;
-
-      await this.validarAgendamento(
-        agendamentoOriginal.barbeariaId || '',
-        novoBarbeiroId,
-        agendamentoOriginal.clienteId,
-        novaDataHora,
-        novaDuracao,
-        id
-      );
+    const alteraAgenda = dadosAgendamento.dataHora !== undefined || dadosAgendamento.servicoId !== undefined
+      || dadosAgendamento.servicosIds !== undefined || dadosAgendamento.barbeiroId !== undefined;
+    if (dadosAgendamento.status === 'CONCLUIDO' && alteraAgenda) {
+      throw new ErroDeNegocio('Salve a remarcação antes de concluir o atendimento.');
     }
-
-    // Limpa propriedades extras que não pertencem ao modelo Agendamento para o update
-    delete (dadosAgendamento as any).formaPagamento;
-    delete (dadosAgendamento as any).pontosUsados;
-    delete (dadosAgendamento as any).descontoPercentual;
-    delete (dadosAgendamento as any).descontoReais;
+    if (dadosAgendamento.barbeiroId && escopo.barbeiroId && dadosAgendamento.barbeiroId !== escopo.barbeiroId) {
+      throw new ErroDeNegocio('Acesso não autorizado.', 403);
+    }
+    let novosServicos: Awaited<ReturnType<typeof prisma.servico.findMany>> | undefined;
+    if (dadosAgendamento.servicoId !== undefined || dadosAgendamento.servicosIds !== undefined) {
+      const ids = dadosAgendamento.servicosIds ?? [dadosAgendamento.servicoId!];
+      const principal = dadosAgendamento.servicoId ?? ids[0];
+      if (!ids.includes(principal)) throw new ErroDeNegocio('Seleção de serviços inválida.');
+      novosServicos = await prisma.servico.findMany({ where: { id: { in: ids }, barbeariaId: escopo.barbeariaId, ativo: true } });
+      if (novosServicos.length !== ids.length) throw new ErroDeNegocio('Serviço não disponível nesta barbearia.', 404);
+      dadosAgendamento.servicosIds = ids;
+      dadosAgendamento.servicoId = principal;
+    }
+    if (alteraAgenda) {
+      const novoBarbeiroId = dadosAgendamento.barbeiroId ?? agendamentoOriginal.barbeiroId;
+      const barbeiro = await prisma.barbeiro.findFirst({ where: { id: novoBarbeiroId, barbeariaId: escopo.barbeariaId, ativo: true } });
+      if (!barbeiro) throw new ErroDeNegocio('Barbeiro não disponível nesta barbearia.', 404);
+      const novaDataHora = dadosAgendamento.dataHora ? toBrasiliaDate(dadosAgendamento.dataHora) : agendamentoOriginal.dataHora;
+      if (!Number.isFinite(novaDataHora.getTime()) || (dadosAgendamento.dataHora && novaDataHora.getTime() <= Date.now())) {
+        throw new ErroDeNegocio('Escolha um horário futuro válido.');
+      }
+      const duracao = novosServicos
+        ? novosServicos.reduce((total, servico) => total + servico.duracaoMinutos, 0)
+        : agendamentoOriginal.itens.length
+          ? agendamentoOriginal.itens.reduce((total, item) => total + (item.duracaoMinutos ?? 0), 0)
+          : agendamentoOriginal.servico.duracaoMinutos;
+      await this.validarAgendamento(escopo.barbeariaId, novoBarbeiroId, agendamentoOriginal.clienteId, novaDataHora, duracao, id);
+    }
 
     let resultadoFinal: any = null;
 
@@ -330,7 +347,7 @@ export class AgendamentoService {
         ? agendamentoOriginal.itens.reduce((total, item) => total + Number(item.preco), 0)
         : Number(agendamentoOriginal.valorBruto || 0);
       if (valorBruto === 0 && !agendamentoOriginal.itens.length) {
-        console.warn(`[Fechamento] Agendamento ${agendamentoOriginal.id} com valorBruto zerado. Calculando na hora.`);
+        console.warn('financeiro_recalculo_valor_bruto');
         const servicos = await prisma.servico.findMany({
           where: { id: { in: idsServicos } }
         });
@@ -383,14 +400,14 @@ export class AgendamentoService {
       // Usar $transaction para garantir atomicidade total
       resultadoFinal = await prisma.$transaction(async (tx) => {
         const claim = await tx.agendamento.updateMany({
-          where: { id, barbeariaId: agendamentoOriginal.barbeariaId, status: { not: 'CONCLUIDO' } },
+          where: { id, ...escopo, status: { not: 'CONCLUIDO' } },
           data: { status: 'CONCLUIDO' },
         });
         if (claim.count !== 1) throw new ErroDeNegocio('Este agendamento já foi concluído.', 409);
         await validarSaldoParaResgate(tx, agendamentoOriginal.clienteId, agendamentoOriginal.barbeariaId!, pontosAUsar);
         // A. Atualiza o agendamento
         const updated = await tx.agendamento.update({
-          where: { id },
+          where: { id, ...escopo },
           data: {
             ...dadosAgendamento,
             valorCobrado: valorFinal,
@@ -464,39 +481,29 @@ export class AgendamentoService {
       const mudouDataBarbeiroServico = 
         (dadosAgendamento.dataHora && toBrasiliaDate(dadosAgendamento.dataHora).getTime() !== agendamentoOriginal.dataHora.getTime()) || 
         (dadosAgendamento.barbeiroId && dadosAgendamento.barbeiroId !== agendamentoOriginal.barbeiroId) ||
-        (dadosAgendamento.servicoId && dadosAgendamento.servicoId !== agendamentoOriginal.servicoId);
+        (dadosAgendamento.servicoId && dadosAgendamento.servicoId !== agendamentoOriginal.servicoId) ||
+        (dadosAgendamento.servicosIds && JSON.stringify(dadosAgendamento.servicosIds) !== JSON.stringify(obterIdsServicosAgendamento(agendamentoOriginal)));
       
-      const payloadUpdate = {
+      const payloadUpdate: Prisma.AgendamentoUncheckedUpdateInput = {
         ...dadosAgendamento,
         dataHora: dadosAgendamento.dataHora ? toBrasiliaDate(dadosAgendamento.dataHora) : undefined,
       };
 
-      if (dadosAgendamento.servicoId && dadosAgendamento.servicoId !== agendamentoOriginal.servicoId && !dadosAgendamento.servicosIds) {
-        const currentIds = obterIdsServicosAgendamento(agendamentoOriginal);
-        // Atualiza a lista caso não tenha vindo servicosIds
-        if (currentIds.length <= 1) {
-          (payloadUpdate as any).servicosIds = [dadosAgendamento.servicoId];
-        }
-      }
-
-      if ((payloadUpdate as any).servicosIds) {
-        const novosIds = (payloadUpdate as any).servicosIds;
-        const novosServicos = await prisma.servico.findMany({ where: { id: { in: novosIds } } });
-        
+      if (novosServicos) {
         const novoValorBruto = novosServicos.reduce((acc, s) => acc + Number(s.preco), 0);
         // Agendamentos concluídos já são rejeitados na entrada deste método.
-        (payloadUpdate as any).valorBruto = novoValorBruto;
-        (payloadUpdate as any).valorCobrado = novoValorBruto;
-        (payloadUpdate as any).valorLiquido = novoValorBruto;
+        payloadUpdate.valorBruto = novoValorBruto;
+        payloadUpdate.valorCobrado = novoValorBruto;
+        payloadUpdate.valorLiquido = novoValorBruto;
 
-        (payloadUpdate as any).itens = {
+        payloadUpdate.itens = {
           deleteMany: {},
           create: novosServicos.map((s, idx) => ({
             servicoId: s.id,
             nome: s.nome,
             preco: Number(s.preco),
             duracaoMinutos: s.duracaoMinutos,
-            barbeariaId: agendamentoOriginal.barbeariaId,
+            barbeariaId: escopo.barbeariaId,
             ordem: idx
           }))
         };
@@ -507,9 +514,14 @@ export class AgendamentoService {
       }
 
       resultadoFinal = await prisma.$transaction(async (tx) => {
+        const claim = await tx.agendamento.updateMany({
+          where: { id, ...escopo, status: { not: 'CONCLUIDO' } },
+          data: { status: statusOriginal },
+        });
+        if (claim.count !== 1) throw new ErroDeNegocio('Este agendamento não pode mais ser alterado.', 409);
         const agUpdated = await tx.agendamento.update({
-          where: { id },
-          data: payloadUpdate as any,
+          where: { id, ...escopo },
+          data: payloadUpdate,
           include: {
             cliente: { include: { usuario: { select: { nome: true } } } },
             barbeiro: { include: { usuario: { select: { nome: true } } } },
@@ -521,8 +533,9 @@ export class AgendamentoService {
           await tx.historicoRemarcacao.create({
             data: {
               agendamentoId: id,
+              barbeariaId: escopo.barbeariaId,
               dataHoraAnterior: agendamentoOriginal.dataHora,
-              dataHoraNova: payloadUpdate.dataHora || agendamentoOriginal.dataHora,
+              dataHoraNova: dadosAgendamento.dataHora ? toBrasiliaDate(dadosAgendamento.dataHora) : agendamentoOriginal.dataHora,
               barbeiroAnteriorId: agendamentoOriginal.barbeiroId,
               barbeiroNovoId: dadosAgendamento.barbeiroId || agendamentoOriginal.barbeiroId,
               servicoAnteriorId: agendamentoOriginal.servicoId,
@@ -539,15 +552,18 @@ export class AgendamentoService {
   }
 
   /** Cancela um agendamento */
-  static async cancelar(id: string) {
-    return prisma.agendamento.update({
-      where: { id },
-      data: { status: 'CANCELADO' } as any,
-    });
+  static async cancelar(id: string, ator: AtorAgenda) {
+    return this.atualizar(id, { status: 'CANCELADO' }, ator);
   }
 
   /** Retorna horários livres e ocupados de um barbeiro em uma data */
-  static async horariosDisponivies(barbeiroId: string, data: string) {
+  static async horariosDisponivies(barbeiroId: string, data: string, ator: AtorAgenda) {
+    const escopo = await escopoAgenda(ator);
+    if (escopo.barbeiroId && escopo.barbeiroId !== barbeiroId) throw new ErroDeNegocio('Acesso não autorizado.', 403);
+    const barbeiro = await prisma.barbeiro.findFirst({
+      where: { id: texto(barbeiroId), barbeariaId: escopo.barbeariaId }, include: { barbearia: true },
+    });
+    if (!barbeiro) throw new ErroDeNegocio('Barbeiro não encontrado.', 404);
     const inicio = inicioDiaBrasilia(data);
     const fim = fimDiaBrasilia(data);
 
@@ -555,6 +571,7 @@ export class AgendamentoService {
     const agendamentos = await prisma.agendamento.findMany({
       where: {
         barbeiroId,
+        barbeariaId: escopo.barbeariaId,
         dataHora: { gte: inicio, lte: fim },
         status: { not: 'CANCELADO' },
       },
@@ -567,14 +584,10 @@ export class AgendamentoService {
     const bloqueios = await prisma.bloqueioAgenda.findMany({
       where: {
         barbeiroId,
+        barbeiro: { barbeariaId: escopo.barbeariaId },
         dataInicio: { lte: fim },
         dataFim: { gte: inicio },
       }
-    });
-
-    const barbeiro = await prisma.barbeiro.findUnique({
-      where: { id: barbeiroId },
-      include: { barbearia: true },
     });
 
     const configDia = await HorariosUtil.getConfigDia(barbeiro?.barbeariaId, data, barbeiroId);
@@ -599,17 +612,19 @@ export class AgendamentoService {
   /** Simula o valor de desconto e pontos antes de concluir */
   static async simularDesconto(
     agendamentoId: string,
+    ator: AtorAgenda,
     tipoDesconto: TipoDesconto,
     descontoReais: number = 0,
     descontoPercentual: number = 0,
     pontosUsados: number = 0
   ) {
-    const agendamento = await prisma.agendamento.findUnique({
-      where: { id: agendamentoId },
+    const escopo = await escopoAgenda(ator);
+    const agendamento = await prisma.agendamento.findFirst({
+      where: { id: agendamentoId, ...escopo },
       include: { itens: true, cliente: { select: { dataNascimento: true } } },
     });
 
-    if (!agendamento) throw new Error('Agendamento não encontrado');
+    if (!agendamento) throw new ErroDeNegocio('Agendamento não encontrado.', 404);
 
     const [configFidelidade, configGlobal, barbeiro, agregacaoPontos, agregacaoResgates] = await Promise.all([
       prisma.configuracaoFidelidade.findUnique({

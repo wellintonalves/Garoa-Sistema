@@ -1,8 +1,7 @@
 // Contexto de autenticação do barbeiro — gerencia login/logout isolado do admin
-import { createContext, useState, useEffect, ReactNode, useCallback } from 'react';
+import { createContext, ReactNode, useCallback } from 'react';
 import barbeiroApi from '../api/barbeiroApi';
-import { tokenEstaValido } from '../lib/auth/tokenValido';
-import { limparSessao } from '../lib/auth/limparSessao';
+import { useSessaoRemota, FalhaSessao } from '../lib/auth/useSessaoRemota';
 
 interface DadosBarbeiro {
   barbeiroId: string;
@@ -23,54 +22,27 @@ interface BarbeiroAuthContextData {
 export const BarbeiroAuthContext = createContext<BarbeiroAuthContextData>({} as BarbeiroAuthContextData);
 
 export function BarbeiroAuthProvider({ children }: { children: ReactNode }) {
-  const [barbeiro, setBarbeiro] = useState<DadosBarbeiro | null>(null);
-  const [carregando, setCarregando] = useState(true);
-
-  useEffect(() => {
-    const tokenSalvo = localStorage.getItem('@garoa:barbeiro_token');
-    const dadosSalvos = localStorage.getItem('@garoa:barbeiro_dados');
-
-    if (tokenSalvo && dadosSalvos) {
-      if (tokenEstaValido(tokenSalvo)) {
-        try {
-          setBarbeiro(JSON.parse(dadosSalvos) as DadosBarbeiro);
-        } catch {
-          limparSessao();
-        }
-      } else {
-        limparSessao();
-      }
-    }
-    setCarregando(false);
-  }, []);
+  const sessao = useSessaoRemota<DadosBarbeiro>(barbeiroApi, '/barbeiro', 'barbeiro', 'barbeiro');
+  const { dados: barbeiro, setDados: setBarbeiro, carregando, logout } = sessao;
 
   const login = useCallback(async (email: string, senha: string, barbeariaId?: string) => {
-    const response = await barbeiroApi.post<{ token: string; barbeiro: DadosBarbeiro }>('/barbeiro/login', { email, senha, barbeariaId });
-    const { token, barbeiro: dados } = response.data;
+    const response = await barbeiroApi.post<{ barbeiro: DadosBarbeiro }>('/barbeiro/login', { email, senha, barbeariaId });
+    const { barbeiro: dados } = response.data;
 
-    localStorage.setItem('@garoa:barbeiro_token', token);
-    localStorage.setItem('@garoa:barbeiro_dados', JSON.stringify(dados));
     setBarbeiro(dados);
-  }, []);
-
-  const logout = useCallback(() => {
-    limparSessao();
-    setBarbeiro(null);
-    window.location.href = '/barbeiro/login';
   }, []);
 
   const atualizarNome = useCallback((nome: string) => {
     setBarbeiro(atual => {
       if (!atual) return atual;
       const atualizado = { ...atual, nome };
-      localStorage.setItem('@garoa:barbeiro_dados', JSON.stringify(atualizado));
       return atualizado;
     });
   }, []);
 
   return (
     <BarbeiroAuthContext.Provider value={{ barbeiro, carregando, login, logout, atualizarNome }}>
-      {children}
+      <FalhaSessao {...sessao} portal="barbeiro">{children}</FalhaSessao>
     </BarbeiroAuthContext.Provider>
   );
 }

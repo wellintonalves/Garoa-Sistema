@@ -1,8 +1,7 @@
 // Contexto de autenticação — gerencia login/logout e estado do usuário
-import { createContext, useState, useEffect, ReactNode, useCallback } from 'react';
+import { createContext, ReactNode, useCallback } from 'react';
 import api from '../api/client';
-import { tokenEstaValido } from '../lib/auth/tokenValido';
-import { limparSessao } from '../lib/auth/limparSessao';
+import { useSessaoRemota, FalhaSessao } from '../lib/auth/useSessaoRemota';
 
 interface Usuario {
   id: string;
@@ -16,58 +15,30 @@ interface AuthContextData {
   usuario: Usuario | null;
   carregando: boolean;
   login: (email: string, senha: string) => Promise<void>;
-  loginDireto: (token: string, usr: Usuario) => void;
+  loginDireto: (usr: Usuario) => void;
   logout: () => void;
 }
 
 export const AuthContext = createContext<AuthContextData>({} as AuthContextData);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [usuario, setUsuario] = useState<Usuario | null>(null);
-  const [carregando, setCarregando] = useState(true);
-
-  // Carrega dados salvos ao iniciar
-  useEffect(() => {
-    const tokenSalvo = localStorage.getItem('@garoa:token');
-    const usuarioSalvo = localStorage.getItem('@garoa:usuario');
-
-    if (tokenSalvo && usuarioSalvo) {
-      if (tokenEstaValido(tokenSalvo)) {
-        try {
-          setUsuario(JSON.parse(usuarioSalvo) as Usuario);
-        } catch {
-          limparSessao();
-        }
-      } else {
-        limparSessao();
-      }
-    }
-    setCarregando(false);
-  }, []);
+  const sessao = useSessaoRemota<Usuario>(api, '/auth', 'usuario', 'admin');
+  const { dados: usuario, setDados: setUsuario, carregando, logout } = sessao;
 
   const login = useCallback(async (email: string, senha: string) => {
-    const response = await api.post<{ token: string; usuario: Usuario }>('/auth/login', { email, senha });
-    const { token, usuario: usr } = response.data;
+    const response = await api.post<{ usuario: Usuario }>('/auth/login', { email, senha });
+    const { usuario: usr } = response.data;
 
-    localStorage.setItem('@garoa:token', token);
-    localStorage.setItem('@garoa:usuario', JSON.stringify(usr));
     setUsuario(usr);
   }, []);
 
-  const loginDireto = useCallback((token: string, usr: Usuario) => {
-    localStorage.setItem('@garoa:token', token);
-    localStorage.setItem('@garoa:usuario', JSON.stringify(usr));
+  const loginDireto = useCallback((usr: Usuario) => {
     setUsuario(usr);
-  }, []);
-
-  const logout = useCallback(() => {
-    limparSessao();
-    setUsuario(null);
   }, []);
 
   return (
     <AuthContext.Provider value={{ usuario, carregando, login, loginDireto, logout }}>
-      {children}
+      <FalhaSessao {...sessao} portal="admin">{children}</FalhaSessao>
     </AuthContext.Provider>
   );
 }

@@ -1,3 +1,4 @@
+import { registrarErroSeguro } from './logSeguro';
 import cron from 'node-cron';
 import { AssinaturaOperacionalService } from '../services/assinaturaOperacional.service';
 import { WebhookAsaasService } from '../services/webhookAsaas.service';
@@ -32,7 +33,7 @@ export function agendarProcessosAssinatura(): void {
   if (!provedorAssinatura.configurado) return;
   cron.schedule('*/5 * * * *', () => {
     void executarProcessosAssinatura().catch((error) => {
-      console.error('Falha nos processos locais de assinatura:', error instanceof Error ? error.message : 'erro desconhecido');
+      registrarErroSeguro('lib.assinaturaJob.falha', error instanceof Error ? error.message : 'erro desconhecido');
     });
   });
   console.log(`Processos locais de assinatura agendados com provedor ${provedorAssinatura.ambiente}.`);

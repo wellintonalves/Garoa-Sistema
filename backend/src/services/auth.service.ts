@@ -1,7 +1,7 @@
+import { ConfirmacaoEmailNecessaria } from './confirmacaoEmail.util';
 // Serviço de autenticação — login e registro
 import bcrypt from 'bcryptjs';
 import { registrarAceiteDocumentos } from '../domain/privacidade/aceiteDocumentos';
-import jwt from 'jsonwebtoken';
 import { prisma } from '../lib/prisma';
 import { authConfig } from '../config/auth';
 import { ErroDeNegocio } from '../lib/erros';
@@ -26,7 +26,6 @@ interface DadosLogin {
 }
 
 interface RespostaAuth {
-  token: string;
   usuario: UsuarioJWT;
 }
 
@@ -88,7 +87,6 @@ export class AuthService {
       throw error;
     });
 
-    // Gera o token
     const payload: UsuarioJWT = {
       id: usuario.id,
       nome: usuario.nome,
@@ -97,13 +95,7 @@ export class AuthService {
       barbeariaId: usuario.barbeariaId,
     };
 
-    const token = jwt.sign(
-      { ...payload },
-      authConfig.secret as jwt.Secret,
-      { expiresIn: authConfig.expiresIn } as jwt.SignOptions
-    );
-
-    return { token, usuario: payload };
+    return { usuario: payload };
   }
 
   /** Autentica um usuário existente */
@@ -116,6 +108,7 @@ export class AuthService {
         ...(dados.barbeariaId ? { barbeariaId: dados.barbeariaId } : {}),
         ...(dados.papel ? { papel: dados.papel } : {}),
         OR: [{ barbeariaId: null }, { barbearia: { ativo: true } }],
+        ...(dados.papel === 'BARBEIRO' ? { barbeiro: { ativo: true } } : {}),
       },
     });
 
@@ -132,7 +125,12 @@ export class AuthService {
       throw new ErroDeNegocio('Email ou senha incorretos', 401);
     }
 
-    // Gera o token
+    if (usuario.papel === 'BARBEIRO') {
+      const barbeiro = await prisma.barbeiro.findFirst({ where: { usuarioId: usuario.id, barbeariaId: usuario.barbeariaId, ativo: true }, select: { id: true } });
+      if (!barbeiro) throw new ErroDeNegocio('Email ou senha incorretos', 401);
+    }
+    if (usuario.papel === 'CLIENTE' && !usuario.emailVerificado) throw new ConfirmacaoEmailNecessaria(usuario.id);
+
     const payload: UsuarioJWT = {
       id: usuario.id,
       nome: usuario.nome,
@@ -141,12 +139,6 @@ export class AuthService {
       barbeariaId: usuario.barbeariaId,
     };
 
-    const token = jwt.sign(
-      { ...payload },
-      authConfig.secret as jwt.Secret,
-      { expiresIn: authConfig.expiresIn } as jwt.SignOptions
-    );
-
-    return { token, usuario: payload };
+    return { usuario: payload };
   }
 }

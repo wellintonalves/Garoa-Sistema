@@ -2,29 +2,11 @@
 import axios from 'axios';
 import { handleApiError } from './errorHandler';
 
-function resolveApiUrl(): string {
-  const envUrl = import.meta.env.VITE_API_URL;
-  if (!envUrl) return 'http://localhost:3001';
-  if (envUrl.startsWith('/')) return envUrl;
-  if (!envUrl.startsWith('http://') && !envUrl.startsWith('https://')) {
-    return `https://${envUrl}`;
-  }
-  return envUrl;
-}
-
 const clienteApi = axios.create({
-  baseURL: resolveApiUrl(),
+  baseURL: '/api',
+  withCredentials: true,
   timeout: 15000,
-  headers: { 'Content-Type': 'application/json' },
-});
-
-// Interceptor — adiciona token JWT do cliente automaticamente
-clienteApi.interceptors.request.use((config) => {
-  const token = localStorage.getItem('@garoa:cliente_token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
+  headers: { 'Content-Type': 'application/json', 'X-Valen-Client': 'web', 'X-Valen-Portal': 'cliente' },
 });
 
 // Interceptor — redireciona para login do cliente em caso de 401

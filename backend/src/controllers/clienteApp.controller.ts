@@ -1,3 +1,6 @@
+import { registrarErroSeguro } from '../lib/logSeguro';
+import { ConfirmacaoEmailNecessaria } from '../services/confirmacaoEmail.util';
+import { iniciarSessao } from '../services/sessao.service';
 // Controller do app do cliente
 import { Response } from 'express';
 import { ClienteAppService } from '../services/clienteApp.service';
@@ -28,7 +31,7 @@ export class ClienteAppController {
       try {
         await VerificacaoService.enviarCodigo(resultado.cliente.usuarioId);
       } catch (emailErro) {
-        console.error('[Registro Cliente] Erro ao enviar email de verificação:', emailErro);
+        registrarErroSeguro('controllers.clienteApp.controller.falha', emailErro);
       }
 
       res.status(resultado.isNovo ? 201 : 200).json({
@@ -52,10 +55,12 @@ export class ClienteAppController {
       }
 
       const resultado = await ClienteAppService.login(email, senha);
-      res.json(resultado);
+      const tokenPonte = await iniciarSessao(req, res, resultado.cliente.usuarioId, 'cliente');
+      res.json({ ...resultado, ...(tokenPonte ? { token: tokenPonte } : {}) });
     } catch (error) {
-      if (error instanceof Error && error.message === 'Email não verificado') {
-        res.status(403).json({ erro: error.message, emailNaoVerificado: true });
+      if (error instanceof ConfirmacaoEmailNecessaria) {
+        await VerificacaoService.enviarCodigo(error.usuarioId).catch(() => undefined);
+        res.status(403).json({ erro: error.message, emailNaoVerificado: true, usuarioId: error.usuarioId });
         return;
       }
       next(error);
@@ -279,10 +284,10 @@ export class ClienteAppController {
         return;
       }
 
-      const agendamento = await ClienteAppService.agendar(clienteId, req.params.barbeariaId, req.body);
+      const agendamento = await ClienteAppService.agendar(clienteId, req.params.barbeariaId, req.body, req.cliente!.usuarioId);
       res.status(201).json(agendamento);
     } catch (error: any) {
-      console.error('[ClienteAppController.agendar] Erro:', error);
+      registrarErroSeguro('controllers.clienteApp.controller.falha', error);
       const msg = error instanceof Error ? error.message : 'Erro inesperado';
       
       let statusCode = 400;

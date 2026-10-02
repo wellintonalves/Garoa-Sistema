@@ -1,3 +1,4 @@
+import { registrarErroSeguro } from '../lib/logSeguro';
 import { Request, Response } from 'express';
 import { copiarBanco } from '../lib/dbSync';
 
@@ -21,7 +22,7 @@ export class BackupController {
         ...result
       });
     } catch (error) {
-      console.error('❌ Falha no backup forçado via API:', error);
+      registrarErroSeguro('controllers.backup.controller.falha', error);
       return res.status(500).json({
         error: 'Falha ao forçar o backup',
         details: error instanceof Error ? error.message : String(error)

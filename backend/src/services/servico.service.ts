@@ -1,5 +1,7 @@
 // Serviço de serviços da barbearia — CRUD completo
 import { prisma } from '../lib/prisma';
+import { Prisma } from '@prisma/client';
+import { objetoPermitido, texto, numero, booleano } from '../utils/entradaSegura.util';
 
 interface DadosServico {
   nome: string;
@@ -50,10 +52,19 @@ export class ServicoService {
   }
 
   /** Atualiza um serviço */
-  static async atualizar(id: string, dados: Partial<DadosServico & { ativo: boolean }>) {
+  static async atualizar(id: string, entrada: Partial<DadosServico & { ativo: boolean }>) {
+    const dados = objetoPermitido(entrada, ['nome', 'descricao', 'preco', 'duracaoMinutos', 'comissaoPercent', 'cor', 'ativo']);
+    const data: Prisma.ServicoUpdateInput = {};
+    if (dados.nome !== undefined) data.nome = texto(dados.nome);
+    if (dados.descricao !== undefined) data.descricao = texto(dados.descricao, 4000, true);
+    if (dados.preco !== undefined) data.preco = numero(dados.preco, 99999999.99);
+    if (dados.duracaoMinutos !== undefined) data.duracaoMinutos = numero(dados.duracaoMinutos, 1440, true);
+    if (dados.comissaoPercent !== undefined) data.comissaoPercent = numero(dados.comissaoPercent, 100);
+    if (dados.cor !== undefined) data.cor = texto(dados.cor, 100);
+    if (dados.ativo !== undefined) data.ativo = booleano(dados.ativo);
     return prisma.servico.update({
       where: { id },
-      data: dados,
+      data,
     });
   }
 

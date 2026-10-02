@@ -1,3 +1,4 @@
+import { registrarErroSeguro } from './logSeguro';
 import { Client } from 'pg';
 
 export async function corrigirDados(dbUrl: string): Promise<void> {
@@ -49,7 +50,7 @@ export async function corrigirDados(dbUrl: string): Promise<void> {
 
     console.log('FIX ORPHANS: concluido');
   } catch (error) {
-    console.error('FIX ORPHANS: erro durante execução', error);
+    registrarErroSeguro('lib.fixOrphans.falha', error);
     throw error;
   } finally {
     await client.end().catch(() => {});

@@ -1,15 +1,17 @@
+import { rotasSessao } from './sessao.routes';
+import { protegerEntradaSessao } from '../services/sessao.service';
 // Rotas do app do barbeiro
 import { Router } from 'express';
-import multer from 'multer';
+import { uploadImagem } from '../middlewares/upload.middleware';
 import { BarbeiroAppController } from '../controllers/barbeiroApp.controller';
 import { barbeiroAuthMiddleware } from '../middlewares/barbeiroAuth.middleware';
 import { loginLimiter } from '../middlewares/rateLimit.middleware';
 
 const router = Router();
-const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 2 * 1024 * 1024 } }); // 2MB limite
+router.use(rotasSessao('barbeiro'));
 
 // Rota pública (login)
-router.post('/login', loginLimiter, BarbeiroAppController.login);
+router.post('/login', protegerEntradaSessao, loginLimiter, BarbeiroAppController.login);
 
 // Rotas protegidas (requerem token do barbeiro)
 router.use(barbeiroAuthMiddleware as never);
@@ -20,7 +22,7 @@ router.get('/comissoes', BarbeiroAppController.comissoes);
 router.post('/concluir-agendamento/:id', BarbeiroAppController.concluirAgendamento);
 router.get('/perfil', BarbeiroAppController.perfil);
 router.put('/perfil', BarbeiroAppController.atualizarPerfil);
-router.post('/foto', upload.single('file'), BarbeiroAppController.uploadFoto);
+router.post('/foto', ...uploadImagem, BarbeiroAppController.uploadFoto);
 router.patch('/status-trabalho', BarbeiroAppController.atualizarStatusTrabalho);
 router.get('/resumo-semana', BarbeiroAppController.resumoSemana);
 

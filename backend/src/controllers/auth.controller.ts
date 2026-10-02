@@ -1,3 +1,4 @@
+import { iniciarSessao } from '../services/sessao.service';
 // Controller de autenticação
 import { Request, Response, NextFunction } from 'express';
 import { AuthService } from '../services/auth.service';
@@ -17,7 +18,8 @@ export class AuthController {
 
       // Portal admin: papel é fixado no servidor, nunca vem do cliente
       const resultado = await AuthService.login({ email, senha, papel: 'ADMIN' });
-      res.json(resultado);
+      const tokenPonte = await iniciarSessao(req, res, resultado.usuario.id, 'admin');
+      res.json({ ...resultado, ...(tokenPonte ? { token: tokenPonte } : {}) });
     } catch (error) {
       next(error);
     }

@@ -25,6 +25,7 @@ const usuarios: Linha[] = barbearias.map((barbearia, indice) => ({
   nome: `Admin ${String.fromCharCode(65 + indice)}`,
   email: `admin-${String.fromCharCode(97 + indice)}@teste.local`,
   papel: 'ADMIN',
+  authVersion: 0, senha: 'hash-sintetico', emailVerificado: true, barbeiro: null, cliente: null,
   barbeariaId: barbearia.id,
   barbearia,
 }));
@@ -76,6 +77,7 @@ function localizarUnico(lista: Linha[], where: Linha): Linha | null {
 const fake: Linha = {
   $queryRaw: async () => [],
   usuario: {
+    findUnique: async ({ where }: Linha) => localizarUnico(usuarios, where),
     findFirst: async ({ where }: Linha) => localizarUnico(usuarios, where),
     findMany: async ({ where, take }: Linha) => usuarios.filter((linha) => combina(linha, where)).slice(0, take),
   },
@@ -277,7 +279,7 @@ async function registrarEProcessar(WebhookAsaasService: any, payload: unknown, a
 
 async function main() {
   const express = (await import('express')).default;
-  const jwt = (await import('jsonwebtoken')).default;
+  const { iniciarSessao } = await import('../src/services/sessao.service');
   const assinaturaRoutes = (await import('../src/routes/assinatura.routes')).default;
   const { errorMiddleware } = await import('../src/middlewares/error.middleware');
   const { AssinaturaOperacionalService } = await import('../src/services/assinaturaOperacional.service');
@@ -296,16 +298,19 @@ async function main() {
   const endereco = servidor.address();
   if (!endereco || typeof endereco === 'string') throw new Error('Servidor HTTP local não iniciou.');
   const base = `http://127.0.0.1:${endereco.port}`;
-  const token = jwt.sign(usuario(0), process.env.JWT_SECRET!);
+  let cookie = '';
+  await iniciarSessao({ method: 'POST', get: (h: string) => h === 'X-Valen-Client' ? 'web' : h === 'Origin' ? 'http://localhost:5173' : undefined } as any,
+    { cookie: (nome: string, valor: string) => { cookie = `${nome}=${valor}`; }, setHeader: () => undefined } as any, usuario(0).id, 'admin');
+  const authHeaders = { cookie, 'X-Valen-Client': 'web', 'X-Valen-Portal': 'admin', Origin: 'http://localhost:5173' };
 
   try {
-    const resumoVazio = await fetch(`${base}/assinatura`, { headers: { authorization: `Bearer ${token}` } });
+    const resumoVazio = await fetch(`${base}/assinatura`, { headers: authHeaders });
     assert.equal(resumoVazio.status, 200);
 
     const contratacaoHttp = await fetch(`${base}/assinatura/contratacao`, {
       method: 'POST',
       headers: {
-        authorization: `Bearer ${token}`,
+        ...authHeaders,
         'content-type': 'application/json',
         'idempotency-key': 'contratacao-http-0001',
       },

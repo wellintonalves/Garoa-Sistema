@@ -1,15 +1,18 @@
+import { rotasSessao } from './sessao.routes';
+import { protegerEntradaSessao } from '../services/sessao.service';
 // Rotas do app do cliente
 import { Router } from 'express';
 import { ClienteAppController } from '../controllers/clienteApp.controller';
 import { clienteAuthMiddleware } from '../middlewares/clienteAuth.middleware';
 import { ChatController } from '../controllers/chat.controller';
-import { loginLimiter } from '../middlewares/rateLimit.middleware';
+import { loginLimiter, registerLimiter } from '../middlewares/rateLimit.middleware';
 
 const router = Router();
+router.use(rotasSessao('cliente'));
 
 // Rotas públicas (sem autenticação)
-router.post('/register', ClienteAppController.registrar);
-router.post('/login', loginLimiter, ClienteAppController.login);
+router.post('/register', protegerEntradaSessao, registerLimiter, ClienteAppController.registrar);
+router.post('/login', protegerEntradaSessao, loginLimiter, ClienteAppController.login);
 
 // Rotas protegidas (requerem token do cliente)
 router.use(clienteAuthMiddleware as never);

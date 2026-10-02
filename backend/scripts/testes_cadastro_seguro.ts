@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict';
 import { Prisma, type Cliente, type Usuario } from '@prisma/client';
 import type { Response } from 'express';
-import jwt from 'jsonwebtoken';
 import type { AuthRequest } from '../src/types';
 
 // Serviços/controlador reais com persistência em memória. Sem PostgreSQL,
@@ -33,7 +32,7 @@ function registrarEscrita(operacao: string) {
 function usuarioFixture(dados: Partial<Usuario> = {}): Usuario {
   return {
     id: `usuario-${++sequencia}`, nome: 'Cliente sintético', email: `fixture-${sequencia}@example.test`,
-    senha: 'hash-sintetico', papel: 'CLIENTE', barbeariaId: null,
+    authVersion: 0, senha: 'hash-sintetico', papel: 'CLIENTE', barbeariaId: null,
     emailVerificado: false, codigoVerificacao: null, codigoExpiracao: null,
     aceiteDocumentosEm: null, termosUsoVersao: null, privacidadeVersao: null,
     aceiteDocumentosOrigem: null, createdAt: new Date('2020-01-01T12:00:00Z'), ...dados,
@@ -164,6 +163,8 @@ function criarLojas() {
 }
 
 async function main() {
+  const { VerificacaoService } = await import('../src/services/verificacao.service');
+  VerificacaoService.enviarCodigo = async () => undefined;
   const { AuthService } = await import('../src/services/auth.service');
   const { ClienteAppService } = await import('../src/services/clienteApp.service');
   const { TenantController } = await import('../src/controllers/tenantController');
@@ -187,9 +188,7 @@ async function main() {
   assert.equal(lojas.length, 4);
   assert.equal(transacoes, 1);
   assert.deepEqual(escritas, ['barbearia.create', 'usuario.create']);
-  const tokenDono = jwt.verify(dono.token, process.env.JWT_SECRET!) as jwt.JwtPayload;
-  assert.equal(tokenDono.papel, 'ADMIN');
-  assert.equal(tokenDono.barbeariaId, dono.usuario.barbeariaId);
+  assert.ok(!('token' in dono), 'cadastro não expõe credencial ao JavaScript');
   await assert.rejects(AuthService.registrar({ ...dados, papel: 'ADMIN' }), { status: 409 });
   assert.equal(lojas.length, 4, 'duplicidade não cria barbearia órfã');
   const segundoDono = await AuthService.registrar({ ...dados, email: 'outro@example.test', papel: 'ADMIN' });
@@ -221,9 +220,7 @@ async function main() {
   const clienteA = await AuthService.registrarCliente({ ...dados, barbeariaId: 'tenant-a' });
   assert.equal(clienteA.usuario.papel, 'CLIENTE');
   assert.equal(clienteA.usuario.barbeariaId, 'tenant-a');
-  const tokenCliente = jwt.verify(clienteA.token, process.env.JWT_SECRET!) as jwt.JwtPayload;
-  assert.equal(tokenCliente.papel, 'CLIENTE');
-  assert.equal(tokenCliente.barbeariaId, 'tenant-a');
+  assert.ok(!('token' in clienteA));
   assert.equal(usuarios.find(u => u.id === clienteA.usuario.id)!.aceiteDocumentosOrigem, 'CADASTRO_TENANT');
   const clienteB = await AuthService.registrarCliente({ ...dados, papel: 'CLIENTE', barbeariaId: 'tenant-b' });
   assert.equal(clienteB.usuario.papel, 'CLIENTE');
@@ -277,20 +274,13 @@ async function main() {
   assert.equal(usuarioGlobal.barbeariaId, null);
   assert.equal(usuarioGlobal.aceiteDocumentosOrigem, 'CADASTRO_CLIENTE');
   assert.ok(conexoes.some(c => c.clienteId === novo.cliente.clienteId && c.barbeariaId === 'tenant-a'), 'convite continua conectando cliente');
-  assert.ok(jwt.verify(novo.token, process.env.JWT_SECRET_CLIENTE!));
+  assert.ok(!('token' in novo), 'cadastro não emite sessão não verificada');
   verificarPreservacao();
 
-  // Repetir um cadastro pendente antigo atualiza só aquela conta, preservando ID/histórico.
-  usuarioGlobal.createdAt = new Date('2020-01-01T12:00:00Z');
-  historico.push({ clienteId: novo.cliente.clienteId, tipo: 'agendamento', valor: 75 });
-  preservados.historico.push({ clienteId: novo.cliente.clienteId, tipo: 'agendamento', valor: 75 });
-  const repetido = await ClienteAppService.registrar({ ...cadastro, nome: 'Nome atualizado', barbeariaId: 'tenant-b' });
-  assert.equal(repetido.isNovo, false);
-  assert.equal(repetido.cliente.usuarioId, novo.cliente.usuarioId);
-  assert.equal(repetido.cliente.clienteId, novo.cliente.clienteId);
-  assert.equal(usuarios.find(u => u.id === novo.cliente.usuarioId)?.nome, 'Nome atualizado');
-  assert.ok(conexoes.some(c => c.clienteId === novo.cliente.clienteId && c.barbeariaId === 'tenant-b'));
-  assert.equal(usuarios.length, preservados.usuarios.length + 1, 'repetição não recria conta');
+  // Re-registration never overwrites an unverified identity or its existing history.
+  const antesRepeticao = structuredClone({ usuarios, clientes, conexoes, historico });
+  await assert.rejects(ClienteAppService.registrar({ ...cadastro, nome: 'Invasor', senha: 'outra-senha', barbeariaId: 'tenant-b' }), /já está cadastrado/);
+  assert.deepEqual({ usuarios, clientes, conexoes, historico }, antesRepeticao);
   verificarPreservacao();
 
   usuarios.find(u => u.id === novo.cliente.usuarioId)!.emailVerificado = true;

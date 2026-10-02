@@ -3,6 +3,8 @@ import { Response } from 'express';
 import { AgendamentoService } from '../services/agendamento.service';
 import { diaBrasiliaStr } from '../lib/timezone';
 import { AuthRequest } from '../types';
+import { ErroDeNegocio } from '../lib/erros';
+import { objetoPermitido } from '../utils/entradaSegura.util';
 
 export class AgendamentoController {
   /** GET /agendamentos */
@@ -10,32 +12,24 @@ export class AgendamentoController {
     try {
       const { barbeiroId, data, dataInicio, dataFim, status } = req.query;
 
-      // Se for barbeiro, só vê os próprios
-      let filtroBarb = barbeiroId as string | undefined;
-      if (req.usuario?.papel === 'BARBEIRO') {
-        const { BarbeiroService } = await import('../services/barbeiro.service');
-        const barbeiro = await BarbeiroService.buscarPorUsuarioId(req.usuario.id);
-        if (barbeiro) filtroBarb = barbeiro.id;
-      }
-
       const agendamentos = await AgendamentoService.listarTodos({
-        barbeiroId: filtroBarb,
+        barbeiroId: barbeiroId as string,
         data: data as string,
         dataInicio: dataInicio as string,
         dataFim: dataFim as string,
         status: status as 'AGUARDANDO' | 'CONFIRMADO' | 'CONCLUIDO' | 'CANCELADO',
-      });
+      }, req.usuario!);
       res.json(agendamentos);
     } catch (error) {
       const msg = error instanceof Error ? error.message : 'Erro ao listar agendamentos';
-      res.status(500).json({ erro: msg });
+      res.status(error instanceof ErroDeNegocio ? error.status : 500).json({ erro: msg });
     }
   }
 
   /** GET /agendamentos/:id */
   static async buscar(req: AuthRequest, res: Response): Promise<void> {
     try {
-      const agendamento = await AgendamentoService.buscarPorId(req.params.id);
+      const agendamento = await AgendamentoService.buscarPorId(req.params.id, req.usuario!);
       res.json(agendamento);
     } catch (error) {
       const msg = error instanceof Error ? error.message : 'Erro ao buscar agendamento';
@@ -46,6 +40,7 @@ export class AgendamentoController {
   /** POST /agendamentos */
   static async criar(req: AuthRequest, res: Response): Promise<void> {
     try {
+      objetoPermitido(req.body, ['clienteId', 'barbeiroId', 'servicoId', 'servicosIds', 'dataHora', 'observacoes']);
       const { clienteId, barbeiroId, servicoId, servicosIds, dataHora, observacoes } = req.body;
 
       if (!clienteId || !barbeiroId || !servicoId || !dataHora) {
@@ -63,7 +58,7 @@ export class AgendamentoController {
         observacoes,
         origem: 'SISTEMA',
         status: 'AGUARDANDO',
-      });
+      }, req.usuario!);
       res.status(201).json(agendamento);
     } catch (error) {
       const msg = error instanceof Error ? error.message : 'Erro ao criar agendamento';
@@ -73,13 +68,7 @@ export class AgendamentoController {
 
   static async atualizar(req: AuthRequest, res: Response): Promise<void> {
     try {
-      // Confiança zero no navegador: valores monetários nunca podem vir da requisição
-      delete req.body.valorCobrado;
-      delete req.body.valorBruto;
-      delete req.body.valorLiquido;
-      delete req.body.valorDesconto;
-
-      const agendamento = await AgendamentoService.atualizar(req.params.id, req.body, req.usuario?.id);
+      const agendamento = await AgendamentoService.atualizar(req.params.id, req.body, req.usuario!);
       res.json(agendamento);
     } catch (error: any) {
       const msg = error instanceof Error ? error.message : 'Erro ao atualizar agendamento';
@@ -91,7 +80,7 @@ export class AgendamentoController {
   /** DELETE /agendamentos/:id */
   static async cancelar(req: AuthRequest, res: Response): Promise<void> {
     try {
-      await AgendamentoService.cancelar(req.params.id);
+      await AgendamentoService.cancelar(req.params.id, req.usuario!);
       res.json({ mensagem: 'Agendamento cancelado com sucesso' });
     } catch (error) {
       const msg = error instanceof Error ? error.message : 'Erro ao cancelar agendamento';
@@ -104,11 +93,11 @@ export class AgendamentoController {
     try {
       const { barbeiroId } = req.params;
       const data = (req.query.data as string) || diaBrasiliaStr();
-      const horarios = await AgendamentoService.horariosDisponivies(barbeiroId, data);
+      const horarios = await AgendamentoService.horariosDisponivies(barbeiroId, data, req.usuario!);
       res.json(horarios);
     } catch (error) {
       const msg = error instanceof Error ? error.message : 'Erro ao buscar horários';
-      res.status(500).json({ erro: msg });
+      res.status(error instanceof ErroDeNegocio ? error.status : 500).json({ erro: msg });
     }
   }
 
@@ -125,6 +114,7 @@ export class AgendamentoController {
 
       const simulacao = await AgendamentoService.simularDesconto(
         id,
+        req.usuario!,
         tipoDesconto,
         descontoReais ? Number(descontoReais) : 0,
         descontoPercentual ? Number(descontoPercentual) : 0,

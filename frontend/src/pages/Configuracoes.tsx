@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Gear as Settings, FloppyDisk as Save, QrCode, Star, Desktop, Storefront, Clock, SlidersHorizontal, Copy, CreditCard } from '@phosphor-icons/react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import api from '../api/client';
@@ -110,6 +110,16 @@ export function Configuracoes() {
   const [barbearia, setBarbearia] = useState<any>({});
   const [salvandoBarbearia, setSalvandoBarbearia] = useState(false);
   const [nomeArquivo, setNomeArquivo] = useState<string | null>(null);
+  const [logoPendente, setLogoPendente] = useState<File | null>(null);
+  const [previewLogo, setPreviewLogo] = useState('');
+  const [erroLogo, setErroLogo] = useState('');
+  const [mensagemBarbearia, setMensagemBarbearia] = useState('');
+  const salvandoBarbeariaRef = useRef(false);
+  useEffect(() => {
+    if (!logoPendente) { setPreviewLogo(''); return; }
+    const url = URL.createObjectURL(logoPendente); setPreviewLogo(url);
+    return () => URL.revokeObjectURL(url);
+  }, [logoPendente]);
 
   async function carregarMinhaBarbearia() {
     try {
@@ -126,13 +136,29 @@ export function Configuracoes() {
 
   async function salvarBarbearia(e: React.FormEvent) {
     e.preventDefault();
-    setSalvandoBarbearia(true);
+    if (salvandoBarbeariaRef.current) return;
+    salvandoBarbeariaRef.current = true;
+    setSalvandoBarbearia(true); setErroLogo(''); setMensagemBarbearia('');
     try {
-      await api.put('/configuracoes/minha-barbearia', barbearia);
-      alert('Dados da barbearia atualizados!');
+      const campos = ['nome', 'slug', 'corPrimaria', 'corSecundaria', 'corTexto', 'fonte', 'endereco', 'telefone',
+        'horarioAbertura', 'horarioFechamento', 'temAlmoco', 'horarioAlmocoInicio', 'horarioAlmocoFim'] as const;
+      const dados = Object.fromEntries(campos.filter(campo => barbearia[campo] !== undefined).map(campo => [campo, barbearia[campo]]));
+      await api.put('/configuracoes/minha-barbearia', dados);
+      if (logoPendente) {
+        const body = new FormData(); body.append('file', logoPendente);
+        try {
+          const foto = await api.post<{ url: string }>('/upload/logo', body, { headers: { 'Content-Type': 'multipart/form-data' }, timeout: 45000 });
+          setBarbearia((prev: typeof barbearia) => ({ ...prev, logo: foto.data.url }));
+          setLogoPendente(null); setNomeArquivo(null);
+        } catch (error) {
+          setErroLogo(`Os dados foram salvos, mas a logo não foi enviada. ${error instanceof Error ? error.message : 'Tente novamente.'}`); return;
+        }
+      }
+      setMensagemBarbearia('Dados da barbearia atualizados.');
     } catch (error) {
-      alert('Erro ao atualizar barbearia');
+      setErroLogo(error instanceof Error ? error.message : 'Não foi possível salvar os dados. Tente novamente.');
     } finally {
+      salvandoBarbeariaRef.current = false;
       setSalvandoBarbearia(false);
     }
   }
@@ -231,8 +257,8 @@ export function Configuracoes() {
               <div>
                 <label className="block text-sm font-medium mb-1">Logo da barbearia (máx. 2 MB)</label>
                 <div className="flex items-center gap-4 max-w-full overflow-hidden">
-                  {barbearia.logo && (
-                    <img src={barbearia.logo} alt="Logo" className="w-16 h-16 object-cover rounded bg-[var(--superficie)] border border-[var(--border)] flex-shrink-0" />
+                  {(previewLogo || barbearia.logo) && (
+                    <img src={previewLogo || barbearia.logo} alt="Logo" className="w-16 h-16 object-cover rounded bg-[var(--superficie)] border border-[var(--border)] flex-shrink-0" />
                   )}
                   <div className="flex flex-col gap-2 min-w-0 flex-1">
                     <div className="flex items-center gap-2 max-w-full overflow-hidden">
@@ -243,20 +269,16 @@ export function Configuracoes() {
                         {nomeArquivo ? nomeArquivo : 'Nenhum arquivo selecionado'}
                       </span>
                     </div>
-                    <input id="logo-upload" type="file" accept="image/png, image/jpeg, image/webp, image/svg+xml" className="hidden" onChange={(e) => {
-                      if (e.target.files && e.target.files[0]) {
-                        const file = e.target.files[0];
-                        setNomeArquivo(file.name);
-                        if (file.size > 2 * 1024 * 1024) { alert('Arquivo muito grande (máx. 2 MB)'); return; }
-                      
-                        const reader = new FileReader();
-                        reader.onload = (event) => {
-                          const base64 = event.target?.result as string;
-                          setBarbearia({ ...barbearia, logo: base64 });
-                        };
-                        reader.readAsDataURL(file);
+                    <input id="logo-upload" type="file" disabled={salvandoBarbearia} accept="image/png, image/jpeg, image/webp" className="hidden" onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      e.target.value = '';
+                      if (!file) return;
+                      if (file.size > 2 * 1024 * 1024 || !['image/png', 'image/jpeg', 'image/webp'].includes(file.type)) {
+                        setErroLogo('Escolha uma foto JPG, PNG ou WebP de até 2 MB.'); return;
                       }
+                      setNomeArquivo(file.name); setLogoPendente(file); setErroLogo('');
                     }} />
+                    {erroLogo && <p role="alert" className="text-sm text-[var(--erro)]">{erroLogo}</p>}
                   </div>
                 </div>
               </div>
@@ -266,8 +288,8 @@ export function Configuracoes() {
                 
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3 mb-4">
-                    {barbearia.logo ? (
-                      <img src={barbearia.logo} alt="Logo" className="h-8 object-contain" />
+                    {previewLogo || barbearia.logo ? (
+                      <img src={previewLogo || barbearia.logo} alt="Logo" className="h-8 object-contain" />
                     ) : (
                        <div className="h-8 w-8 bg-[var(--superficie)] rounded flex items-center justify-center">L</div>
                     )}
@@ -310,6 +332,7 @@ export function Configuracoes() {
               </div>
             </div>
 
+            {mensagemBarbearia && <p role="status" className="text-sm text-[var(--texto-principal)]">{mensagemBarbearia}</p>}
             <button type="submit" disabled={salvandoBarbearia} className="mt-4 flex items-center justify-center gap-2 w-full min-h-12 md:min-h-10 px-4 bg-[var(--cor-primaria)] hover:bg-[var(--cor-primaria)] text-[var(--texto-sobre-primaria)] font-semibold rounded-lg transition-colors">
               <Save size={20} />
               {salvandoBarbearia ? 'Salvando...' : 'Salvar barbearia'}
@@ -598,7 +621,7 @@ export function Configuracoes() {
         largura="max-w-2xl"
       >
         <div className="space-y-4">
-          <div className="flex items-start gap-3 p-4 rounded-lg border" style={{ backgroundColor: 'rgba(var(--cor-erro-rgb), 0.1)', borderColor: 'var(--cor-erro)', color: 'var(--cor-erro)' }}>
+          <div className="flex items-start gap-3 p-4 rounded-lg border" style={{ backgroundColor: 'rgba(var(--cor-erro-rgb), 0.1)', borderColor: 'var(--erro)', color: 'var(--erro)' }}>
             <WarningCircle size={24} className="mt-0.5 shrink-0" />
             <div>
               <p className="font-bold mb-1">O horário de funcionamento foi alterado com sucesso, porém {conflitos.length} agendamento(s) futuro(s) ficaram fora do expediente.</p>

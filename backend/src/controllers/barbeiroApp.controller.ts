@@ -1,7 +1,9 @@
+import { iniciarSessao } from '../services/sessao.service';
 // Controller do app do barbeiro
 import { BarbeiroAppService } from '../services/barbeiroApp.service';
 import { BarbeiroAuthRequest } from '../types';
 import { Request, Response, NextFunction } from 'express';
+import { SupabaseService } from '../services/supabase.service';
 
 export class BarbeiroAppController {
   /** POST /barbeiro/login */
@@ -15,7 +17,8 @@ export class BarbeiroAppController {
       }
 
       const resultado = await BarbeiroAppService.login(email, senha, barbeariaId);
-      res.json(resultado);
+      const tokenPonte = await iniciarSessao(req, res, resultado.barbeiro.usuarioId, 'barbeiro');
+      res.json({ ...resultado, ...(tokenPonte ? { token: tokenPonte } : {}) });
     } catch (error: any) {
       if (error?.codigo === 'ESCOLHER_BARBEARIA') {
         res.status(409).json({
@@ -128,7 +131,7 @@ export class BarbeiroAppController {
   }
 
   /** PUT /barbeiro/perfil */
-  static async atualizarPerfil(req: BarbeiroAuthRequest, res: Response): Promise<void> {
+  static async atualizarPerfil(req: BarbeiroAuthRequest, res: Response, next: NextFunction): Promise<void> {
     try {
       const barbeiro = req.barbeiro;
       if (!barbeiro) { res.status(401).json({ erro: 'Não autorizado' }); return; }
@@ -136,14 +139,11 @@ export class BarbeiroAppController {
       const dados = req.body;
       const atualizado = await BarbeiroAppService.atualizarPerfil(barbeiro.barbeiroId, dados);
       res.json(atualizado);
-    } catch (error) {
-      const msg = error instanceof Error ? error.message : 'Erro ao atualizar perfil';
-      res.status(500).json({ erro: msg });
-    }
+    } catch (error) { next(error); }
   }
 
   /** POST /barbeiro/foto */
-  static async uploadFoto(req: BarbeiroAuthRequest, res: Response): Promise<void> {
+  static async uploadFoto(req: BarbeiroAuthRequest, res: Response, next: NextFunction): Promise<void> {
     try {
       const barbeiro = req.barbeiro;
       if (!barbeiro) { res.status(401).json({ erro: 'Não autorizado' }); return; }
@@ -153,18 +153,13 @@ export class BarbeiroAppController {
         return;
       }
 
-      const { SupabaseService } = require('../services/supabase.service');
-      const extension = req.file.originalname.split('.').pop() || 'jpg';
-      const fileName = `barbeiro-${barbeiro.barbeiroId}-${Date.now()}.${extension}`;
+      const url = await SupabaseService.uploadImage('barbeiros', {
+        barbeariaId: barbeiro.barbeariaId, usuarioId: barbeiro.usuarioId, papel: 'BARBEIRO', barbeiroId: barbeiro.barbeiroId,
+      }, req.file.buffer, req.file.mimetype);
       
-      const url = await SupabaseService.uploadImage('barbeiros', fileName, req.file.buffer, req.file.mimetype);
-      
-      // Salva a foto automaticamente no perfil
-      await BarbeiroAppService.atualizarPerfil(barbeiro.barbeiroId, { foto: url });
-
       res.json({ url });
-    } catch (error: any) {
-      res.status(500).json({ erro: error.message || 'Erro no upload da foto' });
+    } catch (error) {
+      next(error);
     }
   }
 

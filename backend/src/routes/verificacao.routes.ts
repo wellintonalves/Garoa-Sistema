@@ -1,3 +1,4 @@
+import { registrarErroSeguro } from '../lib/logSeguro';
 import { Router, Request, Response } from 'express';
 import { VerificacaoService } from '../services/verificacao.service';
 import { codigoEnvioLimiter, codigoTentativaLimiter } from '../middlewares/rateLimit.middleware';
@@ -16,7 +17,7 @@ async function enviar(req: Request, res: Response) {
     await VerificacaoService.enviarCodigo(req.body.usuarioId);
     res.json({ mensagem: 'Se a conta precisar de confirmação, o código será enviado ao email cadastrado.' });
   } catch (error) {
-    console.error('[Verificação] Falha ao enviar código:', error);
+    registrarErroSeguro('routes.verificacao.routes.falha', error);
     res.status(500).json({ erro: 'Não foi possível enviar o código. Tente novamente em instantes.' });
   }
 }
@@ -36,7 +37,7 @@ router.post('/confirmar', codigoTentativaLimiter, async (req: Request, res: Resp
     }
     res.json({ mensagem: 'Email verificado com sucesso!' });
   } catch (error) {
-    console.error('[Verificação] Falha ao confirmar código:', error);
+    registrarErroSeguro('routes.verificacao.routes.falha', error);
     res.status(500).json({ erro: 'Não foi possível confirmar o email. Tente novamente em instantes.' });
   }
 });

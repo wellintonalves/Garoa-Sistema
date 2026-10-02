@@ -1,3 +1,4 @@
+import { registrarErroSeguro } from '../lib/logSeguro';
 import type { NextFunction, Response } from 'express';
 import type { AuthRequest } from '../types';
 import { AssinaturaService } from '../services/assinatura.service';
@@ -47,7 +48,7 @@ export class AssinaturaController {
       if (!registrado.duplicado && registrado.eventoId) {
         setImmediate(() => {
           void WebhookAsaasService.processar(registrado.eventoId!).catch((error) => {
-            console.error('Falha ao processar evento Asaas persistido:', error instanceof Error ? error.message : 'erro desconhecido');
+            registrarErroSeguro('controllers.assinatura.controller.falha', error instanceof Error ? error.message : 'erro desconhecido');
           });
         });
       }

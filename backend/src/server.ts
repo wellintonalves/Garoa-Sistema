@@ -1,3 +1,4 @@
+import { registrarErroSeguro } from './lib/logSeguro';
 // Entry point do servidor
 import app from './app';
 import { createServer } from 'node:http';
@@ -10,11 +11,11 @@ import { agendarProcessosAssinatura } from './lib/assinaturaJob';
 import { agendarLimpezaResultadosIa } from './services/ia/manutencao';
 
 process.on('uncaughtException', (err) => {
-  console.error('❌ uncaughtException:', err);
+  registrarErroSeguro('server.falha', err);
 });
 
 process.on('unhandledRejection', (reason) => {
-  console.error('❌ unhandledRejection:', reason);
+  registrarErroSeguro('server.falha', reason);
 });
 
 const PORT = Number(process.env.PORT) || 3001;
@@ -22,29 +23,29 @@ const PORT = Number(process.env.PORT) || 3001;
 async function start() {
   if (process.env.RUN_FIX_ORPHANS === '1') {
     if (!process.env.DATABASE_URL) {
-      console.error('❌ RUN_FIX_ORPHANS=1 mas falta DATABASE_URL no .env');
+      registrarErroSeguro('server.falha', undefined);
       process.exit(1);
     }
     try {
       await corrigirDados(process.env.DATABASE_URL);
       console.log('✅ FIX ORPHANS concluído com sucesso');
     } catch (err) {
-      console.error('❌ Erro no FIX_ORPHANS:', err);
+      registrarErroSeguro('server.falha', err);
       process.exit(1);
     }
   }
 
   if (process.env.RUN_DB_COPY === '1') {
     if (!process.env.BACKUP_DIRECT_URL || !process.env.DATABASE_URL) {
-      console.error('❌ RUN_DB_COPY=1 mas falta BACKUP_DIRECT_URL ou DATABASE_URL no .env');
+      registrarErroSeguro('server.falha', undefined);
       process.exit(1);
     }
     console.log('MIGRACAO: copiando dados do backup para o banco principal');
     try {
       const result = await copiarBanco(process.env.BACKUP_DIRECT_URL, process.env.DATABASE_URL, { modo: 'RESTAURACAO' });
-      console.log('✅ MIGRACAO concluída:', result);
+      console.log('MIGRACAO concluída');
     } catch (err) {
-      console.error('❌ Erro na migração:', err);
+      registrarErroSeguro('server.falha', err);
       process.exit(1); // Encerra o processo para não subir silenciosamente
     }
   }
@@ -73,7 +74,7 @@ async function start() {
       try {
         await prisma.$queryRaw`SELECT 1`;
       } catch (err) {
-        console.error('❌ Erro no keep-alive do Prisma:', err);
+        registrarErroSeguro('server.falha', err);
       }
     }, 60000);
   });

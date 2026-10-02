@@ -1,48 +1,22 @@
-// Middleware de autenticação JWT para clientes
 import { Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
-import { authConfig } from '../config/auth';
-import { ClienteAuthRequest, ClienteJWT } from '../types';
+import { ClienteAuthRequest } from '../types';
 import { validarEscritaAssinatura } from '../services/acessoAssinatura.service';
+import { autenticarSessao, dadosCliente } from '../services/sessao.service';
+import { tenantStorage } from '../lib/als';
+import { prisma } from '../lib/prisma';
+import { ErroDeNegocio } from '../lib/erros';
 
-/** Verifica se o token JWT do cliente é válido */
-export function clienteAuthMiddleware(req: ClienteAuthRequest, res: Response, next: NextFunction): void {
-  const authHeader = req.headers.authorization;
-
-  if (!authHeader) {
-    res.status(401).json({ erro: 'Token não fornecido' });
-    return;
-  }
-
-  const partes = authHeader.split(' ');
-
-  if (partes.length !== 2 || partes[0] !== 'Bearer') {
-    res.status(401).json({ erro: 'Formato de token inválido' });
-    return;
-  }
-
-  const token = partes[1];
-
+export async function clienteAuthMiddleware(req: ClienteAuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
-    const decoded = jwt.verify(token, authConfig.secretCliente) as ClienteJWT;
-    req.cliente = decoded;
-
-    // Tenta encontrar o barbeariaId no payload (se existir no futuro), headers, body ou extraindo da URL
-    const barbeariaId = (decoded as any).barbeariaId || 
-                        req.headers['x-barbearia-id'] || 
-                        req.params.barbeariaId || 
-                        req.body?.barbeariaId ||
-                        req.originalUrl.match(/\/barbearia\/([^\/?]+)/)?.[1];
-
-    if (barbeariaId && typeof barbeariaId === 'string') {
-      const { tenantStorage } = require('../lib/als');
-      validarEscritaAssinatura(barbeariaId, req.method, req.originalUrl)
-        .then(() => tenantStorage.run({ barbeariaId }, () => next()))
-        .catch(next);
-    } else {
-      next();
-    }
-  } catch {
-    res.status(401).json({ erro: 'Token inválido ou expirado' });
-  }
+    const usuario = await autenticarSessao(req, res, 'cliente');
+    req.cliente = dadosCliente(usuario);
+    // Only server route params select a tenant. Headers/body never grant membership.
+    const barbeariaId = req.params.barbeariaId || req.originalUrl.match(/\/barbearia\/([^/?]+)/)?.[1];
+    if (barbeariaId) {
+      const vinculo = await prisma.clienteBarbearia.findFirst({ where: { clienteId: req.cliente.clienteId, barbeariaId, ativo: true, barbearia: { ativo: true } }, select: { id: true } });
+      if (!vinculo) throw new ErroDeNegocio('Acesso não permitido a esta barbearia.', 403);
+      await validarEscritaAssinatura(barbeariaId, req.method, req.originalUrl);
+      tenantStorage.run({ barbeariaId }, next);
+    } else next();
+  } catch (error) { next(error); }
 }

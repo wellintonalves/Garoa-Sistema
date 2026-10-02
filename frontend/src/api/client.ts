@@ -2,31 +2,15 @@
 import axios from 'axios';
 import { handleApiError } from './errorHandler';
 
-// Garante que a baseURL sempre tenha protocolo (https://)
-function resolveApiUrl(): string {
-  const envUrl = import.meta.env.VITE_API_URL;
-  if (!envUrl) return 'http://localhost:3001';
-  // Se for caminho relativo, usa diretamente
-  if (envUrl.startsWith('/')) return envUrl;
-  // Se não começa com http:// ou https://, adiciona https://
-  if (!envUrl.startsWith('http://') && !envUrl.startsWith('https://')) {
-    return `https://${envUrl}`;
-  }
-  return envUrl;
-}
-
 const api = axios.create({
-  baseURL: resolveApiUrl(),
+  baseURL: '/api',
+  withCredentials: true,
   timeout: 15000,
-  headers: { 'Content-Type': 'application/json' },
+  headers: { 'Content-Type': 'application/json', 'X-Valen-Client': 'web', 'X-Valen-Portal': 'admin' },
 });
 
-// Interceptor — adiciona token JWT automaticamente
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('@garoa:token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
+api.interceptors.request.use(config => {
+  if (config.url?.startsWith('/b/')) config.headers.set('X-Valen-Portal', 'tenant');
   return config;
 });
 

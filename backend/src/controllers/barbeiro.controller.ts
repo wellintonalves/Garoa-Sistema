@@ -1,3 +1,4 @@
+import { registrarErroSeguro } from '../lib/logSeguro';
 // Controller de barbeiros
 import { Response } from 'express';
 import { BarbeiroService } from '../services/barbeiro.service';
@@ -57,7 +58,7 @@ export class BarbeiroController {
       }, req.usuario?.barbeariaId || undefined);
       res.status(201).json(barbeiro);
     } catch (error: any) {
-      console.error('[BarbeiroController.criar]', error);
+      registrarErroSeguro('controllers.barbeiro.controller.falha', error);
       
       // Erro de email duplicado
       if (error?.code === 'P2002') {

@@ -1,6 +1,11 @@
 import { Response } from 'express';
+import { Prisma } from '@prisma/client';
+import { prisma } from '../lib/prisma';
+import { objetoPermitido, texto, booleano } from '../utils/entradaSegura.util';
 import { ConfiguracaoService } from '../services/configuracao.service';
 import { AuthRequest } from '../types';
+import { ErroDeNegocio } from '../lib/erros';
+import { validarReferenciaImagemRecebida } from '../services/referenciaImagem.service';
 
 const gerarSlug = (nome: string) => {
   return nome.toLowerCase()
@@ -13,70 +18,51 @@ const gerarSlug = (nome: string) => {
 };
 
 const cacheBarbearia: Record<string, { data: any, expira: number }> = {};
+export function invalidarCacheBarbearia(id: string): void { delete cacheBarbearia[id]; }
+
+function unidadeDoAdministrador(req: AuthRequest): string {
+  if (req.usuario?.papel !== 'ADMIN' || !req.usuario.id || !req.usuario.barbeariaId) {
+    throw new ErroDeNegocio('Acesso não autorizado.', 403);
+  }
+  return req.usuario.barbeariaId;
+}
 
 export class ConfiguracaoController {
   /** GET /configuracoes */
   static async obter(req: AuthRequest, res: Response): Promise<void> {
     try {
-      const config = await ConfiguracaoService.obter(req.usuario?.barbeariaId);
+      const config = await ConfiguracaoService.obter(unidadeDoAdministrador(req));
       res.json(config);
     } catch (error) {
       const msg = error instanceof Error ? error.message : 'Erro ao obter configurações';
-      res.status(500).json({ erro: msg });
+      res.status(error instanceof ErroDeNegocio ? error.status : 500).json({ erro: msg });
     }
   }
 
   /** PUT /configuracoes */
   static async atualizar(req: AuthRequest, res: Response): Promise<void> {
     try {
-      const config = await ConfiguracaoService.atualizar(req.body, req.usuario?.barbeariaId);
+      const config = await ConfiguracaoService.atualizar(req.body, unidadeDoAdministrador(req));
       res.json(config);
     } catch (error) {
       const msg = error instanceof Error ? error.message : 'Erro ao atualizar configurações';
-      res.status(400).json({ erro: msg });
+      res.status(error instanceof ErroDeNegocio ? error.status : 400).json({ erro: msg });
     }
   }
 
   /** GET /configuracoes/minha-barbearia */
   static async getMinhaBarbearia(req: AuthRequest, res: Response): Promise<void> {
     try {
-      let barbeariaId = req.usuario?.barbeariaId;
-      const { prisma } = require('../lib/prisma');
+      const barbeariaId = unidadeDoAdministrador(req);
       
       const agora = Date.now();
       if (barbeariaId && cacheBarbearia[barbeariaId] && cacheBarbearia[barbeariaId].expira > agora) {
         res.json(cacheBarbearia[barbeariaId].data);
         return;
       }
-      
-      if (!barbeariaId && req.usuario?.papel === 'ADMIN') {
-        const primeira = await prisma.barbearia.findFirst();
-        if (primeira) {
-          barbeariaId = primeira.id;
-        } else {
-          // Cria uma barbearia default se o admin ainda não tiver nenhuma e não existir no banco
-          const nome = 'Minha Barbearia';
-          const novaBarbearia = await prisma.barbearia.create({
-            data: {
-              nome,
-              slug: gerarSlug(nome),
-            }
-          });
-          barbeariaId = novaBarbearia.id;
-          
-          // Vincula o admin à nova barbearia
-          if (req.usuario?.id) {
-            await prisma.usuario.update({
-              where: { id: req.usuario.id },
-              data: { barbeariaId: novaBarbearia.id }
-            });
-          }
-        }
-      }
-
-      if (!barbeariaId) { res.status(404).json({ erro: 'Barbearia não encontrada' }); return; }
 
       let barbearia = await prisma.barbearia.findUnique({ where: { id: barbeariaId } });
+      if (!barbearia) throw new ErroDeNegocio('Barbearia não encontrada.', 404);
       
       // Auto-correção: Atualiza o slug atual diretamente no banco se estiver com o padrão antigo
       if (barbearia && barbearia.slug && barbearia.slug.startsWith('minha-barbearia-')) {
@@ -95,61 +81,54 @@ export class ConfiguracaoController {
 
       res.json(payload);
     } catch (error) {
-      res.status(500).json({ erro: 'Erro ao buscar dados da barbearia' });
+      res.status(error instanceof ErroDeNegocio ? error.status : 500).json({ erro: error instanceof ErroDeNegocio ? error.message : 'Erro ao buscar dados da barbearia' });
     }
   }
 
   /** PUT /configuracoes/minha-barbearia */
   static async updateMinhaBarbearia(req: AuthRequest, res: Response): Promise<void> {
     try {
-      let barbeariaId = req.usuario?.barbeariaId;
-      const { prisma } = require('../lib/prisma');
+      const barbeariaId = unidadeDoAdministrador(req);
 
-      if (!barbeariaId && req.usuario?.papel === 'ADMIN') {
-        const primeira = await prisma.barbearia.findFirst();
-        if (primeira) {
-          barbeariaId = primeira.id;
-        } else {
-          // Cria uma barbearia default se o admin ainda não tiver nenhuma e não existir no banco
-          const nome = req.body.nome || 'Minha Barbearia';
-          const novaBarbearia = await prisma.barbearia.create({
-            data: {
-              nome,
-              slug: gerarSlug(nome),
-            }
-          });
-          barbeariaId = novaBarbearia.id;
-          
-          // Vincula o admin à nova barbearia
-          if (req.usuario?.id) {
-            await prisma.usuario.update({
-              where: { id: req.usuario.id },
-              data: { barbeariaId: novaBarbearia.id }
-            });
-          }
-        }
+
+      const dados = objetoPermitido(req.body, ['nome', 'slug', 'corPrimaria', 'corSecundaria', 'corTexto', 'fonte', 'logo', 'endereco', 'telefone', 'horarioAbertura', 'horarioFechamento', 'temAlmoco', 'horarioAlmocoInicio', 'horarioAlmocoFim']);
+      const data: Prisma.BarbeariaUpdateInput = {};
+      if (dados.nome !== undefined) data.nome = texto(dados.nome, 200);
+      if (dados.slug !== undefined) data.slug = texto(dados.slug, 200, true);
+      for (const campo of ['corPrimaria', 'corSecundaria', 'corTexto', 'fonte', 'endereco', 'telefone'] as const) {
+        if (dados[campo] !== undefined) data[campo] = dados[campo] === null ? null : texto(dados[campo], campo === 'endereco' ? 1000 : 200, true);
       }
-
-      if (!barbeariaId) { res.status(404).json({ erro: 'Barbearia não encontrada' }); return; }
-
-      const { nome, corPrimaria, corSecundaria, corTexto, fonte, logo, endereco, telefone, horarioAbertura, horarioFechamento, temAlmoco, horarioAlmocoInicio, horarioAlmocoFim } = req.body;
-      let slug = req.body.slug;
-      
-      // Se não enviou slug mas enviou nome, gera o slug a partir do nome
-      if (nome && (!slug || slug.trim() === '')) {
-        slug = gerarSlug(nome);
+      for (const campo of ['horarioAbertura', 'horarioFechamento', 'horarioAlmocoInicio', 'horarioAlmocoFim'] as const) {
+        if (dados[campo] === undefined) continue;
+        if (dados[campo] === null || dados[campo] === '') { data[campo] = dados[campo]; continue; }
+        const hora = texto(dados[campo], 5);
+        if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(hora)) throw new ErroDeNegocio('Informe um horário válido.');
+        data[campo] = hora;
+      }
+      if (dados.temAlmoco !== undefined) data.temAlmoco = booleano(dados.temAlmoco);
+      const logo = dados.logo;
+      const atual = await prisma.barbearia.findUnique({ where: { id: barbeariaId }, select: { logo: true } });
+      if (!atual) throw new ErroDeNegocio('Barbearia não encontrada.', 404);
+      validarReferenciaImagemRecebida(logo, atual.logo);
+      const limparLogo = logo === '' || logo === null;
+      if (limparLogo) data.logo = null;
+      if (typeof data.nome === 'string' && (!data.slug || (typeof data.slug === 'string' && !data.slug.trim()))) {
+        data.slug = gerarSlug(data.nome);
+      }
+      if (data.slug !== undefined && (typeof data.slug !== 'string' || !/^[a-z0-9]+(?:[-_][a-z0-9]+)*$/.test(data.slug))) {
+        throw new ErroDeNegocio('Escolha um endereço válido para a barbearia.');
       }
 
       const barbearia = await prisma.barbearia.update({
         where: { id: barbeariaId },
-        data: { nome, slug, corPrimaria, corSecundaria, corTexto, fonte, logo, endereco, telefone, horarioAbertura, horarioFechamento, temAlmoco, horarioAlmocoInicio, horarioAlmocoFim }
+        data
       });
 
       if (barbeariaId) delete cacheBarbearia[barbeariaId];
 
       res.json(barbearia);
     } catch (error) {
-      res.status(400).json({ erro: 'Erro ao atualizar barbearia. Slug pode já estar em uso.' });
+      res.status(error instanceof ErroDeNegocio ? error.status : 400).json({ erro: error instanceof ErroDeNegocio ? error.message : 'Erro ao atualizar barbearia. Slug pode já estar em uso.' });
     }
   }
 }

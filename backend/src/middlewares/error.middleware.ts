@@ -1,3 +1,4 @@
+import { registrarErroSeguro } from '../lib/logSeguro';
 import { Request, Response, NextFunction } from 'express';
 import { ErroDeNegocio } from '../lib/erros';
 
@@ -18,7 +19,7 @@ export function errorMiddleware(
   }
 
   const ref = gerarCodigoReferencia();
-  console.error(`[${ref}]`, err);
+  registrarErroSeguro('http_falha', err, ref);
 
   res.status(500).json({ 
     erro: 'Não foi possível concluir a operação. Tente novamente em instantes.',

@@ -1,11 +1,14 @@
+import { ErroDeNegocio } from '../lib/erros';
 import { Resend } from 'resend';
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
+export function escaparHtmlEmail(valor: string): string {
+  return valor.replace(/[&<>"']/g, caractere => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[caractere]!));
+}
+
 export class EmailService {
   static async enviarCodigoVerificacao(email: string, nome: string, codigo: string): Promise<void> {
-    console.log('[EmailService] Tentando enviar para:', email);
-    console.log('[EmailService] API Key presente:', !!process.env.RESEND_API_KEY);
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
@@ -13,10 +16,9 @@ export class EmailService {
     }
 
     if (!resend) {
-      console.warn('[EmailService] RESEND_API_KEY não configurado. Email de verificação não enviado.');
-      return;
+      throw new ErroDeNegocio('Não foi possível enviar o email agora. Tente novamente em instantes.', 503);
     }
-    await resend.emails.send({
+    const resultado = await resend.emails.send({
       from: 'Garoa Sistema <noreply@valenbarber.com.br>',
       to: email,
       subject: 'Seu código de verificação — Garoa Sistema',
@@ -29,7 +31,7 @@ export class EmailService {
           </div>
           <div style="padding: 40px 32px;">
             <p style="margin: 0 0 8px; font-size: 16px; font-weight: 600; color: #F5F5F5;">
-              Olá, ${nome}!
+              Olá, ${escaparHtmlEmail(nome)}!
             </p>
             <p style="margin: 0 0 32px; font-size: 14px; color: #737373; line-height: 1.6;">
               Use o código abaixo para confirmar seu email. O prazo é de até <strong style="color: #F5F5F5;">10 minutos</strong> a partir da primeira solicitação. Reenvios não prolongam esse prazo.
@@ -51,14 +53,14 @@ export class EmailService {
         </div>
       `,
     });
+    if (resultado.error) throw new ErroDeNegocio('Não foi possível enviar o email agora. Tente novamente em instantes.', 503);
   }
 
   static async enviarCodigoRecuperacaoSenha(email: string, nome: string, codigo: string): Promise<void> {
     if (!resend) {
-      console.warn('[EmailService] RESEND_API_KEY não configurado. Email de recuperação não enviado para:', email);
-      return;
+      throw new ErroDeNegocio('Não foi possível enviar o email agora. Tente novamente em instantes.', 503);
     }
-    await resend.emails.send({
+    const resultado = await resend.emails.send({
       from: 'Garoa Sistema <noreply@valenbarber.com.br>',
       to: email,
       subject: 'Recuperação de senha — Garoa Sistema',
@@ -71,7 +73,7 @@ export class EmailService {
           </div>
           <div style="padding: 40px 32px;">
             <p style="margin: 0 0 8px; font-size: 16px; font-weight: 600; color: #F5F5F5;">
-              Olá, ${nome}!
+              Olá, ${escaparHtmlEmail(nome)}!
             </p>
             <p style="margin: 0 0 32px; font-size: 14px; color: #737373; line-height: 1.6;">
               Recebemos uma solicitação para redefinir sua senha. Use o código abaixo. O prazo é de até <strong style="color: #F5F5F5;">10 minutos</strong> a partir da primeira solicitação. Reenvios não prolongam esse prazo.
@@ -93,5 +95,6 @@ export class EmailService {
         </div>
       `,
     });
+    if (resultado.error) throw new ErroDeNegocio('Não foi possível enviar o email agora. Tente novamente em instantes.', 503);
   }
 }
