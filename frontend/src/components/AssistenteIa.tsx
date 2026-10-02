@@ -23,6 +23,7 @@ interface StatusIa {
   mensagensRestantes: number | null;
   vozSegundosRestantes: number | null;
   renovaEm?: string | null;
+  concessaoGratuita?: { inicio: string; fim: string; renova: false } | null;
   vozTeste?: { segundos: number; reservaUsd: number };
   vozLimiteSegundos?: number;
 }
@@ -157,6 +158,7 @@ function PainelAssistente({ api, caminho, identidade, avatarUrl = avatarValeria,
         </div>}
         {erro && <div role="alert"><p>{erro}</p><button type="button" onClick={() => setTentativa(v => v + 1)}>Tentar novamente</button></div>}
         {status && <>
+          {status.concessaoGratuita && <p className="ia-aviso">Acesso gratuito até {new Intl.DateTimeFormat('pt-BR', { timeZone: 'America/Sao_Paulo', dateStyle: 'short' }).format(new Date(new Date(status.concessaoGratuita.fim).getTime() - 1))}. {status.mensagensRestantes ?? 0} de {status.mensagensMensais ?? 0} mensagens restantes, sujeitas ao saldo de créditos. Sem renovação e sem voz.</p>}
           {!status.textoDisponivel && <p role="status">{status.mensagem}</p>}
           {!status.vozDisponivel && status.vozIndisponivelMotivo && <p role="status">{status.vozIndisponivelMotivo}</p>}
           {historico.length === 0 && <p>{status.textoDisponivel ? 'Olá! Como posso ajudar?' : 'A conversa aparecerá aqui quando a assistente estiver disponível.'}</p>}

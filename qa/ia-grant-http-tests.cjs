@@ -1,0 +1,25 @@
+const assert=require('node:assert/strict'),{randomUUID,randomBytes}=require('crypto');
+require('./integration-env.cjs').configure();
+Object.assign(process.env,{DATABASE_URL:'postgresql://barber_qa@127.0.0.1:55439/valen_ia_test_concessao',DIRECT_URL:'postgresql://barber_qa@127.0.0.1:55439/valen_ia_test_concessao',NODE_ENV:'development',IA_ENABLED:'true',IA_PERSISTENCIA_ENABLED:'true',OPENAI_API_KEY:'fixture-not-a-key',OPENAI_TEXT_MODEL:'fixture',IA_CREDITOS_BASICO:'2000000',IA_CREDITOS_PRO:'6000000',IA_CUSTO_CREDITO_MICROUSD:'1',IA_TARIFA_ENTRADA_MICROUSD_MILHAO:'400000',IA_TARIFA_SAIDA_MICROUSD_MILHAO:'1600000',IA_TARIFA_VERSAO:'fixture',IA_POLITICA_VERSAO:'fixture',IA_CONTAGEM_TEXTO:'RESPOSTA_CONCLUIDA',IA_RESULTADO_CHAVE_BASE64:randomBytes(32).toString('base64'),IA_RESULTADO_RETENCAO_HORAS:'1'});
+const {PrismaClient}=require('@prisma/client'),jwt=require('jsonwebtoken');
+const db=new PrismaClient();
+const app=require('../backend/dist/app').default;
+const server=app.listen(0,'127.0.0.1');
+const nativeFetch=global.fetch;
+global.fetch=(url,opts)=>{if(!String(url).startsWith('http://127.0.0.1:'))throw new Error('External network forbidden');return nativeFetch(url,opts)};
+(async()=>{
+ await new Promise(resolve=>server.listening?resolve():server.once('listening',resolve));
+ const root='http://127.0.0.1:'+server.address().port;
+ const b=await db.barbearia.create({data:{nome:'Oficina do Corte QA',slug:randomUUID(),legadoAssinatura:true,prazoMigracaoAte:new Date(Date.now()+86400000)}});
+ const u=await db.usuario.create({data:{barbeariaId:b.id,nome:'Rafael Almeida',email:randomUUID()+'@example.invalid',senha:'fixture',papel:'ADMIN'}});
+ await db.iaConcessao.create({data:{barbeariaId:b.id,inicio:new Date(Date.now()-1000),fim:new Date(Date.now()+86400000),mensagensLimite:100,creditosLimite:2000000,custoCreditoMicrousd:1}});
+ const token=jwt.sign({id:u.id,nome:u.nome,email:u.email,papel:'ADMIN',barbeariaId:b.id},process.env.JWT_SECRET,{expiresIn:300});
+ const headers={authorization:'Bearer '+token};
+ let r=await fetch(root+'/ia/admin/status',{headers});assert.equal(r.status,200);
+ const data=await r.json();assert.equal(data.textoDisponivel,true);assert.equal(data.vozDisponivel,false);assert.equal(data.vozNoPlano,false);assert.equal(data.renovacao,'SEM_RENOVACAO');assert.equal(data.renovaEm,null);assert.equal(data.mensagensRestantes,100);assert.equal(data.creditosRestantes,2000000);assert(data.concessaoGratuita);
+ assert.equal((await fetch(root+'/ia/admin/status')).status,401);
+ await db.barbearia.update({where:{id:b.id},data:{prazoMigracaoAte:new Date(Date.now()-1000),consultaMigracaoAte:new Date(Date.now()-500)}});
+ r=await fetch(root+'/ia/admin/status',{headers});assert.equal(r.status,403);
+ assert.equal(await db.iaReserva.count({where:{barbeariaId:b.id}}),0);
+ console.log('PASS HTTP real: JWT, status disponível, sem assinatura/voz/renovação, acesso geral expirado bloqueia, zero geração');
+})().catch(e=>{console.error(e);process.exitCode=1}).finally(async()=>{server.close();await db.$disconnect();await require('../backend/dist/lib/prisma').prisma.$disconnect()});

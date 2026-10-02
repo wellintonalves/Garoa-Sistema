@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto';
 import { Prisma, PrismaClient, IaReserva } from '@prisma/client';
 import { ErroDeNegocio } from '../../lib/erros';
 import { ContextoIa } from './cotas';
-import { identificarPeriodoIa } from './periodo';
+import { resolverFranquiaIa } from './concessao';
 import { ConfiguracaoConsumoIa, calcularCustoIa, TOKENS_ENTRADA_RESERVA, TOKENS_SAIDA_MAXIMOS } from './configuracaoConsumo';
 import { decidirSupervisaoVoz } from './supervisaoVoz';
 
@@ -44,24 +44,23 @@ export class RepositorioCotasPrisma {
   }
 
   private async ciclo(tx: Tx, c: ContextoIa, agora: Date) {
-    const assinatura = await tx.assinaturaSaas.findUnique({ where: { barbeariaId: c.barbeariaId } });
-    const ciclo = identificarPeriodoIa(assinatura, agora);
-    if (!assinatura || ciclo.estado !== 'IDENTIFICADO') throw indisponivel('A franquia de IA aguarda um ciclo mensal confirmado e uma política compatível.');
-    return { assinatura, ciclo };
+    return resolverFranquiaIa(tx, c.barbeariaId, agora, this.config);
   }
 
   async saldo(c: ContextoIa) {
     return this.transacao(c, async (tx, agora) => {
-      const { assinatura, ciclo } = await this.ciclo(tx, c, agora);
+      const fonte = await this.ciclo(tx, c, agora);
+      const { ciclo } = fonte;
       const periodo = await tx.iaPeriodo.findUnique({ where: { barbeariaId_inicio: { barbeariaId: c.barbeariaId, inicio: ciclo.inicio } } });
-      const bloqueado = Boolean(periodo && (periodo.bloqueado || periodo.plano !== assinatura.plano || periodo.politicaVersao !== this.config.politicaVersao || periodo.tarifaVersao !== this.config.tarifaVersao));
+      const bloqueado = Boolean(periodo && (periodo.bloqueado || periodo.plano !== fonte.plano || periodo.concessaoId !== fonte.concessaoId || periodo.assinaturaId !== fonte.assinaturaId || periodo.fim.getTime() !== ciclo.fim.getTime() || periodo.politicaVersao !== this.config.politicaVersao || periodo.tarifaVersao !== this.config.tarifaVersao));
       return {
-        mensagensMensais: periodo?.mensagensLimite ?? this.config.mensagens[assinatura.plano],
-        mensagensRestantes: periodo ? periodo.mensagensLimite - periodo.mensagensConsumidas - periodo.mensagensReservadas : this.config.mensagens[assinatura.plano],
-        creditosMensais: periodo?.creditosLimite ?? this.config.creditos[assinatura.plano],
-        creditosRestantes: periodo ? periodo.creditosLimite - periodo.creditosConsumidos - periodo.creditosReservados : this.config.creditos[assinatura.plano],
-        vozSegundosRestantes: periodo ? periodo.vozSegundosLimite - periodo.vozSegundosConsumidos - periodo.vozSegundosReservados : assinatura.plano === 'PRO' ? 1800 : 0,
-        renovaEm: ciclo.fim.toISOString(), bloqueado,
+        mensagensMensais: periodo?.mensagensLimite ?? fonte.mensagensLimite,
+        mensagensRestantes: periodo ? periodo.mensagensLimite - periodo.mensagensConsumidas - periodo.mensagensReservadas : fonte.mensagensLimite,
+        creditosMensais: periodo?.creditosLimite ?? fonte.creditosLimite,
+        creditosRestantes: periodo ? periodo.creditosLimite - periodo.creditosConsumidos - periodo.creditosReservados : fonte.creditosLimite,
+        vozSegundosRestantes: periodo ? periodo.vozSegundosLimite - periodo.vozSegundosConsumidos - periodo.vozSegundosReservados : fonte.vozSegundosLimite,
+        renovaEm: fonte.concessaoId ? null : ciclo.fim.toISOString(), bloqueado,
+        concessaoGratuita: fonte.concessaoId ? { inicio: ciclo.inicio.toISOString(), fim: ciclo.fim.toISOString(), renova: false as const } : null,
       };
     });
   }
@@ -94,8 +93,9 @@ export class RepositorioCotasPrisma {
         if (anterior.usuarioId !== c.usuarioId || anterior.pedidoHash !== hash) throw indisponivel('Identificador já utilizado em outro pedido.');
         return anterior;
       }
-      const { assinatura, ciclo } = await this.ciclo(tx, c, agora);
-      if (canal === 'VOZ' && assinatura.plano !== 'PRO') throw new ErroDeNegocio('Voz ao vivo exclusiva do plano Pro.', 403);
+      const fonte = await this.ciclo(tx, c, agora);
+      const { ciclo } = fonte;
+      if (canal === 'VOZ' && (fonte.concessaoId || fonte.plano !== 'PRO')) throw new ErroDeNegocio('Voz ao vivo exclusiva do plano Pro.', 403);
       if (exclusiva && await tx.iaReserva.findFirst({ where: { barbeariaId: c.barbeariaId, usuarioId: c.usuarioId,
         canal: 'VOZ', estado: { in: ['RESERVADA', 'ENVIANDO'] }, enviarAte: { gt: agora } }, select: { id: true } }))
         throw indisponivel('Aguarde a chamada anterior terminar de encerrar.');
@@ -103,13 +103,13 @@ export class RepositorioCotasPrisma {
       let periodo = await tx.iaPeriodo.findUnique({ where: { barbeariaId_inicio: { barbeariaId: c.barbeariaId, inicio: ciclo.inicio } } });
       if (!periodo) {
         periodo = await tx.iaPeriodo.create({ data: {
-          barbeariaId: c.barbeariaId, assinaturaId: assinatura.id, inicio: ciclo.inicio, fim: ciclo.fim,
-          plano: assinatura.plano, politicaVersao: this.config.politicaVersao, tarifaVersao: this.config.tarifaVersao,
-          mensagensLimite: this.config.mensagens[assinatura.plano], vozSegundosLimite: assinatura.plano === 'PRO' ? 1800 : 0,
-          creditosLimite: this.config.creditos[assinatura.plano],
+          barbeariaId: c.barbeariaId, assinaturaId: fonte.assinaturaId, concessaoId: fonte.concessaoId, inicio: ciclo.inicio, fim: ciclo.fim,
+          plano: fonte.plano, politicaVersao: this.config.politicaVersao, tarifaVersao: this.config.tarifaVersao,
+          mensagensLimite: fonte.mensagensLimite, vozSegundosLimite: fonte.vozSegundosLimite,
+          creditosLimite: fonte.creditosLimite,
         } });
       }
-      if (periodo.bloqueado || periodo.plano !== assinatura.plano || periodo.politicaVersao !== this.config.politicaVersao || periodo.tarifaVersao !== this.config.tarifaVersao || periodo.fim.getTime() !== ciclo.fim.getTime()) {
+      if (periodo.bloqueado || periodo.plano !== fonte.plano || periodo.assinaturaId !== fonte.assinaturaId || periodo.concessaoId !== fonte.concessaoId || periodo.politicaVersao !== this.config.politicaVersao || periodo.tarifaVersao !== this.config.tarifaVersao || periodo.fim.getTime() !== ciclo.fim.getTime()) {
         throw indisponivel('A franquia aguarda revisão da mudança de plano ou configuração.');
       }
       const restantes = { mensagens: periodo.mensagensLimite - periodo.mensagensConsumidas - periodo.mensagensReservadas,
@@ -148,7 +148,7 @@ export class RepositorioCotasPrisma {
       if (agora >= r.enviarAte) { await this.liberar(tx, r); return false; }
       const atual = await this.ciclo(tx, c, agora);
       const periodo = await tx.iaPeriodo.findFirstOrThrow({ where: { id: r.periodoId, barbeariaId: c.barbeariaId } });
-      if (periodo.bloqueado || periodo.plano !== atual.assinatura.plano || periodo.inicio.getTime() !== atual.ciclo.inicio.getTime() ||
+      if (periodo.bloqueado || periodo.plano !== atual.plano || periodo.assinaturaId !== atual.assinaturaId || periodo.concessaoId !== atual.concessaoId || periodo.inicio.getTime() !== atual.ciclo.inicio.getTime() ||
           periodo.fim.getTime() !== atual.ciclo.fim.getTime() || periodo.politicaVersao !== this.config.politicaVersao || periodo.tarifaVersao !== this.config.tarifaVersao) {
         await this.liberar(tx, r);
         return false;

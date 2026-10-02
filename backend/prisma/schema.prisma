@@ -191,6 +191,7 @@ model Barbearia {
   avaliacoes                         Avaliacao[]
   solicitacoesCancelamentoAssinatura SolicitacaoCancelamentoAssinatura[]
   assinaturaSaas                     AssinaturaSaas?
+  iaConcessao                        IaConcessao?
   iaPeriodos                         IaPeriodo[]
   preferenciasPromocionais           PreferenciaPromocional[]
 
@@ -915,7 +916,8 @@ enum IaEstadoSessaoVoz {
 model IaPeriodo {
   id                     String @id @default(uuid())
   barbeariaId            String
-  assinaturaId           String
+  assinaturaId           String?
+  concessaoId            String? @unique
   inicio                 DateTime @db.Timestamptz(3)
   fim                    DateTime @db.Timestamptz(3)
   plano                  PlanoAssinatura
@@ -933,12 +935,30 @@ model IaPeriodo {
   bloqueado              Boolean @default(false)
   criadoEm               DateTime @default(now()) @db.Timestamptz(3)
   barbearia              Barbearia @relation(fields: [barbeariaId], references: [id], onDelete: Restrict)
-  assinatura             AssinaturaSaas @relation(fields: [barbeariaId, assinaturaId], references: [barbeariaId, id], onDelete: Restrict)
+  assinatura             AssinaturaSaas? @relation(fields: [barbeariaId, assinaturaId], references: [barbeariaId, id], onDelete: Restrict)
+  concessao              IaConcessao? @relation(fields: [barbeariaId, concessaoId], references: [barbeariaId, id], onDelete: Restrict)
   reservas               IaReserva[]
   @@unique([barbeariaId, inicio])
   @@unique([barbeariaId, id])
   @@index([fim])
   @@map("ia_periodos")
+}
+
+// Concessão operacional independente: sem assinatura, renovação ou reset de consumo.
+model IaConcessao {
+  id                      String @id @default(uuid())
+  barbeariaId             String @unique
+  inicio                  DateTime @db.Timestamptz(3)
+  fim                     DateTime @db.Timestamptz(3)
+  mensagensLimite         Int
+  creditosLimite          Int
+  custoCreditoMicrousd    Int
+  revogada                Boolean @default(false)
+  criadoEm                DateTime @default(now()) @db.Timestamptz(3)
+  barbearia               Barbearia @relation(fields: [barbeariaId], references: [id], onDelete: Restrict)
+  periodos                IaPeriodo[]
+  @@unique([barbeariaId, id])
+  @@map("ia_concessoes")
 }
 
 model IaReserva {

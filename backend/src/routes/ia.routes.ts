@@ -44,11 +44,13 @@ export function criarRotasIa(resolver: Resolver) {
       // pelo domínio financeiro, calculado em America/Sao_Paulo.
       const periodo = identificarPeriodoIa(assinatura, new Date(Date.now()));
       let consumo = {};
+      let concessaoGratuita: { inicio: string; fim: string; renova: false } | null = null;
       if (process.env.IA_PERSISTENCIA_ENABLED === 'true') {
         try {
           const config = obterConfiguracaoConsumo();
           configuracaoResultado();
           const saldo = await new RepositorioCotasPrisma(prisma, config).saldo(contexto);
+          concessaoGratuita = saldo.concessaoGratuita;
           const envelope = calcularCustoIa(TOKENS_ENTRADA_RESERVA, TOKENS_SAIDA_MAXIMOS, config).creditos;
           const ativa = process.env.IA_ENABLED === 'true' && Boolean(process.env.OPENAI_API_KEY?.trim());
           consumo = { ...saldo, estado: ativa ? 'DISPONIVEL' : 'EM_PREPARACAO',
@@ -65,7 +67,9 @@ export function criarRotasIa(resolver: Resolver) {
         }
       }
       res.json({ ...statusIa(assinatura?.plano ?? null), ...consumo,
-        ...(assinatura?.plano === 'PRO' && process.env.IA_PERSISTENCIA_ENABLED === 'true' ? await statusVoz(contexto) : {}),
+        ...(assinatura?.plano === 'PRO' && !concessaoGratuita && process.env.IA_PERSISTENCIA_ENABLED === 'true' ? await statusVoz(contexto) : {}),
+        ...(concessaoGratuita ? { vozNoPlano: false, vozDisponivel: false, renovacao: 'SEM_RENOVACAO',
+          periodoConcessao: concessaoGratuita } : {}),
         periodoAssinatura: periodo.estado === 'IDENTIFICADO'
           ? { estado: periodo.estado, inicio: periodo.inicio.toISOString(), fim: periodo.fim.toISOString() }
           : periodo,
