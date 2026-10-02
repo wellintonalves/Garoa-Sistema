@@ -133,10 +133,11 @@ async function main() {
               dataHora: new Date('2026-09-07T15:00:00Z'), valorCobrado: 65, valorBruto: 65,
               itens: { create: [corte, barba].map((s, ordem) => ({ servicoId: s.id, barbeariaId: shop.id, nome: s.nome, preco: s.preco, duracaoMinutos: s.duracaoMinutos, ordem })) },
             } });
-            const sim = await AgendamentoService.simularDesconto(ag.id, 'PONTOS', 0, 0, 10);
+            const ator = { id: u.id, papel: 'BARBEIRO' as const, barbeariaId: shop.id };
+            const sim = await AgendamentoService.simularDesconto(ag.id, ator, 'PONTOS', 0, 0, 10);
             await tx.servico.update({ where: { id: corte.id }, data: { preco: 100 } });
             const fechar = () => fluxo === 'admin'
-              ? AgendamentoService.atualizar(ag.id, { status: 'CONCLUIDO', formaPagamento: 'PIX', tipoDesconto: 'PONTOS', pontosUsados: 10 } as any)
+              ? AgendamentoService.atualizar(ag.id, { status: 'CONCLUIDO', formaPagamento: 'PIX', tipoDesconto: 'PONTOS', pontosUsados: 10 }, ator)
               : BarbeiroAppService.concluirAgendamento(ag.id, barbeiro.id, shop.id, 'PIX', 10);
             await fechar();
             assert.equal((await tx.pontoFidelidade.findUniqueOrThrow({ where: { agendamentoId: ag.id } })).pontos, sim.pontosAcumulados);

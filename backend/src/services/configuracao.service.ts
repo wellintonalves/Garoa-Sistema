@@ -1,4 +1,6 @@
 import { prisma } from '../lib/prisma';
+import { Prisma } from '@prisma/client';
+import { objetoPermitido, texto, numero, opcao, horariosSemanais } from '../utils/entradaSegura.util';
 
 export class ConfiguracaoService {
   /** Busca a configuração da barbearia. Se não existir, cria uma padrão. */
@@ -75,11 +77,21 @@ export class ConfiguracaoService {
   }
 
   /** Atualiza a configuração. Passa o payload completo de atualização. */
-  static async atualizar(dados: any, barbeariaId?: string | null) {
+  static async atualizar(entrada: unknown, barbeariaId?: string | null) {
+    texto(barbeariaId);
+    const dados = objetoPermitido(entrada, ['horariosFuncionamento', 'regrasFidelidade', 'baseCalculoComissao', 'baseCalculoPontos']);
+    const data: Prisma.ConfiguracaoUpdateInput = {};
+    if (dados.horariosFuncionamento !== undefined) data.horariosFuncionamento = horariosSemanais(dados.horariosFuncionamento);
+    if (dados.regrasFidelidade !== undefined) {
+      const regras = objetoPermitido(dados.regrasFidelidade, ['pontosParaRecompensa']);
+      data.regrasFidelidade = { pontosParaRecompensa: numero(regras.pontosParaRecompensa, 1000000, true) };
+    }
+    if (dados.baseCalculoComissao !== undefined) data.baseCalculoComissao = opcao(dados.baseCalculoComissao, ['VALOR_BRUTO', 'VALOR_LIQUIDO'] as const);
+    if (dados.baseCalculoPontos !== undefined) data.baseCalculoPontos = opcao(dados.baseCalculoPontos, ['VALOR_BRUTO', 'VALOR_LIQUIDO'] as const);
     const configAtual = await this.obter(barbeariaId);
     const updated = await prisma.configuracao.update({
       where: { id: configAtual.id },
-      data: dados,
+      data,
     });
 
     let conflitosGerados: any[] = [];

@@ -199,6 +199,7 @@ model Barbearia {
 }
 
 model Usuario {
+  authVersion       Int       @default(0)
   id                String    @id @default(uuid())
   nome              String
   email             String
@@ -1036,4 +1037,14 @@ model IaSessaoVoz {
   @@index([estado, encerrarAte])
   @@index([estado, leaseAte])
   @@map("ia_sessoes_voz")
+}
+
+// Shared authentication budgets. Keys contain HMAC digests, never raw IP/email.
+model LimiteAutenticacao {
+  chave       String   @id @db.VarChar(96)
+  tentativas  Int
+  expiraEm    DateTime @db.Timestamptz(3)
+
+  @@index([expiraEm])
+  @@map("limites_autenticacao")
 }

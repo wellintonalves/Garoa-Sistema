@@ -30,6 +30,10 @@ export function ClienteLoginPrincipal() {
       await login(email.trim(), senha);
       navigate(location.state?.destino || '/cliente/home');
     } catch (err: any) {
+      if (err.response?.data?.emailNaoVerificado && err.response.data.usuarioId) {
+        navigate('/verificar-email', { state: { email: email.trim(), usuarioId: err.response.data.usuarioId, destino: '/' } });
+        return;
+      }
       setErro(err?.response?.data?.erro || 'Não foi possível conectar. Tente novamente em instantes.');
       setReferencia(err?.response?.data?.referencia || '');
     } finally {

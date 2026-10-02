@@ -1,50 +1,29 @@
 import { Router } from 'express';
-import multer from 'multer';
+import { invalidarCacheBarbearia } from '../controllers/configuracao.controller';
 import { SupabaseService } from '../services/supabase.service';
 import { authMiddleware } from '../middlewares/auth.middleware';
+import { roleMiddleware } from '../middlewares/role.middleware';
+import { uploadImagem } from '../middlewares/upload.middleware';
 
 const router = Router();
-const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 2 * 1024 * 1024 } }); // 2MB limite
+router.use(authMiddleware, roleMiddleware('ADMIN'));
 
-router.use(authMiddleware);
-
-router.post('/logo', upload.single('file'), async (req, res) => {
-  try {
-    if (!req.file) {
-      res.status(400).json({ erro: 'Nenhum arquivo enviado' });
-      return;
-    }
-    const barbeariaId = req.usuario?.barbeariaId;
-    if (!barbeariaId) {
-      res.status(401).json({ erro: 'Não autorizado' });
-      return;
-    }
-
-    const extension = req.file.originalname.split('.').pop();
-    const fileName = `logo-${barbeariaId}-${Date.now()}.${extension}`;
-    
-    const url = await SupabaseService.uploadImage('barbearias', fileName, req.file.buffer, req.file.mimetype);
-    res.json({ url });
-  } catch (error: any) {
-    res.status(500).json({ erro: error.message });
-  }
-});
-
-router.post('/barbeiro', upload.single('file'), async (req, res) => {
-  try {
-    if (!req.file) {
-      res.status(400).json({ erro: 'Nenhum arquivo enviado' });
-      return;
-    }
-    
-    const extension = req.file.originalname.split('.').pop();
-    const fileName = `foto-${Date.now()}.${extension}`;
-    
-    const url = await SupabaseService.uploadImage('barbeiros', fileName, req.file.buffer, req.file.mimetype);
-    res.json({ url });
-  } catch (error: any) {
-    res.status(500).json({ erro: error.message });
-  }
-});
+for (const [rota, bucket] of [['/logo', 'barbearias'], ['/barbeiro', 'barbeiros']] as const) {
+  router.post(rota, ...uploadImagem, async (req, res, next) => {
+    try {
+      const usuario = req.usuario;
+      if (!usuario?.barbeariaId || !req.file) {
+        res.status(401).json({ erro: 'Sua sessão expirou. Entre novamente para continuar.' }); return;
+      }
+      if (bucket === 'barbeiros' && (typeof req.query.barbeiroId !== 'string' || !req.query.barbeiroId)) {
+        res.status(400).json({ erro: 'Salve o cadastro do barbeiro antes de enviar a foto.' }); return;
+      }
+      const url = await SupabaseService.uploadImage(bucket,
+        { barbeariaId: usuario.barbeariaId, usuarioId: usuario.id, papel: 'ADMIN' }, req.file.buffer, req.file.mimetype, bucket === 'barbeiros' ? req.query.barbeiroId as string : undefined);
+      if (bucket === 'barbearias') invalidarCacheBarbearia(usuario.barbeariaId);
+      res.json({ url });
+    } catch (error) { next(error); }
+  });
+}
 
 export default router;

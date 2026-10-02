@@ -88,10 +88,11 @@ async function main() {
     assert.equal((await prisma.usuario.findUniqueOrThrow({ where: { id: global.cliente.usuarioId } })).barbeariaId, null);
     assert.equal(await prisma.clienteBarbearia.count({ where: { clienteId: global.cliente.clienteId, barbeariaId: unidadeA.id } }), 1);
     await prisma.usuario.update({ where: { id: global.cliente.usuarioId }, data: { createdAt: new Date('2020-01-01T12:00:00Z') } });
-    const repetido = await ClienteAppService.registrar({ ...cadastroGlobal, nome: 'Nome atualizado' });
-    assert.equal(repetido.isNovo, false);
-    assert.equal(repetido.cliente.usuarioId, global.cliente.usuarioId);
-    assert.equal(repetido.cliente.clienteId, global.cliente.clienteId);
+    const contaAntes = await prisma.usuario.findUniqueOrThrow({ where: { id: global.cliente.usuarioId } });
+    const perfilAntes = await prisma.cliente.findUniqueOrThrow({ where: { id: global.cliente.clienteId } });
+    await assert.rejects(ClienteAppService.registrar({ ...cadastroGlobal, nome: 'Nome sobrescrito', senha: 'senha-invasor' }), { status: 409 });
+    assert.deepEqual(await prisma.usuario.findUniqueOrThrow({ where: { id: global.cliente.usuarioId } }), contaAntes);
+    assert.deepEqual(await prisma.cliente.findUniqueOrThrow({ where: { id: global.cliente.clienteId } }), perfilAntes);
     await prisma.usuario.update({ where: { id: global.cliente.usuarioId }, data: { emailVerificado: true } });
     await assert.rejects(ClienteAppService.registrar(cadastroGlobal), /já está cadastrado/);
     for (const antigo of antigos) {

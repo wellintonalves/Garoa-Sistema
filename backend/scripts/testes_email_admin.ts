@@ -16,11 +16,12 @@ const fake = {
         && (!where.barbeariaId || u.barbeariaId === where.barbeariaId)),
     create: async ({ data }: { data: Omit<Usuario, 'id' | 'createdAt' | 'emailVerificado' | 'codigoVerificacao' | 'codigoExpiracao'> }) => {
       if (falharCriacao) throw new Error('Falha simulada');
-      const u: Usuario = { ...data, id: String(usuarios.length + 1), createdAt: new Date(), emailVerificado: false, codigoVerificacao: null, codigoExpiracao: null };
+      const u: Usuario = { authVersion: 0, ...data, id: String(usuarios.length + 1), createdAt: new Date(), emailVerificado: false, codigoVerificacao: null, codigoExpiracao: null };
       usuarios.push(u);
       return u;
     },
   },
+  barbeiro: { findFirst: async () => ({ id: 'barbeiro-fixture-ativo' }) },
   barbearia: {
     create: async () => ({ id: `loja-${++lojas}` }),
     findFirst: async ({ where }: { where: { id: string; ativo: boolean } }) => {
@@ -77,6 +78,8 @@ async function main() {
     usuarios.push({ ...usuarios[0], id: `equipe-${barbeariaId}`, papel: 'BARBEIRO', barbeariaId });
   }
   assert.equal((await AuthService.login({ ...dados, email: 'admin@example.test' })).usuario.id, primeiro.usuario.id);
+  await assert.rejects(AuthService.login({ ...dados, papel: 'CLIENTE', barbeariaId: 'cliente-b' }), { status: 403 });
+  usuarios.filter(u => u.papel === 'CLIENTE').forEach(u => { u.emailVerificado = true; });
   assert.equal((await AuthService.login({ ...dados, papel: 'CLIENTE', barbeariaId: 'cliente-b' })).usuario.barbeariaId, 'cliente-b');
   assert.equal((await AuthService.login({ ...dados, papel: 'BARBEIRO', barbeariaId: 'barbeiro-b' })).usuario.barbeariaId, 'barbeiro-b');
   assert.equal(usuarios[0].aceiteDocumentosEm, null, 'login legado não fabrica aceite');

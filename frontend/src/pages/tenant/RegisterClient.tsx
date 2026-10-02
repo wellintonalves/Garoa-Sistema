@@ -1,7 +1,6 @@
 import { AceiteDocumentos, dadosAceiteDocumentos } from '../../components/AceiteDocumentos';
 
 import { useNavigate, useParams } from 'react-router-dom';
-import { useClientAuth } from '../../hooks/useClientAuth';
 import { useState } from 'react';
 import { api } from '../../api';
 import { ModalAlert } from '../../components/ModalAlert';
@@ -9,7 +8,6 @@ import { ModalAlert } from '../../components/ModalAlert';
 export function RegisterClient() {
   const navigate = useNavigate();
   const { slug } = useParams();
-  const { entrar } = useClientAuth();
   const [nome, setNome] = useState('');
   const [aceitoDocumentos, setAceitoDocumentos] = useState(false);
   const [email, setEmail] = useState('');
@@ -24,8 +22,7 @@ export function RegisterClient() {
     setEnviando(true);
     try {
       const res = await api.post('/b/' + slug + '/auth/register', { nome, email: email.trim().toLowerCase(), senha, telefone, aceiteDocumentos: dadosAceiteDocumentos(aceitoDocumentos) });
-      entrar(slug as string, res.data.token, res.data.usuario);
-      navigate('/b/' + slug + '/app');
+      navigate('/verificar-email', { state: { email, nome, usuarioId: res.data.usuario.id, destino: '/b/' + slug + '/login' } });
     } catch (err: any) {
       setModalObj({ aberto: true, titulo: 'Falha no cadastro', mensagem: err.response?.data?.erro || 'Erro ao registrar', tipo: 'erro', textoBotao: 'Entendi' });
     } finally {
@@ -42,7 +39,7 @@ export function RegisterClient() {
         <input className='mb-4 p-2 rounded bg-[var(--superficie-2)] border-[var(--borda-forte)] border bg-[var(--superficie-2)] border-[var(--borda-forte)] text-[var(--texto-principal)]' type='text' placeholder='WhatsApp' value={telefone} onChange={e => setTelefone(e.target.value)} />
         <input className='mb-6 p-2 rounded bg-[var(--superficie-2)] border-[var(--borda-forte)] border bg-[var(--superficie-2)] border-[var(--borda-forte)] text-[var(--texto-principal)]' type='password' placeholder='Senha' value={senha} onChange={e => setSenha(e.target.value)} required />
         <AceiteDocumentos aceito={aceitoDocumentos} onChange={setAceitoDocumentos} />
-        <button type='submit' disabled={enviando} className='bg-orange-500 text-[var(--texto-principal)] p-2 rounded font-semibold'>{enviando ? 'Criando conta…' : 'Cadastrar'}</button>
+        <button type='submit' disabled={enviando} className='bg-orange-500 text-[var(--texto-principal)] p-2 rounded font-semibold'>{enviando ? 'Criando contaâ€¦' : 'Cadastrar'}</button>
       </form>
       
       <ModalAlert 

@@ -17,15 +17,8 @@ export function VerificarEmail() {
   const inputs = useRef<(HTMLInputElement | null)[]>([]);
 
   const email = location.state?.email || '';
-  const token = location.state?.token || '';
   const usuarioId = location.state?.usuarioId || '';
   const nome = location.state?.nome || '';
-
-  useEffect(() => {
-    if (token) {
-      localStorage.setItem('@garoa:token', token);
-    }
-  }, [token]);
 
   useEffect(() => {
     if (countdown > 0 && !podeReenviar) {
@@ -72,7 +65,7 @@ export function VerificarEmail() {
     try {
       await api.post('/verificacao/confirmar', { usuarioId, codigo });
       setSucesso(true);
-      setTimeout(() => navigate('/', { state: { mensagemSucesso: 'Email verificado com sucesso! Faça login para continuar.', destino: location.state?.destino } }), 2000);
+      setTimeout(() => navigate(location.state?.destino || '/', { state: { mensagemSucesso: 'Email verificado com sucesso! Faça login para continuar.', destino: location.state?.destino } }), 2000);
     } catch (err: any) {
       setErro(err?.response?.data?.erro || 'Código inválido ou expirado.');
       setCodigos(['', '', '', '', '', '']);

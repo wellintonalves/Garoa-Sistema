@@ -24,9 +24,13 @@ export function LoginClient() {
     e.preventDefault();
     try {
       const res = await api.post('/b/' + slug + '/auth/login', { email, senha });
-      entrar(slug as string, res.data.token, res.data.usuario);
+      entrar(slug as string, res.data.usuario);
       navigate('/b/' + slug + '/app');
     } catch (err: any) {
+      if (err.response?.data?.emailNaoVerificado && err.response.data.usuarioId) {
+        navigate('/verificar-email', { state: { email: email.trim(), usuarioId: err.response.data.usuarioId, destino: '/b/' + slug + '/login' } });
+        return;
+      }
       setModalObj({ aberto: true, titulo: 'Falha no login', mensagem: err.response?.data?.erro || 'Erro no login', tipo: 'erro', textoBotao: 'Entendi' });
     }
   };

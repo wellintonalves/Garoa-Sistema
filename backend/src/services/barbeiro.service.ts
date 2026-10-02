@@ -1,5 +1,6 @@
 // Serviço de barbeiros — CRUD completo
 import { prisma } from '../lib/prisma';
+import { validarReferenciaImagemRecebida } from './referenciaImagem.service';
 import { executarSerializavel, validarVagaBarbeiro } from './limitesAssinatura.service';
 
 interface DadosBarbeiro {
@@ -78,6 +79,7 @@ export class BarbeiroService {
 
   /** Cria um novo barbeiro (com usuário) */
   static async criar(dados: DadosBarbeiro, barbeariaId?: string) {
+    validarReferenciaImagemRecebida(dados.foto, null);
     const bcrypt = await import('bcryptjs');
     const senhaHash = await bcrypt.hash(dados.senha, 10);
 
@@ -117,6 +119,8 @@ export class BarbeiroService {
     const barbeiro = await prisma.barbeiro.findUnique({ where: { id } });
     if (!barbeiro) throw new Error('Barbeiro não encontrado');
 
+    validarReferenciaImagemRecebida(dados.foto, barbeiro.foto);
+
     // Atualiza dados do usuario se nome, email ou senha foram passados
     if (dados.nome || dados.email || dados.senha) {
       const updateUser: Record<string, unknown> = {};
@@ -134,11 +138,16 @@ export class BarbeiroService {
 
     // Atualiza dados do barbeiro
     const updateBarbeiro: Record<string, unknown> = {};
-    if (dados.foto !== undefined) updateBarbeiro.foto = dados.foto || null;
+    // Reenvio da URL atual não pode sobrescrever uma troca concorrente de foto.
+    if (dados.foto === '' || dados.foto === null) updateBarbeiro.foto = null;
     if (dados.especialidades !== undefined) updateBarbeiro.especialidades = dados.especialidades;
     if (dados.comissaoPercent !== undefined) updateBarbeiro.comissaoPercent = dados.comissaoPercent;
     if (dados.cor !== undefined) updateBarbeiro.cor = dados.cor;
-    if (dados.ativo !== undefined) updateBarbeiro.ativo = dados.ativo;
+    if (dados.ativo !== undefined) {
+      updateBarbeiro.ativo = dados.ativo;
+      // Nested mutation is atomic with status change; disable then enable never revives sessions.
+      if (dados.ativo !== barbeiro.ativo) updateBarbeiro.usuario = { update: { authVersion: { increment: 1 } } };
+    }
     if (dados.trabalhandoAgora !== undefined) updateBarbeiro.trabalhandoAgora = dados.trabalhandoAgora;
     if (dados.horariosTrabalho !== undefined) updateBarbeiro.horariosTrabalho = dados.horariosTrabalho;
 
@@ -165,7 +174,7 @@ export class BarbeiroService {
   static async desativar(id: string) {
     return prisma.barbeiro.update({
       where: { id },
-      data: { ativo: false } as never,
+      data: { ativo: false, usuario: { update: { authVersion: { increment: 1 } } } } as never,
     });
   }
 

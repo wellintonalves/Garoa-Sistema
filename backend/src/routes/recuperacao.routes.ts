@@ -1,3 +1,4 @@
+import { registrarErroSeguro } from '../lib/logSeguro';
 import { Router, Request, Response } from 'express';
 import { VerificacaoService } from '../services/verificacao.service';
 import { codigoEnvioLimiter, codigoTentativaLimiter } from '../middlewares/rateLimit.middleware';
@@ -15,7 +16,7 @@ router.post('/solicitar', codigoEnvioLimiter, async (req: Request, res: Response
     await VerificacaoService.enviarCodigoRecuperacao(email, { papel, barbeariaSlug });
   } catch (error) {
     // A resposta não revela se uma conta existe, é ambígua ou teve falha de entrega.
-    console.error('[Recuperação] Falha ao enviar código:', error);
+    registrarErroSeguro('routes.recuperacao.routes.falha', error);
   }
   res.json({ mensagem: mensagemEnvio });
 });

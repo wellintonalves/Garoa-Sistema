@@ -1,3 +1,5 @@
+import { setWasmUrl } from '@lottiefiles/dotlottie-react';
+setWasmUrl('/dotlottie-player.wasm');
 // Entry point da aplicação React
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';

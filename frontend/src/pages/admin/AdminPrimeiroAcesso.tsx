@@ -24,13 +24,11 @@ export function AdminPrimeiroAcesso() {
     try {
       const res = await api.post('/auth/register', { nome: nome.trim(), email: email.trim(), senha, papel: 'ADMIN', aceiteDocumentos: dadosAceiteDocumentos(aceitoDocumentos) });
       setSucesso(true);
-      const token = res.data.token;
       const usuarioId = res.data.usuario.id;
       setTimeout(() => navigate('/verificar-email', {
         state: {
           email: email.trim(),
           nome: nome.trim(),
-          token,
           usuarioId,
           destino: '/admin/login',
         }

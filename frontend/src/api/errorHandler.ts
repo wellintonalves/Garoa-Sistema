@@ -12,7 +12,7 @@ export function handleApiError(error: AxiosError, authRedirectCallback?: () => v
 
   if (status === 401) {
     const url = error.config?.url || '';
-    if (!url.includes('/login') && !url.includes('/auth')) {
+    if (!url.includes('/login') && !url.endsWith('/session') && !url.endsWith('/logout') && !url.includes('/auth')) {
       limparSessao();
 
       const path = window.location.pathname;
@@ -20,6 +20,8 @@ export function handleApiError(error: AxiosError, authRedirectCallback?: () => v
         window.location.href = '/barbeiro/login?exp=1';
       } else if (path.startsWith('/admin')) {
         window.location.href = '/admin/login?exp=1';
+      } else if (path.startsWith('/b/')) {
+        window.location.href = path.split('/').slice(0, 3).join('/') + '/login?exp=1';
       } else {
         window.location.href = '/?exp=1';
       }

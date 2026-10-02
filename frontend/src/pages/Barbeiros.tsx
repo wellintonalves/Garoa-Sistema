@@ -1,5 +1,5 @@
 // Página de Barbeiros — listagem com cards + seção de comissões por período
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Star, Plus, CurrencyDollar, PencilSimple, Trash, Power, Clock } from '@phosphor-icons/react';
 import { Modal } from '../components/Modal';
@@ -43,6 +43,16 @@ export function Barbeiros() {
   const [form, setForm] = useState({ nome: '', email: '', senha: '', foto: '', especialidades: '', comissaoPercent: '50', cor: CORES_REFERENCIA.corPadraoBarbeiro });
   const [producaoParams] = useSearchParams();
   const [erroLista, setErroLista] = useState('');
+  const [fotoPendente, setFotoPendente] = useState<Blob | null>(null);
+  const [previewFoto, setPreviewFoto] = useState('');
+  const [erroSalvar, setErroSalvar] = useState('');
+  const [salvando, setSalvando] = useState(false);
+  const salvandoRef = useRef(false);
+  useEffect(() => {
+    if (!fotoPendente) { setPreviewFoto(''); return; }
+    const url = URL.createObjectURL(fotoPendente); setPreviewFoto(url);
+    return () => URL.revokeObjectURL(url);
+  }, [fotoPendente]);
 
   async function carregar(signal?: AbortSignal) {
     setErroLista('');
@@ -56,12 +66,14 @@ export function Barbeiros() {
   useEffect(() => { const controller = new AbortController(); carregar(controller.signal); return () => controller.abort(); }, []);
 
   function abrirModalNovo() {
+    setFotoPendente(null); setErroSalvar('');
     setEditandoId(null);
     setForm({ nome: '', email: '', senha: '', foto: '', especialidades: '', comissaoPercent: '50', cor: CORES_REFERENCIA.corPadraoBarbeiro });
     setModalAberto(true);
   }
 
   function abrirModalEditar(b: Barbeiro) {
+    setFotoPendente(null); setErroSalvar('');
     setEditandoId(b.id);
     setForm({
       nome: b.usuario.nome,
@@ -76,40 +88,43 @@ export function Barbeiros() {
   }
 
   async function salvarBarbeiro() {
+    if (salvandoRef.current) return;
+    if (!editandoId && !form.senha) { setErroSalvar('Senha é obrigatória para novos barbeiros.'); return; }
+    salvandoRef.current = true; setSalvando(true); setErroSalvar('');
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const payload: any = {
-        nome: form.nome,
-        email: form.email,
-        foto: form.foto,
+      const payload = {
+        nome: form.nome, email: form.email,
         especialidades: form.especialidades.split(',').map(e => e.trim()).filter(Boolean),
-        comissaoPercent: Number(form.comissaoPercent),
-        cor: form.cor,
+        comissaoPercent: Number(form.comissaoPercent), cor: form.cor,
+        ...(form.senha ? { senha: form.senha } : {}),
       };
-      
-      if (form.senha) {
-        payload.senha = form.senha;
+      let id = editandoId;
+      if (id) await api.put(`/barbeiros/${id}`, payload);
+      else {
+        const criado = await api.post<{ id: string }>('/barbeiros', payload);
+        id = criado.data.id;
+        setEditandoId(id); // Falha da foto deve repetir só a edição, nunca criar outro barbeiro.
+        setForm(prev => ({ ...prev, senha: '' }));
       }
-
-      if (editandoId) {
-        await api.put(`/barbeiros/${editandoId}`, payload);
-      } else {
-        if (!form.senha) {
-          alert('Senha é obrigatória para novos barbeiros.');
-          return;
+      if (fotoPendente) {
+        const body = new FormData(); body.append('file', fotoPendente, 'avatar.jpeg');
+        try {
+          const foto = await api.post<{ url: string }>(`/upload/barbeiro?barbeiroId=${encodeURIComponent(id)}`, body, {
+            headers: { 'Content-Type': 'multipart/form-data' }, timeout: 45000,
+          });
+          setForm(prev => ({ ...prev, foto: foto.data.url }));
+          setFotoPendente(null);
+        } catch (error) {
+          setErroSalvar(`O cadastro foi salvo, mas a foto não foi enviada. ${error instanceof Error ? error.message : 'Tente novamente.'}`);
+          carregar(); return;
         }
-        await api.post('/barbeiros', payload);
       }
-      
-      setModalAberto(false);
-      setEditandoId(null);
+      setModalAberto(false); setEditandoId(null); setFotoPendente(null);
       setForm({ nome: '', email: '', senha: '', foto: '', especialidades: '', comissaoPercent: '50', cor: CORES_REFERENCIA.corPadraoBarbeiro });
       carregar();
-    } catch (err: any) {
-      console.error(err);
-      const mensagem = err?.response?.data?.erro || err?.message || 'Erro ao salvar barbeiro.';
-      alert(mensagem);
-    }
+    } catch (error) {
+      setErroSalvar(error instanceof Error ? error.message : 'Não foi possível salvar o barbeiro. Tente novamente.');
+    } finally { salvandoRef.current = false; setSalvando(false); }
   }
 
   async function desativarBarbeiro(id: string) {
@@ -349,22 +364,22 @@ export function Barbeiros() {
 
       <ErrorBoundary><ProducaoBarbeiros /></ErrorBoundary>
 
-      <Modal aberto={modalAberto} onFechar={() => setModalAberto(false)} titulo={editandoId ? "Editar Barbeiro" : "Novo Barbeiro"}>
+      <Modal aberto={modalAberto} onFechar={() => { if (!salvando) setModalAberto(false); }} titulo={editandoId ? "Editar Barbeiro" : "Novo Barbeiro"}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <div>
             <label className="input-label">Foto do Barbeiro (Opcional, Max 2MB)</label>
             <div className="flex items-center gap-4">
-              {form.foto ? (
-                <img src={form.foto} alt="Foto do Barbeiro" className="w-12 h-12 object-cover rounded-full border border-[var(--border)]" />
+              {previewFoto || form.foto ? (
+                <img src={previewFoto || form.foto} alt="Foto do Barbeiro" className="w-12 h-12 object-cover rounded-full border border-[var(--border)]" />
               ) : (
                 <div className="w-12 h-12 bg-[rgba(var(--cor-primaria-rgb), 0.10)] text-[rgba(var(--cor-primaria-rgb), 0.15)] rounded-full flex items-center justify-center font-bold">
                   {form.nome ? getIniciais(form.nome) : 'B'}
                 </div>
               )}
-              <input type="file" accept="image/png, image/jpeg, image/webp" onChange={(e) => {
+              <input type="file" disabled={salvando} accept="image/png, image/jpeg, image/webp" onChange={(e) => {
                 if (e.target.files && e.target.files[0]) {
                   const file = e.target.files[0];
-                  if (file.size > 2 * 1024 * 1024) { alert('Arquivo muito grande (Max 2MB)'); return; }
+                  if (file.size > 2 * 1024 * 1024) { setErroSalvar('Escolha uma foto de até 2 MB.'); return; }
                   const reader = new FileReader();
                   reader.onload = () => {
                     setImagemParaCortar(reader.result as string);
@@ -395,7 +410,8 @@ export function Barbeiros() {
               <input type="text" value={form.cor} onChange={e => setForm({...form, cor: e.target.value})} className="ds-input flex-1" />
             </div></div>
           </div>
-          <button onClick={salvarBarbeiro} className="btn-primary w-full justify-center">{editandoId ? "Salvar Alterações" : "Cadastrar"}</button>
+          <p role="alert" className="text-sm text-[var(--erro)]">{erroSalvar}</p>
+          <button onClick={salvarBarbeiro} disabled={salvando} className="btn-primary w-full justify-center">{salvando ? "Salvando…" : editandoId ? "Salvar alterações" : "Cadastrar"}</button>
         </div>
       </Modal>
 
@@ -489,19 +505,10 @@ export function Barbeiros() {
         aberto={cropModalAberto}
         onFechar={() => setCropModalAberto(false)}
         imageSrc={imagemParaCortar}
-        onCropComplete={async (croppedBlob) => {
+        onCropComplete={(croppedBlob) => {
           setCropModalAberto(false);
-          const formData = new FormData();
-          formData.append('file', croppedBlob, 'avatar.jpeg');
-          try {
-            const res = await api.post('/upload/barbeiro', formData, {
-              headers: { 'Content-Type': 'multipart/form-data' }
-            });
-            setForm({ ...form, foto: res.data.url });
-          } catch (error: any) { 
-            console.error(error);
-            alert(error?.response?.data?.erro || 'Erro ao fazer upload da foto'); 
-          }
+          setFotoPendente(croppedBlob);
+          setErroSalvar('');
         }}
       />
     </div>

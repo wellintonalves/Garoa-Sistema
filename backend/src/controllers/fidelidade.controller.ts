@@ -1,3 +1,4 @@
+import { registrarErroSeguro } from '../lib/logSeguro';
 import { Response } from 'express';
 import { resumirPontos, tipoMovimentoPontos } from '../utils/extratoPontos.util';
 import { AuthRequest } from '../types';
@@ -26,7 +27,7 @@ export class FidelidadeController {
 
       res.json(config);
     } catch (error) {
-      console.error('Erro ao obter configuração de fidelidade:', error);
+      registrarErroSeguro('controllers.fidelidade.controller.falha', error);
       res.status(500).json({ erro: 'Erro ao obter configuração de fidelidade.' });
     }
   }
@@ -95,7 +96,7 @@ export class FidelidadeController {
 
       res.json(config);
     } catch (error) {
-      console.error('Erro ao atualizar configuração de fidelidade:', error);
+      registrarErroSeguro('controllers.fidelidade.controller.falha', error);
       res.status(500).json({ erro: 'Erro ao atualizar configuração de fidelidade.' });
     }
   }
@@ -117,7 +118,7 @@ export class FidelidadeController {
 
       res.json(recompensas);
     } catch (error) {
-      console.error('Erro ao listar recompensas:', error);
+      registrarErroSeguro('controllers.fidelidade.controller.falha', error);
       res.status(500).json({ erro: 'Erro ao listar recompensas.' });
     }
   }
@@ -146,7 +147,7 @@ export class FidelidadeController {
 
       res.status(201).json(recompensa);
     } catch (error) {
-      console.error('Erro ao criar recompensa:', error);
+      registrarErroSeguro('controllers.fidelidade.controller.falha', error);
       res.status(500).json({ erro: 'Erro ao criar recompensa.' });
     }
   }
@@ -176,7 +177,7 @@ export class FidelidadeController {
 
       res.json(recompensa);
     } catch (error) {
-      console.error('Erro ao atualizar recompensa:', error);
+      registrarErroSeguro('controllers.fidelidade.controller.falha', error);
       res.status(500).json({ erro: 'Erro ao atualizar recompensa.' });
     }
   }
@@ -201,7 +202,7 @@ export class FidelidadeController {
 
       res.status(204).send();
     } catch (error) {
-      console.error('Erro ao remover recompensa:', error);
+      registrarErroSeguro('controllers.fidelidade.controller.falha', error);
       res.status(500).json({ erro: 'Erro ao remover recompensa.' });
     }
   }
@@ -240,7 +241,7 @@ export class FidelidadeController {
 
       res.json(resgates);
     } catch (error) {
-      console.error('Erro ao listar resgates:', error);
+      registrarErroSeguro('controllers.fidelidade.controller.falha', error);
       res.status(500).json({ erro: 'Erro ao listar resgates.' });
     }
   }
@@ -312,7 +313,7 @@ export class FidelidadeController {
 
       res.status(201).json(resgate);
     } catch (error: any) {
-      console.error('Erro ao resgatar recompensa:', error);
+      registrarErroSeguro('controllers.fidelidade.controller.falha', error);
       if (error.message === 'Saldo de pontos insuficiente.') {
         res.status(400).json({ erro: error.message });
       } else {
@@ -354,7 +355,7 @@ export class FidelidadeController {
 
       res.json(atualizado);
     } catch (error) {
-      console.error('Erro ao confirmar resgate:', error);
+      registrarErroSeguro('controllers.fidelidade.controller.falha', error);
       res.status(500).json({ erro: 'Erro ao confirmar resgate.' });
     }
   }
@@ -390,7 +391,7 @@ export class FidelidadeController {
 
       res.json(atualizado);
     } catch (error) {
-      console.error('Erro ao cancelar resgate:', error);
+      registrarErroSeguro('controllers.fidelidade.controller.falha', error);
       res.status(500).json({ erro: 'Erro ao cancelar resgate.' });
     }
   }
@@ -444,7 +445,7 @@ export class FidelidadeController {
 
       res.status(201).json(registro);
     } catch (error) {
-      console.error('Erro ao ajustar pontos:', error);
+      registrarErroSeguro('controllers.fidelidade.controller.falha', error);
       res.status(500).json({ erro: 'Erro ao ajustar pontos.' });
     }
   }
@@ -494,7 +495,7 @@ export class FidelidadeController {
 
       res.json({ saldo, totalGanho, totalGasto, historico });
     } catch (error) {
-      console.error('Erro ao buscar histórico:', error);
+      registrarErroSeguro('controllers.fidelidade.controller.falha', error);
       res.status(500).json({ erro: 'Erro ao buscar histórico.' });
     }
   }
@@ -548,7 +549,7 @@ export class FidelidadeController {
 
       res.json(clientes);
     } catch (error) {
-      console.error('Erro ao listar clientes com pontos:', error);
+      registrarErroSeguro('controllers.fidelidade.controller.falha', error);
       res.status(500).json({ erro: 'Erro ao listar clientes.' });
     }
   }
@@ -625,7 +626,7 @@ export class FidelidadeController {
         descontoMaxPercentual: Number(config?.descontoMaxPercentual || 0),
       });
     } catch (error) {
-      console.error('Erro ao obter saldo do cliente:', error);
+      registrarErroSeguro('controllers.fidelidade.controller.falha', error);
       res.status(500).json({ erro: 'Erro ao obter saldo do cliente.' });
     }
   }

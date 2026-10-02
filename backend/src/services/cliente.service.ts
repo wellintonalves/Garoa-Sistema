@@ -1,5 +1,6 @@
 // Serviço de clientes — CRUD + dados agregados por barbearia
 import { prisma } from '../lib/prisma';
+import { objetoPermitido, texto } from '../utils/entradaSegura.util';
 import { validarSaldoParaResgate } from './saldoFidelidade.util';
 import { normalizarDataNascimento } from '../utils/dataNascimento.util';
 import { CATEGORIA_VENDA_PRODUTO } from '../lib/constantes';
@@ -509,7 +510,11 @@ export class ClienteService {
   }
 
   /** Atualiza dados do cliente */
-  static async atualizar(id: string, dados: DadosAtualizacao, barbeariaId: string) {
+  static async atualizar(id: string, entrada: DadosAtualizacao, barbeariaId: string) {
+    const dados = objetoPermitido(entrada, ['telefone', 'dataNascimento', 'observacoes']);
+    const telefone = dados.telefone === undefined ? undefined : texto(dados.telefone, 40, true);
+    const observacoes = dados.observacoes === undefined ? undefined : texto(dados.observacoes, 4000, true);
+    const dataNascimento = dados.dataNascimento === undefined ? undefined : normalizarDataNascimento(texto(dados.dataNascimento, 40));
     const cliente = await prisma.cliente.findUnique({ where: { id } });
     if (!cliente) throw new Error('Cliente não encontrado');
 
@@ -525,8 +530,9 @@ export class ClienteService {
     return prisma.cliente.update({
       where: { id },
       data: {
-        ...dados,
-        dataNascimento: dados.dataNascimento ? normalizarDataNascimento(dados.dataNascimento) : undefined,
+        telefone,
+        observacoes,
+        dataNascimento,
       } as any,
       include: {
         usuario: {
@@ -556,6 +562,8 @@ export class ClienteService {
         create: { clienteId: id, barbeariaId, ativo: false, arquivadoEm: new Date() },
         update: { ativo: false, arquivadoEm: new Date() },
       });
+
+      await tx.usuario.updateMany({ where: { id: cliente.usuarioId }, data: { authVersion: { increment: 1 } } });
 
       if (vinculadoDiretamente) {
         await tx.cliente.update({ where: { id }, data: { barbeariaId: null } });

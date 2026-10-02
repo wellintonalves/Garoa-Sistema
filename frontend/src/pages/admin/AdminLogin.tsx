@@ -29,7 +29,7 @@ export function AdminLogin() {
       if (res.data.usuario?.papel !== 'ADMIN') {
         throw new Error('Acesso não autorizado');
       }
-      loginDireto(res.data.token, res.data.usuario);
+      loginDireto(res.data.usuario);
       navigate('/admin');
     } catch (err: any) {
       setErro(err?.response?.data?.erro || 'Não foi possível conectar. Tente novamente em instantes.');

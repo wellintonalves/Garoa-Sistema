@@ -1,9 +1,13 @@
+import { registrarErroSeguro } from '../lib/logSeguro';
+import { ConfirmacaoEmailNecessaria } from './confirmacaoEmail.util';
 // Serviço do app do cliente — autenticação, barbearias, agendamentos, fidelidade
 import bcrypt from 'bcryptjs';
 import { registrarAceiteDocumentos } from '../domain/privacidade/aceiteDocumentos';
 import { tipoMovimentoPontos } from '../utils/extratoPontos.util';
-import jwt from 'jsonwebtoken';
 import { prisma } from '../lib/prisma';
+import { validarVinculoCliente } from './acessoAgenda.service';
+import { objetoPermitido, listaIds, texto } from '../utils/entradaSegura.util';
+import { reciboAgendamento } from '../utils/agendamentoEntrada.util';
 import { Prisma } from '@prisma/client';
 import { authConfig } from '../config/auth';
 import { ClienteJWT } from '../types';
@@ -32,7 +36,6 @@ interface DadosCadastroCliente {
 }
 
 interface RespostaAuthCliente {
-  token: string;
   cliente: ClienteJWT;
   isNovo?: boolean;
 }
@@ -56,49 +59,7 @@ export class ClienteAppService {
     });
 
     if (existente) {
-      if (existente.emailVerificado) {
-        throw new Error('Este email já está cadastrado');
-      } else {
-        // Atualiza a senha e dados do usuário existente não verificado
-        const senhaHash = await bcrypt.hash(dados.senha, authConfig.saltRounds);
-        await prisma.usuario.update({
-          where: { id: existente.id },
-          data: { nome: dados.nome, senha: senhaHash, ...aceite }
-        });
-
-        if (existente.cliente) {
-          await prisma.cliente.update({
-            where: { id: existente.cliente.id },
-            data: {
-              ...(dados.telefone ? { telefone: dados.telefone } : {}),
-              dataNascimento,
-            }
-          });
-        }
-
-        const payload: ClienteJWT = {
-          clienteId: existente.cliente!.id,
-          usuarioId: existente.id,
-          nome: dados.nome,
-          email: existente.email,
-        };
-
-        const token = jwt.sign(
-          { ...payload },
-          authConfig.secretCliente as jwt.Secret,
-          { expiresIn: authConfig.expiresIn } as jwt.SignOptions
-        );
-
-        if (dados.barbeariaId) {
-          try {
-            await this.conectarBarbearia(existente.cliente!.id, dados.barbeariaId, dados.codigoIndicacao);
-          } catch (e) {
-            console.error('[Registro Cliente] Erro ao conectar barbearia via convite:', e);
-          }
-        }
-
-        return { token, cliente: payload, isNovo: false };
-      }
+      throw new ErroDeNegocio('Este email já está cadastrado. Entre na conta ou recupere sua senha.', 409);
     }
 
     const senhaHash = await bcrypt.hash(dados.senha, authConfig.saltRounds);
@@ -132,27 +93,21 @@ export class ClienteAppService {
       email: usuario.email,
     };
 
-    const token = jwt.sign(
-      { ...payload },
-      authConfig.secretCliente as jwt.Secret,
-      { expiresIn: authConfig.expiresIn } as jwt.SignOptions
-    );
-
     if (dados.barbeariaId) {
       try {
         await this.conectarBarbearia(cliente.id, dados.barbeariaId, dados.codigoIndicacao);
       } catch (e) {
-        console.error('[Registro Cliente] Erro ao conectar barbearia via convite:', e);
+        registrarErroSeguro('services.clienteApp.service.falha', e);
       }
     }
 
-    return { token, cliente: payload, isNovo: true };
+    return { cliente: payload, isNovo: true };
   }
 
   /** Login do cliente */
   static async login(email: string, senha: string): Promise<RespostaAuthCliente> {
     const usuario = await prisma.usuario.findFirst({
-      where: { email, papel: 'CLIENTE', barbeariaId: null },
+      where: { email: { equals: email.trim().toLowerCase(), mode: 'insensitive' }, papel: 'CLIENTE', barbeariaId: null },
       include: { cliente: true },
     });
 
@@ -160,13 +115,13 @@ export class ClienteAppService {
       throw new ErroDeNegocio('Email ou senha incorretos', 401);
     }
 
-    if (!usuario.emailVerificado) {
-      throw new Error('Email não verificado');
-    }
-
     const senhaValida = await bcrypt.compare(senha, usuario.senha);
     if (!senhaValida) {
       throw new ErroDeNegocio('Email ou senha incorretos', 401);
+    }
+
+    if (!usuario.emailVerificado) {
+      throw new ConfirmacaoEmailNecessaria(usuario.id);
     }
 
     const payload: ClienteJWT = {
@@ -176,13 +131,7 @@ export class ClienteAppService {
       email: usuario.email,
     };
 
-    const token = jwt.sign(
-      { ...payload },
-      authConfig.secretCliente as jwt.Secret,
-      { expiresIn: authConfig.expiresIn } as jwt.SignOptions
-    );
-
-    return { token, cliente: payload };
+    return { cliente: payload };
   }
 
   /** Busca barbearias pelo nome */
@@ -275,7 +224,7 @@ export class ClienteAppService {
             ]);
           } catch (e: any) {
             if (e.code !== 'P2002') {
-              console.error('[conectarBarbearia] Erro ao creditar boas-vindas:', e);
+              registrarErroSeguro('services.clienteApp.service.falha', e);
             }
           }
         }
@@ -340,7 +289,7 @@ export class ClienteAppService {
         }
       }
     } catch (e) {
-      console.error('[conectarBarbearia] Erro pós-conexão:', e);
+      registrarErroSeguro('services.clienteApp.service.falha', e);
       // Não bloqueia a conexão em caso de erro nos pontos
     }
 
@@ -379,9 +328,15 @@ export class ClienteAppService {
 
   /** Arquiva a conexão sem apagar conta ou histórico. */
   static async desconectarBarbearia(clienteId: string, barbeariaId: string) {
-    return prisma.clienteBarbearia.updateMany({
-      where: { clienteId, barbeariaId },
-      data: { ativo: false, arquivadoEm: new Date() },
+    return prisma.$transaction(async tx => {
+      const resultado = await tx.clienteBarbearia.updateMany({
+        where: { clienteId, barbeariaId, ativo: true },
+        data: { ativo: false, arquivadoEm: new Date() },
+      });
+      if (resultado.count) await tx.usuario.updateMany({
+        where: { cliente: { id: clienteId } }, data: { authVersion: { increment: 1 } },
+      });
+      return resultado;
     });
   }
 
@@ -597,11 +552,13 @@ export class ClienteAppService {
 
   /** Horários disponíveis */
   static async horariosDisponiveis(barbeariaId: string, barbeiroId: string, data: string, servicosParam: string, clienteId?: string) {
-    const ids = servicosParam.split(',').map(id => id.trim()).filter(Boolean);
+    const ids = listaIds(texto(servicosParam, 20000).split(',').map(id => id.trim()).filter(Boolean));
+    const barbeiro = await prisma.barbeiro.findFirst({ where: { id: texto(barbeiroId), barbeariaId: texto(barbeariaId), ativo: true } });
+    if (!barbeiro) throw new Error('Barbeiro não encontrado nesta barbearia');
     if (ids.length === 0) throw new Error('Serviço não informado');
 
     const servicos = await prisma.servico.findMany({
-      where: { id: { in: ids } }
+      where: { id: { in: ids }, barbeariaId, ativo: true }
     });
     if (servicos.length !== ids.length) throw new Error('Um ou mais serviços não foram encontrados');
 
@@ -627,6 +584,7 @@ export class ClienteAppService {
     const bloqueios = await prisma.bloqueioAgenda.findMany({
       where: {
         barbeiroId,
+        barbeiro: { barbeariaId },
         dataInicio: { lte: fim },
         dataFim: { gte: inicio },
       }
@@ -670,24 +628,26 @@ export class ClienteAppService {
     data: string;
     hora: string;
     observacoes?: string;
-  }) {
-    if (!dados.servicosIds || dados.servicosIds.length === 0) {
-      throw new Error('Serviço não informado');
-    }
+  }, usuarioId: string) {
+    objetoPermitido(dados, ['barbeiroId', 'servicosIds', 'data', 'hora', 'observacoes']);
+    listaIds(dados.servicosIds);
+    texto(dados.data, 10);
+    texto(dados.hora, 5);
+    await validarVinculoCliente(clienteId, barbeariaId);
 
-    const { AgendamentoService } = require('./agendamento.service');
+    const { AgendamentoService } = await import('./agendamento.service');
 
-    return AgendamentoService.criar({
+    const agendamento = await AgendamentoService.criar({
       barbeariaId,
       clienteId,
       barbeiroId: dados.barbeiroId,
       servicoId: dados.servicosIds[0],
       servicosIds: dados.servicosIds,
       dataHora: `${dados.data}T${dados.hora}:00`,
-      valorCobrado: 0, 
       observacoes: dados.observacoes,
       origem: 'APP_CLIENTE',
-    });
+    }, { id: usuarioId, papel: 'CLIENTE', barbeariaId });
+    return reciboAgendamento(agendamento);
   }
 
   /** Fidelidade do cliente em uma barbearia */

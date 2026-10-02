@@ -1,9 +1,11 @@
 import assert from 'node:assert/strict';
 
+// A fixture de consulta/exportação deve permanecer dentro do prazo permitido.
+// Data relativa evita que a passagem do calendário transforme o caso em acesso encerrado.
 const assinaturas = new Map<string, any>([
   ['basico', { plano: 'BASICO', status: 'ATIVA', fimAcessoEm: null }],
   ['pro', { plano: 'PRO', status: 'ATIVA', fimAcessoEm: null }],
-  ['somente-leitura', { plano: 'BASICO', status: 'CONSULTA_EXPORTACAO', fimAcessoEm: new Date('2026-09-01T00:00:00Z') }],
+  ['somente-leitura', { plano: 'BASICO', status: 'CONSULTA_EXPORTACAO', fimAcessoEm: new Date(Date.now() - 24 * 60 * 60 * 1000) }],
 ]);
 const uso = new Map<string, { barbeiros: number; clientes: number }>([
   ['basico', { barbeiros: 8, clientes: 200 }],

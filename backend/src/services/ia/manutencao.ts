@@ -1,3 +1,4 @@
+import { registrarErroSeguro } from '../../lib/logSeguro';
 import { PrismaClient } from '@prisma/client';
 
 /** Retira somente o conteúdo cifrado expirado. Ledger e reservas são preservados.
@@ -10,7 +11,7 @@ export async function limparResultadosIa(db: PrismaClient) {
 
 export function agendarLimpezaResultadosIa(db: PrismaClient) {
   if (process.env.IA_PERSISTENCIA_ENABLED !== 'true') return;
-  const executar = () => void limparResultadosIa(db).catch(() => console.error('Falha na limpeza de resultados de IA; conteúdo cifrado preservado.'));
+  const executar = () => void limparResultadosIa(db).catch(() => registrarErroSeguro('services.ia.manutencao.falha', undefined));
   executar();
   const timer = setInterval(executar, 60_000);
   timer.unref();

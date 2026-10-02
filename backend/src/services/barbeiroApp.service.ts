@@ -1,7 +1,7 @@
 // Serviço do app do barbeiro — login, agenda, comissões, conclusão de atendimentos
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
 import { prisma } from '../lib/prisma';
+import { validarReferenciaImagemRecebida } from './referenciaImagem.service';
 import { authConfig } from '../config/auth';
 import { BarbeiroJWT } from '../types';
 import { ErroDeNegocio } from '../lib/erros';
@@ -13,7 +13,6 @@ import { DescontoService, TipoDesconto } from './desconto.service';
 import { obterIdsServicosAgendamento, obterItensDoAtendimento } from '../utils/agendamento.util';
 
 interface RespostaAuthBarbeiro {
-  token: string;
   barbeiro: BarbeiroJWT;
 }
 
@@ -80,13 +79,7 @@ export class BarbeiroAppService {
       email: usuario.email,
     };
 
-    const token = jwt.sign(
-      { ...payload },
-      authConfig.secretBarbeiro as jwt.Secret,
-      { expiresIn: authConfig.expiresIn } as jwt.SignOptions
-    );
-
-    return { token, barbeiro: payload };
+    return { barbeiro: payload };
   }
 
   /** Agendamentos do barbeiro hoje */
@@ -418,10 +411,11 @@ export class BarbeiroAppService {
     const barbeiro = await prisma.barbeiro.findUnique({ where: { id: barbeiroId } });
     if (!barbeiro) throw new Error('Barbeiro não encontrado');
 
+    validarReferenciaImagemRecebida(dados.foto, barbeiro.foto);
     const updateBarbeiroData: any = {};
     if (dados.telefone !== undefined) updateBarbeiroData.telefone = dados.telefone;
     if (dados.especialidades !== undefined) updateBarbeiroData.especialidades = dados.especialidades;
-    if (dados.foto !== undefined) updateBarbeiroData.foto = dados.foto;
+    if (dados.foto === '' || dados.foto === null) updateBarbeiroData.foto = null;
     if (dados.horariosTrabalho !== undefined) updateBarbeiroData.horariosTrabalho = dados.horariosTrabalho;
 
     const [atualizado] = await prisma.$transaction([

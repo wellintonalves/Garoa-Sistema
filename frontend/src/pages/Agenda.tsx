@@ -256,8 +256,8 @@ export function Agenda() {
     setSalvando(true);
     setErroSalvar(null);
     try {
-      const servico = servicos.find((s) => s.id === formRemarcar.servicoId);
-      await api.put(`/agendamentos/${formRemarcar.id}`, { ...formRemarcar, valorCobrado: servico ? Number(servico.preco) : undefined });
+      const { barbeiroId, servicoId, dataHora } = formRemarcar;
+      await api.put(`/agendamentos/${formRemarcar.id}`, { barbeiroId, servicoId, dataHora });
       setModalRemarcarAberto(false);
       setAgendamentoSelecionado(null);
       carregar();
@@ -273,8 +273,7 @@ export function Agenda() {
     setSalvando(true);
     setErroSalvar(null);
     try {
-      const servico = servicos.find((s) => s.id === form.servicoId);
-      await api.post('/agendamentos', { ...form, valorCobrado: servico ? Number(servico.preco) : 0 });
+      await api.post('/agendamentos', form);
       setModalAberto(false);
       setForm({ clienteId: '', barbeiroId: '', servicoId: '', dataHora: '', observacoes: '' });
       carregar();

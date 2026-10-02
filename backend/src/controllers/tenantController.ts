@@ -1,8 +1,14 @@
+import { ConfirmacaoEmailNecessaria } from '../services/confirmacaoEmail.util';
+import { iniciarSessao } from '../services/sessao.service';
+import { VerificacaoService } from '../services/verificacao.service';
 import { Response } from 'express';
 import { prisma } from '../lib/prisma';
 import { AuthService } from '../services/auth.service';
 import { AuthRequest } from '../types';
 import { HorariosUtil } from '../services/horarios.util';
+import { objetoPermitido, texto } from '../utils/entradaSegura.util';
+import { reciboAgendamento } from '../utils/agendamentoEntrada.util';
+import { ErroDeNegocio } from '../lib/erros';
 
 export class TenantController {
   /** GET /b/:slug - Retorna os dados públicos da barbearia */
@@ -80,6 +86,7 @@ export class TenantController {
         }
       });
 
+      await VerificacaoService.enviarCodigo(resultado.usuario.id);
       res.status(201).json(resultado);
     } catch (error) {
       const msg = error instanceof Error ? error.message : 'Erro ao registrar cliente';
@@ -103,15 +110,21 @@ export class TenantController {
         return;
       }
 
-      const resultado = await AuthService.login({ email, senha, barbeariaId: barbearia.id });
+      const resultado = await AuthService.login({ email, senha, barbeariaId: barbearia.id, papel: 'CLIENTE' });
       
       if (resultado.usuario.barbeariaId !== barbearia.id) {
          res.status(401).json({ erro: 'Usuário não pertence a esta barbearia' });
          return;
       }
 
-      res.json(resultado);
+      const tokenPonte = await iniciarSessao(req, res, resultado.usuario.id, 'tenant');
+      res.json({ ...resultado, ...(tokenPonte ? { token: tokenPonte } : {}) });
     } catch (error) {
+      if (error instanceof ConfirmacaoEmailNecessaria) {
+        await VerificacaoService.enviarCodigo(error.usuarioId).catch(() => undefined);
+        res.status(403).json({ erro: error.message, emailNaoVerificado: true, usuarioId: error.usuarioId });
+        return;
+      }
       const msg = error instanceof Error ? error.message : 'Erro ao fazer login';
       res.status(401).json({ erro: msg });
     }
@@ -123,6 +136,8 @@ export class TenantController {
       // O middleware de autenticação deve injetar req.usuario
       const usuarioId = req.usuario?.id;
       const barbeariaId = req.usuario?.barbeariaId;
+      const barbearia = await prisma.barbearia.findFirst({ where: { id: barbeariaId || '', slug: req.params.slug, ativo: true }, select: { id: true } });
+      if (!barbearia) { res.status(404).json({ erro: 'Barbearia não encontrada.' }); return; }
 
       if (!usuarioId || !barbeariaId) {
         res.status(401).json({ erro: 'Não autorizado' });
@@ -158,6 +173,8 @@ export class TenantController {
     try {
       const usuarioId = req.usuario?.id;
       const barbeariaId = req.usuario?.barbeariaId;
+      const barbearia = await prisma.barbearia.findFirst({ where: { id: barbeariaId || '', slug: req.params.slug, ativo: true }, select: { id: true } });
+      if (!barbearia) { res.status(404).json({ erro: 'Barbearia não encontrada.' }); return; }
 
       if (!usuarioId || !barbeariaId) {
         res.status(401).json({ erro: 'Não autorizado' });
@@ -173,13 +190,9 @@ export class TenantController {
         return;
       }
 
-      // Mock de fidelidade (pode ser expandido no futuro)
-      res.json({
-        pontos: 150,
-        historico: [
-          { data: new Date(), pontos: 50, descricao: 'Corte de cabelo' },
-        ]
-      });
+      const { ClienteAppService } = await import('../services/clienteApp.service');
+      res.json(await ClienteAppService.fidelidade(cliente.id, barbeariaId));
+
     } catch (error) {
       res.status(500).json({ erro: 'Erro ao buscar fidelidade' });
     }
@@ -240,45 +253,29 @@ export class TenantController {
     }
   }
 
-  /** POST /b/:slug/agendar */
+  /** POST /b/:slug/agendar and /b/:slug/app/agendar */
   static async agendar(req: AuthRequest, res: Response): Promise<void> {
     try {
-      const { slug } = req.params;
-      const barbearia = await prisma.barbearia.findUnique({ where: { slug } });
-      if (!barbearia) { res.status(404).json({ erro: 'Barbearia não encontrada' }); return; }
-
-      const { barbeiroId, servicoId, data, hora, clienteId } = req.body;
-      let finalClienteId = clienteId;
-
-      // Se o usuário está logado, use o cliente associado
-      if (req.usuario) {
-        const cliente = await prisma.cliente.findUnique({ where: { usuarioId: req.usuario.id } });
-        if (cliente) finalClienteId = cliente.id;
-      }
-
-      if (!finalClienteId) {
-        res.status(400).json({ erro: 'Cliente não identificado' });
-        return;
-      }
-
-      const servico = await prisma.servico.findUnique({ where: { id: servicoId } });
-      if (!servico) { res.status(404).json({ erro: 'Serviço não encontrado' }); return; }
-
-      const dataHora = new Date(`${data}T${hora}:00`);
-      const { AgendamentoService } = await import('../services/agendamento.service');
-      const agendamento = await AgendamentoService.criar({
-        barbeariaId: barbearia.id,
-        clienteId: finalClienteId,
-        barbeiroId,
-        servicoId,
-        servicosIds: [servicoId],
-        dataHora: dataHora.toISOString(),
-        origem: 'APP_CLIENTE'
+      if (!req.usuario || req.usuario.papel !== 'CLIENTE') throw new ErroDeNegocio('Entre na sua conta para continuar.', 401);
+      const barbearia = await prisma.barbearia.findFirst({ where: { slug: req.params.slug, ativo: true } });
+      if (!barbearia || req.usuario.barbeariaId !== barbearia.id) throw new ErroDeNegocio('Barbearia não encontrada.', 404);
+      const dados = objetoPermitido(req.body, ['barbeiroId', 'servicoId', 'data', 'hora', 'observacoes']);
+      const cliente = await prisma.cliente.findFirst({
+        where: { usuarioId: req.usuario.id, usuario: { papel: 'CLIENTE', emailVerificado: true } }, select: { id: true },
       });
-
-      res.status(201).json(agendamento);
+      if (!cliente) throw new ErroDeNegocio('Entre na sua conta para continuar.', 401);
+      const { AgendamentoService } = await import('../services/agendamento.service');
+      const servicoId = texto(dados.servicoId);
+      const agendamento = await AgendamentoService.criar({
+        barbeariaId: barbearia.id, clienteId: cliente.id, barbeiroId: texto(dados.barbeiroId),
+        servicoId, servicosIds: [servicoId],
+        dataHora: `${texto(dados.data, 10)}T${texto(dados.hora, 5)}:00`,
+        observacoes: dados.observacoes === undefined ? undefined : texto(dados.observacoes, 4000, true),
+        origem: 'APP_CLIENTE',
+      }, req.usuario);
+      res.status(201).json(reciboAgendamento(agendamento));
     } catch (error) {
-      res.status(500).json({ erro: 'Erro ao agendar' });
+      res.status(error instanceof ErroDeNegocio ? error.status : 400).json({ erro: error instanceof Error ? error.message : 'Não foi possível agendar. Tente novamente.' });
     }
   }
 }

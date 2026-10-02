@@ -1,3 +1,4 @@
+import { useClienteAuth } from '../../hooks/useClienteAuth';
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import clienteApi from '../../api/clienteApi';
@@ -8,10 +9,12 @@ import { Gift } from '@phosphor-icons/react';
 export function Convite() {
   const { slug, codigo } = useParams<{ slug: string; codigo: string }>();
   const navigate = useNavigate();
+  const { cliente, carregando } = useClienteAuth();
   const [erro, setErro] = useState<string | null>(null);
   const [barbearia, setBarbearia] = useState<{ id: string; nome: string } | null>(null);
 
   useEffect(() => {
+    if (carregando) return;
     if (!slug || !codigo) {
       setErro('Link de convite inválido.');
       return;
@@ -22,9 +25,7 @@ export function Convite() {
       .then(async (res: any) => {
         setBarbearia(res.data);
         
-        const token = localStorage.getItem('@garoa:cliente_token');
-        
-        if (token) {
+        if (cliente) {
           // Usuário já está logado. Conecta automaticamente.
           try {
             await clienteApi.post('/cliente/conectar-barbearia', {
@@ -59,7 +60,7 @@ export function Convite() {
       .catch(() => {
         setErro('Barbearia não encontrada.');
       });
-  }, [slug, codigo, navigate]);
+  }, [slug, codigo, navigate, cliente, carregando]);
 
   if (erro) {
     return (

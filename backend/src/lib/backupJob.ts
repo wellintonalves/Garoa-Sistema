@@ -1,3 +1,4 @@
+import { registrarErroSeguro } from './logSeguro';
 import cron from 'node-cron';
 import { copiarBanco } from './dbSync';
 import { Resend } from 'resend';
@@ -10,9 +11,9 @@ export function agendarBackupDiario(sourceUrl: string, targetUrl: string) {
     console.log('BACKUP DIARIO: iniciado');
     try {
       const result = await copiarBanco(sourceUrl, targetUrl);
-      console.log('✅ BACKUP DIARIO: concluido', result);
+      console.log('BACKUP DIARIO: concluido');
     } catch (error) {
-      console.error('❌ BACKUP DIARIO: falhou', error);
+      registrarErroSeguro('lib.backupJob.falha', error);
       
       if (process.env.RESEND_API_KEY) {
         try {
@@ -25,7 +26,7 @@ export function agendarBackupDiario(sourceUrl: string, targetUrl: string) {
           });
           console.log('📧 Alerta de falha de backup enviado por e-mail.');
         } catch (emailError) {
-          console.error('❌ Falha ao enviar alerta de e-mail sobre o backup', emailError);
+          registrarErroSeguro('lib.backupJob.falha', emailError);
         }
       }
     }

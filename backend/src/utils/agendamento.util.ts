@@ -1,3 +1,4 @@
+import { registrarErroSeguro } from '../lib/logSeguro';
 // Utilitários auxiliares de manipulação de entidades de agendamento / itens
 
 interface CatalogoServico {
@@ -46,7 +47,7 @@ export function obterItensDoAtendimento(
   }
 
   if (idsLegado.length === 0) {
-    console.error(`[ERRO LOG] Entidade ${entidade.id || 'desconhecida'} não possui serviços registrados (falha nas 3 tentativas).`);
+    registrarErroSeguro('utils.agendamento.util.falha', undefined);
     return [];
   }
 
@@ -54,7 +55,7 @@ export function obterItensDoAtendimento(
   return idsLegado.map(id => {
     const s = catalogoPorId.get(id);
     if (!s) {
-      console.error(`[ERRO LOG] Entidade ${entidade.id || 'desconhecida'} tentou ler serviço ID ${id} mas não está no catálogo.`);
+      registrarErroSeguro('utils.agendamento.util.falha', undefined);
       return {
         servicoId: id,
         nome: `Serviço Indisponível`,
