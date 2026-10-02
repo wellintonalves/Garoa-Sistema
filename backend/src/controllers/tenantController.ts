@@ -63,7 +63,7 @@ export class TenantController {
         return;
       }
 
-      const resultado = await AuthService.registrar({
+      const resultado = await AuthService.registrarCliente({
         nome,
         email,
         senha,

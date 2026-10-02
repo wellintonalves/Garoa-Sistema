@@ -13,7 +13,7 @@ export class EmailService {
     }
 
     if (!resend) {
-      console.warn('[EmailService] RESEND_API_KEY não configurado. Email não enviado para:', email, '| Código:', codigo);
+      console.warn('[EmailService] RESEND_API_KEY não configurado. Email de verificação não enviado.');
       return;
     }
     await resend.emails.send({
@@ -32,7 +32,7 @@ export class EmailService {
               Olá, ${nome}!
             </p>
             <p style="margin: 0 0 32px; font-size: 14px; color: #737373; line-height: 1.6;">
-              Use o código abaixo para confirmar seu email. Ele expira em <strong style="color: #F5F5F5;">10 minutos</strong>.
+              Use o código abaixo para confirmar seu email. O prazo é de até <strong style="color: #F5F5F5;">10 minutos</strong> a partir da primeira solicitação. Reenvios não prolongam esse prazo.
             </p>
             <div style="background: #141414; border: 1px solid #2A2A2A; border-radius: 8px; padding: 24px; text-align: center; margin-bottom: 32px;">
               <span style="font-family: 'JetBrains Mono', monospace; font-size: 36px; font-weight: 700; color: #F59E0B; letter-spacing: 0.2em;">
@@ -74,7 +74,7 @@ export class EmailService {
               Olá, ${nome}!
             </p>
             <p style="margin: 0 0 32px; font-size: 14px; color: #737373; line-height: 1.6;">
-              Recebemos uma solicitação para redefinir sua senha. Use o código abaixo. Ele expira em <strong style="color: #F5F5F5;">10 minutos</strong>.
+              Recebemos uma solicitação para redefinir sua senha. Use o código abaixo. O prazo é de até <strong style="color: #F5F5F5;">10 minutos</strong> a partir da primeira solicitação. Reenvios não prolongam esse prazo.
             </p>
             <div style="background: #141414; border: 1px solid #2A2A2A; border-radius: 8px; padding: 24px; text-align: center; margin-bottom: 32px;">
               <span style="font-family: 'JetBrains Mono', monospace; font-size: 36px; font-weight: 700; color: #F59E0B; letter-spacing: 0.2em;">

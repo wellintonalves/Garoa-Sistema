@@ -39,6 +39,7 @@
     "test:comissao-http": "tsx scripts/testes_comissao_http.ts",
     "test:email-admin": "tsx scripts/testes_email_admin.ts",
     "test:email-admin-postgres": "tsx scripts/testes_email_admin_postgres.ts",
+    "test:conta-seguranca-postgres-local": "node --import tsx scripts/testes_conta_seguranca_postgres_local.ts",
     "test:barbearia-inativa": "tsx scripts/testes_barbearia_inativa.ts",
     "test:dashboard": "tsx scripts/testes_dashboard_atendimentos.ts",
     "test:dashboard-postgres": "tsx scripts/testes_dashboard_postgres.ts",
@@ -52,7 +53,9 @@
     "test:exportacao": "tsx scripts/testes_exportacao.ts",
     "test:provedor-asaas": "tsx scripts/testes_provedor_asaas.ts",
     "test:assinatura-fluxo-local": "tsx scripts/testes_assinatura_fluxo_local.ts",
-    "test": "npm run test:fechamento && npm run test:fidelidade && npm run test:comissao && npm run test:email-admin && npm run test:dashboard && npm run test:assinatura && npm run test:regras-assinatura && npm run test:limites-assinatura && npm run test:arquivamento-cliente && npm run test:retencao-backup && npm run test:exportacao && npm run test:data-nascimento && npm run test:preferencias-promocionais && npm run test:provedor-asaas && npm run test:assinatura-fluxo-local"
+    "test": "npm run test:fechamento && npm run test:fidelidade && npm run test:comissao && npm run test:email-admin && npm run test:dashboard && npm run test:assinatura && npm run test:regras-assinatura && npm run test:limites-assinatura && npm run test:arquivamento-cliente && npm run test:retencao-backup && npm run test:exportacao && npm run test:data-nascimento && npm run test:preferencias-promocionais && npm run test:provedor-asaas && npm run test:assinatura-fluxo-local && npm run test:cadastro-seguro && npm run test:codigos-conta",
+    "test:cadastro-seguro": "node --import tsx scripts/testes_cadastro_seguro.ts",
+    "test:codigos-conta": "node --import tsx scripts/testes_codigos_conta.ts && node --import tsx scripts/testes_rotas_codigos.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.8.0",

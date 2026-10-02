@@ -184,6 +184,11 @@
   color: var(--texto-secundario);
 }
 
+.campo-input option {
+  background-color: var(--fundo-superficie);
+  color: var(--texto-principal);
+}
+
 @media (max-width: 768px) {
   .campo-input {
     min-height: 48px;

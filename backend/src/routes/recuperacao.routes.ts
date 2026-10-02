@@ -1,37 +1,41 @@
 import { Router, Request, Response } from 'express';
 import { VerificacaoService } from '../services/verificacao.service';
+import { codigoEnvioLimiter, codigoTentativaLimiter } from '../middlewares/rateLimit.middleware';
 
 const router = Router();
+const mensagemEnvio = 'Se os dados corresponderem a uma conta, o código será enviado ao email cadastrado.';
 
-router.post('/solicitar', async (req: Request, res: Response) => {
-  try {
-    const { email } = req.body;
-    if (!email) {
-      res.status(400).json({ erro: 'Email é obrigatório.' });
-      return;
-    }
-    await VerificacaoService.enviarCodigoRecuperacao(email);
-    res.json({ mensagem: 'Código enviado para seu email.' });
-  } catch (error: any) {
-    res.status(400).json({ erro: error.message });
+router.post('/solicitar', codigoEnvioLimiter, async (req: Request, res: Response) => {
+  const { email, papel, barbeariaSlug } = req.body;
+  if (typeof email !== 'string' || !email.trim() || email.length > 254) {
+    res.status(400).json({ erro: 'Informe um email válido.' });
+    return;
   }
+  try {
+    await VerificacaoService.enviarCodigoRecuperacao(email, { papel, barbeariaSlug });
+  } catch (error) {
+    // A resposta não revela se uma conta existe, é ambígua ou teve falha de entrega.
+    console.error('[Recuperação] Falha ao enviar código:', error);
+  }
+  res.json({ mensagem: mensagemEnvio });
 });
 
-router.post('/redefinir', async (req: Request, res: Response) => {
+router.post('/redefinir', codigoTentativaLimiter, async (req: Request, res: Response) => {
+  const { email, codigo, novaSenha, papel, barbeariaSlug } = req.body;
+  if (typeof email !== 'string' || !email.trim() || email.length > 254
+    || typeof codigo !== 'string' || !/^\d{6}$/.test(codigo)) {
+    res.status(400).json({ erro: 'Código inválido ou expirado.' });
+    return;
+  }
+  if (typeof novaSenha !== 'string' || novaSenha.length < 6 || novaSenha.length > 128) {
+    res.status(400).json({ erro: 'A senha deve ter entre 6 e 128 caracteres.' });
+    return;
+  }
   try {
-    const { email, codigo, novaSenha } = req.body;
-    if (!email || !codigo || !novaSenha) {
-      res.status(400).json({ erro: 'Email, código e nova senha são obrigatórios.' });
-      return;
-    }
-    if (novaSenha.length < 6) {
-      res.status(400).json({ erro: 'A senha deve ter no mínimo 6 caracteres.' });
-      return;
-    }
-    await VerificacaoService.redefinirSenha(email, codigo, novaSenha);
+    await VerificacaoService.redefinirSenha(email, codigo, novaSenha, { papel, barbeariaSlug });
     res.json({ mensagem: 'Senha redefinida com sucesso!' });
-  } catch (error: any) {
-    res.status(400).json({ erro: error.message });
+  } catch (error) {
+    res.status(400).json({ erro: 'Código inválido ou expirado.' });
   }
 });
 

@@ -158,7 +158,7 @@ export function AdminLogin() {
           <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
             <button
               type="button"
-              onClick={() => navigate('/recuperar-senha')}
+              onClick={() => navigate('/recuperar-senha?perfil=admin')}
               style={{
                 background: 'none', border: 'none', cursor: 'pointer',
                 color: 'var(--texto-secundario)', fontSize: 'var(--texto-sm, 0.75rem)',

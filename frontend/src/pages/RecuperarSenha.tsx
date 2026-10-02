@@ -1,15 +1,28 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { isAxiosError } from 'axios';
 import { Envelope, Lock, WarningCircle, CheckCircle, ArrowLeft, Eye, EyeSlash } from '@phosphor-icons/react';
 import api from '../api/client';
-import { Input, Botao } from '../components/ui';
+import { Input, Select, Botao } from '../components/ui';
+import { criarContextoRecuperacao, loginDaRecuperacao, papelRecuperacaoDoPerfil, type ContextoRecuperacao } from '../utils/recuperacaoSenha';
 
 type Etapa = 'email' | 'codigo' | 'nova-senha' | 'sucesso';
 
+function mensagemErroRecuperacao(erro: unknown, mensagem: string): string {
+  // O interceptor já traduz falhas de transporte e servidor. Nunca mostre
+  // respostas de domínio que possam revelar a existência ou vínculo da conta.
+  if (isAxiosError(erro) && (!erro.response || erro.response.status >= 500)) return erro.message;
+  return mensagem;
+}
+
 export function RecuperarSenha() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [etapa, setEtapa] = useState<Etapa>('email');
   const [email, setEmail] = useState('');
+  const [papel, setPapel] = useState(() => papelRecuperacaoDoPerfil(searchParams.get('perfil')));
+  const [barbeariaSlug, setBarbeariaSlug] = useState(() => (searchParams.get('barbeariaSlug') || '').slice(0, 100));
+  const [contextoEnviado, setContextoEnviado] = useState<ContextoRecuperacao | null>(null);
   const [codigos, setCodigos] = useState(['', '', '', '', '', '']);
   const [novaSenha, setNovaSenha] = useState('');
   const [mostrarNovaSenha, setMostrarNovaSenha] = useState(false);
@@ -31,29 +44,37 @@ export function RecuperarSenha() {
 
   async function handleSolicitarCodigo(e: React.FormEvent) {
     e.preventDefault();
+    if (carregando) return;
+    const contexto = criarContextoRecuperacao({ email, papel, barbeariaSlug });
     setErro('');
     setCarregando(true);
     try {
-      await api.post('/recuperacao/solicitar', { email: email.trim() });
+      await api.post('/recuperacao/solicitar', contexto);
+      setContextoEnviado(contexto);
+      setCodigos(['', '', '', '', '', '']);
       setEtapa('codigo');
       setCountdown(60);
       setPodeReenviar(false);
-    } catch (err: any) {
-      setErro(err?.response?.data?.erro || 'Erro ao enviar código.');
+    } catch (err: unknown) {
+      setErro(mensagemErroRecuperacao(err, 'Não foi possível enviar o código agora. Confira os dados e tente novamente.'));
     } finally {
       setCarregando(false);
     }
   }
 
   async function handleReenviar() {
-    if (!podeReenviar) return;
+    if (!podeReenviar || carregando || !contextoEnviado) return;
     setErro('');
+    setCarregando(true);
     try {
-      await api.post('/recuperacao/solicitar', { email: email.trim() });
+      await api.post('/recuperacao/solicitar', contextoEnviado);
+      setCodigos(['', '', '', '', '', '']);
       setCountdown(60);
       setPodeReenviar(false);
-    } catch (err: any) {
-      setErro('Erro ao reenviar o código.');
+    } catch (err: unknown) {
+      setErro(mensagemErroRecuperacao(err, 'Não foi possível reenviar o código agora. Tente novamente em instantes.'));
+    } finally {
+      setCarregando(false);
     }
   }
 
@@ -74,6 +95,7 @@ export function RecuperarSenha() {
   }
 
   function handleConfirmarCodigo() {
+    if (carregando) return;
     const codigo = codigos.join('');
     if (codigo.length < 6) {
       setErro('Digite o código completo de 6 dígitos.');
@@ -85,6 +107,7 @@ export function RecuperarSenha() {
 
   async function handleRedefinirSenha(e: React.FormEvent) {
     e.preventDefault();
+    if (carregando || !contextoEnviado) return;
     setErro('');
     if (novaSenha !== confirmarSenha) {
       setErro('As senhas não coincidem.');
@@ -97,13 +120,13 @@ export function RecuperarSenha() {
     setCarregando(true);
     try {
       await api.post('/recuperacao/redefinir', {
-        email: email.trim(),
+        ...contextoEnviado,
         codigo: codigos.join(''),
         novaSenha,
       });
       setEtapa('sucesso');
-    } catch (err: any) {
-      setErro(err?.response?.data?.erro || 'Erro ao redefinir senha.');
+    } catch (err: unknown) {
+      setErro(mensagemErroRecuperacao(err, 'Não foi possível redefinir a senha. Confira o código ou solicite outro e tente novamente.'));
       setEtapa('codigo');
       setCodigos(['', '', '', '', '', '']);
     } finally {
@@ -119,11 +142,22 @@ export function RecuperarSenha() {
   };
 
   const subtitulos = {
-    'email': 'Informe seu email para receber o código de recuperação.',
-    'codigo': `Enviamos um código para ${email}. Digite abaixo.`,
+    'email': 'Informe seu email e o tipo de conta que deseja recuperar.',
+    'codigo': `Se os dados corresponderem a uma conta, você receberá um código em ${contextoEnviado?.email}. Confira também a pasta de spam.`,
     'nova-senha': 'Defina sua nova senha abaixo.',
     'sucesso': 'Sua senha foi redefinida com sucesso.',
   };
+  const loginDestino = loginDaRecuperacao(contextoEnviado || { papel, barbeariaSlug });
+
+  function handleAlterarDados() {
+    if (carregando) return;
+    setContextoEnviado(null);
+    setCodigos(['', '', '', '', '', '']);
+    setNovaSenha('');
+    setConfirmarSenha('');
+    setErro('');
+    setEtapa('email');
+  }
 
   if (etapa === 'sucesso') {
     return (
@@ -134,7 +168,7 @@ export function RecuperarSenha() {
       }}>
         <div style={{
           width: '100%', maxWidth: '420px', background: 'var(--fundo-superficie)',
-          borderRadius: 'var(--raio-xl)', padding: 'var(--espaco-6)',
+          borderRadius: 'var(--raio-xl)', padding: 'clamp(var(--espaco-4), 4vw, var(--espaco-6))',
           border: '1px solid var(--borda-sutil)', boxShadow: 'var(--elevacao-2)',
           boxSizing: 'border-box', display: 'flex', flexDirection: 'column', alignItems: 'center',
         }}>
@@ -151,7 +185,7 @@ export function RecuperarSenha() {
           <Botao
             type="button"
             variante="primario"
-            onClick={() => navigate('/login')}
+            onClick={() => navigate(loginDestino)}
             style={{ width: '100%' }}
           >
             Ir para o login
@@ -179,7 +213,7 @@ export function RecuperarSenha() {
         maxWidth: '420px',
         background: 'var(--fundo-superficie)',
         borderRadius: 'var(--raio-xl)',
-        padding: 'var(--espaco-6)',
+        padding: 'clamp(var(--espaco-4), 4vw, var(--espaco-6))',
         border: '1px solid var(--borda-sutil)',
         boxShadow: 'var(--elevacao-2)',
         boxSizing: 'border-box',
@@ -239,7 +273,38 @@ export function RecuperarSenha() {
               onChange={e => setEmail(e.target.value)}
               placeholder="seu@email.com"
               required
+              maxLength={254}
+              disabled={carregando}
+              inputMode="email"
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
+              autoComplete="email"
               iconeEsquerda={<Envelope size={18} weight="regular" aria-hidden="true" />}
+            />
+            <Select
+              label="Tipo de conta"
+              value={papel}
+              onChange={e => setPapel(papelRecuperacaoDoPerfil(e.target.value.toLowerCase()))}
+              disabled={carregando}
+            >
+              <option value="CLIENTE">Cliente</option>
+              <option value="BARBEIRO">Barbeiro</option>
+              <option value="ADMIN">Administrador</option>
+            </Select>
+            <Input
+              label="Endereço da barbearia (opcional)"
+              value={barbeariaSlug}
+              onChange={e => setBarbeariaSlug(e.target.value)}
+              placeholder="minha-barbearia"
+              maxLength={100}
+              disabled={carregando}
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
+              hint={papel === 'CLIENTE'
+                ? 'Use o nome após /b/ no link da barbearia. Se criou sua conta na página principal, deixe em branco.'
+                : 'Use o nome após /b/ no link da barbearia. Se tem conta em mais de uma, informe qual deseja recuperar.'}
             />
             <Botao type="submit" variante="primario" loading={carregando} style={{ width: '100%' }}>
               Enviar código
@@ -255,22 +320,22 @@ export function RecuperarSenha() {
               onChange={(i, v, refs) => handleCodigoInput(i, v, refs)}
               onKeyDown={(i, e, refs) => handleCodigoKeyDown(i, e, refs)}
             />
-            <Botao type="button" variante="primario" onClick={handleConfirmarCodigo} style={{ width: '100%' }}>
+            <Botao type="button" variante="primario" onClick={handleConfirmarCodigo} disabled={carregando} style={{ width: '100%' }}>
               Confirmar código
             </Botao>
             <div style={{ display: 'flex', justifyContent: 'center' }}>
               <button
                 type="button"
                 onClick={handleReenviar}
-                disabled={!podeReenviar}
+                disabled={!podeReenviar || carregando}
                 style={{
                   background: 'none', border: 'none', cursor: podeReenviar ? 'pointer' : 'default',
                   fontSize: 'var(--texto-sm, 0.75rem)', color: podeReenviar ? 'var(--cor-primaria)' : 'var(--texto-secundario)',
-                  textDecoration: podeReenviar ? 'underline' : 'none', minHeight: '44px',
+                  textDecoration: podeReenviar ? 'underline' : 'none', minHeight: '48px',
                   display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '0 var(--espaco-2)'
                 }}
               >
-                {podeReenviar ? 'Reenviar código' : `Reenviar em ${countdown}s`}
+                {carregando ? 'Reenviando…' : podeReenviar ? 'Reenviar código' : `Reenviar em ${countdown}s`}
               </button>
             </div>
           </div>
@@ -283,6 +348,7 @@ export function RecuperarSenha() {
               label="Nova senha"
               type={mostrarNovaSenha ? "text" : "password"}
               value={novaSenha}
+              maxLength={128}
               onChange={e => setNovaSenha(e.target.value)}
               placeholder="Mínimo 6 caracteres"
               required
@@ -304,6 +370,7 @@ export function RecuperarSenha() {
               label="Confirmar nova senha"
               type={mostrarConfirmarSenha ? "text" : "password"}
               value={confirmarSenha}
+              maxLength={128}
               onChange={e => setConfirmarSenha(e.target.value)}
               placeholder="Repita a nova senha"
               required
@@ -326,14 +393,21 @@ export function RecuperarSenha() {
           </form>
         )}
 
+        {(etapa === 'codigo' || etapa === 'nova-senha') && (
+          <Botao type="button" variante="fantasma" onClick={handleAlterarDados} disabled={carregando} style={{ marginTop: 'var(--espaco-2)' }}>
+            Corrigir dados da conta
+          </Botao>
+        )}
+
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: 'var(--espaco-4)' }}>
           <button
             type="button"
-            onClick={() => navigate(-1)}
+            onClick={() => navigate(loginDestino)}
+            disabled={carregando}
             style={{
               background: 'none', border: 'none', cursor: 'pointer',
               color: 'var(--texto-secundario)', fontSize: 'var(--texto-sm, 0.75rem)',
-              textDecoration: 'underline', minHeight: '44px', display: 'inline-flex',
+              textDecoration: 'underline', minHeight: '48px', display: 'inline-flex',
               alignItems: 'center', justifyContent: 'center', gap: 'var(--espaco-1)', padding: '0 var(--espaco-2)'
             }}
           >
@@ -353,20 +427,22 @@ function CodigoInputs({ codigos, onChange, onKeyDown }: {
   const refs: (HTMLInputElement | null)[] = [];
 
   return (
-    <div style={{ display: 'flex', gap: 'var(--espaco-2)', marginBottom: 'var(--espaco-2)', justifyContent: 'center' }}>
+    <div style={{ display: 'flex', gap: 'var(--espaco-1)', marginBottom: 'var(--espaco-2)', justifyContent: 'center' }}>
       {codigos.map((c, i) => (
         <input
           key={i}
           ref={el => { refs[i] = el; }}
           type="text" inputMode="numeric" maxLength={1} value={c}
+          aria-label={`Dígito ${i + 1} do código`}
           onChange={e => onChange(i, e.target.value, refs)}
           onKeyDown={e => onKeyDown(i, e, refs)}
           style={{
-            width: '48px', height: '56px', textAlign: 'center',
+            width: '48px', minWidth: 0, height: '56px', textAlign: 'center',
             background: 'var(--fundo-superficie-2)',
             border: `1px solid ${c ? 'var(--cor-primaria)' : 'var(--borda-sutil)'}`,
             borderRadius: 'var(--raio-md)', color: 'var(--texto-principal)',
             fontFamily: "var(--fonte-mono, 'JetBrains Mono', monospace)",
+            fontVariantNumeric: 'tabular-nums',
             fontSize: 'var(--texto-h2, 1.5rem)', fontWeight: 500, outline: 'none',
             transition: 'border-color 0.15s', boxSizing: 'border-box',
           }}
